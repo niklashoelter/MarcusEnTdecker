@@ -77,7 +77,7 @@ def main():
     if args.list:
         for stage, script, needs in plan:
             state = "ready" if (ROOT / needs).exists() else f"SKIP (missing {needs})"
-            print(f"  [{stage}] {script}  — {state}")
+            print(f"  [{stage}] {script}  -- {state}")
         return
 
     failed, skipped, ran = [], [], []

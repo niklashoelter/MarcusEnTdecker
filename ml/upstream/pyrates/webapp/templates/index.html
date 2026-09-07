@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnTdecker</title>
+    <!-- Sleek Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        :root {
+            /* Light Theme (Default) */
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-heading: #0f172a;
+            --accent-gradient: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --ring-color: #4f46e5;
+            --input-bg: rgba(0, 0, 0, 0.02);
+            --input-bg-focus: #ffffff;
+            --glass-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+            --bg-gradient: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+            --modal-bg: rgba(255, 255, 255, 0.4);
+            --modal-overlay: rgba(255, 255, 255, 0.8);
+            --btn-ghost-bg: rgba(0,0,0,0.05);
+            --btn-ghost-hover: rgba(0,0,0,0.1);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Manrope', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: var(--bg-gradient);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1.title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            padding: 3rem 0 2rem 0;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .container-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem 2rem;
+            transition: all 0.5s ease;
+        }
+
+        .input-section, .results-section, .marcus-section {
+            width: 100%;
+            transition: all 0.5s ease;
+            transform-origin: center;
+        }
+
+        .marcus-section {
+            display: none;
+            flex-direction: column;
+        }
+
+        /* Mobile specific states */
+        .container-main.has-marcus .marcus-section {
+            display: flex;
+        }
+        .container-main.focus-input .results-section,
+        .container-main.focus-input .marcus-section,
+        .container-main.has-results .input-section,
+        .container-main.has-marcus .input-section,
+        .container-main.has-marcus .results-section {
+            opacity: 0.6;
+            transform: scale(0.98);
+        }
+
+        /* Desktop Timeline View */
+        @media(min-width: 1024px) {
+            .container-main {
+                flex-direction: row;
+                align-items: flex-start;
+                overflow-x: auto;
+                scroll-behavior: smooth;
+                padding-bottom: 2rem; /* Give space for scrollbar */
+            }
+
+            /* Nice subtle scrollbar */
+            .container-main::-webkit-scrollbar {
+                height: 8px;
+            }
+            .container-main::-webkit-scrollbar-thumb {
+                background: var(--text-muted);
+                border-radius: 4px;
+            }
+            .container-main::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .marcus-section {
+                display: flex; /* Make it live in the timeline even when not focused */
+            }
+
+            .input-section, .results-section, .marcus-section {
+                flex-shrink: 0;
+                width: calc(40% - 1rem); /* Base inactive width */
+                opacity: 0.6;
+                transform: scale(0.96);
+                cursor: pointer;
+            }
+
+            .input-section:hover, .results-section:hover, .marcus-section:hover {
+                opacity: 0.8;
+                transform: scale(0.98);
+            }
+
+            /* Active UI panel state */
+            .container-main.focus-input .input-section,
+            .container-main.has-results .results-section,
+            .container-main.has-marcus .marcus-section {
+                width: calc(60% - 1rem);
+                opacity: 1;
+                transform: scale(1);
+                cursor: default;
+            }
+        }
+
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 1.25rem;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-heading);
+            transition: border-color 0.3s ease;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+        }
+
+        .btn-sleek {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+            width: 100%;
+        }
+        .btn-sleek:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+        .btn-sleek:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .input-sleek {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: var(--text-main);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            resize: vertical;
+        }
+        .input-sleek:focus {
+            outline: none;
+            border-color: var(--ring-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: var(--input-bg-focus);
+        }
+
+        .sleek-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .sleek-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .sleek-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+        .sleek-table tr:hover td {
+            background: var(--btn-ghost-bg);
+        }
+        .sleek-table tr.expanded-row td {
+            background-color: rgba(99, 102, 241, 0.04) !important;
+            border-bottom-color: transparent !important;
+        }
+        .sleek-table tr.expanded-row:hover td {
+            background-color: rgba(99, 102, 241, 0.06) !important;
+        }
+        .sleek-table tr.expanded-details td {
+            background-color: rgba(99, 102, 241, 0.04) !important;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.2) !important;
+            padding-top: 0;
+        }
+
+        .loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--modal-overlay);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .loader-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--ring-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #ketcher-iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            background: #ffffff;
+            transition: filter 0.3s;
+        }
+
+        /* Modal Styles for Full Analysis */
+        .modal {
+            position: fixed; inset: 0; background: var(--modal-overlay); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 10000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--bg-surface); width: 90%; max-width: 1200px; max-height: 90vh;
+            border: 1px solid var(--border-color); border-radius: 1.25rem;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: var(--glass-shadow);
+        }
+        .modal-header {
+            padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-body {
+            padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem;
+        }
+        .close-btn { color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .close-btn:hover { color: var(--text-heading); }
+
+
+        /* Custom Toggle Switch for Uncertainty */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--text-muted);
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--ring-color);
+            border-color: var(--ring-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: #ffffff;
+        }
+
+        /* Floating action menu */
+        .fab-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .fab-button {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: var(--accent-gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fab-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .fab-button svg {
+            transition: transform 0.3s ease;
+        }
+
+        .fab-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.9);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: bottom center;
+        }
+
+        .fab-container:hover .fab-menu,
+        .fab-container.active .fab-menu {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0) scale(1);
+        }
+
+        .fab-container:hover .fab-button svg,
+        .fab-container.active .fab-button svg {
+            transform: rotate(45deg);
+        }
+
+        .fab-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.75rem 1.25rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--glass-shadow);
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .fab-item:hover {
+            background: var(--btn-ghost-hover);
+            transform: translateX(-5px);
+            color: var(--text-heading);
+            border-color: var(--ring-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modal for Mode Plot -->
+    <div id="mode-plot-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 class="text-lg font-bold text-[var(--text-heading)] flex items-center gap-2" id="mode-plot-title">
+                    Mode Distribution
+                </h3>
+                <button class="close-btn" onclick="closeModeModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="modal-body items-center" id="mode-plot-body">
+                <img id="mode-plot-img" src="" alt="Mode plot" class="w-full h-auto rounded opacity-0 transition-opacity duration-300 hidden" />
+                <div id="mode-plot-loader" class="spinner border-t-[#6366f1]"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+        <p class="text-sm font-medium tracking-widest text-[#94a3b8] uppercase">Computing Results</p>
+    </div>
+
+    <!-- Floating Action Menu -->
+    <div class="fab-container" onclick="this.classList.toggle('active')" tabindex="0">
+        <div class="fab-button">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+            </svg>
+        </div>
+        <div class="fab-menu">
+            <a href="https://www.uni-muenster.de/Chemie.oc/glorius/" target="_blank" rel="noopener noreferrer" class="fab-item">
+                <svg class="w-4 h-4 text-[#0ea5e9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                Glorius Group
+            </a>
+            <a href="https://github.com/GloriusGroup" target="_blank" rel="noopener noreferrer" class="fab-item">
+                <svg class="w-4 h-4 text-[#8b5cf6]" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0112 22.034c-4.425 0-8.18-2.865-9.504-6.839-.092-.5-.217-.682-.483-.682-.237 0-.868.008-1.703.013-2.782-.605-3.369-1.343-3.369-1.343z" clip-rule="evenodd"></path>
+                </svg>
+                GitHub
+            </a>
+            <a href="#" class="fab-item">
+                <svg class="w-4 h-4 text-[#10b981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Paper (Coming Soon)
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Title -->
+    <h1 class="title">EnTdecker</h1>
+
+    <div id="main-container" class="container-main focus-input">
+
+        <!-- Input Section -->
+        <div class="flex flex-col gap-8 input-section" onclick="handleSectionClick('input')">
+            <div class="glass-panel">
+                <div class="panel-header justify-between">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#0ea5e9]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Molecular Input
+                    </div>
+                    <button class="text-xs bg-[var(--btn-ghost-bg)] text-[var(--text-muted)] hover:text-[var(--text-main)] px-3 py-1.5 rounded hover:bg-[var(--btn-ghost-hover)] transition-colors" onclick="clearInput()">Clear</button>
+                </div>
+                <div class="panel-body space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--text-muted)] mb-2">Input SMILES</label>
+                        <textarea id="smiles-input" class="input-sleek" rows="4" placeholder="e.g. C1=CC=CC=C1&#10;CCO"></textarea>
+                    </div>
+
+                    <button class="btn-sleek" onclick="runAnalysis()">Analyze Molecule(s)</button>
+
+                    <div id="error-box" class="hidden mt-4 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 font-medium text-sm"></div>
+                </div>
+            </div>
+
+            <!-- Sketcher section -->
+            <div class="glass-panel">
+                 <div class="panel-header justify-between cursor-pointer select-none" onclick="toggleKetcher()">
+                     <div class="flex items-center gap-2">
+                         <svg class="w-5 h-5 text-[#8b5cf6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                         Sketcher
+                     </div>
+                     <svg id="ketcher-toggle-icon" class="w-5 h-5 text-[var(--text-muted)] transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                 </div>
+                 <div id="ketcher-content" class="transition-all duration-300 overflow-hidden" style="max-height: 1000px; opacity: 1;">
+                     <div class="p-0">
+                         <iframe id="ketcher-iframe" src="/static/ketcher/index.html"></iframe>
+                     </div>
+                     <div id="ketcher-error-box" class="hidden px-4 py-2 bg-red-500/10 text-red-500 text-xs font-semibold border-t border-red-500/30">
+                         Error: Multiple molecules detected. Please draw only one molecule.
+                     </div>
+                     <div class="flex items-center justify-between px-4 py-3 bg-[rgba(255,255,255,0.02)] border-t border-[var(--border-color)]">
+                         <span class="text-xs text-[var(--text-muted)]">Use Ketcher to draw, then load SMILES</span>
+                         <button onclick="getSmilesFromKetcher()" class="text-xs font-semibold bg-[#8b5cf6] text-white border border-[#8b5cf6] px-3 py-1.5 rounded-lg hover:bg-[#7c3aed] transition-colors">
+                             Load SMILES
+                         </button>
+                     </div>
+                 </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="glass-panel h-max results-section" onclick="handleSectionClick('results')">
+            <div class="panel-header flex-wrap">
+                <div class="flex items-center gap-2 flex-1">
+                    <svg class="w-5 h-5 text-[#6366f1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <span>Analysis Results</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="unit-select" class="input-sleek w-auto py-1 px-2 text-xs" onchange="runRenderResults()">
+                        <option value="kcal/mol">kcal/mol</option>
+                        <option value="kJ/mol">kJ/mol</option>
+                        <option value="eV">eV</option>
+                        <option value="Hartree">Hartree</option>
+                    </select>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div id="results-container" class="overflow-x-auto mb-4">
+                    <div class="flex flex-col items-center justify-center py-12 text-[var(--text-muted)]">
+                        <svg class="w-12 h-12 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        <p class="text-sm font-medium">No data yet. Awaiting input.</p>
+                    </div>
+                </div>
+                <!-- Action to open Marcus Theory -->
+                <button id="btn-marcus" class="btn-sleek hidden mt-4" onclick="toggleMarcusTheory(event)">
+                    Marcus Theory Analysis
+                </button>
+            </div>
+        </div>
+
+        <!-- Marcus Theory Section -->
+        <div class="glass-panel h-max marcus-section" onclick="handleSectionClick('marcus')">
+            <div class="panel-header flex-wrap">
+                <div class="flex items-center gap-2 flex-1">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span>Marcus Theory Analysis</span>
+                </div>
+                <button class="text-xs bg-[var(--btn-ghost-bg)] text-[var(--text-muted)] hover:text-[var(--text-main)] px-3 py-1.5 rounded hover:bg-[var(--btn-ghost-hover)] transition-colors" onclick="closeMarcusTheory(event)">Close</button>
+            </div>
+            <div class="panel-body space-y-6">
+
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="flex-1 min-w-[200px]">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-[var(--text-muted)]">Photocatalyst</label>
+                            <div class="relative">
+                                <button id="pc-info-btn" class="text-[var(--text-muted)] hover:text-[#0ea5e9] p-1 rounded hover:bg-[var(--btn-ghost-hover)] transition-colors" onclick="togglePcInfo(event)" title="View Photocatalyst Properties">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                                <div id="pc-info-panel" class="hidden absolute right-0 mt-2 w-96 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-6 shadow-xl z-50">
+                                    <div class="grid grid-cols-2 gap-x-8 gap-y-6 text-center">
+                                        <div class="col-span-2 grid grid-cols-3 gap-4 pb-4 border-b border-[var(--border-color)]">
+                                            <div>
+                                                <div class="leading-tight mb-2 h-10 flex flex-col justify-end">
+                                                    <span class="font-bold text-lg text-[var(--text-heading)]"><i>E</i><sub>T</sub></span>
+                                                    <span class="pc-unit-label text-[var(--text-muted)] opacity-60 text-[10px]"></span>
+                                                </div>
+                                                <div id="pc-info-et" class="font-bold text-[var(--text-heading)] text-lg">-</div>
+                                            </div>
+                                            <div>
+                                                <div class="leading-tight mb-2 h-10 flex flex-col justify-end">
+                                                    <span class="font-bold text-lg text-[var(--text-heading)]"><i>E</i><sub>red</sub><sup>*</sup></span>
+                                                    <span class="text-[var(--text-muted)] opacity-60 text-[10px]">(V)</span>
+                                                </div>
+                                                <div id="pc-info-ered" class="font-bold text-[var(--text-heading)] text-lg">-</div>
+                                            </div>
+                                            <div>
+                                                <div class="leading-tight mb-2 h-10 flex flex-col justify-end">
+                                                    <span class="font-bold text-lg text-[var(--text-heading)]"><i>E</i><sub>ox</sub><sup>*</sup></span>
+                                                    <span class="text-[var(--text-muted)] opacity-60 text-[10px]">(V)</span>
+                                                </div>
+                                                <div id="pc-info-eox" class="font-bold text-[var(--text-heading)] text-lg">-</div>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 col-span-2 gap-8 pt-2">
+                                            <div>
+                                                <div class="leading-tight mb-2 flex flex-col items-center">
+                                                    <span class="font-bold text-base text-[var(--text-heading)]"><i>λ</i><sub>S→T</sub></span>
+                                                    <span class="pc-unit-label text-[var(--text-muted)] opacity-60 text-[10px]"></span>
+                                                </div>
+                                                <div id="pc-info-lst" class="font-bold text-[var(--text-heading)] text-lg">-</div>
+                                            </div>
+                                            <div>
+                                                <div class="leading-tight mb-2 flex flex-col items-center">
+                                                    <span class="font-bold text-base text-[var(--text-heading)]"><i>λ</i><sub>T→S</sub></span>
+                                                    <span class="pc-unit-label text-[var(--text-muted)] opacity-60 text-[10px]"></span>
+                                                </div>
+                                                <div id="pc-info-lts" class="font-bold text-[var(--text-heading)] text-lg">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="marcus-pc-struct" class="mb-3 w-full h-[150px] flex items-center justify-center bg-[#ffffff] border border-[var(--border-color)] rounded overflow-hidden shadow-sm"></div>
+                        <select id="pc-select" class="input-sleek py-2" onchange="runMarcusAnalysis()"></select>
+                    </div>
+                    <div class="flex-1 min-w-[200px]">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-[var(--text-muted)]">Quencher</label>
+                        </div>
+                        <div id="marcus-quencher-struct" class="mb-3 w-full h-[150px] flex items-center justify-center bg-[#ffffff] border border-[var(--border-color)] rounded overflow-hidden shadow-sm"></div>
+                        <select id="quencher-select" class="input-sleek py-2" onchange="runMarcusAnalysis()"></select>
+                    </div>
+                </div>
+
+                <div id="marcus-results-container">
+                    <div class="flex flex-col items-center justify-center py-12 text-[var(--text-muted)]">
+                        <p class="text-sm font-medium">Select a photocatalyst and quencher.</p>
+                    </div>
+                </div>
+
+                <div class="bg-[var(--bg-surface)] rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.1)] border border-[var(--border-color)]">
+                    <div class="panel-header justify-between cursor-pointer select-none" onclick="toggleMarcusPlot()">
+                        <div class="flex items-center gap-2 text-sm font-medium">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                            View Marcus Plot
+                        </div>
+                        <svg id="marcus-plot-toggle-icon" class="w-5 h-5 text-[var(--text-muted)] transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div id="marcus-plot-wrapper" class="transition-all duration-300 overflow-hidden" style="max-height: 0px; opacity: 0;">
+                        <div id="marcus-plot-container" class="w-full min-h-[400px] flex items-center justify-center border-t border-[var(--border-color)] p-4">
+                            <p class="text-sm text-[var(--text-muted)]">Plot will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.appData = []; // Store latest results globally
+        window.modePlotCache = {}; // Cache for prefetched mode plots
+        window.pcData = []; // Store photocatalyst data
+
+        // Fetch structures asynchronously (Global)
+        async function fetchStructure(smiles, elemId, name = "") {
+            try {
+                const el = document.getElementById(elemId);
+                if(!el) return;
+                const res = await fetch('/api/structure', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ smiles: smiles, name: name, theme: "light" })
+                });
+                if (res.ok) {
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.includes("image/png")) {
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        el.innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: contain;" alt="Structure" />`;
+                    } else {
+                        const svgText = await res.text();
+                        el.innerHTML = svgText;
+                        const svgOpt = el.querySelector('svg');
+                        if (svgOpt) {
+                            svgOpt.style.width = '100%';
+                            svgOpt.style.height = '100%';
+                        }
+                    }
+                } else {
+                    el.innerHTML = '<span class="text-xs text-red-500">Error</span>';
+                }
+            } catch(e) {
+                const el = document.getElementById(elemId);
+                if(el) el.innerHTML = '<span class="text-xs text-red-500">Error</span>';
+            }
+        }
+
+        const FACTORS_TO_KCAL = {
+            "kcal/mol": 1.0,
+            "kJ/mol": 0.2390057361376673,
+            "eV": 23.060548868,
+            "Hartree": 627.5094740631,
+        };
+
+        function handleSectionClick(section) {
+            const container = document.getElementById('main-container');
+            const hasData = window.appData && window.appData.length > 0;
+
+            // Allow interacting with results/marcus only if data exists
+            if (!hasData && section !== 'input') {
+                return;
+            }
+
+            container.classList.remove('focus-input', 'has-results', 'has-marcus');
+
+            if (section === 'input') {
+                container.classList.add('focus-input');
+                document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+            } else if (section === 'results') {
+                container.classList.add('has-results');
+                document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            } else if (section === 'marcus') {
+                container.classList.add('has-marcus');
+                document.querySelector('.marcus-section').scrollIntoView({ behavior: 'smooth', inline: 'end', block: 'nearest' });
+            }
+        }
+
+        function convertEnergy(val, toUnit) {
+            return (val * FACTORS_TO_KCAL["kcal/mol"]) / FACTORS_TO_KCAL[toUnit];
+        }
+
+        function toggleKetcher() {
+            const content = document.getElementById('ketcher-content');
+            const icon = document.getElementById('ketcher-toggle-icon');
+            if (content.style.maxHeight === '0px' || content.style.maxHeight === '') {
+                content.style.maxHeight = '1000px';
+                content.style.opacity = '1';
+                icon.classList.add('rotate-180');
+            } else {
+                content.style.maxHeight = '0px';
+                content.style.opacity = '0';
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function toggleMarcusPlot() {
+            const wrapper = document.getElementById('marcus-plot-wrapper');
+            const icon = document.getElementById('marcus-plot-toggle-icon');
+            if (wrapper.style.maxHeight === '0px' || wrapper.style.maxHeight === '') {
+                wrapper.style.maxHeight = '1000px';
+                wrapper.style.opacity = '1';
+                icon.classList.add('rotate-180');
+            } else {
+                wrapper.style.maxHeight = '0px';
+                wrapper.style.opacity = '0';
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('smiles-input').value = '';
+            document.getElementById('error-box').classList.add('hidden');
+            document.getElementById('btn-marcus').classList.add('hidden');
+            window.appData = [];
+            window.modePlotCache = {};
+            const container = document.getElementById('main-container');
+            container.classList.remove('has-results', 'focus-input', 'has-marcus');
+            runRenderResults();
+        }
+
+        function closeModeModal() {
+            document.getElementById('mode-plot-modal').classList.remove('active');
+        }
+
+        async function prefetchModePlot(row, valKey, name) {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const selectedUnit = document.getElementById('unit-select').value;
+            const cacheKey = `${row.smiles}_${valKey}_${currentTheme}_${selectedUnit}`;
+            if (window.modePlotCache[cacheKey]) return; // Already requested or fetched
+
+            window.modePlotCache[cacheKey] = 'loading'; // Mark as loading
+
+            try {
+                const reqBody = {
+                    mu: row[`${valKey}_mdn_mu`].map(x => convertEnergy(x, selectedUnit)),
+                    sigma: row[`${valKey}_mdn_sigma`].map(x => convertEnergy(x, selectedUnit)),
+                    pi: row[`${valKey}_mdn_pi`],
+                    predicted_value: convertEnergy(row[valKey], selectedUnit),
+                    uncertainty: convertEnergy(row[`${valKey}_uncertainty`], selectedUnit),
+                    target_name: name,
+                    unit: selectedUnit,
+                    theme: currentTheme
+                };
+                const r = await fetch('/api/plot/mode', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(reqBody)
+                });
+                if(r.ok) {
+                    const blob = await r.blob();
+                    window.modePlotCache[cacheKey] = URL.createObjectURL(blob);
+                } else {
+                    window.modePlotCache[cacheKey] = 'error';
+                }
+            } catch(e) {
+                window.modePlotCache[cacheKey] = 'error';
+            }
+        }
+
+        function prefetchInitialPlots() {
+            const vars = [
+                {valKey: 'triplet_energy_adiabatic', name: 'Triplet energy (adiabatic)'},
+                {valKey: 'lamda_S_T', name: 'Reorganization Energy (S→T)'},
+                {valKey: 'lamda_T_S', name: 'Reorganization Energy (T→S)'}
+            ];
+            window.appData.forEach(row => {
+                vars.forEach(v => prefetchModePlot(row, v.valKey, v.name));
+            });
+        }
+
+        async function showModePlot(idx, valKey, name) {
+            const row = window.appData[idx];
+            if(!row) return;
+            const modal = document.getElementById('mode-plot-modal');
+
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const selectedUnit = document.getElementById('unit-select').value;
+
+            document.getElementById('mode-plot-title').innerText = `Mode Distribution: ${name} (${selectedUnit})`;
+
+            const img = document.getElementById('mode-plot-img');
+            const loader = document.getElementById('mode-plot-loader');
+
+            img.classList.add('hidden', 'opacity-0');
+            modal.classList.add('active');
+
+            const cacheKey = `${row.smiles}_${valKey}_${currentTheme}_${selectedUnit}`;
+
+            // Check cache
+            if (window.modePlotCache[cacheKey] && window.modePlotCache[cacheKey] !== 'loading' && window.modePlotCache[cacheKey] !== 'error') {
+                loader.style.display = 'none';
+                img.src = window.modePlotCache[cacheKey];
+                img.onload = () => {
+                    img.classList.remove('hidden', 'opacity-0');
+                };
+                return;
+            }
+
+            loader.style.display = 'block';
+
+            try {
+                const reqBody = {
+                    mu: row[`${valKey}_mdn_mu`].map(x => convertEnergy(x, selectedUnit)),
+                    sigma: row[`${valKey}_mdn_sigma`].map(x => convertEnergy(x, selectedUnit)),
+                    pi: row[`${valKey}_mdn_pi`],
+                    predicted_value: convertEnergy(row[valKey], selectedUnit),
+                    uncertainty: convertEnergy(row[`${valKey}_uncertainty`], selectedUnit),
+                    target_name: name,
+                    unit: selectedUnit,
+                    theme: currentTheme
+                };
+                const r = await fetch('/api/plot/mode', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(reqBody)
+                });
+                if(r.ok) {
+                    const blob = await r.blob();
+                    const url = URL.createObjectURL(blob);
+                    window.modePlotCache[cacheKey] = url;
+                    img.src = url;
+                    img.onload = () => {
+                        loader.style.display = 'none';
+                        img.classList.remove('hidden', 'opacity-0');
+                    };
+                } else {
+                    loader.style.display = 'none';
+                    img.alt = 'Failed to load plot';
+                }
+            } catch(e) {
+                console.error("Plotly Mode error", e);
+                loader.style.display = 'none';
+            }
+        }
+
+        function openDetailedAnalysis(idx) {
+            const row = window.appData[idx];
+            if(!row) return;
+
+            const trMain = document.getElementById(`main-row-${idx}`);
+            const detailsRow = document.getElementById(`details-row-${idx}`);
+            const chevron = document.getElementById(`chevron-${idx}`);
+
+            if (detailsRow && trMain) {
+                if (detailsRow.classList.contains('hidden')) {
+                    detailsRow.classList.remove('hidden');
+                    trMain.classList.add('expanded-row');
+                    detailsRow.classList.add('expanded-details');
+                    if (chevron) chevron.classList.add('rotate-180', 'text-[#6366f1]');
+
+                    if (!detailsRow.hasAttribute('data-rendered')) {
+                        const cell = detailsRow.querySelector('td');
+                        injectAnalysis(cell, row, idx);
+                        detailsRow.setAttribute('data-rendered', 'true');
+                    }
+                } else {
+                    detailsRow.classList.add('hidden');
+                    trMain.classList.remove('expanded-row');
+                    detailsRow.classList.remove('expanded-details');
+                    if (chevron) chevron.classList.remove('rotate-180', 'text-[#6366f1]');
+                }
+            }
+        }
+
+        async function injectAnalysis(containerEl, row, idx) {
+            const uniqueId = idx !== undefined ? idx : 'default';
+            containerEl.innerHTML = `
+                <div class="flex justify-center my-8">
+                    <div class="spinner border-t-[#6366f1]"></div>
+                </div>
+            `;
+
+            const analysisGrid = `
+                <div class="px-8 pb-8 w-full">
+                   <div class="flex justify-between items-center mb-5 flex-wrap gap-4">
+                       <div class="flex items-center gap-3">
+                           <div>
+                               <h3 class="text-lg font-bold text-[var(--text-heading)]">Spin Density Distribution</h3>
+                           </div>
+                       </div>
+                       <div class="flex items-center gap-3">
+                           <span class="text-sm font-medium text-[var(--text-muted)]">Show Uncertainty</span>
+                           <label class="toggle-switch">
+                               <input type="checkbox" id="toggle-unc-${uniqueId}">
+                               <span class="slider"></span>
+                           </label>
+                       </div>
+                   </div>
+                   <div class="bg-[var(--bg-surface)] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-indigo-500/15 transition-all">
+                       <div id="spin-plotly-${uniqueId}" class="w-full h-[450px] flex items-center justify-center">
+                           <div class="spinner border-t-[var(--ring-color)]"></div>
+                       </div>
+                   </div>
+                </div>
+            `;
+            containerEl.innerHTML = analysisGrid;
+
+            // Load interactive spin density
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const loadSpinPlot = async (showUnc) => {
+                const spDiv = document.getElementById(`spin-plotly-${uniqueId}`);
+                if (!spDiv) return;
+                spDiv.innerHTML = '<div class="spinner border-t-[var(--ring-color)]"></div>';
+                try {
+                    const r = await fetch('/api/plot/spin', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            smiles: row.smiles,
+                            spin_population: row.spin_map,
+                            uncertainty: row.spin_map_uncertainty,
+                            show_uncertainty: showUnc,
+                            theme: currentTheme
+                        })
+                    });
+                    if(r.ok) {
+                        const figObj = await r.json();
+                        spDiv.innerHTML = '';
+                        Plotly.newPlot(spDiv, figObj.data, figObj.layout, {responsive: true, displayModeBar: false});
+                    }
+                } catch(e) { console.error("Plotly Spin error", e); spDiv.innerHTML="<p class='text-black'>Failed to load plot</p>"; }
+            };
+
+            await loadSpinPlot(false);
+
+            // Checkbox listener
+            const cbx = document.getElementById(`toggle-unc-${uniqueId}`);
+            if(cbx) {
+                cbx.addEventListener('change', (e) => {
+                    loadSpinPlot(e.target.checked);
+                });
+            }
+        }
+
+        function handleSort(key) {
+            if (!window.sortState) window.sortState = { key: null, asc: true };
+            if (window.sortState.key === key) {
+                if (window.sortState.asc) {
+                    window.sortState.asc = false;
+                } else {
+                    window.sortState = { key: null, asc: true }; // reset
+                }
+            } else {
+                window.sortState.key = key;
+                window.sortState.asc = true;
+            }
+            runRenderResults();
+        }
+
+        function runRenderResults() {
+            renderResults(window.appData, window.currentInvalid || []);
+        }
+
+        async function getSmilesFromKetcher() {
+            try {
+                const ketcherFrame = document.getElementById('ketcher-iframe');
+                const ketcher = ketcherFrame.contentWindow.ketcher;
+                if (!ketcher) {
+                    alert("Ketcher is not fully loaded yet.");
+                    return;
+                }
+                const smiles = await ketcher.getSmiles();
+                const inputArea = document.getElementById('smiles-input');
+                const errorBox = document.getElementById('ketcher-error-box');
+
+                if (smiles) {
+                    if (smiles.includes('.')) {
+                        errorBox.classList.remove('hidden');
+                        return;
+                    } else {
+                        errorBox.classList.add('hidden');
+                    }
+                    // Append if there's already content, otherwise replace
+                    if (inputArea.value.trim().length > 0) {
+                        inputArea.value = inputArea.value.trim() + '\n' + smiles;
+                    } else {
+                        inputArea.value = smiles;
+                    }
+                }
+            } catch (err) {
+                console.error("Error getting SMILES from Ketcher", err);
+                alert("Failed to get SMILES from Ketcher.");
+            }
+        }
+
+        async function runAnalysis() {
+            const rawSmiles = document.getElementById('smiles-input').value;
+            const smilesArray = rawSmiles.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            const errBox = document.getElementById('error-box');
+            errBox.classList.add('hidden');
+            errBox.innerText = '';
+
+            if (smilesArray.length === 0) {
+                errBox.innerText = "Please provide at least one SMILES.";
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            const loader = document.getElementById('loader');
+            loader.classList.add('active');
+
+            try {
+                const res = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ smiles: smilesArray })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.detail || data.error || 'Server error');
+                }
+
+                window.appData = data.results;
+                window.currentInvalid = data.invalid;
+                window.modePlotCache = {}; // clear cached images on new run
+
+                const container = document.getElementById('main-container');
+                container.classList.remove('focus-input', 'has-marcus');
+                container.classList.add('has-results');
+
+                document.getElementById('btn-marcus').classList.remove('hidden');
+
+                runRenderResults();
+                prefetchInitialPlots(); // Prefetch images in background for instant loading
+
+            } catch (e) {
+                errBox.innerText = e.message;
+                errBox.classList.remove('hidden');
+            } finally {
+                loader.classList.remove('active');
+            }
+        }
+
+        function renderResults(results, invalid) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '';
+
+            const selectedUnit = document.getElementById('unit-select').value;
+
+            if (invalid && invalid.length > 0) {
+                const warn = document.createElement('div');
+                warn.className = 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 p-3 rounded-lg mb-6 text-sm font-medium';
+                warn.innerText = 'Ignored invalid SMILES: ' + invalid.join(', ');
+                container.appendChild(warn);
+            }
+
+            if (!results || results.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-[var(--text-muted)]">
+                        <svg class="w-12 h-12 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p class="text-sm font-medium">No valid results.</p>
+                    </div>`;
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'sleek-table w-full text-left';
+
+            const getSortIcon = (key) => {
+                if (!window.sortState || window.sortState.key !== key) return '<span class="opacity-30 ml-1 text-xs">↕</span>';
+                return window.sortState.asc ? '<span class="text-[#0ea5e9] ml-1 text-xs">▲</span>' : '<span class="text-[#0ea5e9] ml-1 text-xs">▼</span>';
+            };
+
+            // Header
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th style="width: 130px;"></th>
+                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('smiles')">SMILES ${getSortIcon('smiles')}</th>
+                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('triplet_energy_adiabatic')"><i>E</i><sub>T</sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('triplet_energy_adiabatic')}</th>
+                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('lamda_S_T')"><i>λ</i><sub>S→T</sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('lamda_S_T')}</th>
+                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('lamda_T_S')"><i>λ</i><sub>T→S</sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('lamda_T_S')}</th>
+                    <th style="width: 48px;"></th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            // Body
+            const tbody = document.createElement('tbody');
+
+            const cellVal = (idx, row, key, name) => {
+                const convertedVal = convertEnergy(row[key], selectedUnit);
+                const convertedUnc = convertEnergy(row[`${key}_uncertainty`], selectedUnit);
+                return `
+                <div class="flex items-center gap-2 whitespace-nowrap">
+                    <span class="font-medium flex-1">${convertedVal.toFixed(2)} <span class="text-xs text-[var(--text-muted)] ml-0.5" title="Uncertainty">±${convertedUnc.toFixed(2)}</span></span>
+                    <button onclick="event.stopPropagation(); showModePlot(${idx}, '${key}', '${name}')" class="text-[var(--text-muted)] hover:text-[#0ea5e9] transition-colors bg-[var(--btn-ghost-bg)] p-1 rounded hover:bg-[var(--btn-ghost-hover)]" title="View mode distribution">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M9 15l3-3 4 4 5-5" /></svg>
+                    </button>
+                </div>
+            `};
+
+            // Before sorting, if the original indices are not saved, save them
+            results.forEach((row, originalIdx) => {
+                if(row._originalIdx === undefined) row._originalIdx = originalIdx;
+            });
+
+            // Sort logic setup (assumes window.sortState exists, otherwise defaults)
+            let sortedResults = [...results];
+            if (window.sortState && window.sortState.key) {
+                sortedResults.sort((a, b) => {
+                    const valA = a[window.sortState.key];
+                    const valB = b[window.sortState.key];
+                    if (typeof valA === 'string') {
+                        return window.sortState.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                    }
+                    return window.sortState.asc ? valA - valB : valB - valA;
+                });
+            }
+
+            sortedResults.forEach((row) => {
+                const tr = document.createElement('tr');
+                tr.id = `main-row-${row._originalIdx}`;
+                tr.className = "cursor-pointer hover:bg-[var(--btn-ghost-bg)] transition-colors";
+                tr.onclick = () => openDetailedAnalysis(row._originalIdx);
+
+                const structId = `struct-preview-${row._originalIdx}`;
+
+                tr.innerHTML = `
+                    <td class="p-2 w-[130px]">
+                        <div id="${structId}" class="w-[120px] h-[80px] flex items-center justify-center bg-[#ffffff] border border-[var(--border-color)] rounded shrink-0 overflow-hidden shadow-sm transition-shadow">
+                            <div class="spinner border-t-[#6366f1] w-4 h-4 border-2"></div>
+                        </div>
+                    </td>
+                    <td class="w-1/4">
+                        <span style="word-break: break-all; font-family: ui-monospace, monospace; font-size: 0.85rem;" class="text-[var(--text-main)]">${row.smiles}</span>
+                    </td>
+                    <td>${cellVal(row._originalIdx, row, 'triplet_energy_adiabatic', 'Triplet energy (adiabatic)')}</td>
+                    <td>${cellVal(row._originalIdx, row, 'lamda_S_T', 'Reorganization Energy (S→T)')}</td>
+                    <td>${cellVal(row._originalIdx, row, 'lamda_T_S', 'Reorganization Energy (T→S)')}</td>
+                    <td class="pr-6 text-right">
+                        <svg id="chevron-${row._originalIdx}" class="w-5 h-5 text-[var(--text-muted)] inline-block transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                const trDetail = document.createElement('tr');
+                trDetail.id = `details-row-${row._originalIdx}`;
+                trDetail.className = "hidden";
+                trDetail.innerHTML = `
+                    <td colspan="6" class="p-0 border-[var(--border-color)]">
+                        <!-- Content injected via injectAnalysis -->
+                    </td>
+                `;
+                tbody.appendChild(trDetail);
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+
+            const detailPanel = document.createElement('div');
+            detailPanel.id = 'detailed-analysis-panel';
+            container.appendChild(detailPanel);
+
+
+            sortedResults.forEach((row) => {
+                fetchStructure(row.smiles, `struct-preview-${row._originalIdx}`);
+            });
+
+            // If only one result, automatically display analysis directly below
+            if(results.length === 1) {
+                const trDetail = document.getElementById(`details-row-${results[0]._originalIdx}`);
+                const trMain = document.getElementById(`main-row-${results[0]._originalIdx}`);
+                const chevron = document.getElementById(`chevron-${results[0]._originalIdx}`);
+                if (trDetail && trMain) {
+                    trDetail.classList.remove('hidden');
+                    trMain.classList.add('expanded-row');
+                    trDetail.classList.add('expanded-details');
+                    if (chevron) chevron.classList.add('rotate-180', 'text-[#6366f1]');
+
+                    const cell = trDetail.querySelector('td');
+                    injectAnalysis(cell, results[0], results[0]._originalIdx);
+                    trDetail.setAttribute('data-rendered', 'true');
+                }
+            }
+
+            // Populate Quencher dropdown for Marcus Theory
+            const qSelect = document.getElementById('quencher-select');
+            qSelect.innerHTML = '';
+            results.forEach((r, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = r.smiles;
+                qSelect.appendChild(opt);
+            });
+        }
+
+        // --- Marcus Theory Functions ---
+
+        async function fetchPhotocatalysts() {
+            try {
+                const r = await fetch('/api/photocatalysts');
+                if(r.ok) {
+                    const data = await r.json();
+                    window.pcData = data.photocatalysts;
+                    const pcSelect = document.getElementById('pc-select');
+                    pcSelect.innerHTML = '';
+                    window.pcData.forEach((pc, i) => {
+                        const opt = document.createElement('option');
+                        opt.value = i;
+                        opt.innerText = pc.name;
+                        pcSelect.appendChild(opt);
+                    });
+                }
+            } catch(e) {
+                console.error("Failed to fetch photocatalysts", e);
+            }
+        }
+
+        function toggleMarcusTheory(e) {
+            e.stopPropagation();
+            if(window.pcData.length === 0) {
+                fetchPhotocatalysts().then(() => runMarcusAnalysis());
+            } else {
+                runMarcusAnalysis();
+            }
+            handleSectionClick('marcus');
+        }
+
+        function togglePcInfo(e) {
+            e.stopPropagation();
+            const panel = document.getElementById('pc-info-panel');
+            if(panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                updatePcInfoDisplay();
+
+                const closeHandler = (event) => {
+                    if (!panel.contains(event.target) && !document.getElementById('pc-info-btn').contains(event.target)) {
+                        panel.classList.add('hidden');
+                        document.removeEventListener('click', closeHandler);
+                        panel._closeHandler = null;
+                    }
+                };
+                panel._closeHandler = closeHandler;
+                setTimeout(() => document.addEventListener('click', closeHandler), 0);
+            } else {
+                panel.classList.add('hidden');
+                if (panel._closeHandler) {
+                    document.removeEventListener('click', panel._closeHandler);
+                    panel._closeHandler = null;
+                }
+            }
+        }
+
+        function updatePcInfoDisplay() {
+            const pcIdx = document.getElementById('pc-select').value;
+            if(!pcIdx || !window.pcData || !window.pcData[pcIdx]) return;
+
+            const pcVal = window.pcData[pcIdx];
+            const unit = document.getElementById('unit-select').value;
+
+            // Update all unit labels in the panel
+            document.querySelectorAll('.pc-unit-label').forEach(el => {
+                el.innerText = `(${unit})`;
+            });
+
+            // Convert and update energy values
+            document.getElementById('pc-info-et').innerText = convertEnergy(pcVal.E_T_adiabatic, unit).toFixed(2);
+            document.getElementById('pc-info-lst').innerText = convertEnergy(pcVal.lamda_S_T, unit).toFixed(2);
+            document.getElementById('pc-info-lts').innerText = convertEnergy(pcVal.lamda_T_S, unit).toFixed(2);
+
+            // Redox potentials remain in Volts
+            document.getElementById('pc-info-ered').innerText = pcVal.E_red !== null && pcVal.E_red !== undefined ? parseFloat(pcVal.E_red).toFixed(2) : "N/A";
+            document.getElementById('pc-info-eox').innerText = pcVal.E_ox !== null && pcVal.E_ox !== undefined ? parseFloat(pcVal.E_ox).toFixed(2) : "N/A";
+        }
+
+        function closeMarcusTheory(e) {
+            e.stopPropagation();
+            handleSectionClick('results');
+        }
+
+        async function runMarcusAnalysis() {
+            const pcIdx = document.getElementById('pc-select').value;
+            const qIdx = document.getElementById('quencher-select').value;
+            if(!pcIdx || !qIdx || !window.appData[qIdx] || !window.pcData[pcIdx]) return;
+
+            const unit = document.getElementById('unit-select').value;
+            const qVal = window.appData[qIdx];
+            const pcVal = window.pcData[pcIdx];
+
+
+            // Render chosen structures
+            const pcStructEl = document.getElementById('marcus-pc-struct');
+            const qStructEl = document.getElementById('marcus-quencher-struct');
+
+            pcStructEl.innerHTML = '<div class="spinner border-t-[#6366f1] w-4 h-4 border-2"></div>';
+            fetchStructure(pcVal.smiles || "", 'marcus-pc-struct', pcVal.name);
+
+            if (!document.getElementById('pc-info-panel').classList.contains('hidden')) {
+                updatePcInfoDisplay();
+            }
+
+            if(qVal.smiles) {
+                qStructEl.innerHTML = '<div class="spinner border-t-[#6366f1] w-4 h-4 border-2"></div>';
+                fetchStructure(qVal.smiles, 'marcus-quencher-struct');
+            }
+
+            const reqBody = {
+                pc_adiabatic_E_T: convertEnergy(pcVal.E_T_adiabatic, unit),
+                pc_lambda_S_T: convertEnergy(pcVal.lamda_S_T, unit),
+                pc_lambda_T_S: convertEnergy(pcVal.lamda_T_S, unit),
+                quencher_E_T: convertEnergy(qVal.triplet_energy_adiabatic, unit),
+                quencher_lambda_S_T: convertEnergy(qVal.lamda_S_T, unit),
+                quencher_lambda_T_S: convertEnergy(qVal.lamda_T_S, unit),
+                unit: unit
+            };
+
+            // Setup loading state
+            const rContainer = document.getElementById('marcus-results-container');
+            const pContainer = document.getElementById('marcus-plot-container');
+            rContainer.innerHTML = '<div class="flex justify-center py-4"><div class="spinner border-t-emerald-500"></div></div>';
+            pContainer.innerHTML = '<div class="spinner border-t-emerald-500"></div>';
+
+            try {
+                // Fetch metrics
+                const r1 = await fetch('/api/marcus/compute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(reqBody)
+                });
+                if(r1.ok) {
+                    const metrics = await r1.json();
+                    rContainer.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-4 text-center">
+                                <div class="text-[var(--text-muted)] text-sm mb-1">Δ<i>G</i></div>
+                                <div class="text-xl font-bold text-[var(--text-heading)]">${metrics.dG.toFixed(2)}</div>
+                                <div class="text-xs text-[var(--text-muted)] opacity-50">${unit}</div>
+                            </div>
+                            <div class="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-4 text-center">
+                                <div class="text-[var(--text-muted)] text-sm mb-1">Δ<i>G</i><sup>‡</sup> (forward)</div>
+                                <div class="text-xl font-bold text-[var(--text-heading)]">${metrics.dG_activation.toFixed(2)}</div>
+                                <div class="text-xs text-[var(--text-muted)] opacity-50">${unit}</div>
+                            </div>
+                            <div class="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-4 text-center">
+                                <div class="text-[var(--text-muted)] text-sm mb-1">Δ<i>G</i><sup>‡</sup> (backward)</div>
+                                <div class="text-xl font-bold text-[var(--text-heading)]">${metrics.dG_activation_backEnT.toFixed(2)}</div>
+                                <div class="text-xs text-[var(--text-muted)] opacity-50">${unit}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Fetch plot
+                const r2 = await fetch('/api/marcus/plot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(reqBody)
+                });
+                if (r2.ok) {
+                    const blob = await r2.blob();
+                    const url = URL.createObjectURL(blob);
+
+                    let symmWarning = '';
+                    if (r2.headers.get('X-Symmetric-Approx') === 'true') {
+                        symmWarning = `<div class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 p-3 rounded-lg mb-4 text-sm font-medium">⚠️ Symmetric approximation used (reason: ${r2.headers.get('X-Symmetric-Reason')}).</div>`;
+                    }
+
+                    pContainer.innerHTML = symmWarning + `<img src="${url}" class="w-full h-auto rounded" style="max-height: 500px; object-fit: contain;" />`;
+                }
+            } catch(e) {
+                console.error("Marcus analysis error", e);
+                rContainer.innerHTML = `<div class="text-red-400 p-4">Error computing metrics</div>`;
+                pContainer.innerHTML = `<div class="text-red-400 p-4">Error loading plot</div>`;
+            }
+        }
+
+        // Re-run Marcus analysis on unit change
+        document.getElementById('unit-select').addEventListener('change', () => {
+            const container = document.getElementById('main-container');
+            if (container.classList.contains('has-marcus')) {
+                runMarcusAnalysis();
+            }
+            if (!document.getElementById('pc-info-panel').classList.contains('hidden')) {
+                updatePcInfoDisplay();
+            }
+        });
+
+
+        // Close modal when clicking outside
+        document.getElementById('mode-plot-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModeModal();
+            }
+        });
+    </script>
+</body>
+</html>

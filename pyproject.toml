@@ -24,14 +24,20 @@ benchmark = [
     "matplotlib>=3.9",
 ]
 
-# The machine-learning models. pyrates is pinned to the release used for the paper;
-# do not float this, the published numbers depend on it.
+# The models and the prediction API. `pyrates` is the vendored copy in ml/upstream/,
+# installed from its own unmodified pyproject.toml, which is what pins torch,
+# torch-geometric, rdkit and the rest. Kept out of the default install because it is
+# a multi-gigabyte dependency tree that the data pipeline does not need.
 #
-#   TODO: replace the branch with the tag Leon cuts for the paper, e.g.
-#   pyrates @ git+https://github.com/le-schlo/pyrates.git@v1.0.0
+#   uv sync --extra ml
 ml = [
-    "pyrates @ git+https://github.com/le-schlo/pyrates.git@main",
+    "pyrates",
 ]
 
+[tool.uv.sources]
+pyrates = { path = "ml/upstream", editable = true }
+
 [tool.uv]
+# This repository is a collection of scripts, not an installable package. Keeping it
+# unbuilt means `uv run reproduce.py` does not drag in the ml extra on every call.
 package = false

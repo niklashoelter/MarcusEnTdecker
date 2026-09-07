@@ -3,8 +3,9 @@
 data/computational_data_raw/*
 !data/computational_data_raw/README.md
 
-# Trained model weights — archived alongside the raw data, not versioned here.
-ml/models/
+# The vendored package in ml/upstream/ IS committed, checkpoint included, so that
+# the deployed model is pinned by this repository. Its own .gitignore was removed for
+# exactly that reason — see ml/upstream/PROVENANCE.md.
 
 # Python
 __pycache__/

@@ -20,10 +20,10 @@ quenching in acetonitrile on an Opentrons Flex and a BMG VantaStar plate reader;
 data/           instrument output and DFT job files, and the scripts that process them
 dataset/        the pair-level table -- where the processed data becomes one row per pair
 benchmark/      physical-organic theory as classifiers: adiabatic, Marcus, Rehm-Weller, DvTE
-ml/             training and evaluation of the models, on top of pyrates
+ml/             the models, vendored from pyrates, and the prediction API
 figures/        every figure in the paper, regenerated from processed data
 paper/          tables destined for the manuscript and SI, generated rather than typed
-deploy/         the EnTdecker web application deployment
+webapp/         shipping EnTdecker: image definition and Kubernetes manifests
 ```
 
 Dependencies run strictly one way:
@@ -69,23 +69,39 @@ You only need it to re-derive the computational tables from scratch. See
 | `data/` computational | **quenchers complete and verified**; photocatalyst job files not yet available |
 | `dataset/` | in progress |
 | `benchmark/` | to be ported from `phys_org_theories` |
-| `ml/` | to be written against a pinned pyrates release |
+| `ml/` | **models vendored**, checkpoint included; `predict.py` written but not yet run |
+| `webapp/` | **deployable** — builds from the vendored copy instead of cloning a branch |
 | `figures/`, `paper/` | not started |
 
 Each directory's own README says what is in it, what produced it, and what is known to
 be wrong with it.
 
+## Predicting from structure
+
+```python
+from ml.predict import RatePredictor
+
+predictor = RatePredictor()
+result = predictor.predict(photocatalyst=PC_SMILES, quencher=Q_SMILES)
+result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.quenches
+```
+
+`uv sync --extra ml` first. There is no command-line interface; for a browser, that is
+what EnTdecker is.
+
 ## Relationship to pyrates
 
-The machine-learning models are not implemented here. They live in
-[pyrates](https://github.com/le-schlo/pyrates) (Leon Schlosser, MIT), which is also
-what the EnTdecker web application runs. This repository depends on a pinned pyrates
-release and adds only the training configuration, the evaluation against this dataset,
-and the deployment manifests.
+The models are not implemented here. They are
+[pyrates](https://github.com/le-schlo/pyrates), by Leon Schlosser, MIT licensed, and a
+copy of it lives at `ml/upstream/` — including the trained checkpoint the web
+application serves. `ml/upstream/PROVENANCE.md` records the exact commits and the one
+modification made (deleting a `.gitignore` that would have excluded both the dataset
+and the checkpoint).
 
-Keeping the two apart is deliberate: pyrates is a library that will keep developing,
-while this repository is frozen at publication so that the paper's numbers stay
-reproducible.
+It is vendored rather than pinned as a remote dependency because this repository has to
+keep reproducing the paper's numbers after upstream moves on, and because the deployed
+web application should be built from a commit rather than from a branch head. Do not
+develop against `ml/upstream/`: fixes belong upstream and return here as a re-vendor.
 
 ## Citing
 

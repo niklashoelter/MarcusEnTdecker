@@ -13,20 +13,30 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         tzdata \
-        git \
         libcairo2 \
         libxrender1 \
         libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Clone repo from GitHub ────────────────────────────────────────────────────
+# ── Application ───────────────────────────────────────────────────────────────
+#
+# This copies the vendored package out of the repository rather than cloning
+# le-schlo/pyrates at build time, as it used to. Cloning a *branch* meant the image
+# contents depended on when it was built, so two builds of the "same" image could
+# serve two different models with no way to tell them apart. The copy here is pinned
+# by whatever commit of this repository is checked out, and ml/upstream/PROVENANCE.md
+# records which upstream commit that corresponds to.
+#
+# Build from the repository root so the context includes ml/:
+#
+#     docker build -f webapp/Dockerfile -t ghcr.io/le-schlo/pyrates/entdecker:<tag> .
+#
+# The trained checkpoint travels with the package at
+# pyrates/webapp/data/model.pt (69 MB), so no weights are downloaded at runtime.
 
 WORKDIR /app
+COPY ml/upstream/ /app/
 
-RUN git clone --branch fastapi-webapp --single-branch --depth 1 \
-    https://le-schlo@github.com/le-schlo/pyrates.git .
-
-# ── Install package ───────────────────────────────────────────────────────────
 RUN pip install --no-cache-dir -e .
 
 # ── FastAPI on port 5000 (nginx sidecar proxies 8080 → 5000) ─────────────────

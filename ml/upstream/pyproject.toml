@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyrates"
+version = "0.0.1"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy==2.4.2",
+    "pandas==2.3.3",
+    "matplotlib==3.10.8",
+    "rdkit==2025.9.4",
+    "scikit-learn==1.8.0",
+    "networkx==3.6.1",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "torch-geometric==2.7.0",
+    "optuna==4.7.0",
+    "pytest==9.0.2",
+    "cairosvg==2.9.0",
+    "plotly==6.6.0",
+    "selfies==2.2.0",
+    "fastapi==0.135.2",
+    "uvicorn[standard]==0.42.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["pyrates*"]
+
+
+[tool.setuptools.package-data]
+"pyrates.webapp" = [
+    "data/pc_structures/*.png",
+    "templates/*.html",
+    "static/**/*",
+]

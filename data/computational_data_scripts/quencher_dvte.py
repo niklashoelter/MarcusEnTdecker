@@ -42,6 +42,7 @@ DEFINITIONS
 
 import csv
 import gzip
+import io
 import math
 import re
 import statistics
@@ -187,7 +188,12 @@ def main():
         writer = csv.DictWriter(fh, fieldnames=COLUMNS)
         writer.writeheader()
         writer.writerows(rows)
-    with gzip.open(OUT_SAMPLES, "wt", newline="", encoding="utf-8") as fh:
+    # mtime=0 and an empty filename keep the gzip header out of the output. Without
+    # them gzip stamps the current time into bytes 4-7, so two runs over identical
+    # data produce different files and the round-trip check reports a false change.
+    with open(OUT_SAMPLES, "wb") as raw, \
+            gzip.GzipFile(fileobj=raw, mode="wb", mtime=0, filename="") as gz, \
+            io.TextIOWrapper(gz, encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=["quencher_id", "md_run", "step",
                                                 "E_singlet_Eh", "E_triplet_Eh", "gap_kcal"])
         writer.writeheader()
