@@ -63,6 +63,7 @@ WHAT IS NOT HERE YET
     addition once the photocatalyst job files arrive.
 """
 
+import collections
 import csv
 import math
 import sys
@@ -97,6 +98,7 @@ COLUMNS = [
     "tau0 / ns", "tau0_rsd", "tau0_consistent",
     # the rate
     "k_q / M-1 s-1", "log10_k_q", "quenches", "censored", "k_q_floor / M-1 s-1",
+    "label_class", "threshold_resolvable",
     # quencher, experimental
     "q_E_Ox_vs_SCE_exp / V", "q_E_Ox_bound", "q_E_Red_vs_SCE_exp / V", "q_E_Red_bound",
     "q_epsilon_at_pc_excitation / mM-1 cm-1", "pc_excitation / nm",
@@ -127,6 +129,36 @@ def number(row, field):
         return None
     value = row.get(field, "")
     return float(value) if value not in ("", None) else None
+
+
+def label_class(quenches, censored, floor):
+    """'positive', 'negative' or 'indeterminate' at K_Q_THRESHOLD.
+
+    `quenches` compares k_q against a single global threshold. `k_q_floor` is where
+    this photocatalyst's detection limit actually sits, 25/tau_0, and for a
+    short-lived photocatalyst that floor lies well ABOVE the global threshold -- 33x
+    above it for PC10. The two disagree, and which one is right depends on the pair:
+
+      positive       measured above the threshold AND the Stern-Volmer detection
+                     criterion was met, so quenching was actually observed
+      negative       measured below the threshold AND this photocatalyst's floor is
+                     below the threshold too, so quenching at that rate would have
+                     been seen had it occurred
+      indeterminate  everything else -- either labelled a quencher on a measurement
+                     that never passed detection, or labelled a non-quencher by a
+                     photocatalyst that could not have detected the threshold anyway
+
+    An indeterminate row is not a bad measurement. It is a measurement that does not
+    answer this particular question, and treating it as a negative asserts something
+    the experiment did not establish.
+    """
+    if floor is None:
+        return ""
+    if quenches and not censored:
+        return "positive"
+    if not quenches and floor <= K_Q_THRESHOLD:
+        return "negative"
+    return "indeterminate"
 
 
 def nearest_epsilon(absorption_row, excitation_nm):
@@ -206,6 +238,8 @@ def main():
                 "quenches": int(quenches),
                 "censored": int(censored),
                 "k_q_floor / M-1 s-1": sig(floor),
+                "label_class": label_class(quenches, censored, floor),
+                "threshold_resolvable": "" if floor is None else int(floor <= K_Q_THRESHOLD),
 
                 "q_E_Ox_vs_SCE_exp / V": sig(number(q, "E_Ox_vs_SCE_exp")),
                 "q_E_Ox_bound": (q or {}).get("E_Ox_bound", ""),
@@ -246,6 +280,17 @@ def main():
         floors = [row["k_q_floor / M-1 s-1"] for row in rows if row["k_q_floor / M-1 s-1"] != ""]
         print(f"  detection floor ranges {min(floors):.2e} to {max(floors):.2e} M-1 s-1 "
               f"({max(floors) / min(floors):.0f}x, because tau_0 does)")
+
+    classes = collections.Counter(row["label_class"] for row in rows)
+    print(f"\n  label_class: {classes['positive']} positive, {classes['negative']} negative, "
+          f"{classes['indeterminate']} indeterminate")
+    unresolvable = {row["pc_id"] for row in rows if row["threshold_resolvable"] == 0}
+    if unresolvable:
+        print(f"  WARNING: {len(unresolvable)} of {len({r['pc_id'] for r in rows})} photocatalysts "
+              f"have a detection floor ABOVE the {K_Q_THRESHOLD:.0e} threshold,")
+        print(f"           so a 'does not quench' from them is not evidence of k_q < "
+              f"{K_Q_THRESHOLD:.0e}. Only {classes['negative']} of the "
+              f"{sum(1 for r in rows if r['quenches'] == 0)} apparent non-quenchers are established.")
 
     for label, field in (("quencher SMILES", "quencher_smiles"),
                          ("quencher DFT E_T", "q_E_T_dft / kcal mol-1"),
