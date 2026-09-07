@@ -1,0 +1,202 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
+"""
+Stern-Volmer plate exports -> one QC'd emission intensity per well.
+
+Reads   ../experimental_data_raw/stern_volmer/
+        <batch>.csv               BMG plate export, repeat reads per well
+        <batch>.well_plate.json   Opentrons pipetting map
+Writes  ../experimental_data_processed/stern_volmer_intensities.csv
+
+81 batches x 96 wells = 7776 rows.
+"""
+
+import csv
+import json
+import re
+import statistics
+import sys
+from pathlib import Path
+
+RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "stern_volmer"
+OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "stern_volmer_intensities.csv"
+
+# The detector rails at exactly 260000: 75 reads across the 81 plates sit on that
+# value and nothing else in the screen exceeds 250000. A railed read is not a
+# measurement of anything, so it is discarded before the well is averaged.
+DETECTOR_CEILING = 260000
+MAX_RSD = 0.05        # a well whose reads spread less than this keeps all of them
+CONC_SIGFIGS = 6      # pipetting is good to ~1%; six figures is already generous
+INTENSITY_DP = 1      # a mean of integer counts; the fraction below 0.1 is meaningless
+
+COLUMNS = [
+    "batch", "well", "pc_id", "pc_label", "quencher_id", "quencher_label",
+    "excitation_nm", "emission_nm", "quencher_conc_M", "intensity_au",
+    "n_reads_total", "n_reads_used", "n_saturated", "n_deviant",
+]
+
+
+def sig(x, n=CONC_SIGFIGS):
+    """Round to n significant figures. Returns a float so the CSV carries no trailing zeros."""
+    if x is None:
+        return ""
+    if x == 0:
+        return 0.0
+    return float(f"{x:.{n}g}")
+
+
+def well_sort_key(w):
+    return (w[0], int(w[1:]))
+
+
+def read_map(path):
+    return json.loads(path.read_text(encoding="utf-8"))["wells"]
+
+
+def batch_number(plate_name):
+    m = re.search(r"QBatch(\d+)", plate_name)
+    if not m:
+        raise ValueError(f"no QBatch number in plate name {plate_name!r}")
+    return int(m.group(1))
+
+
+def build_batch_layouts(maps):
+    """well -> (quencher_id, quencher_name) per QBatch, taken from the QID-carrying plates.
+
+    Quencher identity is a property of the well position within a batch, not of the
+    label written on the plate: ten plates label their quenchers with bare names and
+    two of those names are misleading. Every plate that does carry _QID_ labels agrees
+    on the layout, so position is the unambiguous key.
+    """
+    layouts = {}
+    for plate, wells in maps.items():
+        labels = {w: v["quencher"]["compound"] for w, v in wells.items()}
+        if not all("_QID_" in q for q in labels.values()):
+            continue
+        resolved = {}
+        for w, label in labels.items():
+            name, qid = label.rsplit("_QID_", 1)
+            resolved[w] = (int(qid), name)
+        b = batch_number(plate)
+        if b in layouts and layouts[b] != resolved:
+            raise ValueError(f"QBatch{b} layout disagrees between plates; {plate} differs")
+        layouts[b] = resolved
+    return layouts
+
+
+def check_bare_plates(maps, layouts):
+    """Every bare-name plate must match its batch layout name-for-name, or we stop."""
+    for plate, wells in maps.items():
+        labels = {w: v["quencher"]["compound"] for w, v in wells.items()}
+        if all("_QID_" in q for q in labels.values()):
+            continue
+        layout = layouts[batch_number(plate)]
+        for w, bare in labels.items():
+            expected = layout[w][1]
+            if bare != expected:
+                raise ValueError(
+                    f"{plate} well {w}: label {bare!r} does not match "
+                    f"QBatch{batch_number(plate)} layout {expected!r}"
+                )
+
+
+def read_plate(path):
+    """well -> [repeat reads]. The export is semicolon-separated with a metadata header."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        text = path.read_text(encoding="latin-1")
+
+    reads = {}
+    for line in text.splitlines():
+        parts = [p.strip() for p in line.split(";")]
+        if not re.fullmatch(r"[A-H](?:[1-9]|1[0-2])", parts[0] or ""):
+            continue
+        values = [int(p) for p in parts[1:] if p]
+        if values:
+            reads[parts[0]] = values
+    return reads
+
+
+def qc(reads):
+    """Drop rail reads, then one outlier if the well is too noisy. Returns (mean, kept, sat, dev)."""
+    kept = [r for r in reads if r < DETECTOR_CEILING]
+    n_saturated = len(reads) - len(kept)
+    n_deviant = 0
+
+    if len(kept) >= 3:
+        mean = statistics.fmean(kept)
+        if mean > 0 and statistics.stdev(kept) / mean > MAX_RSD:
+            median = statistics.median(kept)
+            worst = max(range(len(kept)), key=lambda i: abs(kept[i] - median))
+            kept.pop(worst)
+            n_deviant = 1
+
+    intensity = round(statistics.fmean(kept), INTENSITY_DP) if kept else None
+    return intensity, len(kept), n_saturated, n_deviant
+
+
+def main():
+    map_paths = sorted(RAW.glob("*.well_plate.json"))
+    if not map_paths:
+        sys.exit(f"no pipetting maps found in {RAW}")
+
+    maps = {p.name.removesuffix(".well_plate.json"): read_map(p) for p in map_paths}
+    layouts = build_batch_layouts(maps)
+    check_bare_plates(maps, layouts)
+
+    rows = []
+    for plate in sorted(maps):
+        wells = maps[plate]
+        reads_by_well = read_plate(RAW / f"{plate}.csv")
+        layout = layouts[batch_number(plate)]
+
+        missing = set(wells) - set(reads_by_well)
+        if missing:
+            raise ValueError(f"{plate}.csv has no reads for {sorted(missing)}")
+
+        for well in sorted(wells, key=well_sort_key):
+            entry = wells[well]
+            pc, q = entry["photocatalyst"], entry["quencher"]
+            quencher_id, quencher_name = layout[well]
+
+            # Concentration comes from the pipetted volume and the stock, never from the
+            # rounded concentration_mM the map also carries.
+            conc_M = q["volume_uL"] * q["stock"]["concentration"] / entry["total_volume_uL"] / 1000
+
+            reads = reads_by_well[well]
+            intensity, n_used, n_saturated, n_deviant = qc(reads)
+
+            rows.append({
+                "batch": plate,
+                "well": well,
+                "pc_id": int(re.fullmatch(r"PC(\d+)", pc["compound"]).group(1)),
+                "pc_label": pc["compound"],
+                "quencher_id": quencher_id,
+                "quencher_label": quencher_name,
+                "excitation_nm": pc["excitation_wavelength_nm"],
+                "emission_nm": pc["emission_wavelength_nm"],
+                "quencher_conc_M": sig(conc_M),
+                "intensity_au": "" if intensity is None else intensity,
+                "n_reads_total": len(reads),
+                "n_reads_used": n_used,
+                "n_saturated": n_saturated,
+                "n_deviant": n_deviant,
+            })
+
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    with OUT.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=COLUMNS)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"{len(map_paths)} batches -> {len(rows)} wells -> {OUT.name}")
+    print(f"  saturated reads dropped:        {sum(r['n_saturated'] for r in rows)}")
+    print(f"  wells with an outlier dropped:  {sum(r['n_deviant'] for r in rows)}")
+    print(f"  wells with no usable read:      {sum(1 for r in rows if r['intensity_au'] == '')}")
+
+
+if __name__ == "__main__":
+    main()

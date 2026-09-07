@@ -1,0 +1,18 @@
+#Login 
+./wwukube login
+
+#Create and push image (relevant command in Dockerfile: git clone --branch fastapi-webapp --single-branch --depth 1 \
+    https://le-schlo@github.com/le-schlo/pyrates.git .) 
+sudo docker build -t ghcr.io/le-schlo/pyrates/entdecker:latest .
+sudo docker push ghcr.io/le-schlo/pyrates/entdecker:latest
+
+
+#Kubernetes commands
+kubectl delete -n entdecker --all deployments
+kubectl delete -n entdecker --all service
+kubectl delete -n entdecker --all pods
+
+kubectl get -n entdecker pods
+kubectl describe -n entdecker pods
+
+kubectl apply -n entdecker -f yaml/

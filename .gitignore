@@ -1,0 +1,30 @@
+# Raw computational job files (~11 GB) — archived to Zenodo, fetched on demand.
+# The README explaining what belongs there is kept.
+data/computational_data_raw/*
+!data/computational_data_raw/README.md
+
+# Trained model weights — archived alongside the raw data, not versioned here.
+ml/models/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Sync clients
+.owncloudsync.log
+*.owncloudsync.log.*
+*~sync-conflict*
+
+# Local overrides
+paths.local.toml

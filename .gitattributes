@@ -1,0 +1,11 @@
+# Text files normalise to LF in the repository.
+* text=auto eol=lf
+
+# Data files are stored exactly as the instrument wrote them. The pipeline's
+# verification claims are byte-level, and several parsers depend on the original
+# delimiters, decimal separators and line endings, so git must not rewrite them.
+data/experimental_data_raw/** -text
+data/**/*.csv                 -text
+data/**/*.txt                 -text
+*.csv.gz                      binary
+*.xlsx                        binary

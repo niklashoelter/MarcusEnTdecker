@@ -1,0 +1,37 @@
+[project]
+name = "kinetics-ent"
+version = "0.1.0"
+description = "Data, benchmarks and models for triplet energy transfer kinetics"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Niklas Hölter" },
+    { name = "Leon Schlosser" },
+]
+
+# Deliberately empty. Every script under data/ declares its own dependencies in a
+# PEP 723 header and runs standalone under `uv run`, so nothing has to be installed
+# to reproduce the data pipeline. Only the optional groups below need resolving.
+dependencies = []
+
+[project.optional-dependencies]
+# The theory benchmarks.
+benchmark = [
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+]
+
+# The machine-learning models. pyrates is pinned to the release used for the paper;
+# do not float this, the published numbers depend on it.
+#
+#   TODO: replace the branch with the tag Leon cuts for the paper, e.g.
+#   pyrates @ git+https://github.com/le-schlo/pyrates.git@v1.0.0
+ml = [
+    "pyrates @ git+https://github.com/le-schlo/pyrates.git@main",
+]
+
+[tool.uv]
+package = false

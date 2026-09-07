@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: entdecker
+  annotations:
+    # Annotation to introduce a CNAME for the hosts below to the NIC Entry for
+    # istio.ms1.k8s.wwu.de (istio ingress on region ms1)
+    wwu.io/nic_node: istio.ms1.k8s.wwu.de
+spec:
+  hosts:
+    # hosts are restricted and need to be apply for in the project application.
+    - "entdecker.uni-muenster.de"
+    - "entdecker.wwu.de"
+  gateways:
+    - entdecker
+  http:
+    - route:
+        - destination:
+            host: frontend
+            port:
+              number: 80

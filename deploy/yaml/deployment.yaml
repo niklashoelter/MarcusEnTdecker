@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: nginx
+    component: frontend
+    release: webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+      component: frontend
+      release: webserver
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+        component: frontend
+        release: webserver
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: nginx
+                  component: frontend
+                  release: webserver
+
+      securityContext:
+        runAsNonRoot: false
+      imagePullSecrets:
+        - name: registry-credential
+      containers:
+        - name: frontend
+          image: ghcr.io/le-schlo/pyrates/entdecker:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 3800m
+              memory: 16Gi
+              ephemeral-storage: 8Gi
+            limits:
+              cpu: 7200m
+              memory: 32Gi
+              ephemeral-storage: 16Gi
+        - name: nginx
+          image: nginx:latest
+          command: [ "/usr/sbin/nginx" ]
+          args: [ "-c", "/etc/nginx/nginx.conf" ]
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+              ephemeral-storage: 1Gi
+            # Limits for cpu, memory and ephemeral-storage are mandatory.
+            limits:
+              cpu: 800m
+              memory: 512Mi
+              ephemeral-storage: 1Gi
+          # Security best practices to not run as root user
+          securityContext:
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 3
+            failureThreshold: 5
+            initialDelaySeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 3
+            failureThreshold: 10
+          volumeMounts:
+            - name: flask-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: run
+              mountPath: /var/run
+      volumes:
+        - name: flask-config
+          configMap:
+            name: flask-config
+        - name: cache
+          emptyDir:
+            medium: Memory
+        - name: run
+          emptyDir:
+            medium: Memory

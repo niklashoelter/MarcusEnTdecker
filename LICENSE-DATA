@@ -1,0 +1,11 @@
+The data in this repository — everything under `data/`, and every table
+generated into `dataset/`, `benchmark/results/` and `figures/` — is licensed
+under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+You are free to share and adapt it for any purpose, including commercially,
+provided you give appropriate credit.
+
+Full text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+The code in this repository is licensed separately under the MIT License; see
+LICENSE.
