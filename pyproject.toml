@@ -37,6 +37,7 @@ ml = [
 [tool.uv.sources]
 pyrates = { path = "ml", editable = true }
 
+
 [tool.uv]
 # This repository is a collection of scripts, not an installable package. Keeping it
 # unbuilt means `uv run reproduce.py` does not drag in the ml extra on every call.

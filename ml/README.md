@@ -124,9 +124,70 @@ they reach the barrier. It defaults to 1.0 — raw prediction, nothing silently 
 near 0.35–0.45. The reasoning is in `../benchmark/README.md`; it is a physical
 correction, not a fitted parameter.
 
-## Not yet run
+## Quencher predictions, and what they exposed
 
-`predict.py` has not been executed end to end. Its calls are taken from the `pyrates`
+`predict_quenchers.py` runs the checkpoint over the 48 screened quenchers and writes
+`predictions_quenchers.csv`. Because those 48 also have independently computed DFT
+triplet energies, it doubles as the check on whether the model loads and runs correctly.
+
+```
+uv sync --extra ml
+uv run --extra ml python ml/predict_quenchers.py
+```
+
+Against DFT, over all 48 (kcal/mol):
+
+| | |
+|---|---:|
+| mean signed error | +1.56 |
+| MAE | 4.32 |
+| RMSE | 9.16 |
+| max abs error | **32.76** |
+| within 2σ of the model's own uncertainty | 40/48 |
+
+The RMSE is twice the MAE, so the error is concentrated rather than spread. The five
+worst are:
+
+| | compound | ml | dft | error | λ_S→T (DFT) |
+|---|---|---:|---:|---:|---:|
+| Q17 | (BnSe)₂ | 79.9 | 47.1 | **+32.8** | 36.8 |
+| Q10 | diphenyl disulfide | 72.2 | 40.3 | **+31.9** | 77.6 |
+| Q45 | vinyl selenoxide | 77.2 | 48.3 | **+28.9** | 104.8 |
+| Q11 | dibenzyl disulfide | 75.6 | 56.6 | **+19.0** | 45.5 |
+| Q44 | 2-acetylpyridine | 65.6 | 82.5 | −16.9 | 11.4 |
+
+**Four of the five are dichalcogenides**, and the likely explanation is that the DFT is
+wrong there rather than the model. The triplet state of an S–S or Se–Se compound is
+dissociative: an adiabatic triplet optimisation relaxes toward two chalcogenyl radicals,
+so the "adiabatic triplet energy" it returns is closer to a homolysis energy than to an
+excitation energy. Three things point the same way:
+
+1. **λ_S→T = 104.8 kcal/mol for Q45, against its own triplet energy of 48.3.** A
+   reorganization energy twice the excitation energy does not describe a bound excited
+   state — the triplet geometry is nowhere near the singlet.
+2. **Q10 and Q11 are also the only two quenchers with no reduced-state jobs at all**, so
+   this family was already giving the DFT pipeline trouble.
+3. Selenium is *in* the model's element vocabulary (`atomic_num` includes 34), so these
+   are not silently rejected inputs falling back on garbage features.
+
+The discriminator is not simply a large λ. Styrene, α-methylstyrene, F-styrene and
+butyl methacrylate all have λ_S→T between 85 and 88 — C=C twisting in the triplet — and
+the model reproduces their DFT triplet energies to about 1 kcal/mol. It is the
+dichalcogenides specifically.
+
+**This is not a modelling problem to fix here; it is four quencher entries to check.**
+Q10, Q11, Q17 and Q45 carry 27 pairs each, 108 of 1296. Their DFT E_T feeds ΔG_EnT
+directly and their λ feeds the Marcus barrier, where a λ of 105 kcal/mol flattens the
+barrier for every pair it touches. Whether their triplets are genuinely dissociative
+should be settled by looking at the optimised triplet geometries before any of those
+values is used.
+
+## predict.py is still not run end to end
+
+`predict_quenchers.py` above exercises the model and the checkpoint, so those are now
+confirmed working. `predict.py` itself — the pair-level rate API — has still not been run:
+it needs a photocatalyst as well, and the photocatalyst DFT is not in the repository. Its
+calls are taken from the `pyrates`
 source rather than guessed, but the first run should be checked against a handful of
 pairs from `../dataset/pairs.csv` before any number from it is used. That check is
 also what will confirm the checkpoint loads from a fresh clone.
