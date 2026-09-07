@@ -15,16 +15,16 @@ Python API for predicting triplet energy transfer rates from structure alone.
 There is no command-line interface. This is a library: import it.
 
 WHAT IT COMPOSES
-    Nothing here re-implements the model or the theory. Both come from the vendored
-    upstream package in `upstream/`, and this module is the seam between them:
+    Nothing here re-implements the model or the theory. Both come from the `pyrates`
+    package alongside this file, and this module is the seam between them:
 
-        upstream prediction.predict(smiles)        graph -> E_T, lambda_S_T, lambda_T_S
-        upstream marcus_theory                     properties -> dG, dG barrier
+        pyrates prediction.predict(smiles)         graph -> E_T, lambda_S_T, lambda_T_S
+        pyrates marcus_theory                      properties -> dG, dG barrier
         Balzani rate expression (below)            barrier -> k
 
-    Keeping the barrier in upstream means the web application, the paper's numbers and
-    this API all compute it the same way. Only the last step is written here, because
-    upstream stops at the barrier and does not combine it with diffusion.
+    Keeping the barrier in `pyrates` means the web application, the paper's numbers
+    and this API all compute it the same way. Only the last step is written here,
+    because `pyrates` stops at the barrier and does not combine it with diffusion.
 
 THE RATE EXPRESSION
 
@@ -55,9 +55,9 @@ LAMBDA SCALING
 NOT YET RUN
     This module has not been executed end to end. It needs `uv sync --extra ml`, which
     pulls torch, torch-geometric and rdkit, and it loads a 69 MB checkpoint. The calls
-    it makes are taken from the upstream source rather than guessed, but the first run
-    should be checked against a few pairs in `../dataset/pairs.csv` before any number
-    from it is used.
+    it makes are taken from the `pyrates` source rather than guessed, but the first
+    run should be checked against a few pairs in `../dataset/pairs.csv` before any
+    number from it is used.
 """
 
 from __future__ import annotations
@@ -241,7 +241,7 @@ class RatePredictor:
 
     @staticmethod
     def _is_symmetric(pc: MolecularProperties, q: MolecularProperties, a: float) -> bool:
-        """Whether upstream would have fallen back to the symmetric approximation."""
+        """Whether pyrates would have fallen back to the symmetric approximation."""
         forward = a * (pc.lambda_T_S + q.lambda_S_T)
         reverse = a * (pc.lambda_S_T + q.lambda_T_S)
         dG = q.E_T - pc.E_T

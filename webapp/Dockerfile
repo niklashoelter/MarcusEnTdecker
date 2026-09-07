@@ -20,12 +20,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # ── Application ───────────────────────────────────────────────────────────────
 #
-# This copies the vendored package out of the repository rather than cloning
-# le-schlo/pyrates at build time, as it used to. Cloning a *branch* meant the image
-# contents depended on when it was built, so two builds of the "same" image could
-# serve two different models with no way to tell them apart. The copy here is pinned
-# by whatever commit of this repository is checked out, and ml/upstream/PROVENANCE.md
-# records which upstream commit that corresponds to.
+# This copies ml/ out of the repository rather than cloning le-schlo/pyrates at
+# build time, as it used to. Cloning a *branch* meant the image contents depended on
+# when it was built, so two builds of the "same" image could serve two different
+# models with no way to tell them apart. The copy here is pinned by whatever commit
+# of this repository is checked out, and ml/README.md records which commit of
+# le-schlo/pyrates the model code corresponds to.
+#
+# The whole of ml/ travels, not just the package: predict.py, the READMEs, tests/,
+# examples/ and training_data/dataset.csv (9 MB). All inert at runtime. If image size
+# starts to matter, add a .dockerignore for training_data/ and tests/ rather than
+# splitting the directory.
 #
 # Build from the repository root so the context includes ml/:
 #
@@ -35,7 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # pyrates/webapp/data/model.pt (69 MB), so no weights are downloaded at runtime.
 
 WORKDIR /app
-COPY ml/upstream/ /app/
+COPY ml/ /app/
 
 RUN pip install --no-cache-dir -e .
 

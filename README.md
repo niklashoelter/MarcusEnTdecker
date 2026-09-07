@@ -20,7 +20,7 @@ quenching in acetonitrile on an Opentrons Flex and a BMG VantaStar plate reader;
 data/           instrument output and DFT job files, and the scripts that process them
 dataset/        the pair-level table -- where the processed data becomes one row per pair
 benchmark/      physical-organic theory as classifiers: adiabatic, Marcus, Rehm-Weller, DvTE
-ml/             the models, vendored from pyrates, and the prediction API
+ml/             the pyrates models and the prediction API
 figures/        every figure in the paper, regenerated from processed data
 paper/          tables destined for the manuscript and SI, generated rather than typed
 webapp/         shipping EnTdecker: image definition and Kubernetes manifests
@@ -69,8 +69,8 @@ You only need it to re-derive the computational tables from scratch. See
 | `data/` computational | **quenchers complete and verified**; photocatalyst job files not yet available |
 | `dataset/` | in progress |
 | `benchmark/` | to be ported from `phys_org_theories` |
-| `ml/` | **models vendored**, checkpoint included; `predict.py` written but not yet run |
-| `webapp/` | **deployable** — builds from the vendored copy instead of cloning a branch |
+| `ml/` | **models in place**, checkpoint included; `predict.py` written but not yet run |
+| `webapp/` | **deployable** — builds from `ml/` instead of cloning a branch |
 | `figures/`, `paper/` | not started |
 
 Each directory's own README says what is in it, what produced it, and what is known to
@@ -89,19 +89,20 @@ result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.quenches
 `uv sync --extra ml` first. There is no command-line interface; for a browser, that is
 what EnTdecker is.
 
-## Relationship to pyrates
+## The models, and who wrote them
 
-The models are not implemented here. They are
-[pyrates](https://github.com/le-schlo/pyrates), by Leon Schlosser, MIT licensed, and a
-copy of it lives at `ml/upstream/` — including the trained checkpoint the web
-application serves. `ml/upstream/PROVENANCE.md` records the exact commits and the one
-modification made (deleting a `.gitignore` that would have excluded both the dataset
-and the checkpoint).
+The models are not this repository's work. They are
+[pyrates](https://github.com/le-schlo/pyrates), by **Leon Schlosser**, MIT licensed,
+and the package lives at `ml/pyrates/` — including the trained checkpoint the web
+application serves. His licence is kept alongside it as `ml/LICENSE-pyrates` and must
+travel with any redistribution.
 
-It is vendored rather than pinned as a remote dependency because this repository has to
-keep reproducing the paper's numbers after upstream moves on, and because the deployed
-web application should be built from a commit rather than from a branch head. Do not
-develop against `ml/upstream/`: fixes belong upstream and return here as a re-vendor.
+It is carried in this repository rather than pinned as a remote dependency because the
+paper's numbers have to stay reproducible after the library moves on, and because the
+deployed web application should be built from a commit rather than from a branch head.
+`ml/README.md` records the exact commits the code came from, the two structural changes
+made to the tree, and one open issue — the two source branches diverged and were never
+merged, which does not affect the physics but should be reconciled before publication.
 
 ## Citing
 

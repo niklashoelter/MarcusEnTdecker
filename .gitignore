@@ -3,9 +3,9 @@
 data/computational_data_raw/*
 !data/computational_data_raw/README.md
 
-# The vendored package in ml/upstream/ IS committed, checkpoint included, so that
+# The pyrates package in ml/ IS committed, checkpoint included, so that
 # the deployed model is pinned by this repository. Its own .gitignore was removed for
-# exactly that reason — see ml/upstream/PROVENANCE.md.
+# exactly that reason — see ml/README.md.
 
 # Python
 __pycache__/

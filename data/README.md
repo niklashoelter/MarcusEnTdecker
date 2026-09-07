@@ -24,8 +24,8 @@ for a measured one, and either side can be replaced without disturbing the other
 | | status |
 |---|---|
 | `experimental_data_raw/` | **complete** — 81 SV batches, 36 TCSPC traces, 25 emission, 5 absorption, 40 CV |
-| `experimental_data_scripts/` | **6 of 7 written and verified**; only cyclic voltammetry is left |
-| `experimental_data_processed/` | **6 tables**, all regenerated from raw by those scripts |
+| `experimental_data_scripts/` | **7 of 8 written and verified**; only cyclic voltammetry is left |
+| `experimental_data_processed/` | **8 tables**, all regenerated from raw by those scripts |
 | `computational_data_raw/` | **partly in** — quencher DFT and DvTE complete; no photocatalyst job files |
 | `computational_data_scripts/` | **2 of 3 written** — quencher DFT and DvTE; photocatalysts blocked |
 | `computational_data_processed/` | quencher DFT and DvTE tables, rebuilt from the job files |
@@ -46,7 +46,6 @@ the published spreadsheet rather than here.
 | missing | blocks |
 |---|---|
 | photocatalyst DFT job files | `photocatalyst_dft.py`; the PC24 and PC19 decisions; the four disputed triplet energies |
-| quencher literature redox and extinction records | the SET driving forces in `dataset/` |
 | a CV sample-number to quencher mapping | `cyclic_voltammetry_redox.py` — nothing else, the paper's redox values are literature |
 | EnTdecker predictions | the model-versus-theory comparison, if the paper makes one |
 
@@ -56,7 +55,9 @@ the published spreadsheet rather than here.
 quenching in acetonitrile on an Opentrons Flex and a BMG VantaStar plate reader;
 96-well glass-coated plates, six-point dilution series.
 
-At a k_q cutoff of 1e7 M-1 s-1, **694 pairs quench** and **602 do not**.
+At a k_q cutoff of 1e7 M-1 s-1, **695 pairs quench** and **601 do not**.
+(694/602 before tau_0 was re-derived from the TCSPC traces; the single pair that
+moved is PC4/Q45, which sits on the threshold. See `../dataset/README.md`.)
 
 ## Three things to know before using this
 

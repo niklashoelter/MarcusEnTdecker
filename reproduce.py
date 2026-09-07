@@ -40,10 +40,14 @@ PIPELINE = [
      "data/experimental_data_raw/quencher_absorption"),
     ("data", "data/experimental_data_scripts/emission_spectra.py",
      "data/experimental_data_raw/pc_emission"),
+    ("data", "data/experimental_data_scripts/compound_records.py",
+     "data/experimental_data_raw/compound_records"),
     ("data", "data/computational_data_scripts/quencher_dft.py",
      "data/computational_data_raw/quencher_adiabatic_DFT"),
     ("data", "data/computational_data_scripts/quencher_dvte.py",
      "data/computational_data_raw/quencher_adiabatic_DvTE"),
+    ("dataset", "dataset/build_dataset.py",
+     "data/experimental_data_processed/stern_volmer_fits.csv"),
 ]
 
 STAGES = ["data", "dataset", "benchmark", "ml", "figures", "paper"]

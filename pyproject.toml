@@ -24,10 +24,10 @@ benchmark = [
     "matplotlib>=3.9",
 ]
 
-# The models and the prediction API. `pyrates` is the vendored copy in ml/upstream/,
-# installed from its own unmodified pyproject.toml, which is what pins torch,
-# torch-geometric, rdkit and the rest. Kept out of the default install because it is
-# a multi-gigabyte dependency tree that the data pipeline does not need.
+# The models and the prediction API. `pyrates` is the package in ml/, installed from
+# its own pyproject.toml, which is what pins torch, torch-geometric, rdkit and the
+# rest. Kept out of the default install because it is a multi-gigabyte dependency
+# tree that the data pipeline does not need.
 #
 #   uv sync --extra ml
 ml = [
@@ -35,7 +35,7 @@ ml = [
 ]
 
 [tool.uv.sources]
-pyrates = { path = "ml/upstream", editable = true }
+pyrates = { path = "ml", editable = true }
 
 [tool.uv]
 # This repository is a collection of scripts, not an installable package. Keeping it

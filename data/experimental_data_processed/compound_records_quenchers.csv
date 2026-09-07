@@ -1,0 +1,49 @@
+quencher_id,quencher_name,name,smiles,E_Ox_vs_SCE_exp,E_Ox_bound,E_Red_vs_SCE_exp,E_Red_bound
+1,Q1,6-Me-quinoline,CC1=CC=C2C(C=CC=N2)=C1,2.0,lower,-2.0,upper
+2,Q2,styrene,C=CC1=CC=CC=C1,1.97,,-2.64,
+3,Q3,2-Nitro-m-Xylene,CC1=C(C(=CC=C1)C)[N+](=O)[O-],,,-1.407,
+4,Q4,Benzothiophene,C12=CC=CC=C1C=CS2,1.65,,-2.1,upper
+5,Q5,Quinoxaline,C12=NC=CN=C1C=CC=C2,,,-1.8,
+6,Q6,Isoquinoline,C12=CN=CC=C1C=CC=C2,,,-2.2,
+7,Q7,Coumarin,O=C1Oc2ccccc2C=C1,2.1,lower,-1.97,
+8,Q8,OiPr bifunc,CC(OC(O/N=C(C1=CC=CC=C1)\C2=CC=CC=C2)=O)C,2.1,lower,-2.37,
+9,Q9,2-Ph-3-Me-Thiazol,CC1=C(C2=CC=CC=C2)SC=C1,1.403,,-2.3,upper
+10,Q10,Diphenyldisulfide,C1(SSC2=CC=CC=C2)=CC=CC=C1,1.52,,-1.25,
+11,Q11,Dibenzyldisulfide,C1(CSSCC2=CC=CC=C2)=CC=CC=C1,1.45,,-2.27,
+12,Q12,dihydro azaborinine,C12=CC=CC=C1C=CBN2,1.401,,-2.5,upper
+13,Q13,maleimide,O=C1C=CC(N1C)=O,,,-0.95,
+14,Q14,Butyl-Methacrylate,CC(C(OCCCC)=O)=C,,,-2.41,
+15,Q15,Inden,C12=CC=CC=C1C=CC2,1.72,,,
+16,Q16,5-Me-Pyridone,O=C1NC=C(C)C=C1,1.6,,-2.2,upper
+17,Q17,(BnSe)2,C1(C[Se][Se]CC2=CC=CC=C2)=CC=CC=C1,1.2,,-0.2,
+18,Q18,oxadiazole,CC1(C)NC(C2=CC=CC=C2)=NO1,0.86,,-2.18,
+19,Q19,sulfur bifunc,O=C(SCC1=CC=CC=C1)O/N=C(C2=CC=CC=C2)\C3=CC=CC=C3,2.1,lower,-1.69,
+20,Q20,naphthalene,C12=CC=CC=C1C=CC=C2,1.84,,-2.5,
+21,Q21,Ethylphenylpropiolat,CCOC(=O)C#Cc1ccccc1,2.0,,-1.8,
+22,Q22,4-Oxo-Quinazolin,O=C1N(OC(CCC2=CC=CC=C2)=O)C(C3=CC=CC=C3)=NC4=CC=CC=C41,1.9,,-1.55,
+23,Q23,Bpin-Benzothiophen,CC(O1)(C)C(C)(C)OB1C2=CC3=CC=CC=C3S2,1.84,,-2.2,
+24,Q24,Bpin-Benzofuran,CC(O1)(C)C(C)(C)OB1C2=CC3=CC=CC=C3O2,1.86,,-2.3,
+25,Q25,Br-Benzothiophen,BrC1=CC2=CC=CC=C2S1,1.8,,-1.93,
+26,Q26,Br-Benzofuran,BrC1=CC2=CC=CC=C2O1,1.95,,-2.0,upper
+27,Q27,Di-Br-Thiophene,BrC1=CC=C(Br)S1,1.84,,-2.0,
+28,Q28,Benzoyl-Thiazol,O=C(C1=CC=CC=C1)C2=NC=CS2,2.4,lower,-1.25,
+29,Q29,Isoxazolon,O=C1C(C)(C)C(C2=CC=CC=C2)=NO1,2.0,lower,-1.7,
+30,Q30,E-Stilbene,C1(/C=C/C2=CC=CC=C2)=CC=CC=C1,1.5,,-2.28,
+31,Q31,N-Peroxide,O=C1N(C2=CC=CC=C2)OC(C13CC3)=O,2.1,lower,-2.1,upper
+32,Q32,Thioamide 1,S=C(N1CCCC1)C2=CC=CC=C2,1.25,,-2.1,upper
+33,Q33,Thioamide 2,S=C(N(C1=CC=CC=C1)C)CC,1.25,,-2.1,upper
+34,Q34,oxime ether,CO/N=C1CCCC2=CC=CC=C2/1,1.8,,-2.2,
+35,Q35,Z-Stilbene,C1(/C=C\C2=CC=CC=C2)=CC=CC=C1,1.59,,-2.31,
+36,Q36,Ac-Pyrol,CN1C(C(C)=O)=CC=C1,1.65,,-2.2,
+37,Q37,F-styrene,F/C(F)=C/C1=CC=C(Br)C=C1,1.85,,-2.2,
+38,Q38,butadiene,C=CC=C,2.03,,-2.5,upper
+39,Q39,4-Me-2-Ph-Thiazol,CC1=CSC(=N1)C2=CC=CC=C2,1.6,,-2.05,
+40,Q40,Ph-Oxazol,C1(C2=CC=CC=C2)=NC=CO1,1.9,,-2.36,
+41,Q41,alpha-Methylstyrol,C=C(C)C1=CC=CC=C1,1.86,,-2.85,
+42,Q42,2-Benzoyl-Furan,O=C(C1=CC=CC=C1)C2=CC=CO2,2.1,,-1.65,
+43,Q43,2-Acetyl-4-Me-Thiophen,O=C(C)C1=CC(C)=CS1,1.94,,-1.75,
+44,Q44,2-Acetylpyridine,CC(C1=NC=CC=C1)=O,2.5,lower,-1.75,
+45,Q45,vinyl selenoxide,O=[Se](C=C)C1=CC=CC=C1,1.7,,-2.2,
+46,Q46,Azirin-Intermediat,CC1(C)C(C2=CC=CC=C2)=N1,1.9,,-2.0,
+47,Q47,Quinolin-8-Ester,O=C(C1=CC=CC2=CC=CN=C21)OC,,,-1.87,
+48,Q48,Cyclohexenone,O=C1C=CCCC1,2.5,lower,-1.95,

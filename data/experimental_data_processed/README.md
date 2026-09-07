@@ -11,6 +11,8 @@ by hand. Deleting this folder and re-running the scripts gives the same files ba
 | `lifetimes_tau0.csv` | 28 | `lifetimes_tau0.py` |
 | `absorption_extinction.csv` | 48 | `absorption_extinction.py` |
 | `emission_spectra.csv` | 14067 | `emission_spectra.py` |
+| `compound_records_quenchers.csv` | 48 | `compound_records.py` |
+| `compound_records_photocatalysts.csv` | 29 | `compound_records.py` |
 
 All five reproduce the published analysis. The Stern-Volmer fits match the 1296 per-pair
 workbooks written at acquisition time on every point-selection mask, and K_SV to 5.7e-14

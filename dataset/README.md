@@ -1,8 +1,8 @@
 # dataset — the pair-level table
 
-This is where processed measurements and processed calculations become one row per
+Where processed measurements and processed calculations become one row per
 photocatalyst–quencher pair. Everything downstream — benchmarks, models, figures —
-reads this table and nothing else.
+reads `pairs.csv` and nothing else.
 
 ```
 data/experimental_data_processed/   ┐
@@ -10,8 +10,8 @@ data/experimental_data_processed/   ┐
 data/computational_data_processed/  ┘
 ```
 
-Nothing is read from outside `data/`. In particular, no XLSX is consulted at runtime
-and no file is copied in as an import side effect.
+Nothing is read from outside `data/`. No XLSX is consulted at run time and no file is
+copied in as an import side effect.
 
 ## The central quantity
 
@@ -20,45 +20,54 @@ k_q = K_SV / tau_0
 ```
 
 `K_SV` per pair from `stern_volmer_fits.csv`, `tau_0` per photocatalyst from
-`lifetimes_tau0.csv`. Both are measured, both trace back to instrument files.
+`lifetimes_tau0.csv`. Both measured here, both traceable to instrument files.
 
-## Two things this table must not smooth over
+**At the 1e7 M⁻¹ s⁻¹ cutoff, 695 pairs quench and 601 do not.**
 
-**Half the dataset is left-censored.** 662 of 1296 pairs (51.1 %) fall below the
-detection floor `K_SV >= 25 M-1 and r2 >= 0.90`, and 379 of those have a negative
-fitted slope. They are one-sided observations, not missing values, and they belong in
-any analysis as non-quenchers. No redox value and no DFT energy can turn a
-non-quencher into missing data. In rate terms the floor is photocatalyst-specific,
-3.9e6 to 3.4e8 M-1 s-1, because it scales as `25 / tau_0`.
+That is one more than the 694 the earlier analysis reported, and the difference is
+fully accounted for: PC4's τ₀ is now derived from its TCSPC traces (1228.49 ns) rather
+than taken from a curated value that matches none of them (1494.54 ns). The shorter
+lifetime raises k_q by 1.22× for all 48 of PC4's pairs, and exactly one of them —
+**PC4/Q45**, at K_SV = 12.78 — crosses the threshold, moving from 8.5e6 to 1.04e7.
+It sits on the boundary either way and should not be leaned on.
 
-**Label on k_q, not K_SV.** `tau_0` spans 86x across the screen, so a fixed K_SV
-cutoff would demand an 86x higher rate constant from the short-lived photocatalysts.
-Marcus and Rehm-Weller predict k_q.
+## Two things this table refuses to smooth over
 
-## Status
+**Half the dataset is left-censored.** 662 pairs (51.1 %) fall below the Stern–Volmer
+detection floor, and 379 of those have a negative fitted slope. Every one is present
+with `censored = 1` and its fitted `K_SV` intact. They are one-sided observations, not
+missing values.
 
-`build_dataset.py` is not written yet. It needs the literature redox potentials and
-extinction coefficients for the quenchers, which are the last input still outside this
-repository. Everything else it needs is already in `data/`.
+`k_q_floor` gives the smallest rate constant each pair could have shown, `25 / tau_0`.
+It runs from **3.9e6 to 3.4e8 M⁻¹ s⁻¹ — an 86× range**, because τ₀ does. That column
+is what a survival analysis needs, and it is per-row for exactly that reason.
 
-The photocatalyst DFT columns will stay empty until those job files arrive; the table
-is built without them rather than waiting.
+**Nineteen quenchers have a redox potential that is a bound, not a value.** Recorded as
+`> 2.0` or `< -2.10` in the source, meaning the compound was not oxidized or reduced
+within the accessible window. `q_E_Ox_bound` and `q_E_Red_bound` carry that as `lower`
+or `upper`; the number is still there because it is the only quantitative information
+available, but it never travels without the flag.
 
-## Column naming
+This matters for mechanism assignment specifically. Ruling out single-electron transfer
+works by comparing these potentials against the photocatalyst's, and reading `> 2.0` as
+`2.0` turns "we could not oxidize this" into "this oxidizes at 2.0 V" — which makes SET
+look more feasible than the data supports, in the direction that would wrongly exclude
+pairs from the energy-transfer set.
 
-| suffix | meaning |
-|---|---|
-| `_exp` | measured here, or from the literature with a source recorded |
-| `_dft` | computed by DFT (four-point scheme) |
-| `_md` | from Milo molecular-dynamics sampling (DvTE only) |
-| `_ml` | predicted by a model |
+## What is not here yet
 
-Columns with no suffix are identifiers, instrument settings, or arithmetic
-derivations. The unit follows the name after a slash, as `k_q / M-1 s-1`.
+Every photocatalyst-side computed quantity: `E_T(PC)`, its reorganization energies, and
+its excited-state redox potentials. The photocatalyst DFT job files are not in the
+repository, and this package does not inherit numbers from a spreadsheet it cannot
+regenerate.
 
-## Sign conventions
+So the pair-level driving forces — `dG_EnT`, `dG_SET_ox`, `dG_SET_red` — are **not
+computed and no column for them is written**. They are not blank cells awaiting a
+merge; they are quantities this table is not yet entitled to state. The quencher side
+is complete, so they become a short addition once those job files arrive.
 
-All quencher-centric, negative = exergonic, `F = 23.0605 kcal mol-1 V-1`:
+The sign conventions they will use, all quencher-centric, negative = exergonic,
+`F = 23.0605 kcal mol⁻¹ V⁻¹`:
 
 ```
 dG_EnT     = E_T(Q) - E_T(PC)
@@ -69,4 +78,33 @@ dG_SET     = min(dG_SET_ox, dG_SET_red)
 
 Potentials are named by their couple, not by direction, because the naming is
 quencher-centric and inverts easily: `E_ox_ES` is the potential at which PC\*
-*oxidizes a substrate*, i.e. the reduction potential of the PC\*/PC- couple.
+*oxidizes a substrate*, i.e. the reduction potential of the PC\*/PC⁻ couple.
+
+## Columns
+
+| group | columns |
+|---|---|
+| identity | `pc_id`, `pc_name`, `pc_compound`, `quencher_id`, `quencher_name`, `quencher_compound`, `quencher_smiles` |
+| measurement | `K_SV / M-1`, `r2`, `n_points_fitted`, `n_points_measured`, `fit_method`, `fit_note`, `tau0 / ns`, `tau0_rsd`, `tau0_consistent` |
+| rate | `k_q / M-1 s-1`, `log10_k_q`, `quenches`, `censored`, `k_q_floor / M-1 s-1` |
+| quencher, experimental | `q_E_Ox_vs_SCE_exp / V`, `q_E_Ox_bound`, `q_E_Red_vs_SCE_exp / V`, `q_E_Red_bound`, `q_epsilon_at_pc_excitation / mM-1 cm-1`, `pc_excitation / nm` |
+| quencher, computed | `q_E_T_dft`, `q_lambda_S_T_dft`, `q_lambda_T_S_dft`, `q_E_Ox_vs_SCE_calc`, `q_E_Red_vs_SCE_calc`, `q_dvte_mu_md`, `q_dvte_std_md` |
+
+`_exp` and `_calc` redox potentials are kept as separate columns and never merged. A
+measured potential and a DFT potential are not interchangeable, and which one an
+analysis used is part of what it has to report.
+
+`q_epsilon_at_pc_excitation` is the quencher's extinction coefficient at the wavelength
+its photocatalyst was excited at, for judging inner-filter effects. The paper's K_SV
+values are **uncorrected**; this column is what a correction would be based on, not
+evidence that one was applied.
+
+## Coverage
+
+| | of 1296 |
+|---|---|
+| `k_q` | 1296 |
+| quencher SMILES | 1296 |
+| quencher DFT `E_T` | 1296 |
+| quencher DvTE | 1296 |
+| experimental `E_Ox` | 1134 (6 quenchers have none) |

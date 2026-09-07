@@ -922,7 +922,7 @@ requires-dist = [
     { name = "matplotlib", marker = "extra == 'benchmark'", specifier = ">=3.9" },
     { name = "numpy", marker = "extra == 'benchmark'", specifier = ">=2.0" },
     { name = "pandas", marker = "extra == 'benchmark'", specifier = ">=2.2" },
-    { name = "pyrates", marker = "extra == 'ml'", editable = "ml/upstream" },
+    { name = "pyrates", marker = "extra == 'ml'", editable = "ml" },
     { name = "scipy", marker = "extra == 'benchmark'", specifier = ">=1.14" },
 ]
 provides-extras = ["benchmark", "ml"]
@@ -1872,7 +1872,7 @@ wheels = [
 [[package]]
 name = "pyrates"
 version = "0.0.1"
-source = { editable = "ml/upstream" }
+source = { editable = "ml" }
 dependencies = [
     { name = "cairosvg" },
     { name = "fastapi" },
