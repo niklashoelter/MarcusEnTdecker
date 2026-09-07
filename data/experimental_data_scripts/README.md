@@ -15,7 +15,7 @@ Scripts and their outputs share a measurement prefix.
 | `lifetimes_tau0.py` | `lifetimes_tcspc.csv` | `lifetimes_tau0.csv` (28 photocatalysts) | **verified** — 26/27 screened match the curated table exactly |
 | `absorption_extinction.py` | `quencher_absorption/` (1 scan + plate map) | `absorption_extinction.csv` (48 quenchers) | **verified** |
 | `emission_spectra.py` | `pc_emission/` (1 of 25 scans) | `emission_spectra.csv` (14067 points) | **written** |
-| `compound_records.py` | `compound_records/` (2 spreadsheets) | `compound_records_quenchers.csv` (48), `compound_records_photocatalysts.csv` (29) | **written** |
+| `compound_records.py` | `compound_records/` (3 spreadsheets) | `compound_records_quenchers.csv` (48), `compound_records_photocatalysts.csv` (29) | **written** |
 | `cyclic_voltammetry_redox.py` | `quencher_cyclic_voltammetry/` (40 traces) | — | blocked, no sample map |
 
 ### Which absorption scan is the real one

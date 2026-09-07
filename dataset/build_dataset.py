@@ -101,6 +101,7 @@ COLUMNS = [
     "label_class", "threshold_resolvable",
     # quencher, experimental
     "q_E_Ox_vs_SCE_exp / V", "q_E_Ox_bound", "q_E_Red_vs_SCE_exp / V", "q_E_Red_bound",
+    "q_redox_source_type", "q_redox_doi",
     "q_epsilon_at_pc_excitation / mM-1 cm-1", "pc_excitation / nm",
     # quencher, computed
     "q_E_T_dft / kcal mol-1", "q_lambda_S_T_dft / kcal mol-1", "q_lambda_T_S_dft / kcal mol-1",
@@ -245,6 +246,8 @@ def main():
                 "q_E_Ox_bound": (q or {}).get("E_Ox_bound", ""),
                 "q_E_Red_vs_SCE_exp / V": sig(number(q, "E_Red_vs_SCE_exp")),
                 "q_E_Red_bound": (q or {}).get("E_Red_bound", ""),
+                "q_redox_source_type": (q or {}).get("redox_source_type", ""),
+                "q_redox_doi": (q or {}).get("redox_doi", ""),
                 "q_epsilon_at_pc_excitation / mM-1 cm-1":
                     sig(nearest_epsilon(absorption.get(q_id), excitation)),
                 "pc_excitation / nm": sig(excitation),
@@ -291,6 +294,9 @@ def main():
         print(f"           so a 'does not quench' from them is not evidence of k_q < "
               f"{K_Q_THRESHOLD:.0e}. Only {classes['negative']} of the "
               f"{sum(1 for r in rows if r['quenches'] == 0)} apparent non-quenchers are established.")
+
+    sources = collections.Counter(row["q_redox_source_type"] for row in rows)
+    print(f"  redox provenance: " + ", ".join(f"{v} {k}" for k, v in sources.most_common() if k))
 
     for label, field in (("quencher SMILES", "quencher_smiles"),
                          ("quencher DFT E_T", "q_E_T_dft / kcal mol-1"),

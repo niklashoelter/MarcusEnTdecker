@@ -46,7 +46,7 @@ the published spreadsheet rather than here.
 | missing | blocks |
 |---|---|
 | photocatalyst DFT job files | `photocatalyst_dft.py`; the PC24 and PC19 decisions; the four disputed triplet energies |
-| a CV sample-number to quencher mapping | `cyclic_voltammetry_redox.py` — nothing else, the paper's redox values are literature |
+| confirmation that CV sample number = quencher id | `cyclic_voltammetry_redox.py`. 18 of the 19 sample numbers match quenchers whose record says "CV measured", so this is close to settled |
 | EnTdecker predictions | the model-versus-theory comparison, if the paper makes one |
 
 ## The screen

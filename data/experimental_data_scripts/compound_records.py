@@ -49,11 +49,35 @@ EXPERIMENTAL VERSUS COMPUTED
     and a DFT potential are not interchangeable, and which one an analysis used is
     part of what it has to report.
 
-    Where each experimental value came from -- measured here, or read out of another
-    paper's supporting information -- is not yet recorded. Those columns are to be
-    added; see the processed README.
+WHERE THE REDOX POTENTIALS CAME FROM
+    `quenchers_exp_values.xlsx` carries a free-text Comment and a DOI per quencher, and
+    together they resolve the provenance of every potential. Across the 48:
+
+        measured       24    cyclic voltammetry in this lab, several naming who ran it
+        literature     19    a DOI, or a bare URL typed into the Comment
+        estimated       4    inferred from a related compound
+        unattributed    1    a value with nothing recorded about its origin (Q9)
+
+    Two consequences.
+
+    First, the manuscript currently describes these as literature values throughout.
+    That is not accurate: half of them were measured here, and 19 of those have raw
+    voltammograms sitting in experimental_data_raw/quencher_cyclic_voltammetry/.
+
+    Second, `estimated` is not a weaker citation, it is a different quantity. "similar
+    bifunctional with Me instead of iPr" is the potential of a surrogate compound, not
+    of the one in the screen. Those four are marked so that an analysis can choose to
+    exclude them rather than discovering it later.
+
+    The comment describes the row, so the label is per quencher rather than per
+    potential. Splitting it would invent detail the record does not contain.
+
+    Before the provenance is attached, the potentials and SMILES in the two
+    spreadsheets are compared and any disagreement is fatal. Attaching a source to a
+    number that differs from the published one would be worse than having no source.
 """
 
+import collections
 import csv
 import re
 import sys
@@ -65,6 +89,7 @@ RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "compou
 OUT_DIR = Path(__file__).resolve().parent.parent / "experimental_data_processed"
 
 QUENCHERS_IN = RAW / "properties_quenchers.xlsx"
+QUENCHERS_PROVENANCE_IN = RAW / "quenchers_exp_values.xlsx"
 PHOTOCATALYSTS_IN = RAW / "properties_photocatalysts.xlsx"
 QUENCHERS_OUT = OUT_DIR / "compound_records_quenchers.csv"
 PHOTOCATALYSTS_OUT = OUT_DIR / "compound_records_photocatalysts.csv"
@@ -81,6 +106,16 @@ BOUND = re.compile(r"^\s*(?P<op>[<>]=?)\s*(?P<value>-?\d+(?:[.,]\d+)?)\s*$")
 QUENCHER_COLUMNS = [
     "quencher_id", "quencher_name", "name", "smiles",
     "E_Ox_vs_SCE_exp", "E_Ox_bound", "E_Red_vs_SCE_exp", "E_Red_bound",
+    "redox_source_type", "redox_source_note", "redox_doi",
+    "c_stock_mM", "deck_position", "well_position",
+]
+
+# How a redox potential came to be, read from the free-text Comment column. The order
+# matters: a row can be both measured and cited, and the measurement is the stronger
+# claim, so it wins and the DOI is kept alongside it.
+SOURCE_RULES = [
+    ("measured", ("measured",)),
+    ("estimated", ("estimated", "similar", "ask ")),
 ]
 PHOTOCATALYST_COLUMNS = [
     "pc_id", "pc_name", "name", "excitation_nm", "emission_nm",
@@ -131,33 +166,101 @@ def read_sheet(path):
     return sheet, headers(sheet)
 
 
+def classify_source(comment, doi):
+    """'measured', 'literature', 'estimated' or 'unattributed'.
+
+    The Comment column is free text written during the screen, and it distinguishes
+    three genuinely different things that all end up as a number in the same cell:
+    a potential measured in this lab, one taken from a paper, and one inferred from a
+    related compound. The third is the one that matters most to flag -- "similar
+    bifunctional with Me instead of iPr" is a surrogate, not a measurement of the
+    compound in question.
+
+    The comment describes the row, not an individual potential, so this is one label
+    per quencher. Splitting it per potential would be inventing detail the record does
+    not contain.
+    """
+    text = (str(comment) if comment else "").strip().lower()
+    for label, needles in SOURCE_RULES:
+        if any(n in text for n in needles):
+            return label
+    if doi or text.startswith("http") or "doi.org" in text:
+        return "literature"
+    return "unattributed"
+
+
+def read_provenance():
+    """quencher_id -> the provenance row, or {} when the file is absent.
+
+    Kept optional: the redox values themselves come from properties_quenchers.xlsx and
+    are complete without this, so a missing provenance file should cost the source
+    columns and nothing else.
+    """
+    if not QUENCHERS_PROVENANCE_IN.exists():
+        print(f"  note: {QUENCHERS_PROVENANCE_IN.name} absent, source columns left empty")
+        return {}
+    sheet, column = read_sheet(QUENCHERS_PROVENANCE_IN)
+    found = {}
+    for r in range(2, sheet.max_row + 1):
+        qid = sheet.cell(r, column["quencher_id"]).value
+        if qid is None:
+            continue
+        found[int(qid)] = {name: sheet.cell(r, c).value for name, c in column.items()}
+    return found
+
+
 def quenchers():
     sheet, column = read_sheet(QUENCHERS_IN)
-    rows, bounded = [], []
+    provenance = read_provenance()
+    rows, bounded, disagreed = [], [], []
 
     for r in range(2, sheet.max_row + 1):
         qid = sheet.cell(r, column["quencher_id"]).value
         if qid is None:
             continue
 
-        ox, ox_bound = parse_potential(sheet.cell(r, column["E_Ox_vs_SCE"]).value)
-        red, red_bound = parse_potential(sheet.cell(r, column["E_Red_vs_SCE"]).value)
+        ox_raw = sheet.cell(r, column["E_Ox_vs_SCE"]).value
+        red_raw = sheet.cell(r, column["E_Red_vs_SCE"]).value
+        ox, ox_bound = parse_potential(ox_raw)
+        red, red_bound = parse_potential(red_raw)
         if ox_bound or red_bound:
             bounded.append(int(qid))
+
+        smiles = sheet.cell(r, column["smiles"]).value
+        source = provenance.get(int(qid), {})
+
+        # The two spreadsheets hold the same potentials and the same structures. If they
+        # ever stop agreeing, the provenance is being attached to a different number
+        # than the one being published, which is worse than having no provenance.
+        if source:
+            for here, there in ((ox_raw, "E_Ox vs. SCE / V"),
+                                (red_raw, "E_Red vs. SCE / V"),
+                                (smiles, "smiles")):
+                mine = str(here).strip() if here is not None else None
+                theirs = str(source.get(there)).strip() if source.get(there) is not None else None
+                if mine != theirs:
+                    disagreed.append((int(qid), there, mine, theirs))
 
         rows.append({
             "quencher_id": int(qid),
             "quencher_name": sheet.cell(r, column["quencher_name"]).value,
             "name": sheet.cell(r, column["name"]).value,
-            "smiles": sheet.cell(r, column["smiles"]).value,
+            "smiles": smiles,
             "E_Ox_vs_SCE_exp": sig(ox),
             "E_Ox_bound": ox_bound,
             "E_Red_vs_SCE_exp": sig(red),
             "E_Red_bound": red_bound,
+            "redox_source_type": classify_source(source.get("Comment"), source.get("DOI"))
+                                 if source else "",
+            "redox_source_note": (source.get("Comment") or "") if source else "",
+            "redox_doi": (source.get("DOI") or "") if source else "",
+            "c_stock_mM": sig(source.get("c_Stock / mM")) if source else "",
+            "deck_position": (source.get("deck_pos") or "") if source else "",
+            "well_position": (source.get("well_pos") or "") if source else "",
         })
 
     rows.sort(key=lambda row: row["quencher_id"])
-    return rows, bounded
+    return rows, bounded, disagreed
 
 
 def photocatalysts():
@@ -196,8 +299,14 @@ def write(path, columns, rows):
 
 
 def main():
-    quencher_rows, bounded = quenchers()
+    quencher_rows, bounded, disagreed = quenchers()
     write(QUENCHERS_OUT, QUENCHER_COLUMNS, quencher_rows)
+
+    if disagreed:
+        print(f"  ERROR: the two spreadsheets disagree on {len(disagreed)} values:")
+        for qid, field, mine, theirs in disagreed:
+            print(f"    Q{qid} {field}: properties={mine!r} exp_values={theirs!r}")
+        sys.exit("provenance cannot be attached to values that do not match")
 
     pc_rows = photocatalysts()
     write(PHOTOCATALYSTS_OUT, PHOTOCATALYST_COLUMNS, pc_rows)
@@ -212,6 +321,19 @@ def main():
         limits = sum(1 for r in quencher_rows if r[field.replace("_vs_SCE_exp", "_bound")])
         print(f"  experimental {label}: {have} values, of which {limits} are bounds")
     print(f"  quenchers with at least one bound: {sorted(set(bounded))}")
+
+    kinds = collections.Counter(r["redox_source_type"] for r in quencher_rows)
+    print(f"\n  where the redox potentials came from:")
+    for kind in ("measured", "literature", "estimated", "unattributed"):
+        ids = [r["quencher_id"] for r in quencher_rows if r["redox_source_type"] == kind]
+        if ids:
+            print(f"    {kind:13} {kinds[kind]:>2}   {ids}")
+    if kinds["measured"]:
+        print(f"  NOTE: {kinds['measured']} of {len(quencher_rows)} were measured in this lab, so"
+              f" 'literature values throughout' is not an accurate description of this set.")
+    if kinds["estimated"]:
+        print(f"  NOTE: {kinds['estimated']} are inferred from a related compound rather than"
+              f" measured or cited — see redox_source_note.")
 
     print(f"\n{len(pc_rows)} photocatalysts -> {PHOTOCATALYSTS_OUT.name}")
 
