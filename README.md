@@ -68,7 +68,7 @@ You only need it to re-derive the computational tables from scratch. See
 | `data/` experimental | **complete and verified** — 5 of 6 scripts written, all round-trip byte-identical |
 | `data/` computational | **quenchers complete and verified**; photocatalyst job files not yet available |
 | `dataset/` | in progress |
-| `benchmark/` | to be ported from `phys_org_theories` |
+| `benchmark/` | **ported and running** — five theories scored; open items in its README |
 | `ml/` | **models in place**, checkpoint included; `predict.py` written but not yet run |
 | `webapp/` | **deployable** — builds from `ml/` instead of cloning a branch |
 | `figures/`, `paper/` | not started |

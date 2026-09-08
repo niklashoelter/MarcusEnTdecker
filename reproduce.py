@@ -50,6 +50,7 @@ PIPELINE = [
      "data/computational_data_raw/photocatalysts"),
     ("dataset", "dataset/build_dataset.py",
      "data/experimental_data_processed/stern_volmer_fits.csv"),
+    ("benchmark", "benchmark/run_benchmark.py", "dataset/pairs.csv"),
 ]
 
 STAGES = ["data", "dataset", "benchmark", "ml", "figures", "paper"]
