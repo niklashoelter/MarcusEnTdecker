@@ -16,6 +16,14 @@ script by hand gives the same result.
 
 A stage whose inputs are not present is reported as skipped rather than failed, so a
 partial checkout (no computational_data_raw, say) still gets as far as it can.
+
+NOT EVERY SCRIPT IN THE TREE IS A STAGE
+    `photocatalyst_smiles.py` is deliberately absent. It adds a `smiles` column to the
+    photocatalyst file that `compound_records.py` writes from scratch, so it would have
+    to run after it -- and nothing downstream reads photocatalyst SMILES, the model
+    taking the photocatalyst from DFT instead. Running it here would only add an
+    ordering constraint for a column nothing wants. Run it by hand if the column is
+    ever needed.
 """
 
 import argparse
@@ -42,6 +50,8 @@ PIPELINE = [
      "data/experimental_data_raw/pc_emission"),
     ("data", "data/experimental_data_scripts/compound_records.py",
      "data/experimental_data_raw/compound_records"),
+    ("data", "data/experimental_data_scripts/cyclic_voltammetry_redox.py",
+     "data/experimental_data_raw/quencher_cyclic_voltammetry"),
     ("data", "data/computational_data_scripts/quencher_dft.py",
      "data/computational_data_raw/quencher_adiabatic_DFT"),
     ("data", "data/computational_data_scripts/quencher_dvte.py",
