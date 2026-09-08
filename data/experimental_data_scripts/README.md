@@ -16,7 +16,8 @@ Scripts and their outputs share a measurement prefix.
 | `absorption_extinction.py` | `quencher_absorption/` (1 scan + plate map) | `absorption_extinction.csv` (48 quenchers) | **verified** |
 | `emission_spectra.py` | `pc_emission/` (1 of 25 scans) | `emission_spectra.csv` (14067 points) | **written** |
 | `compound_records.py` | `compound_records/` (3 spreadsheets) | `compound_records_quenchers.csv` (48), `compound_records_photocatalysts.csv` (29) | **written** |
-| `cyclic_voltammetry_redox.py` | `quencher_cyclic_voltammetry/` (40 traces) | — | blocked, no sample map |
+| `photocatalyst_smiles.py` | a hand-authored SMILES table + `../computational_data_raw/photocatalysts/PC_<n>/S0/` (31 DFT geometries) | `smiles` column on `compound_records_photocatalysts.csv` | **verified** — all 31 match their DFT geometry on formula, heavy atoms, charge and connectivity |
+| `cyclic_voltammetry_redox.py` | `quencher_cyclic_voltammetry/` (21 traces + 19 blanks) | `cyclic_voltammetry_redox.csv` (19 samples), `cyclic_voltammetry_traces.csv` (25821 points) | **verified** — 29 of 32 recorded potentials reproduced, median 0.050 V |
 
 ### Which absorption scan is the real one
 
@@ -91,13 +92,55 @@ amplitude (133 and 123 counts against 900+ for a typical trace here). The rule g
 1228.49 ns, 18 % below the curated figure, which scales k_q for all 48 of PC4's pairs by
 1.22. It needs a decision, not a rule, and `consistent = 0` marks it.
 
-### Why CV is still blocked
+### The CV sample number is the quencher id
 
-`quencher_cyclic_voltammetry/` has 19 distinct sample numbers (009-048) plus blanks and no
-map from those numbers to compounds. The numbers are plausibly quencher IDs, but nothing
-in the data says so, and the manuscript's redox values are literature rather than
-measured, so there is no published output against which a guess could be checked.
-The mapping has to come from the lab record.
+`quencher_cyclic_voltammetry/` has 19 distinct sample numbers (009-048) plus blanks, and
+nothing in the files says what they are: the one text line at the top of each export,
+`i400sN1_1#034`, is the instrument's run counter and does not track the sample
+(`009.csv` is run #034). The mapping came from the lab record. It is **checked**, not
+assumed — `cyclic_voltammetry_redox.py` extracts a potential from each trace and compares
+it against the value recorded for that quencher in `compound_records_quenchers.csv`:
+
+```
+plain measurements compared        32 of the 38 branches
+reproduced within 0.15 V           29
+median absolute deviation          0.050 V
+mean signed deviation (those 29)   +0.046 V
+recorded bounds, checked as bounds 5 of 5 consistent
+```
+
+A wrong mapping would scatter by a volt or more — the recorded oxidations alone span
+0.86 to 2.5 V — and a mis-referenced axis would shift everything by the ~0.4 V of a
+missed ferrocene correction. Neither is there. 18 of the 19 numbers land on a quencher
+the provenance calls `measured`; the 19th, 009, is Q9, the one quencher whose potential
+has no attribution at all, and its trace reproduces that unattributed 1.403 V.
+
+Four branches are not reproduced and every one was already flagged in the record or
+visible in the trace: 017's reduction ("ugly CV measured", -0.2 V recorded against -1.57
+extracted), 046's reduction (-2.0 against -2.29, on a trace with no defined wave shape),
+023's oxidation (-0.153 V, just outside the tolerance) and 022's oxidation, where the two
+repeats disagree by over a volt and the value is therefore left **empty** rather than
+averaged.
+
+### What the CV extraction actually does
+
+Blank subtraction is point-for-point — sample and blank share the same potential grid
+exactly, so no interpolation and no scaling. On each branch the script then takes the
+**first** resolvable wave, not the largest: a compound oxidizes before the electrolyte
+breaks down, and the breakdown is usually the bigger feature, so taking the largest would
+report the solvent on half these traces. A wave counts as resolvable when the corrected
+current rises 4 uA (or six robust standard deviations, whichever is larger) above its own
+trailing minimum, at least 0.1 V inside the vertex; a rise that only begins at the vertex
+is the edge of the window, not a wave in it, and is reported as no wave.
+
+The reported potential is the tangent **onset** on an irreversible wave and the
+**half-wave** where a return peak was found. 35 of the 38 branches are irreversible.
+The peak and half-peak potentials are written alongside so a different convention can be
+applied without re-deriving anything.
+
+Two things the files do not contain: a scan rate (no time column, no instrument metadata
+beyond the run counter, so `scan_rate_V_s` stays empty) and an internal standard (no
+ferrocene wave, so the axis is used as exported).
 
 ## The one exception to the raw-only rule
 

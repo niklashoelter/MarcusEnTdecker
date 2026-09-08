@@ -12,7 +12,9 @@ by hand. Deleting this folder and re-running the scripts gives the same files ba
 | `absorption_extinction.csv` | 48 | `absorption_extinction.py` |
 | `emission_spectra.csv` | 14067 | `emission_spectra.py` |
 | `compound_records_quenchers.csv` | 48 | `compound_records.py` |
-| `compound_records_photocatalysts.csv` | 29 | `compound_records.py` |
+| `compound_records_photocatalysts.csv` | 29 | `compound_records.py`, `photocatalyst_smiles.py` |
+| `cyclic_voltammetry_redox.csv` | 19 | `cyclic_voltammetry_redox.py` |
+| `cyclic_voltammetry_traces.csv` | 25821 | `cyclic_voltammetry_redox.py` |
 
 All of them reproduce the published analysis. The Stern-Volmer fits match the 1296 per-pair
 workbooks written at acquisition time on every point-selection mask, and K_SV to 5.7e-14
@@ -20,11 +22,62 @@ relative; the lifetimes match on every fit window; the extinction coefficients m
 published epsilon values to the six-significant-figure rounding. See the scripts README
 for the verification detail and for the two acquisition-code quirks reproduced on purpose.
 
-## Still to come
+## Cyclic voltammetry
 
-| file | source |
+`cyclic_voltammetry_redox.csv` is one row per CV sample; `cyclic_voltammetry_traces.csv`
+is the tidy long form of the traces themselves — 25821 points, one row per exported
+point, carrying the raw current, the blank and the blank-corrected current so that any
+plot or re-extraction can start from the same numbers the summary did.
+
+**The sample number is the quencher id, and this table is where that was checked.** The
+file names carry a three-digit sample number and nothing else; the mapping came from the
+lab record and is verified here against the potentials recorded per quencher in
+`compound_records_quenchers.csv`. Of the 38 branches — 19 samples, oxidation and
+reduction — 32 carry a plain recorded measurement and 5 carry a bound:
+
+| | |
 |---|---|
-| `cyclic_voltammetry_redox.csv` | the 40 CV traces, blocked on a sample-number to quencher mapping |
+| plain measurements compared | 32 |
+| reproduced within 0.15 V | **29** |
+| median absolute deviation | **0.050 V** |
+| mean signed deviation over those 29 | +0.046 V |
+| recorded bounds, checked as bounds | 5 of 5 consistent |
+
+0.050 V is about one exported point on the coarse traces. A wrong mapping would have
+scattered by a volt or more — the recorded oxidations alone span 0.86 to 2.5 V — and a
+mis-referenced potential axis would have shifted every value by the ~0.4 V of a missed
+ferrocene correction. Neither is present. Read `delta_E_ox_V` / `delta_E_red_V` and
+`ox_agrees` / `red_agrees` per row for the per-sample version of this.
+
+**Bounds are checked as bounds, never as numbers.** Five recorded values are limits
+(`> 2.4`, `< -2.5`), meaning the compound was not oxidized or reduced anywhere in the
+window. `delta_*_V` is deliberately empty for those; what is checked instead is that the
+trace shows no wave inside the window, or one only beyond the limit. All five pass.
+
+**`E_ox_V` and `E_red_V` are the reported potentials; `E_ox_basis` / `E_red_basis` says
+what they are.** 35 of the 38 branches are irreversible — the wave runs into the solvent
+limit with no return peak — and for those the reported number is the tangent onset,
+which is what the experimenters read off the plots. Three branches, all reductions
+(Q28, Q39, Q42), do show a return peak, and there the reported number is the half-wave
+potential, which is the thermodynamic quantity. On all three the half-wave lands closer
+to the recorded value than the onset does.
+
+Treat the other 35 as kinetic. An irreversible onset is not a redox equilibrium and
+should not enter a driving-force calculation as though it were one. The peak and
+half-peak potentials are carried alongside for anyone who prefers a different
+convention.
+
+**Four branches are not reproduced, and each row says why in `note`.** 017's reduction
+(recorded -0.2 V, extracted -1.57 V; its lab comment reads "ugly CV measured"), 046's
+reduction (-2.0 V against -2.29 V, on a trace whose oxidation is a shapeless few-uA
+hump), 023's oxidation (-0.153 V, three thousandths outside the tolerance) and 022's
+oxidation, which is **empty**: its two repeats disagree by more than a volt, so no value
+is reported rather than an average that describes neither. Only 021 and 022 were
+measured twice.
+
+**`scan_rate_V_s` is empty for every row and will stay that way.** The exports have no
+time column and no instrument metadata beyond a run counter, so the scan rate is not in
+the data. The window, step, point count and sweep direction are.
 
 ## Reading these tables
 
@@ -67,3 +120,63 @@ measurements whose dominant error — incomplete degassing — can only shorten 
 the true value sits at or above `tau0_ns` rather than centred on it. Where
 `n_measurements = 1` it is that fit's own standard error, which is a lower bound on the
 real uncertainty.
+
+
+## The photocatalyst SMILES are hand-authored
+
+`smiles` in `compound_records_photocatalysts.csv` is the one column in this folder that
+nobody measured. Every other value here comes out of an instrument file or a calculation;
+a structure comes out of neither. The source spreadsheets record the 31 photocatalysts
+only as names — `[Ir(dF(CF3)ppy)2(dtbbpy)][PF6]`, `Ir_dCF3_CF3_ppy2_d55_OMe_bpy` — and a
+name is not a machine-readable structure. The ML model in `../../ml/` takes a SMILES and
+nothing else, so the photocatalyst side of every pair was simply absent without it.
+
+So the 31 strings in `photocatalyst_smiles.py` were written by hand. That is a weaker
+provenance than the rest of the package and it is said here rather than left to be
+discovered.
+
+**Convention: donor-pair (ionic) model, one rule for all of them.** Every metal–ligand
+bond is a dative bond written `->` toward the metal; the metal carries a formal charge
+equal to its oxidation state, `[Ir+3]` or `[Ru+2]`; an anionic donor carries its own
+charge, so the cyclometalated aryl carbon is `[c-]` and an N-heterocyclic carbene is
+written in its imidazolium-ylide form, `[n+] … [c-]`, with the ylide carbon as the donor.
+The net charge then falls out instead of being asserted: `+1` for `[Ir(C^N)2(N^N)]+`, `0`
+for `Ir(C^N)3` and for the tris-carbenes, `+2` for `[Ru(N^N)3]2+`. The PF6⁻ counter-ion is
+not part of the structure — it is a spectator, it is not in the DFT model, and the species
+the model has to see is the cation. Stereochemistry is not encoded, because the model
+consumes a molecular graph and the experiments were run on racemates.
+
+**Validated against the DFT geometry, not against the name.** A SMILES that is a plausible
+reading of a ligand abbreviation is worth very little: `dF(Me)ppy` and `dF(4-Me)ppy` differ
+by one ring position, and PC12/PC25 and PC20/PC21 are pairs of structural isomers with
+identical formulas. Each string is therefore checked against
+`../computational_data_raw/photocatalysts/PC_<n>/S0/opt_geometry.xyz`, the optimized
+ground-state geometry of the species that was actually computed, on four points:
+
+1. molecular formula, hydrogens included, equals the element counts in the xyz;
+2. heavy-atom count equals the heavy-atom count of the xyz;
+3. net formal charge equals the charge on the `*xyzfile <charge> <mult>` line of the
+   matching `opt_input.inp`;
+4. the element-labeled heavy-atom connectivity graph of the SMILES is isomorphic to the
+   graph derived from the interatomic distances in the xyz — covalent radii for the light
+   atoms, a separate 2.6 Å shell for the metal, with the clean gap that cutoff relies on
+   checked rather than assumed.
+
+The fourth check is the one that does the work. It pins every ring position, every
+substitution pattern and every metal–ligand contact, and it is what turns "a plausible
+SMILES for a compound with this name" into "the SMILES of the molecule that was computed".
+Swapping the PC12 and PC25 strings, or the PC20 and PC21 strings, or moving one methyl,
+fails it. All 31 pass. Any failure aborts the script before it writes, because a wrong
+photocatalyst structure does not announce itself downstream — it just moves the predicted
+rate.
+
+**Run order.** `photocatalyst_smiles.py` adds a column to a file that
+`compound_records.py` writes from scratch, so re-running `compound_records.py`
+afterwards drops `smiles` again — silently, because it knows nothing about the
+column. Re-running `photocatalyst_smiles.py` restores it and is idempotent.
+
+**Two of the 31 have no row.** PC30 (`Ir(p-F-pmb)3`) and PC31 (`Ir(pmi)3`) were computed
+and appear in the photocatalyst spreadsheet, but they were never screened, so
+`properties_photocatalysts.xlsx` has no row for them. Their SMILES are validated and
+printed by the script; no row is invented for them here, because the row set of this file
+belongs to `compound_records.py`.

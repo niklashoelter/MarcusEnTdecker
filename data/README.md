@@ -24,8 +24,8 @@ for a measured one, and either side can be replaced without disturbing the other
 | | status |
 |---|---|
 | `experimental_data_raw/` | **complete** — 81 SV batches, 36 TCSPC traces, 25 emission, 5 absorption, 40 CV |
-| `experimental_data_scripts/` | **7 of 8 written and verified**; only cyclic voltammetry is left |
-| `experimental_data_processed/` | **8 tables**, all regenerated from raw by those scripts |
+| `experimental_data_scripts/` | **8 of 8 written and verified** |
+| `experimental_data_processed/` | **10 tables**, all regenerated from raw by those scripts |
 | `computational_data_raw/` | **partly in** — quencher DFT and DvTE complete; no photocatalyst job files |
 | `computational_data_scripts/` | **2 of 3 written** — quencher DFT and DvTE; photocatalysts blocked |
 | `computational_data_processed/` | quencher DFT and DvTE tables, rebuilt from the job files |
@@ -37,6 +37,12 @@ matching on all 1296 Stern-Volmer point selections, all 35 lifetime fit windows,
 864 extinction coefficients, and 26 of the 27 screened lifetimes. See
 `experimental_data_scripts/README.md`.
 
+The cyclic voltammetry is now in as well, and it settles the sample-number question: the
+CV sample number **is** the quencher id. Extracting potentials from the 19 traces and
+comparing them against the values recorded per quencher reproduces 29 of the 32
+comparable ones to a median of 0.050 V, with all 5 recorded bounds consistent. A wrong
+mapping would have scattered by a volt or more.
+
 On the computational side the quencher half is rebuilt from the ORCA outputs: 517 of
 the 520 published DFT values reproduce exactly, and the three that do not are errors in
 the published spreadsheet rather than here.
@@ -46,7 +52,6 @@ the published spreadsheet rather than here.
 | missing | blocks |
 |---|---|
 | photocatalyst DFT job files | `photocatalyst_dft.py`; the PC24 and PC19 decisions; the four disputed triplet energies |
-| confirmation that CV sample number = quencher id | `cyclic_voltammetry_redox.py`. 18 of the 19 sample numbers match quenchers whose record says "CV measured", so this is close to settled |
 | EnTdecker predictions | the model-versus-theory comparison, if the paper makes one |
 
 ## The screen
