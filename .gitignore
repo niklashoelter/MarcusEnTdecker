@@ -3,6 +3,13 @@
 data/computational_data_raw/*
 !data/computational_data_raw/README.md
 
+# The photocatalyst manifest is the one exception: 512 rows saying which delivered job
+# was kept, which was dropped and why. It is small, and it is the part of the deposit
+# that has to remain readable without the 483 MB it describes.
+!data/computational_data_raw/photocatalysts/
+data/computational_data_raw/photocatalysts/*
+!data/computational_data_raw/photocatalysts/manifest.csv
+
 # The pyrates package in ml/ IS committed, checkpoint included, so that
 # the deployed model is pinned by this repository. Its own .gitignore was removed for
 # exactly that reason — see ml/README.md.
