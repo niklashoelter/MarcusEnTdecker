@@ -11,12 +11,14 @@ by hand. Deleting this folder and re-running the scripts gives the same files ba
 | `quencher_dvte_samples.csv.gz` | one row per sampled geometry | `quencher_dvte.py` |
 | `photocatalyst_dft.csv` | 31 | `photocatalyst_dft.py` |
 
-`photocatalysts_computed_properties.md` is not generated. It is the written record of the
-copyedit applied to the published photocatalyst table — the column reduction, the
-couple-based potential naming, the PC1 name correction, and the four mismatched triplet
-energies. It is kept because the photocatalyst extraction script will need it, and because
-the table it describes was deleted so it could be rebuilt from job files rather than
-inherited.
+`photocatalysts_computed_properties.xlsx` and its `.md` are **not** generated, and they are
+superseded. The spreadsheet is a copyedit of the published photocatalyst table and the `.md`
+is the record of what that copyedit changed. `photocatalyst_dft.csv` now rebuilds all of it
+from the job files, so nothing reads either any more.
+
+They are kept rather than deleted because the spreadsheet is the only copy in the tree, and
+they sit here rather than in `../computational_data_raw/photocatalysts/`, where they used to,
+because that directory is for job files the extraction scripts read and these are neither.
 
 ## Still to come
 
@@ -139,14 +141,14 @@ gap. It exists so that nothing downstream ever has to read the 3.4 GB archive ag
 
 ## Sign conventions for the pair-level quantities
 
-Not computed here yet — this is the convention the assembled dataset will use. All
+Computed in `../../dataset/pairs.csv`, not here — this is the convention it uses. All
 quencher-centric, negative = exergonic, F = 23.0605 kcal mol⁻¹ V⁻¹:
 
 ```
 dG_EnT     = E_T(Q) - E_T(PC)
 dG_SET_ox  = F * (E_Ox(Q) - E_ox_ES(PC))      Q oxidized, PC* is the oxidant
 dG_SET_red = F * (E_red_ES(PC) - E_Red(Q))    Q reduced,  PC* is the reductant
-dG_SET     = min(dG_SET_ox, dG_SET_red)
+dG_SET     = whichever is more accessible, with dG_SET_channel naming it
 ```
 
 Potentials are named by their couple, not by direction, because the downstream naming is

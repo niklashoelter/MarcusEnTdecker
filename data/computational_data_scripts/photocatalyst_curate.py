@@ -25,12 +25,20 @@ WHAT IS KEPT AND WHY
     search that produced the starting geometry, and without it the optimisations begin
     from nowhere.
 
-WHAT IS ADDED
+WHAT IS ADDED, AND HOW LITTLE
     The delivered files are ORCA outputs only -- no inputs, no geometries. Both are
     recoverable from the output itself: ORCA echoes its input file verbatim, and the
-    last CARTESIAN COORDINATES block of an optimisation is the optimised geometry. Both
-    are written out beside each job so the deposit matches the quencher tree, where the
-    `.inp` and `.xyz` files were kept from the start. They are extracted, not authored.
+    last CARTESIAN COORDINATES block of an optimisation is the optimised geometry.
+
+    They are extracted for the S0 optimisation ONLY, because that is the one place a
+    downstream script reads them: `photocatalyst_dft.py` takes the atom count from
+    `S0/opt_geometry.xyz`, and `photocatalyst_smiles.py` validates every authored
+    structure against that geometry and the charge on that input.
+
+    Writing them for all 336 jobs was the earlier behaviour, and it put 610 files into
+    the deposit that nothing opens. They carry no information the outputs do not --
+    each is a transcription of the output beside it, and re-running this script brings
+    any of them back -- so a directory holding only what is read is the better artifact.
 
 Writes `../computational_data_raw/photocatalysts/` and a `manifest.csv` recording
 every source directory, kept or omitted, with its termination status.
@@ -49,6 +57,10 @@ OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts"
 
 # The directories this script owns and may therefore delete on a re-run.
 RE_PC = re.compile(r"PC_\d+")
+
+# The one job whose input and geometry are extracted alongside its output, because it
+# is the only one anything downstream opens.
+DERIVED_FOR = ("S0", "opt")
 
 # source job directory -> (state directory, file stem)
 #
@@ -216,11 +228,14 @@ def main():
             dest = OUT_ROOT / pc / state
             dest.mkdir(parents=True, exist_ok=True)
             shutil.copy2(primary, dest / f"{stem}_output.out")
-            if inp:
-                (dest / f"{stem}_input.inp").write_text(
-                    "\n".join(inp) + "\n", encoding="utf-8", newline="\n")
-            if coords:
-                write_xyz(dest / f"{stem}_geometry.xyz", coords, f"{pc} {state} {stem}")
+
+            # Only for the job something downstream opens. See the docstring.
+            if (state, stem) == DERIVED_FOR:
+                if inp:
+                    (dest / f"{stem}_input.inp").write_text(
+                        "\n".join(inp) + "\n", encoding="utf-8", newline="\n")
+                if coords:
+                    write_xyz(dest / f"{stem}_geometry.xyz", coords, f"{pc} {state} {stem}")
 
             # Scratch outputs that sit beside the real one (`output_tmp.out`, the
             # `input_atom<n>.out` basis-fitting runs) are not part of the job.
