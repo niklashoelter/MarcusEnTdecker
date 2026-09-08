@@ -46,6 +46,8 @@ PIPELINE = [
      "data/computational_data_raw/quencher_adiabatic_DFT"),
     ("data", "data/computational_data_scripts/quencher_dvte.py",
      "data/computational_data_raw/quencher_adiabatic_DvTE"),
+    ("data", "data/computational_data_scripts/photocatalyst_dft.py",
+     "data/computational_data_raw/photocatalysts"),
     ("dataset", "dataset/build_dataset.py",
      "data/experimental_data_processed/stern_volmer_fits.csv"),
 ]

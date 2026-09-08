@@ -9,6 +9,7 @@ by hand. Deleting this folder and re-running the scripts gives the same files ba
 | `quencher_dft_conformers.csv` | 239 | `quencher_dft.py` |
 | `quencher_dvte.csv` | 48 | `quencher_dvte.py` |
 | `quencher_dvte_samples.csv.gz` | one row per sampled geometry | `quencher_dvte.py` |
+| `photocatalyst_dft.csv` | 31 | `photocatalyst_dft.py` |
 
 `photocatalysts_computed_properties.md` is not generated. It is the written record of the
 copyedit applied to the published photocatalyst table — the column reduction, the
@@ -21,8 +22,64 @@ inherited.
 
 | file | source | blocked on |
 |---|---|---|
-| `photocatalyst_dft.csv` | `computational_data_raw/photocatalysts/` | the folder is empty — no job files |
 | `entdecker_predictions.csv` | EnTdecker 1.0 (E_T) and 2.0 (E_T + lambdas) | not in the tree at all |
+
+## `photocatalyst_dft.csv`
+
+One row per photocatalyst, 31 of them, from the four-point scheme: S0, T1, oxidized and
+reduced optimizations plus the six single points that cross them over.
+
+```
+E_T                                  adiabatic triplet energy, Gibbs-corrected
+lambda_S0_to_T1, lambda_T1_to_S0     energy-transfer reorganization energies
+lambda_S0_to_ox, lambda_ox_to_S0     hole-transfer reorganization energies
+lambda_S0_to_red, lambda_red_to_S0   electron-transfer reorganization energies
+E_PCplus_PC, E_PC_PCminus            ground-state couples, V vs SCE
+E_PCstar_PCminus, E_PCplus_PCstar    excited-state couples, V vs SCE
+```
+
+Potentials are named by their couple and never by direction. `E_PCstar_PCminus` is how
+strong an oxidant the triplet is; calling it "the excited-state oxidation potential" is
+how its sign gets flipped downstream, and the source spreadsheet has exactly that pair of
+labels crossed.
+
+### It reproduces the published table, and finds five stale cells in it
+
+Eleven quantities were checked against `computed_PCs.xlsx` across all 31 photocatalysts.
+Every one agrees to **6e-5 or better** — the triplet energy, all six reorganization
+energies and all four potentials. Two constants were recovered from that comparison rather
+than assumed: 627.509 kcal mol⁻¹ Ha⁻¹, and an absolute SCE potential of 4.422 V, both with
+essentially no scatter across the set.
+
+The exception is the spreadsheet's `Adiabatic ET` column, which is **not** a consistent
+function of the deposited jobs — it scatters where every other column is exact. Five
+photocatalysts differ:
+
+| | sheet | recomputed | difference |
+|---|---:|---:|---:|
+| PC10 | 58.174 | 55.943 | **+2.230** |
+| PC13 | 64.969 | 65.670 | −0.701 |
+| PC25 | 65.232 | 64.621 | +0.610 |
+| PC28 | 79.404 | 79.950 | −0.546 |
+| PC19 | 59.169 | 59.237 | −0.069 |
+
+The spreadsheet's own `Adiabatic Energy` column reproduces exactly for all 31, so this is
+a stale hand-carried duplicate rather than a disagreement about method. It matters because
+`Adiabatic ET` is the column the experimental triplet energies are compared against: for
+PC28 the calculated-minus-experimental gap is 3.65 kcal/mol, not the 3.10 the sheet shows.
+
+### Sanity
+
+Ir(ppy)₃ comes out at +0.88 / −2.34 V for the ground-state couples and +0.28 / −1.74 V for
+the excited-state ones, within about 0.1 V of the accepted values on three of the four. The
+absolute scale is therefore not obviously displaced, though the whole set moves rigidly
+with the choice of `SCE_ABSOLUTE_V`.
+
+### PC19 is incomplete and is not a minimum
+
+Four of its ten jobs are absent in the source, so its energy-transfer and hole/electron
+reorganization energies are empty. Its S0 and reduced optimizations also carry imaginary
+frequencies. `minimum_confirmed = 0` and `note` say both.
 
 ## `quencher_dft.csv`
 

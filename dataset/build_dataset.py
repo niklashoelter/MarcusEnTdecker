@@ -12,6 +12,7 @@ Reads   ../data/experimental_data_processed/stern_volmer_fits.csv
         ../data/experimental_data_processed/absorption_extinction.csv
         ../data/computational_data_processed/quencher_dft.csv
         ../data/computational_data_processed/quencher_dvte.csv
+        ../data/computational_data_processed/photocatalyst_dft.csv
 Writes  pairs.csv
 
 Nothing is read from outside ../data/. No spreadsheet is consulted at run time and no
@@ -50,17 +51,42 @@ BOUNDS ARE CARRIED TOO
     treating `> 2.0` as `2.0` makes oxidation look reachable when the measurement only
     established that it is not reachable below 2.0 V.
 
-WHAT IS NOT HERE YET
-    Every photocatalyst-side computed quantity: E_T(PC), its reorganization energies,
-    and its excited-state redox potentials. The DFT job files for the photocatalysts
-    are not in the repository, and this package will not inherit those numbers from a
-    spreadsheet it cannot regenerate.
+THE DRIVING FORCES
+    Both channels a triplet photocatalyst can quench through, per pair, all
+    quencher-centric and all negative when exergonic:
 
-    That means the pair-level driving forces -- dG_EnT, dG_SET_ox, dG_SET_red -- cannot
-    be computed yet, and no column for them is written. They are not missing values to
-    be filled in later by a merge; they are quantities this table is not yet entitled
-    to state. Everything on the quencher side is present, so they become a one-line
-    addition once the photocatalyst job files arrive.
+        dG_EnT     = E_T(Q) - E_T(PC)
+        dG_SET_ox  = F * (E_Ox(Q) - E(PC*/PC-))     Q oxidized, PC* is the oxidant
+        dG_SET_red = F * (E(PC+/PC*) - E_Red(Q))    Q reduced,  PC* is the reductant
+
+    with F = 23.0605 kcal mol-1 V-1. `dG_SET` is whichever of the two is more
+    accessible, and `dG_SET_channel` says which, because "the SET driving force" is
+    meaningless without knowing which way the electron went.
+
+    Potentials are named by their couple rather than by direction. E(PC*/PC-) is the
+    potential at which PC* *oxidizes* a substrate -- the reduction potential of the
+    excited state. Naming it "the excited-state oxidation potential" is how the sign
+    gets flipped.
+
+    Both SET columns are computed twice, from the measured quencher potentials
+    (`_exp`) and from the computed ones (`_calc`), and the two are never merged. They
+    are different quantities with different provenance, and which one an analysis used
+    is part of what it has to report.
+
+BOUNDED POTENTIALS PROPAGATE INTO BOUNDED DRIVING FORCES
+    Nineteen quenchers have a redox potential recorded as a limit. Both limits point
+    the same way once they reach a driving force: an oxidation recorded as `> 2.0` puts
+    a floor under dG_SET_ox, and a reduction recorded as `< -2.10` puts a floor under
+    dG_SET_red. So `dG_SET_ox_bound = lower` means SET is *at least* this endergonic --
+    the true value can only be worse. That is a usable statement, and it is the only
+    honest one; reading the number at face value would understate how inaccessible the
+    channel is, in the direction that wrongly excludes pairs from the energy-transfer
+    set.
+
+WHAT IS STILL NOT HERE
+    The photocatalyst reorganization energies are carried but no combined lambda is
+    formed. Marcus theory needs the pair's lambda, and how the two partners' terms
+    combine is a modelling decision that belongs in benchmark/, not in the table.
 """
 
 import collections
@@ -83,6 +109,20 @@ K_Q_THRESHOLD = 1.0e7
 K_SV_FLOOR = 25.0
 
 SIGFIGS = 6
+
+# Faraday constant in the units the driving forces are reported in.
+F_KCAL_PER_V = 23.060548
+
+# Photocatalysts measured but excluded from the dataset, with the reason.
+#
+# This is a scientific decision taken outside this script, recorded here so that the
+# 1296 rows the Stern-Volmer fits would otherwise produce and the 1248 written below
+# differ by something a reader can see and disagree with. It is NOT a data-quality
+# filter and no threshold produces it: PC_24 is unremarkable on both fit quality and
+# lifetime provenance, and three photocatalysts that are kept have worse median r2.
+EXCLUDED_PHOTOCATALYSTS = {
+    24: "discarded from the screen; marked 'discard' in the photocatalyst record",
+}
 
 # Wavelengths at which an extinction coefficient was measured, for matching a quencher's
 # absorbance to the wavelength its photocatalyst was excited at.
@@ -107,6 +147,18 @@ COLUMNS = [
     "q_E_T_dft / kcal mol-1", "q_lambda_S_T_dft / kcal mol-1", "q_lambda_T_S_dft / kcal mol-1",
     "q_E_Ox_vs_SCE_calc / V", "q_E_Red_vs_SCE_calc / V",
     "q_dvte_mu_md / kcal mol-1", "q_dvte_std_md / kcal mol-1",
+    # photocatalyst, computed
+    "pc_E_T_dft / kcal mol-1",
+    "pc_lambda_S0_to_T1_dft / kcal mol-1", "pc_lambda_T1_to_S0_dft / kcal mol-1",
+    "pc_E_PCplus_PC / V", "pc_E_PC_PCminus / V",
+    "pc_E_PCstar_PCminus / V", "pc_E_PCplus_PCstar / V",
+    # driving forces
+    "dG_EnT / kcal mol-1",
+    "dG_SET_ox_exp / kcal mol-1", "dG_SET_ox_exp_bound",
+    "dG_SET_red_exp / kcal mol-1", "dG_SET_red_exp_bound",
+    "dG_SET_exp / kcal mol-1", "dG_SET_exp_bound", "dG_SET_exp_channel",
+    "dG_SET_ox_calc / kcal mol-1", "dG_SET_red_calc / kcal mol-1",
+    "dG_SET_calc / kcal mol-1", "dG_SET_calc_channel",
 ]
 
 
@@ -162,6 +214,20 @@ def label_class(quenches, censored, floor):
     return "indeterminate"
 
 
+def better_set_channel(ox, red):
+    """The more accessible of the two SET channels: (value, 'ox'|'red'), or (None, '').
+
+    "More accessible" is the less positive driving force. If only one channel has the
+    potentials it needs, that one is returned -- a missing channel is not evidence that
+    the other one is the preferred route, so the column says which one it is reporting.
+    """
+    available = [(value, name) for value, name in ((ox, "ox"), (red, "red"))
+                 if value is not None]
+    if not available:
+        return None, ""
+    return min(available)
+
+
 def nearest_epsilon(absorption_row, excitation_nm):
     """Extinction coefficient at the wavelength closest to the excitation wavelength.
 
@@ -187,12 +253,17 @@ def main():
     absorption = load(EXPERIMENTAL / "absorption_extinction.csv", "quencher_id")
     dft = load(COMPUTATIONAL / "quencher_dft.csv", "quencher_id")
     dvte = load(COMPUTATIONAL / "quencher_dvte.csv", "quencher_id")
+    pc_dft = load(COMPUTATIONAL / "photocatalyst_dft.csv", "pc_id")
 
     rows, no_tau0, quench_count, censored_count = [], set(), 0, 0
+    excluded_rows = 0
 
     with fits_path.open(encoding="utf-8", newline="") as fh:
         for fit in csv.DictReader(fh):
             pc_id, q_id = int(fit["pc_id"]), int(fit["quencher_id"])
+            if pc_id in EXCLUDED_PHOTOCATALYSTS:
+                excluded_rows += 1
+                continue
 
             lifetime = number(tau0.get(pc_id), "tau0_ns")
             if lifetime is None:
@@ -214,6 +285,38 @@ def main():
             pc = photocatalysts.get(pc_id)
             q = quenchers.get(q_id)
             excitation = number(pc, "excitation_nm")
+
+            pcc = pc_dft.get(pc_id)
+            pc_e_t = number(pcc, "E_T / kcal mol-1")
+            pc_star_ox = number(pcc, "E_PCstar_PCminus / V")   # PC* as the oxidant
+            pc_star_red = number(pcc, "E_PCplus_PCstar / V")   # PC* as the reductant
+
+            q_e_t = number(dft.get(q_id), "E_T")
+            dG_ent = (q_e_t - pc_e_t) if None not in (q_e_t, pc_e_t) else None
+
+            def set_driving_forces(e_ox, e_red):
+                """(dG_SET_ox, dG_SET_red) from one pair of quencher potentials."""
+                ox = (F_KCAL_PER_V * (e_ox - pc_star_ox)
+                      if None not in (e_ox, pc_star_ox) else None)
+                red = (F_KCAL_PER_V * (pc_star_red - e_red)
+                       if None not in (e_red, pc_star_red) else None)
+                return ox, red
+
+            dG_ox_exp, dG_red_exp = set_driving_forces(
+                number(q, "E_Ox_vs_SCE_exp"), number(q, "E_Red_vs_SCE_exp"))
+            dG_ox_calc, dG_red_calc = set_driving_forces(
+                number(dft.get(q_id), "E_Ox_vs_SCE_calc"),
+                number(dft.get(q_id), "E_Red_vs_SCE_calc"))
+
+            # A bound on either potential becomes a lower bound on the driving force:
+            # the quencher was not oxidized below the recorded value, so SET is at
+            # least this endergonic. Both directions land on `lower` for that reason.
+            ox_bound = "lower" if (q or {}).get("E_Ox_bound") else ""
+            red_bound = "lower" if (q or {}).get("E_Red_bound") else ""
+
+            dG_set_exp, exp_channel = better_set_channel(dG_ox_exp, dG_red_exp)
+            dG_set_calc, calc_channel = better_set_channel(dG_ox_calc, dG_red_calc)
+            set_bound = {"ox": ox_bound, "red": red_bound}.get(exp_channel, "")
 
             rows.append({
                 "pc_id": pc_id,
@@ -259,6 +362,29 @@ def main():
                 "q_E_Red_vs_SCE_calc / V": sig(number(dft.get(q_id), "E_Red_vs_SCE_calc")),
                 "q_dvte_mu_md / kcal mol-1": sig(number(dvte.get(q_id), "dvte_mu")),
                 "q_dvte_std_md / kcal mol-1": sig(number(dvte.get(q_id), "dvte_std")),
+
+                "pc_E_T_dft / kcal mol-1": sig(pc_e_t),
+                "pc_lambda_S0_to_T1_dft / kcal mol-1":
+                    sig(number(pcc, "lambda_S0_to_T1 / kcal mol-1")),
+                "pc_lambda_T1_to_S0_dft / kcal mol-1":
+                    sig(number(pcc, "lambda_T1_to_S0 / kcal mol-1")),
+                "pc_E_PCplus_PC / V": sig(number(pcc, "E_PCplus_PC / V")),
+                "pc_E_PC_PCminus / V": sig(number(pcc, "E_PC_PCminus / V")),
+                "pc_E_PCstar_PCminus / V": sig(pc_star_ox),
+                "pc_E_PCplus_PCstar / V": sig(pc_star_red),
+
+                "dG_EnT / kcal mol-1": sig(dG_ent),
+                "dG_SET_ox_exp / kcal mol-1": sig(dG_ox_exp),
+                "dG_SET_ox_exp_bound": ox_bound if dG_ox_exp is not None else "",
+                "dG_SET_red_exp / kcal mol-1": sig(dG_red_exp),
+                "dG_SET_red_exp_bound": red_bound if dG_red_exp is not None else "",
+                "dG_SET_exp / kcal mol-1": sig(dG_set_exp),
+                "dG_SET_exp_bound": set_bound,
+                "dG_SET_exp_channel": exp_channel,
+                "dG_SET_ox_calc / kcal mol-1": sig(dG_ox_calc),
+                "dG_SET_red_calc / kcal mol-1": sig(dG_red_calc),
+                "dG_SET_calc / kcal mol-1": sig(dG_set_calc),
+                "dG_SET_calc_channel": calc_channel,
             })
 
     rows.sort(key=lambda row: (row["pc_id"], row["quencher_id"]))
@@ -270,6 +396,10 @@ def main():
     pcs = {row["pc_id"] for row in rows}
     qs = {row["quencher_id"] for row in rows}
     print(f"{len(rows)} pairs -> {OUT.name}   ({len(pcs)} photocatalysts x {len(qs)} quenchers)")
+    for pc_id, reason in EXCLUDED_PHOTOCATALYSTS.items():
+        print(f"  excluded PC{pc_id}: {reason}")
+    if excluded_rows:
+        print(f"  {excluded_rows} fitted pairs dropped by that exclusion, not by any threshold")
     if len(rows) != len(pcs) * len(qs):
         print(f"  WARNING: not a complete grid, expected {len(pcs) * len(qs)}")
     if no_tau0:
@@ -301,9 +431,22 @@ def main():
     for label, field in (("quencher SMILES", "quencher_smiles"),
                          ("quencher DFT E_T", "q_E_T_dft / kcal mol-1"),
                          ("quencher DvTE", "q_dvte_mu_md / kcal mol-1"),
-                         ("experimental E_Ox", "q_E_Ox_vs_SCE_exp / V")):
+                         ("experimental E_Ox", "q_E_Ox_vs_SCE_exp / V"),
+                         ("photocatalyst DFT E_T", "pc_E_T_dft / kcal mol-1"),
+                         ("dG_EnT", "dG_EnT / kcal mol-1"),
+                         ("dG_SET from measured potentials", "dG_SET_exp / kcal mol-1"),
+                         ("dG_SET from computed potentials", "dG_SET_calc / kcal mol-1")):
         have = sum(1 for row in rows if row[field] != "")
         print(f"  {label}: {have}/{len(rows)}")
+
+    exergonic = sum(1 for row in rows
+                    if row["dG_EnT / kcal mol-1"] != "" and row["dG_EnT / kcal mol-1"] < 0)
+    bounded = sum(1 for row in rows if row["dG_SET_exp_bound"])
+    channels = collections.Counter(row["dG_SET_exp_channel"] for row in rows)
+    print(f"\n  dG_EnT exergonic for {exergonic} pairs")
+    print(f"  dG_SET (measured) preferred channel: "
+          + ", ".join(f"{v} {k}" for k, v in channels.most_common() if k))
+    print(f"  ...of which {bounded} rest on a bounded potential and are lower bounds only")
 
 
 if __name__ == "__main__":
