@@ -45,30 +45,25 @@ strong an oxidant the triplet is; calling it "the excited-state oxidation potent
 how its sign gets flipped downstream, and the source spreadsheet has exactly that pair of
 labels crossed.
 
-### It reproduces the published table, and finds five stale cells in it
+### It reproduces the published table
 
-Eleven quantities were checked against `computed_PCs.xlsx` across all 31 photocatalysts.
-Every one agrees to **6e-5 or better** — the triplet energy, all six reorganization
-energies and all four potentials. Two constants were recovered from that comparison rather
-than assumed: 627.509 kcal mol⁻¹ Ha⁻¹, and an absolute SCE potential of 4.422 V, both with
-essentially no scatter across the set.
+Every column of this file was matched against every column of `computed_PCs.xlsx`, across
+all 31 photocatalysts. Twenty-two quantities have a counterpart and all twenty-two agree:
+the triplet energy, all six reorganization energies and all four potentials to **3e-5 or
+better**, the ten raw electronic energies to 5e-10 Ha, the four Gibbs corrections exactly.
 
-The exception is the spreadsheet's `Adiabatic ET` column, which is **not** a consistent
-function of the deposited jobs — it scatters where every other column is exact. Five
-photocatalysts differ:
+Two constants were recovered from that comparison rather than assumed: 627.509
+kcal mol⁻¹ Ha⁻¹, and an absolute SCE potential of 4.422 V, both with essentially no
+scatter across the set. The match also confirms which spreadsheet label means what:
+`E_PCplus_PC` is the sheet's "Reduction Potential" and `lambda_S0_to_T1` its
+"lambda_donor_triplet" — the sheet's own naming is crossed in both places.
 
-| | sheet | recomputed | difference |
-|---|---:|---:|---:|
-| PC10 | 58.174 | 55.943 | **+2.230** |
-| PC13 | 64.969 | 65.670 | −0.701 |
-| PC25 | 65.232 | 64.621 | +0.610 |
-| PC28 | 79.404 | 79.950 | −0.546 |
-| PC19 | 59.169 | 59.237 | −0.069 |
-
-The spreadsheet's own `Adiabatic Energy` column reproduces exactly for all 31, so this is
-a stale hand-carried duplicate rather than a disagreement about method. It matters because
-`Adiabatic ET` is the column the experimental triplet energies are compared against: for
-PC28 the calculated-minus-experimental gap is 3.65 kcal/mol, not the 3.10 the sheet shows.
+The one column that does **not** reproduce is `Adiabatic ET`, stale in five cells (PC10 by
++2.23, PC13/25/28 by 0.5–0.7, PC19 by 0.07 kcal/mol). Its sibling `Adiabatic Energy`
+reproduces exactly for all 30 rows that carry it, so this is a hand-carried duplicate that
+fell behind rather than a disagreement about method. **Nothing here or downstream reads
+it.** It existed to compare against literature triplet energies, a benchmark of the method
+that this work does not make, so it is noted and left alone.
 
 ### Sanity
 
@@ -77,11 +72,22 @@ the excited-state ones, within about 0.1 V of the accepted values on three of th
 absolute scale is therefore not obviously displaced, though the whole set moves rigidly
 with the choice of `SCE_ABSOLUTE_V`.
 
-### PC19 is incomplete and is not a minimum
+### PC19 is incomplete
 
-Four of its ten jobs are absent in the source, so its energy-transfer and hole/electron
-reorganization energies are empty. Its S0 and reduced optimizations also carry imaginary
-frequencies. `minimum_confirmed = 0` and `note` say both.
+Four of its ten jobs were never run — `S_geometry_T_energy`, `S_geometry_ox_energy`,
+`S_geometry_red_energy` and `red_geometry_S_energy` — so four of its reorganization
+energies are empty and its 48 pairs drop out of every barrier method downstream. No
+re-optimisation fixes that; the jobs have to be run. Open with Leon.
+
+Its S0 and reduced optimisations also carry an imaginary mode, and `minimum_confirmed = 0`
+records it, but the mode is **−5.44 cm⁻¹** and **−10.02 cm⁻¹** — a floppy rotor, not a
+saddle point. These are the only imaginary modes across all 124 optimisations in the
+deposit. The geometry is converged and the numbers are usable.
+
+The spreadsheet's PC19 singlet energy is 7.8e-7 Ha from the one here, the only Ha
+disagreement in the whole comparison worse than 1e-9. That is the sheet lagging the data:
+`PC_19/singlet_opt` was re-run on 2026-04-24, after the sheet was filled, and the re-run
+is what is deposited.
 
 ## `quencher_dft.csv`
 
@@ -158,17 +164,17 @@ substrate*, i.e. the reduction potential of the PC\*/PC⁻ couple.
 Note that `23.061` in `quencher_dft.py` and `23.0605` here are different constants in the
 source material. Both are kept as they were rather than reconciled.
 
-## Four photocatalysts to resolve before the photocatalyst table is rebuilt
+## Photocatalysts still to resolve
 
-* **PC10, PC13, PC25, PC28** — the reported triplet energy disagrees with the one implied
-  by the electronic energies in the same row, by 2.23, 0.70, 0.61 and 0.55 kcal mol⁻¹.
-  E_T feeds ΔG_EnT directly, so on PC10 this moves the driving force for all 48 of its pairs.
-* **PC19** has imaginary frequencies in both the S₀ and the reduced optimisation. It has a
-  triplet energy but no reorganization energies and no potentials, and drops out of every
-  downstream table. It needs re-optimising, not re-fitting.
+* **PC19** is missing four single points that were never run, so four of its reorganization
+  energies are empty and its 48 pairs are silently predicted "does not quench" by every
+  barrier method. Open with Leon. Its imaginary modes are *not* the problem — see above.
 * **PC24** came out at λ_T→S = 0.89 kcal mol⁻¹, impossible for an Ir(ppy) complex — the
   singlet and triplet geometries collapsed onto each other. It quenched nothing across all
   48 quenchers, and a near-zero λ flattens the Marcus barrier, so it produced roughly 30
-  false positives on its own.
+  false positives on its own. It is excluded from the assembled dataset.
 * **PC20** gave λ_T→S = 33.67 against λ_S→T = 12.70, a 2.7x forward/reverse asymmetry no
   other non-pmb complex shows. Never flagged or verified.
+
+PC10, PC13, PC25 and PC28 were on this list because of the `Adiabatic ET` column. They are
+off it: that column is stale and unread, and their triplet energies recompute exactly.
