@@ -81,10 +81,11 @@ multi-gigabyte dependency tree.
 ## Predicting
 
 ```python
-from ml.predict import RatePredictor
+from ml.predict import RatePredictor, photocatalyst_properties
 
 predictor = RatePredictor()
-result = predictor.predict(photocatalyst=PC_SMILES, quencher=Q_SMILES)
+result = predictor.predict(photocatalyst=photocatalyst_properties(3),  # Ir(ppy)3
+                           quencher=Q_SMILES)
 
 result.dG_kcal          # driving force
 result.dG_barrier_kcal  # Marcus activation barrier
@@ -94,8 +95,40 @@ result.uncertainty      # from the mixture density network
 ```
 
 `predict_many` takes an iterable of pairs and runs one forward pass per *structure*,
-not per pair, so screening 48 quenchers against one photocatalyst costs 49 passes
+not per pair, so screening 48 quenchers against one photocatalyst costs 48 passes
 rather than 96. There is no command-line interface; this is a library.
+
+## The model cannot see the photocatalysts
+
+Its element vocabulary is **H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I**. Iridium (77)
+and ruthenium (44) are not in it, and encoding one raises `UnknownAtomError` rather than
+returning a bad answer.
+
+**28 of the 29 screened photocatalysts are Ir or Ru complexes.** Only PC7, an organic
+thioxanthone, can be passed to the model as a structure — verified, it predicts fine.
+This is a property of the training set, which is organic triplet sensitizers, not a
+defect, and it is not something authoring the SMILES could fix. The SMILES were still
+needed, and they were needed for the DFT-to-structure correspondence; they simply cannot
+be fed to this model.
+
+So a pair is predicted from two sources, and the API takes them as two kinds of argument:
+
+| partner | comes from | how it is passed |
+|---|---|---|
+| quencher | the model | a SMILES |
+| photocatalyst | DFT | `photocatalyst_properties(pc_id)` |
+
+Both arguments accept either form, so an organic photocatalyst can still be given as a
+SMILES. Passing a metal complex as a SMILES fails loudly, deliberately: a silent fallback
+would hide which half of a prediction is a model output.
+
+**A rate from this API is therefore a hybrid**, a calculated triplet energy for one
+partner and a predicted one for the other, carrying different errors. `uncertainty`
+reports only what the model estimates and `uncertainty_covers` names the partners it
+accounts for. It is not a total.
+
+PC19 raises rather than predicts: four of its ten jobs are missing, so it has no
+reorganization energies.
 
 ### What it composes
 
@@ -182,15 +215,34 @@ barrier for every pair it touches. Whether their triplets are genuinely dissocia
 should be settled by looking at the optimised triplet geometries before any of those
 values is used.
 
-## predict.py is still not run end to end
+## predict.py has now been run end to end
 
-`predict_quenchers.py` above exercises the model and the checkpoint, so those are now
-confirmed working. `predict.py` itself — the pair-level rate API — has still not been run:
-it needs a photocatalyst as well, and the photocatalyst DFT is not in the repository. Its
-calls are taken from the `pyrates`
-source rather than guessed, but the first run should be checked against a handful of
-pairs from `../dataset/pairs.csv` before any number from it is used. That check is
-also what will confirm the checkpoint loads from a fresh clone.
+Against `../dataset/pairs.csv`, over every photocatalyst with complete DFT. The plumbing
+is confirmed: the checkpoint loads, the driving forces come out on the same scale as the
+DFT ones, and the Marcus barrier and Balzani rate follow.
+
+The numbers themselves are another matter, and this is where the raw default sits:
+
+| `lambda_scale` | correct on the 735 established pairs |
+|---:|---:|
+| 1.0 | 0.686 |
+| 0.6 | **0.810** |
+| 0.45 | 0.785 |
+| 0.35 | 0.767 |
+| 0.2 | 0.682 |
+
+Scaling clearly helps, which is the documented expectation. But **the optimum here is
+near 0.6, not the 0.35–0.45 quoted below.** Two differences could account for that and
+neither has been separated yet: this is a hybrid, taking the photocatalyst from DFT and
+only the quencher from the model, and it scores against `label_class` rather than the
+naive labels, which removes 465 indeterminate pairs from the count. The earlier figure
+came from a pure-theory benchmark on the older labelling.
+
+Treat neither number as settled until `../benchmark/` scores them on the same footing.
+The default remains 1.0 so that nothing is silently scaled.
+
+Established pairs here are 735, not 783: PC19 is skipped for want of reorganization
+energies and PC24 is out of the dataset.
 
 ## Training
 

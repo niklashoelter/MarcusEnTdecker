@@ -4,7 +4,8 @@ Python API for predicting triplet energy transfer rates from structure alone.
     from ml.predict import RatePredictor
 
     predictor = RatePredictor()
-    result = predictor.predict(photocatalyst=PC_SMILES, quencher=Q_SMILES)
+    result = predictor.predict(photocatalyst=photocatalyst_properties(1),
+                               quencher=Q_SMILES)
 
     result.dG_kcal          driving force
     result.dG_barrier_kcal  Marcus activation barrier
@@ -52,20 +53,46 @@ LAMBDA SCALING
     Set it deliberately. The default is left at 1.0 so that nothing is silently
     scaled, but 1.0 is known to over-estimate the barrier.
 
-NOT YET RUN
-    This module has not been executed end to end. It needs `uv sync --extra ml`, which
-    pulls torch, torch-geometric and rdkit, and it loads a 69 MB checkpoint. The calls
-    it makes are taken from the `pyrates` source rather than guessed, but the first
-    run should be checked against a few pairs in `../dataset/pairs.csv` before any
-    number from it is used.
+THE MODEL CANNOT SEE THE PHOTOCATALYSTS
+    Its element vocabulary is H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I. Iridium
+    (77) and ruthenium (44) are not in it, and encoding one raises `UnknownAtomError`
+    rather than returning a poor answer -- which is the right behaviour, but it means
+    28 of the 29 screened photocatalysts cannot be passed to it as a structure at all.
+    Only PC7, an organic thioxanthone, can.
+
+    This is a property of the training set, not a defect: the model was trained on
+    organic triplet sensitizers. So a pair is predicted from two different sources,
+    and the API takes them as two different kinds of argument:
+
+        the quencher       a SMILES -> the model         (organic, in the vocabulary)
+        the photocatalyst  its DFT properties            (a metal complex)
+
+    `photocatalyst_properties(pc_id)` reads those from
+    `../data/computational_data_processed/photocatalyst_dft.csv`. Passing a metal
+    complex as a SMILES will fail, loudly, and that is deliberate -- silently falling
+    back to something else would hide which half of each prediction is a model output.
+
+    Both arguments accept either form, so an organic photocatalyst can still be given
+    as a SMILES and a quencher can be given as measured properties.
+
+MIXING A MODEL PREDICTION WITH A CALCULATION
+    A rate from this API is therefore a hybrid: a DFT triplet energy for one partner
+    and a predicted one for the other. The two carry different errors. `uncertainty`
+    reports only what the model estimates, because a DFT number arrives without one,
+    and `uncertainty_covers` says which partners it accounts for. Do not read it as a
+    total.
 """
 
 from __future__ import annotations
 
+import csv
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Sequence, Union
+
+PHOTOCATALYST_DFT = (Path(__file__).resolve().parent.parent / "data"
+                     / "computational_data_processed" / "photocatalyst_dft.csv")
 
 # Gas constant in kcal mol-1 K-1.
 R_KCAL = 1.987204259e-3
@@ -86,12 +113,62 @@ class MolecularProperties:
 
     smiles: str
     E_T: float
-    E_T_uncertainty: float
     lambda_S_T: float
-    lambda_S_T_uncertainty: float
     lambda_T_S: float
-    lambda_T_S_uncertainty: float
+    # None where the properties came from a calculation rather than the model. A DFT
+    # number arrives without an uncertainty, and inventing a 0.0 for it would make a
+    # hybrid prediction look better determined than it is.
+    E_T_uncertainty: float | None = None
+    lambda_S_T_uncertainty: float | None = None
+    lambda_T_S_uncertainty: float | None = None
     spin_density: list[float] = field(default_factory=list)
+    source: str = "model"
+
+
+#: Either a structure the model can encode, or properties already in hand.
+Partner = Union[str, "MolecularProperties"]
+
+
+def photocatalyst_properties(pc_id: int, path: Path | None = None) -> MolecularProperties:
+    """DFT properties for one photocatalyst, in the form `predict` takes.
+
+    The model cannot encode iridium or ruthenium, so this is how a metal-complex
+    photocatalyst enters a prediction: from `photocatalyst_dft.csv`, which is derived
+    from the deposited ORCA jobs.
+
+    The two reorganization energies map across by which surface they relax on --
+    `lambda_S0_to_T1` is the relaxation on the triplet surface from the singlet
+    geometry, which is what the Marcus expression calls `lambda_S_T`.
+    """
+    source = path or PHOTOCATALYST_DFT
+    if not source.exists():
+        raise FileNotFoundError(
+            f"{source} is missing; run "
+            f"`uv run data/computational_data_scripts/photocatalyst_dft.py` first"
+        )
+
+    with source.open(encoding="utf-8", newline="") as fh:
+        row = next((r for r in csv.DictReader(fh) if int(r["pc_id"]) == pc_id), None)
+
+    if row is None:
+        raise KeyError(f"no photocatalyst {pc_id} in {source.name}")
+
+    needed = ("E_T / kcal mol-1", "lambda_S0_to_T1 / kcal mol-1",
+              "lambda_T1_to_S0 / kcal mol-1")
+    absent = [c for c in needed if not row[c]]
+    if absent:
+        raise ValueError(
+            f"PC{pc_id} has no {', '.join(absent)} -- its jobs are incomplete "
+            f"({row['note']}). It cannot be used for a rate prediction."
+        )
+
+    return MolecularProperties(
+        smiles=f"PC{pc_id}",
+        E_T=float(row["E_T / kcal mol-1"]),
+        lambda_S_T=float(row["lambda_S0_to_T1 / kcal mol-1"]),
+        lambda_T_S=float(row["lambda_T1_to_S0 / kcal mol-1"]),
+        source="dft",
+    )
 
 
 @dataclass(frozen=True)
@@ -109,7 +186,8 @@ class RatePrediction:
     k_eyring: float
     quenches: bool
 
-    uncertainty: float
+    uncertainty: float | None
+    uncertainty_covers: str
     symmetric_approximation: bool
 
     photocatalyst_properties: MolecularProperties
@@ -169,26 +247,40 @@ class RatePredictor:
                     lambda_T_S=float(row["lamda_T_S"]),
                     lambda_T_S_uncertainty=float(row["lamda_T_S_uncertainty"]),
                     spin_density=list(row["spin_map"]),
+                    source="model",
                 )
 
         return [self._cache[s] for s in wanted]
 
     # -- rates ------------------------------------------------------------------
 
-    def predict(self, photocatalyst: str, quencher: str) -> RatePrediction:
-        """Predict the rate constant for one pair."""
+    def predict(self, photocatalyst: Partner, quencher: Partner) -> RatePrediction:
+        """Predict the rate constant for one pair.
+
+        Each partner is either a SMILES, which the model is asked about, or a
+        `MolecularProperties`, which is used as given. A metal-complex photocatalyst
+        has to be the second kind -- see `photocatalyst_properties`.
+        """
         return self.predict_many([(photocatalyst, quencher)])[0]
 
-    def predict_many(self, pairs: Iterable[tuple[str, str]]) -> list[RatePrediction]:
-        """Predict rate constants for many pairs, with one model pass per structure."""
+    def predict_many(self, pairs: Iterable[tuple[Partner, Partner]]) -> list[RatePrediction]:
+        """Predict rate constants for many pairs, with one model pass per structure.
+
+        Only the partners given as SMILES reach the model, and each distinct one
+        reaches it once. Screening 48 quenchers against one photocatalyst whose
+        properties are already known therefore costs 48 forward passes, not 49.
+        """
         pairs = list(pairs)
         if not pairs:
             return []
 
-        structures = list(dict.fromkeys([s for pair in pairs for s in pair]))
-        self.properties(structures)
+        smiles = [p for pair in pairs for p in pair if isinstance(p, str)]
+        self.properties(list(dict.fromkeys(smiles)))
 
-        return [self._rate(self._cache[pc], self._cache[q]) for pc, q in pairs]
+        def resolve(partner: Partner) -> MolecularProperties:
+            return self._cache[partner] if isinstance(partner, str) else partner
+
+        return [self._rate(resolve(pc), resolve(q)) for pc, q in pairs]
 
     def _rate(self, pc: MolecularProperties, q: MolecularProperties) -> RatePrediction:
         from pyrates.energy.eyring import eyring_equation
@@ -207,7 +299,15 @@ class RatePredictor:
         )
 
         k_ent = self._balzani(dG, barrier)
-        uncertainty = math.hypot(pc.E_T_uncertainty, q.E_T_uncertainty)
+
+        # Only the partners the model spoke about contribute. Combining an estimated
+        # uncertainty with an absent one by treating the absent one as zero would
+        # understate the spread on every hybrid prediction.
+        estimated = [(name, p.E_T_uncertainty) for name, p in
+                     (("photocatalyst", pc), ("quencher", q))
+                     if p.E_T_uncertainty is not None]
+        uncertainty = (math.sqrt(sum(u * u for _, u in estimated)) if estimated else None)
+        covers = " and ".join(name for name, _ in estimated) or "neither partner"
 
         return RatePrediction(
             photocatalyst=pc.smiles,
@@ -219,6 +319,7 @@ class RatePredictor:
             k_eyring=float(eyring_equation(barrier, T=self.temperature)),
             quenches=k_ent > self.quenching_threshold,
             uncertainty=uncertainty,
+            uncertainty_covers=covers,
             # calculate_driving_force_and_barrier falls back to the symmetric form
             # when the parabolas do not intersect. It reports that by printing, not
             # by returning, so it is re-derived here from the same condition.
