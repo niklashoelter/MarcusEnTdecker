@@ -26,8 +26,10 @@ ON ONE FOOTING MEANS
     its tuned one.
 
 THE TWO NUMBERS THAT ARE NOT THE SAME NUMBER
-    full         all 1248 pairs, y = `quenches`. 553 negatives.
-    resolvable   the 783 pairs with `label_class != indeterminate`. 156 negatives.
+    inclusive    all 1248 pairs, y = `quenches`: K_SV > 10, or K_SV <= 10 with a
+                 slope significant across the points the fit used. 458 negatives.
+    strict       all 1248 pairs, y = `quenches_strict`: the published K_SV >= 25 and
+                 r2 >= 0.90. 614 negatives.
 
     The gap between them is not a rounding difference. The classification cutoff of
     1e7 M-1 s-1 lies below the Stern-Volmer detection floor `25 / tau_0` for 19 of the 26
@@ -40,12 +42,11 @@ THE TWO NUMBERS THAT ARE NOT THE SAME NUMBER
     all of them has its specificity measured partly against pairs that carry no
     information, and its MCC with it.
 
-    Which regime the paper should report is an open scientific question.
-    `../dataset/README.md` sets out four options -- restrict to the resolvable subset,
-    raise the cutoff to the worst floor, use a per-photocatalyst cutoff, or move to
-    censored regression on k_q -- and takes none of them. This harness takes none of them
-    either. It reports both every time, side by side, and puts the difference in the
-    printed output rather than in a footnote.
+    Which regime the paper should report is a scientific question about what counts
+    as quenching, not a data-processing one. The 156 pairs between the two are weak
+    but real: monotone 3-4 % signal, well above read noise, at rate constants the
+    published criterion never counted. Both regimes are always scored and both are
+    always reported; this harness takes no position.
 
 WHAT IS NOT SCORED HERE
     Single-electron transfer as a classification target. The original project removed it
@@ -319,12 +320,12 @@ def _score_configs(mod, configs, predictions, regimes, positions, context, n_und
             row[f"Accuracy_{regime}"] = m["Accuracy"]
             row[f"Sensitivity_{regime}"] = m["Sensitivity"]
             row[f"Specificity_{regime}"] = m["Specificity"]
-        if "full" in regimes and "resolvable" in regimes:
-            carried = predictions[best_index[("full", mtype)]]
-            y_res = np.asarray(regimes["resolvable"][1], dtype=bool)
-            row["MCC_resolvable_at_full_operating_point"] = scoring.metrics(
-                y_res, carried[positions["resolvable"]])["MCC"]
-            row["dMCC_full_minus_resolvable"] = row["MCC_full"] - row["MCC_resolvable"]
+        if "inclusive" in regimes and "strict" in regimes:
+            carried = predictions[best_index[("inclusive", mtype)]]
+            y_strict = np.asarray(regimes["strict"][1], dtype=bool)
+            row["MCC_strict_at_inclusive_operating_point"] = scoring.metrics(
+                y_strict, carried[positions["strict"]])["MCC"]
+            row["dMCC_inclusive_minus_strict"] = row["MCC_inclusive"] - row["MCC_strict"]
         regime_rows.append(row)
 
 
@@ -335,10 +336,10 @@ def print_regime_comparison(regimes_df, best_df):
     print("\n" + "=" * 108)
     print("THE SAME METHODS UNDER BOTH READINGS OF THE GROUND TRUTH")
     print("=" * 108)
-    print("full        every pair, y = quenches. Most of its negatives were never resolvable.")
-    print("resolvable  label_class != indeterminate. Every negative was established as one.")
-    print("carried     the setting chosen on 'full', scored on 'resolvable'.")
-    print("lopo        leave-one-photocatalyst-out on 'full': the setting is chosen on the")
+    print("inclusive   every pair, y = quenches: K_SV > 10, or a significant slope below it.")
+    print("strict      every pair, y = quenches_strict: the published K_SV >= 25 and r2 >= 0.90.")
+    print("carried     the setting chosen on 'inclusive', scored on 'strict'.")
+    print("lopo        leave-one-photocatalyst-out on 'inclusive': the setting is chosen on the")
     print("            other photocatalysts and applied to the held-out one. For a method")
     print("            with no free parameter it equals the tuned score by construction.")
     print("free        free parameters selected by maximizing MCC on the scored data.")
@@ -347,25 +348,25 @@ def print_regime_comparison(regimes_df, best_df):
     print("see dataset/README.md and the README beside this script.")
     print()
 
-    best_full = best_df[best_df["label_regime"] == "full"].set_index(
+    best_inclusive = best_df[best_df["label_regime"] == "inclusive"].set_index(
         ["mechanism_rule", "set_source", "method_type"])
     view = regimes_df.copy()
     keys = list(zip(view["mechanism_rule"], view["set_source"], view["method_type"]))
-    view["lopo"] = [best_full["MCC_leave_one_pc_out"].get(k, float("nan")) for k in keys]
-    view["alpha"] = [best_full["param_lam_scale"].get(k, float("nan")) for k in keys] \
-        if "param_lam_scale" in best_full.columns else float("nan")
+    view["lopo"] = [best_inclusive["MCC_leave_one_pc_out"].get(k, float("nan")) for k in keys]
+    view["alpha"] = [best_inclusive["param_lam_scale"].get(k, float("nan")) for k in keys] \
+        if "param_lam_scale" in best_inclusive.columns else float("nan")
 
     rank = {mod.NAME: i for i, mod in enumerate(THEORIES)}
     view["_rank"] = view["theory"].map(rank).fillna(99)
-    view = view.sort_values(["mechanism_rule", "set_source", "_rank", "MCC_full"],
+    view = view.sort_values(["mechanism_rule", "set_source", "_rank", "MCC_inclusive"],
                             ascending=[True, True, True, False])
     cols = ["mechanism_rule", "set_source", "method_type", "n_free", "alpha",
-            "n_full", "MCC_full", "lopo", "n_resolvable", "MCC_resolvable",
-            "MCC_resolvable_at_full_operating_point", "dMCC_full_minus_resolvable"]
+            "n_inclusive", "MCC_inclusive", "lopo", "n_strict", "MCC_strict",
+            "MCC_strict_at_inclusive_operating_point", "dMCC_inclusive_minus_strict"]
     view = view[[c for c in cols if c in view.columns]].rename(columns={
         "mechanism_rule": "rule", "set_source": "SET", "method_type": "method",
-        "n_free": "free", "MCC_resolvable_at_full_operating_point": "carried",
-        "dMCC_full_minus_resolvable": "dMCC"})
+        "n_free": "free", "MCC_strict_at_inclusive_operating_point": "carried",
+        "dMCC_inclusive_minus_strict": "dMCC"})
     print(view.round(3).to_string(index=False))
     print("\nEvery setting of every method is in results/benchmark_full.csv; the chosen")
     print("setting and its parameters are in results/benchmark_best.csv.")

@@ -21,23 +21,24 @@ WHY THIS MODULE EXISTS
     not optional. See "WHICH SURFACE EACH LAMBDA LIVES ON" below.
 
 THE TWO LABEL REGIMES
-    `pairs.csv` carries `quenches` (the naive `k_q > 1e7` cutoff) and `label_class`
-    (what the measurement actually established). They disagree for 465 of the 1248
-    pairs, because the 1e7 cutoff sits below the Stern-Volmer detection floor
-    `25 / tau_0` for 19 of the 26 photocatalysts, covering 912 pairs. For those, "did not
-    quench" records that the measurement could not resolve a rate constant, not that the
-    rate constant is small: PC10's floor is 3.35e8 M-1 s-1, so it could have a pair going
-    at 3e8 and still be counted a non-quencher.
+    The ground truth is set on K_SV, the observable, and not on k_q. A cutoff on k_q was
+    incoherent: k_q = K_SV / tau_0, so the Stern-Volmer detection floor moves with the
+    photocatalyst, and at a 1e7 cutoff that floor sat ABOVE the cutoff for 19 of the 26
+    photocatalysts. 465 pairs could not be labelled at all. On K_SV the floor is one
+    number for every photocatalyst and every pair is labelled by the same criterion, so
+    the indeterminate class is gone and with it the 'resolvable' regime.
 
-    Only 156 of the 553 apparent non-quenchers are established as non-quenchers. A method
-    scored against all 553 has its specificity measured partly against pairs that carry
-    no information, and its MCC with it.
+    What remains is a choice of how permissive the criterion is, and `pairs.csv` carries
+    both readings:
 
-    `label_regimes()` returns both readings -- the full 1248 with the naive labels, and
-    the 783 pairs the experiment can adjudicate. Which one the paper should report is an
-    open scientific question; `../dataset/README.md` sets out four options and takes
-    none of them. This module takes none of them either. Both are always computed and
-    both are always reported.
+      `quenches`         K_SV > 10, or K_SV <= 10 with a slope significant across the
+                         points the fit used. 790 of 1248.
+      `quenches_strict`  the published criterion, K_SV >= 25 and r2 >= 0.90. 634 of 1248.
+
+    The 156 pairs between them are weak quenchers: real monotone 3-4 % signal, well above
+    read noise, at rate constants the strict criterion never counted. Whether the paper
+    claims them is a scientific question about what "quenching" means, not a data
+    question, so `label_regimes()` returns both and this module takes no position.
 
 WHICH SURFACE EACH LAMBDA LIVES ON
     The quencher and photocatalyst reorganization energies reach pairs.csv under two
@@ -83,8 +84,8 @@ LOG10_K_Q = "log10_k_q"
 QUENCHES = "quenches"
 CENSORED = "censored"
 K_Q_FLOOR = "k_q_floor / M-1 s-1"
-LABEL_CLASS = "label_class"
-THRESHOLD_RESOLVABLE = "threshold_resolvable"
+QUENCHES_STRICT = "quenches_strict"
+K_SV_FLOOR = "K_SV_floor / M-1"
 TAU0_NS = "tau0 / ns"
 
 # --- quencher, computed --------------------------------------------------------------
@@ -142,6 +143,9 @@ def set_columns(source: str) -> dict:
 
 # A pair counts as quenching above this rate constant. Set in `dataset/build_dataset.py`;
 # repeated here for reporting only, never to relabel anything.
+# The rate cutoff the ground truth used to be set on. Nothing is labelled or classified
+# on it any more -- the label is K_SV > 10 and the matching rate cutoff is per-pair,
+# k_q_floor. Kept so the old reading can still be quoted for comparison.
 K_Q_THRESHOLD = 1.0e7
 
 # The Faraday constant in the units the driving forces use, for anyone converting a
@@ -234,50 +238,49 @@ def dG_set(df: pd.DataFrame, source: str = "exp"):
 def label_regimes(df: pd.DataFrame) -> dict:
     """The two ways of reading the ground truth, both of them, always.
 
-    Returns {name: (subset, y)}:
+    Returns {name: (subset, y)}. Both cover all 1248 pairs -- nothing is dropped now that
+    the label is set on the observable -- and they differ only in how permissive the
+    criterion is:
 
-      'full'         all pairs, y = `quenches` -- the naive reading, in which every pair
-                     that did not quench is a negative. 553 are negatives on this
-                     reading; only 156 were established as such.
+      'inclusive'  y = `quenches`. K_SV > 10, or K_SV <= 10 with a slope significant
+                   across the points the fit used. 790 positives.
 
-      'resolvable'   the 783 pairs with label_class != indeterminate: above the cutoff
-                     and actually detected, or below the cutoff and detectable by that
-                     photocatalyst. Drops the 465 pairs the measurement cannot
-                     adjudicate, and with them most of the short-lived photocatalysts.
+      'strict'     y = `quenches_strict`. The published criterion, K_SV >= 25 and
+                   r2 >= 0.90. 634 positives.
 
-    Nothing here chooses between them. The difference between the two is a headline the
-    benchmark has to show, not a detail to settle before reporting.
+    The 156 pairs that separate them are weak but real quenchers. Nothing here chooses
+    between the two; the gap between them is a headline the benchmark has to show, not a
+    detail to settle before reporting.
     """
-    require(df, [QUENCHES, LABEL_CLASS], "the ground truth")
-    full_y = df[QUENCHES].astype(int).astype(bool)
-
-    sub = df[df[LABEL_CLASS] != "indeterminate"]
-    sub_y = sub[LABEL_CLASS] == "positive"
-    # The two definitions have to agree wherever both apply. If they ever stop agreeing,
-    # one has been redefined upstream and the benchmark cannot tell which is now truth.
-    if not (sub_y.to_numpy() == sub[QUENCHES].astype(int).astype(bool).to_numpy()).all():
+    require(df, [QUENCHES, QUENCHES_STRICT], "the ground truth")
+    inclusive = df[QUENCHES].astype(int).astype(bool)
+    strict = df[QUENCHES_STRICT].astype(int).astype(bool)
+    # Strict is a subset of inclusive by construction: K_SV >= 25 implies K_SV > 10. If
+    # that ever stops holding, one of the two has been redefined upstream and the
+    # benchmark cannot tell which is now the ground truth.
+    if (strict & ~inclusive).any():
         raise ValueError(
-            "label_class and quenches disagree on a resolvable pair. One of the two has "
-            "been redefined in dataset/build_dataset.py; the benchmark cannot tell which "
-            "is now the ground truth."
+            f"{int((strict & ~inclusive).sum())} pairs quench under the strict criterion "
+            "but not the inclusive one, which cannot happen while the strict K_SV cutoff "
+            "is the higher of the two. One of the two has been redefined in "
+            "dataset/build_dataset.py or in "
+            "data/experimental_data_scripts/stern_volmer_fits.py."
         )
-    return {"full": (df, full_y), "resolvable": (sub, sub_y)}
+    return {"inclusive": (df, inclusive), "strict": (df, strict)}
 
 
 def describe(df: pd.DataFrame) -> str:
     """One block of text saying what was loaded and what is known to be odd about it."""
-    counts = df[LABEL_CLASS].value_counts()
     flagged = sorted(set(df[PC_NAME]) & set(FLAGGED_PHOTOCATALYSTS))
     lines = [
         f"{len(df)} pairs  ({df[PC_NAME].nunique()} photocatalysts x "
         f"{df[Q_NAME].nunique()} quenchers)",
-        f"  quenches = 1        {int(df[QUENCHES].sum()):5d}   at the "
-        f"{K_Q_THRESHOLD:g} M-1 s-1 cutoff",
-        f"  censored            {int(df[CENSORED].sum()):5d}   below the Stern-Volmer "
-        f"detection floor; k_q is an upper bound for these",
-        f"  label_class               positive {counts.get('positive', 0)}, "
-        f"negative {counts.get('negative', 0)}, "
-        f"indeterminate {counts.get('indeterminate', 0)}",
+        f"  quenches            {int(df[QUENCHES].sum()):5d}   K_SV > 10, or a "
+        f"significant slope below it",
+        f"  quenches_strict     {int(df[QUENCHES_STRICT].sum()):5d}   published: "
+        f"K_SV >= 25 and r2 >= 0.90",
+        f"  censored            {int(df[CENSORED].sum()):5d}   below the K_SV floor; "
+        f"K_SV is an upper bound for these",
     ]
     if "dG_SET_exp_bound" in df.columns:
         n_bound = int((df["dG_SET_exp_bound"].astype(str).str.lower() == "lower").sum())

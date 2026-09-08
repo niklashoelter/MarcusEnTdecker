@@ -132,7 +132,8 @@ point.
 There is only one classification setting, and the module explains why: as a classifier
 Sandros is algebraically a driving-force cutoff, with `k_max` and the threshold perfectly
 degenerate. Sweeping either would be sweeping the adiabatic rule's threshold under
-another name. So it is scored at the ground truth's own 10⁷ M⁻¹ s⁻¹ cutoff instead.
+another name. So it is scored at the ground truth's own cutoff instead — which, since
+the label is K_SV > 10, is per-pair: `10/τ₀`, the `k_q_floor` column.
 
 ### dvte — a distribution instead of a number
 
@@ -192,7 +193,7 @@ symmetric mean of the two, so the swap is invisible there — `marcus_barrier_sy
 identically either way, which is a useful check that the flag does what it claims.
 
 **And the correction does not improve the score.** On the asymmetric form the original's
-pairing gives MCC 0.534 against 0.510, and 0.645 against 0.596 on the resolvable subset.
+pairing scores higher than the physically correct one under both label regimes.
 The physically correct assignment is the worse-scoring one. `--legacy-lambda-pairing`
 restores the original so the difference can be measured rather than argued about, and
 this should be settled on the physics rather than on the MCC.
@@ -201,32 +202,35 @@ this should be settled on the physics rather than on the MCC.
 
 ### Two label regimes, both reported, neither chosen
 
-| regime | pairs | negatives | what a negative means |
+The ground truth is set on K_SV, the observable, and not on k_q. That is not a
+presentational choice: `k_q = K_SV / τ₀`, so a fixed k_q cutoff compares every pair
+against a detection floor that moves with the photocatalyst. At the old 10⁷ M⁻¹ s⁻¹
+cutoff the Stern–Volmer floor `25/τ₀` sat *above* the cutoff for 19 of the 26
+photocatalysts, covering 912 of the 1248 pairs, and 465 pairs could not be labelled at
+all. On K_SV the floor is one number for everything and every pair is labelled by the
+same criterion, so the indeterminate class — and the old `resolvable` regime — is gone.
+
+What is left is how permissive the criterion is, and both readings are scored:
+
+| regime | positives | negatives | criterion |
 |---|---:|---:|---|
-| `full` | 1248 | 553 | did not clear the 10⁷ cutoff |
-| `resolvable` | 783 | 156 | did not clear the cutoff **and** this photocatalyst could have seen it if it had |
+| `inclusive` | 790 | 458 | K_SV > 10, or K_SV ≤ 10 with a slope significant across the points the fit used |
+| `strict` | 634 | 614 | the published criterion, K_SV ≥ 25 and r² ≥ 0.90 |
 
-The 10⁷ M⁻¹ s⁻¹ cutoff sits below the Stern–Volmer detection floor `25/τ₀` for 19 of the
-26 photocatalysts, covering 912 of the 1248 pairs. For those, "did not quench" records
-that the measurement could not resolve a rate constant, not that the rate constant is
-small — PC10's floor is 3.35×10⁸, so it could have a pair running at 3×10⁸ and still be
-counted a non-quencher. 397 of the 553 apparent non-quenchers are in that position, and
-a method scored against them has its specificity measured partly against pairs that carry
-no information.
+Both cover all 1248 pairs; nothing is dropped. `strict` is a subset of `inclusive` by
+construction, and `pairs.py` raises if that ever stops holding.
 
-Which regime the paper should report is open. `dataset/README.md` lists four options —
-restrict to the resolvable subset, raise the cutoff to the worst floor, use a
-per-photocatalyst cutoff, or move to censored regression on `k_q` — and takes none of
-them, on the grounds that it is a scientific call about what the paper claims. This
-folder takes none of them either. Every method is scored under both regimes, every run
-prints them side by side, and `results/label_regimes.csv` carries both plus the operating
-point chosen on one and scored on the other.
+The 156 pairs between them are weak but real quenchers — monotone 3–4 % intensity drops
+well above the read noise, at rate constants the published criterion never counted.
+`dataset/README.md` sets out how they were established and why the rescue is a slope test
+rather than an r² cut.
 
-Note what the difference is *not*: every method scores higher on `resolvable` than on
-`full`, by 0.02 to 0.10 MCC. Removing the pairs the experiment cannot adjudicate makes
-every method look better, which is what you would expect if a good part of the apparent
-false positives are pairs that do quench but were not resolvable. It is not evidence that
-any particular method is right, and it is not a reason to prefer one regime.
+Note what the gap between the regimes is *not*: every method scores **higher** on `strict`
+than on `inclusive`, by 0.01 to 0.14 MCC. That is not evidence that the strict label is
+the right one. It says the 156 weak quenchers are the hard cases — which is what a
+marginal quencher should be — and a criterion that scores well by leaving them out has
+not predicted them. Which regime the paper reports is a scientific question about what
+counts as quenching; this folder takes no position and scores both every time.
 
 ### Free parameters are counted, and tuned scores get a held-out counterpart
 
@@ -265,38 +269,43 @@ whether the benchmark should become a censored regression.
 Default run: all 26 photocatalysts, no mechanism filter, `k_diff = 2×10¹⁰`, geometric
 mean λ. MCC.
 
-| method | free | α | `full` | held-out | `resolvable` |
+| method | free | α | `inclusive` | held-out | `strict` |
 |---|---:|---:|---:|---:|---:|
-| adiabatic | 0 | — | 0.455 | 0.455 | 0.508 |
-| dvte, p = 0.015 | 0 | — | 0.528 | 0.528 | 0.583 |
-| dvte, p = 0.005 | 0 | — | 0.458 | 0.458 | 0.520 |
-| sandros at the label cutoff | 1 | — | 0.383 | 0.383 | 0.403 |
-| marcus barrier, symmetric | 1 | 1.00 | 0.531 | 0.531 | 0.615 |
-| **marcus barrier, symmetric, λ-scaled** | 2 | 0.45 | **0.598** | 0.548 | **0.671** |
-| marcus barrier, asymmetric, λ-scaled | 2 | 0.40 | 0.570 | 0.554 | 0.643 |
-| marcus rate, λ-scaled | 2 | 0.45 | 0.580 | 0.565 | 0.620 |
-| marcus rate at the label cutoff | 0 | 1.00 | 0.358 | 0.358 | 0.314 |
-| rehm–weller barrier | 1 | 1.00 | 0.497 | 0.460 | 0.597 |
-| rehm–weller barrier, λ-scaled | 2 | 0.25 | 0.565 | 0.562 | 0.649 |
-| rehm–weller rate, λ-scaled | 2 | 0.25 | 0.569 | 0.569 | 0.651 |
+| adiabatic | 0 | — | 0.373 | 0.373 | 0.462 |
+| dvte, p = 0.015 | 0 | — | 0.425 | 0.425 | 0.557 |
+| dvte, p = 0.005 | 0 | — | 0.377 | 0.377 | 0.478 |
+| sandros at the label cutoff | 1 | — | 0.370 | 0.370 | 0.384 |
+| marcus barrier, symmetric | 1 | 1.00 | 0.427 | 0.427 | 0.547 |
+| **marcus barrier, symmetric, λ-scaled** | 2 | 0.45 | **0.474** | 0.474 | **0.604** |
+| marcus barrier, asymmetric, λ-scaled | 2 | 0.40 | 0.447 | 0.433 | 0.583 |
+| marcus rate, λ-scaled | 2 | 0.40 | 0.459 | 0.445 | 0.590 |
+| marcus rate at the label cutoff | 0 | 1.00 | 0.305 | 0.305 | 0.395 |
+| rehm–weller barrier | 1 | 1.00 | 0.412 | 0.412 | 0.520 |
+| rehm–weller barrier, λ-scaled | 2 | 0.30 | 0.442 | 0.442 | 0.574 |
+| rehm–weller rate, λ-scaled | 2 | 0.25 | 0.448 | 0.448 | 0.581 |
 
 Reading it:
 
-- **λ scaling reproduces.** The optimum lands at α ≈ 0.40–0.45 for Marcus and α = 0.25 for
-  Rehm–Weller, which is what the original found (0.35–0.45 and 0.25–0.30) on a different
-  version of the dataset. It is worth about +0.07 MCC over raw DFT λ, not the +0.15 to
-  +0.20 the original reported against its own baseline.
+- **λ scaling reproduces.** The optimum lands at α ≈ 0.40–0.45 for Marcus and α = 0.25–0.30
+  for Rehm–Weller, which is what the original found (0.35–0.45 and 0.25–0.30) on a
+  different version of the dataset. It is worth about +0.05 MCC over raw DFT λ, not the
+  +0.15 to +0.20 the original reported against its own baseline.
 - **It survives being held out.** Leave-one-photocatalyst-out costs the scaled methods
-  0.00 to 0.05 MCC, and that selection includes α, not just the threshold. It is not an
+  0.00 to 0.01 MCC, and that selection includes α, not just the threshold. It is not an
   artifact of choosing 16 values and keeping the best.
-- **The margin over the baseline is +0.14 MCC on `full`, +0.16 on `resolvable`** — over a
+- **The margin over the baseline is +0.10 MCC on `inclusive`, +0.14 on `strict`** — over a
   baseline that was deliberately not tuned, and with two free parameters against zero.
   The like-for-like zero-parameter comparison is the Marcus rate read at the label's own
-  10⁷ cutoff instead of at a fitted threshold, and it is *worse* than the adiabatic rule
-  — 0.358 against 0.455.
-- **DvTE is not beaten by very much,** and it has no free parameter. On `resolvable` the
-  best λ-scaled Marcus is 0.671 against DvTE's 0.583, on two fitted parameters against
-  none.
+  cutoff instead of at a fitted threshold, and it is *worse* than the adiabatic rule —
+  0.305 against 0.373.
+- **DvTE is not beaten by very much,** and it has no free parameter. On `inclusive` the
+  best λ-scaled Marcus is 0.474 against DvTE's 0.425, on two fitted parameters against
+  none; on `strict` it is 0.604 against 0.557.
+- **Everything scored lower when the label moved to K_SV.** The old numbers were measured
+  against a k_q cutoff that 19 of 26 photocatalysts could not resolve, which inflated
+  specificity on pairs that carried no information. The ordering of the methods is
+  unchanged; the absolute values are not comparable to the earlier table and should not
+  be quoted against it.
 
 The rate side is less flattering than the classification side, and worth stating plainly:
 

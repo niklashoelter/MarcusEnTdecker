@@ -90,7 +90,7 @@ result = predictor.predict(photocatalyst=photocatalyst_properties(3),  # Ir(ppy)
 result.dG_kcal          # driving force
 result.dG_barrier_kcal  # Marcus activation barrier
 result.k_ent            # rate constant, M-1 s-1
-result.quenches         # above the 1e7 detection threshold
+result.quenches         # above the pair's own detection floor, 10/tau_0
 result.uncertainty      # from the mixture density network
 ```
 
@@ -232,17 +232,15 @@ The numbers themselves are another matter, and this is where the raw default sit
 | 0.2 | 0.682 |
 
 Scaling clearly helps, which is the documented expectation. But **the optimum here is
-near 0.6, not the 0.35–0.45 quoted below.** Two differences could account for that and
+near 0.6, not the 0.40–0.45 quoted below.** Two differences could account for that and
 neither has been separated yet: this is a hybrid, taking the photocatalyst from DFT and
-only the quencher from the model, and it scores against `label_class` rather than the
-naive labels, which removes 465 indeterminate pairs from the count. The earlier figure
-came from a pure-theory benchmark on the older labelling.
+only the quencher from the model, and this run predates the move of the ground truth from
+a `k_q > 1e7` cutoff to the K_SV label. The earlier figure came from a pure-theory
+benchmark on the older labelling.
 
-Treat neither number as settled until `../benchmark/` scores them on the same footing.
-The default remains 1.0 so that nothing is silently scaled.
-
-Established pairs here are 735, not 783: PC19 is skipped for want of reorganization
-energies and PC24 is out of the dataset.
+**These numbers have not been rerun since the label changed** and are not comparable to
+the current `../benchmark/` table. Treat neither optimum as settled until both are scored
+on the same footing. The default remains 1.0 so that nothing is silently scaled.
 
 ## Training
 

@@ -66,10 +66,10 @@ You only need it to re-derive the computational tables from scratch. See
 | stage | state |
 |---|---|
 | `data/` experimental | **complete and verified** — 5 of 6 scripts written, all round-trip byte-identical |
-| `data/` computational | **quenchers complete and verified**; photocatalyst job files not yet available |
-| `dataset/` | in progress |
-| `benchmark/` | **ported and running** — five theories scored; open items in its README |
-| `ml/` | **models in place**, checkpoint included; `predict.py` written but not yet run |
+| `data/` computational | **complete and verified** — quenchers and all 31 photocatalysts, every table reproducing the published one |
+| `dataset/` | **1248 pairs**; the ground truth is settled on K_SV, both readings carried |
+| `benchmark/` | **ported and running** — five theories scored under both label regimes; open items in its README |
+| `ml/` | **models in place**, checkpoint included; `predict.py` runs end to end, but its λ sweep predates the label change |
 | `webapp/` | **deployable** — builds from `ml/` instead of cloning a branch |
 | `figures/`, `paper/` | not started |
 

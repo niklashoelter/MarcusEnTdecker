@@ -22,85 +22,91 @@ k_q = K_SV / tau_0
 `K_SV` per pair from `stern_volmer_fits.csv`, `tau_0` per photocatalyst from
 `lifetimes_tau0.csv`. Both measured here, both traceable to instrument files.
 
-**At the 1e7 M⁻¹ s⁻¹ cutoff, 695 pairs quench and 553 do not.**
+**The label is `quenches`: K_SV > 10, or K_SV ≤ 10 with a slope significant across the
+points the fit used. 790 pairs quench, 458 do not.**
 
-That is one more than the 694 the earlier analysis reported, and the difference is
-fully accounted for: PC4's τ₀ is now derived from its TCSPC traces (1228.49 ns) rather
-than taken from a curated value that matches none of them (1494.54 ns). The shorter
-lifetime raises k_q by 1.22× for all 48 of PC4's pairs, and exactly one of them —
-**PC4/Q45**, at K_SV = 12.78 — crosses the threshold, moving from 8.5e6 to 1.04e7.
-It sits on the boundary either way and should not be leaned on.
+## The label is set on K_SV, not on k_q
 
-## The 1e7 threshold is below the detection limit for 19 of 26 photocatalysts
+k_q is the physically meaningful quantity and it is still carried, but it cannot define
+the ground truth, because `k_q = K_SV / tau_0` divides by a photocatalyst-specific
+lifetime. The Stern–Volmer detection floor is fixed in K_SV; converted to a rate it
+becomes `K_SV_floor / tau_0`, which moves with the photocatalyst. Under the old
+`k_q > 1e7` cutoff that floor sat **above** the cutoff for 19 of the 26 photocatalysts:
 
-This is the most consequential thing in the table and it needs a decision.
-
-The ground truth is defined by a single global cutoff, `k_q > 1e7 M⁻¹ s⁻¹`. The
-Stern–Volmer detection floor is `K_SV >= 25`, which in rate terms is `25 / tau_0` —
-photocatalyst-specific, and for a short-lived photocatalyst it sits **above** the
-global cutoff:
-
-| | τ₀ / ns | floor / M⁻¹ s⁻¹ | vs. the 1e7 cutoff |
+| | τ₀ / ns | floor at K_SV = 25 | vs. a 1e7 cutoff |
 |---|---:|---:|---:|
-| PC10 | 74.7 | 3.35e8 | **33× above** |
+| PC10 | 74.7 | 3.35e8 M⁻¹ s⁻¹ | **33× above** |
 | PC17 | 277.4 | 9.01e7 | 9× above |
 | PC2 | 557.1 | 4.49e7 | 4.5× above |
-| … | | | |
 | PC1 | 2387.8 | 1.05e7 | 1.0× above |
 
-Nineteen of the 26 photocatalysts are in that list, covering **912 of the 1248 pairs**.
-For those, "did not quench" does not mean `k_q < 1e7`. It means `k_q` was not shown to
-exceed a floor that is itself well above 1e7 — PC10 could have a pair at 3×10⁸ M⁻¹ s⁻¹
-and still record it as a non-quencher.
+For 912 of the 1248 pairs, "did not quench" therefore did not mean `k_q < 1e7`. It meant
+nothing had been shown above a floor well above 1e7 — PC10 could have had a pair running
+at 3×10⁸ M⁻¹ s⁻¹ and still recorded it as a non-quencher. 465 pairs could not be labelled
+at all, and the benchmark was scoring specificity partly against pairs that carried no
+information.
 
-Sorting the pairs by what the experiment actually established:
+On K_SV the floor is one number for every photocatalyst, every pair is labelled by the
+same criterion, and the indeterminate class does not arise. The cost is stated rather
+than hidden: τ₀ spans 86× across the screen, so a fixed K_SV cutoff does correspond to
+different rate constants for different photocatalysts. That is the trade — a threshold on
+what was measured, whose conversion to a rate varies, against a threshold on a derived
+rate that half the screen could not have detected.
 
-| `label_class` | count | meaning |
-|---|---:|---|
-| `positive` | 627 | above the cutoff **and** quenching was actually detected |
-| `negative` | 156 | below the cutoff **and** this photocatalyst could have detected it |
-| `indeterminate` | 465 | the measurement does not answer this question |
+## Why the rule has two parts
 
-**Only 156 of the 553 apparent non-quenchers are established as non-quenchers.** The
-other 397 are indeterminate, and 68 pairs currently labelled quenchers never passed the
-detection criterion at all.
+The published criterion was `K_SV ≥ 25 and r² ≥ 0.90` — recovered exactly, 1296 of 1296,
+from the acquisition-time summary files. It is kept as `quenches_strict`.
 
-That matters because the benchmark scores every method against this negative class. A
-classifier that predicts "quencher" for one of those 397 is not necessarily wrong — the
-experiment cannot say — but it is currently scored as a false positive. Specificity, and
-therefore MCC, is being measured partly against pairs that carry no information.
+The threshold moved to 10 because weak quenching in the K_SV 5–25 band is real signal
+here rather than noise. Nineteen pairs with K_SV ≤ 10 clear r² > 0.95 where a
+selection-aware null — best 5 of 6 points, no true slope — expects 1.1, and their traces
+are monotone 3–4 % intensity drops well above the read noise.
 
-`label_class` and `threshold_resolvable` are written so this is visible rather than
-buried. Nothing is dropped: all 1248 rows are present with `quenches` and `censored`
-unchanged, so the previous labelling is still exactly reproducible.
+The rescue below 10 is a **slope-significance test, not an r² cut**, because the fitted r²
+is not comparable between pairs. `stern_volmer_fits.py` only runs its outlier scan when
+the all-points r² clears `R2_NO_QUENCHING = 0.50`, so a pair sitting at 0.45 can never be
+cleaned while one at 0.55 can be cleaned to 0.99. The result is stark:
 
-**The options, none of which I have taken:**
+| low-K_SV pairs | n | r²(fit) > 0.95 | p_slope < 0.01 |
+|---|--:|--:|--:|
+| a point was dropped | 50 | 19 | 28 |
+| none dropped | 103 | **0** | 11 |
 
-1. **Restrict the benchmark to `label_class != indeterminate`** — 783 pairs, honest but
-   loses 37 % of the screen and most of the short-lived photocatalysts.
-2. **Raise the cutoff to the worst floor** (3.35e8, set by PC10) — makes every negative
-   real, but reclassifies a large number of genuine quenchers as negatives.
-3. **Use a per-photocatalyst cutoff** at each one's own floor — keeps every pair, but
-   then the label means something different for each photocatalyst, which is the exact
-   problem that moving from K_SV to k_q was meant to solve.
-4. **Censored regression on k_q** with `k_q_floor` as the detection limit — uses all
-   1248 pairs and all the information in them, and is what the data is actually shaped
-   for. It changes the benchmark from classification to regression.
+An r²-based rescue would therefore have selected on whether the pipeline happened to drop
+a point. The slope test reads the points the fit used and applies a Bonferroni penalty
+over the drop candidates when one was dropped, which makes trimmed and untrimmed pairs
+comparable. 26 pairs are carried by it.
 
-My recommendation is (4), with (1) reported alongside as the classification sensitivity
-check. But this is a scientific call about what the paper claims, not a data-processing
-one, so the table carries the information and takes no position.
+It runs on the fit's own points and not on all six deliberately: the range scan exists to
+cut a collapsed well loose, and putting it back lets one bad reading carry the label.
+PC11/Q44 fits at K_SV = 0.67 on its own points and 7276 across all six, because its last
+well reads near zero.
+
+## What the two labels cost
+
+`quenches` (790) and `quenches_strict` (634) differ on 156 pairs, and the benchmark scores
+both. Every method scores **better** against the strict label — λ-scaled symmetric Marcus
+reaches MCC 0.604 strict against 0.474 inclusive, the adiabatic rule 0.462 against 0.373.
+That gap is not an argument for the strict label. It says the 156 weak quenchers are the
+hard cases, which is what a marginal quencher should be, and a criterion that scores well
+by excluding them has not predicted them.
+
+Which one the paper claims is a scientific question about what "quenching" means. Neither
+this table nor the benchmark takes a position; both are always computed and reported.
+
 
 ## Two things this table refuses to smooth over
 
-**Half the dataset is left-censored.** 614 pairs (49.2 %) fall below the Stern–Volmer
-detection floor, and 331 of those have a negative fitted slope. Every one is present
-with `censored = 1` and its fitted `K_SV` intact. They are one-sided observations, not
-missing values.
+**458 pairs (36.7%) are left-censored.** They fall below the label,
+and 331 of them have a negative fitted slope. Every one is present with `censored = 1`
+and its fitted `K_SV` intact. They are one-sided observations, not missing values, and
+`K_SV_floor` is the limit a survival analysis needs.
 
-`k_q_floor` gives the smallest rate constant each pair could have shown, `25 / tau_0`.
-It runs from **3.9e6 to 3.4e8 M⁻¹ s⁻¹ — an 86× range**, because τ₀ does. That column
-is what a survival analysis needs, and it is per-row for exactly that reason.
+`k_q_floor` is the same limit as a rate, the smallest rate constant each pair could have
+shown: `K_SV_floor / tau_0`. It runs from **1.55e+06 to 1.34e+08 M⁻¹ s⁻¹ —
+an 86× range**, because τ₀ does. That column is per-row for exactly that reason,
+and its spread is why the label is not set on k_q.
 
 **Nineteen quenchers have a redox potential that is a bound, not a value.** Recorded as
 `> 2.0` or `< -2.10` in the source, meaning the compound was not oxidized or reduced
@@ -179,7 +185,7 @@ varied, not frozen into the table.
 |---|---|
 | identity | `pc_id`, `pc_name`, `pc_compound`, `quencher_id`, `quencher_name`, `quencher_compound`, `quencher_smiles` |
 | measurement | `K_SV / M-1`, `r2`, `n_points_fitted`, `n_points_measured`, `fit_method`, `fit_note`, `tau0 / ns`, `tau0_rsd`, `tau0_consistent` |
-| rate | `k_q / M-1 s-1`, `log10_k_q`, `quenches`, `censored`, `k_q_floor / M-1 s-1`, `label_class`, `threshold_resolvable` |
+| rate | `k_q / M-1 s-1`, `log10_k_q`, `quenches`, `quenches_strict`, `censored`, `k_q_floor / M-1 s-1`, `K_SV_floor / M-1` |
 | quencher, experimental | `q_E_Ox_vs_SCE_exp / V`, `q_E_Ox_bound`, `q_E_Red_vs_SCE_exp / V`, `q_E_Red_bound`, `q_redox_source_type`, `q_redox_doi`, `q_epsilon_at_pc_excitation / mM-1 cm-1`, `pc_excitation / nm` |
 | quencher, computed | `q_E_T_dft`, `q_lambda_S_T_dft`, `q_lambda_T_S_dft`, `q_E_Ox_vs_SCE_calc`, `q_E_Red_vs_SCE_calc`, `q_dvte_mu_md`, `q_dvte_std_md` |
 | photocatalyst, computed | `pc_E_T_dft`, `pc_lambda_S0_to_T1_dft`, `pc_lambda_T1_to_S0_dft`, `pc_E_PCplus_PC`, `pc_E_PC_PCminus`, `pc_E_PCstar_PCminus`, `pc_E_PCplus_PCstar` |

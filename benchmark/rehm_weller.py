@@ -97,6 +97,11 @@ def prepare(df: pd.DataFrame, k_diff=theory.K_DIFF_ACETONITRILE, mean_type="geom
     dG = df[pairs.DG_ENT].to_numpy(dtype=float)
     lam_f, lam_r = marcus.pair_lambdas(df, legacy_pairing=legacy_pairing)
     prep = {"dG": dG, "exergonic": dG < 0, "barrier": {}, "log_k": {}, "k": {}}
+    # The per-pair rate cutoff the K_SV label implies: K_SV > 10 is k_q > 10 / tau_0,
+    # and that is k_q_floor. Carried here so `classify` can compare a predicted rate
+    # against the cutoff the ground truth is actually set at.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        prep["log_k_q_floor"] = np.log10(df[pairs.K_Q_FLOOR].to_numpy(dtype=float))
     for alpha in theory.LAMBDA_SCALES:
         act, _ = rehm_weller_barrier(dG, lam_f, lam_r, mean_type=mean_type,
                                      lam_scale=alpha)
@@ -128,14 +133,14 @@ def grid():
                 n_free=1 + tuned_lambda,
                 params={"kind": "rate", "lam_scale": alpha, "threshold": thr},
             ))
-        # The rate compared against the label's own 1e7 M-1 s-1 cutoff instead of a
-        # threshold chosen by maximizing MCC. See the same block in marcus.py.
+        # The rate compared against the label's own cutoff -- per-pair, 10 / tau_0 --
+        # instead of a threshold chosen by maximizing MCC. See the block in marcus.py.
         out.append(Config(
             family=f"rw_rate_at_cutoff{tag}",
             name=f"rw_rate_at_cutoff{tag}",
             n_free=tuned_lambda,
             params={"kind": "rate", "lam_scale": alpha,
-                    "threshold": float(np.log10(pairs.K_Q_THRESHOLD))},
+                    "threshold": "floor"},
         ))
     return out
 
@@ -146,7 +151,11 @@ def classify(prep, cfg: Config) -> np.ndarray:
         with np.errstate(invalid="ignore"):
             return prep["exergonic"] & (prep["barrier"][p["lam_scale"]] < p["threshold"])
     with np.errstate(invalid="ignore"):
-        return prep["log_k"][p["lam_scale"]] >= p["threshold"]
+        # A scalar threshold is one chosen by maximizing MCC. "floor" instead means the
+        # cutoff the label itself is set at, which is per-pair: the label is K_SV > 10,
+        # and K_SV = k_q * tau_0, so the matching rate cutoff is 10 / tau_0 = k_q_floor.
+        cut = prep["log_k_q_floor"] if p["threshold"] == "floor" else p["threshold"]
+        return prep["log_k"][p["lam_scale"]] >= cut
 
 
 def rate_grid():

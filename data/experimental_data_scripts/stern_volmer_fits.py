@@ -30,6 +30,26 @@ PROVENANCE
 
     Two behaviours of the original look like defects. Both are reproduced deliberately
     and marked QUIRK below; changing either would silently move published numbers.
+
+TWO LABELS COME OUT OF THIS FILE
+    `quenching_observed` is the published criterion, K_SV >= 25 and r2 >= 0.90, kept
+    byte-for-byte so the published table stays reproducible. Nothing downstream uses it.
+
+    `quenches` is the label this project classifies on: K_SV > 10, or K_SV <= 10 with a
+    slope that is significant across all measured points. The two differences from the
+    published rule are deliberate.
+
+    The threshold moved to 10 because a weak quencher is still a quencher, and because
+    K_SV 5-10 is real signal here rather than noise: 19 such pairs clear r2 > 0.95 where
+    a selection-aware null (best 5 of 6 points, no true slope) expects 1.1, and their
+    traces are monotone 3-4 % drops well above the read noise.
+
+    The rescue is a slope test rather than an r2 cut because the fitted r2 is not
+    comparable across pairs. R2_NO_QUENCHING gates the outlier scan, so a pair whose
+    all-points r2 is 0.45 can never be cleaned while one at 0.55 can be cleaned to 0.99.
+    Of the low-K_SV pairs, 19 of the 50 that had a point dropped reach r2 > 0.95 and
+    0 of the 103 that did not -- an artifact of that gate, not a property of the sample.
+    The slope test reads every measured point and so judges both alike.
 """
 
 import csv
@@ -47,15 +67,18 @@ MIN_POINTS_FOR_FIT = 3
 R2_NO_QUENCHING = 0.50        # all-points r2 below this: no quenching trend
 R2_GOOD_CORRELATION = 0.995   # all-points r2 above this: nothing to gain from scanning
 OUTLIER_IMPROVEMENT = 0.20    # an outlier must cut the MAE by this fraction to qualify
-K_SV_QUENCHING = 25.0         # a pair counts as quenching when K_SV >= this ...
-R2_QUENCHING = 0.90           # ... and r2 >= this
+K_SV_QUENCHING = 25.0         # published: a pair counts as quenching when K_SV >= this
+R2_QUENCHING = 0.90           # published: ... and r2 >= this
+K_SV_LABEL = 10.0             # this project: K_SV above this quenches outright ...
+P_SLOPE_LABEL = 0.01          # ... at or below it, only with a slope this significant
 SIGFIGS = 6
 
 EPS = np.finfo(np.double).eps
 
 COLUMNS = [
     "pc_id", "quencher_id", "K_SV", "intercept", "r2", "num_points", "n_measured",
-    "quenching_observed", "fit_method", "confidence", "note",
+    "K_SV_all_points", "r2_all_points", "p_slope",
+    "quenches", "quenching_observed", "fit_method", "confidence", "note",
 ]
 
 
@@ -184,6 +207,76 @@ def exclude_outlier_theil_sen(x, y, min_datapoints, improvement_threshold):
     return x[mask], y[mask], qualified
 
 
+def student_t_sf(t_stat, dof):
+    """P(T > t_stat) for Student's t. Exact closed forms, dof 1..4.
+
+    A Stern-Volmer series here is 3 to 6 points, so dof = n - 2 never exceeds 4 and the
+    closed forms cover every case. They agree with scipy.stats.t to 2e-16, which is why
+    this file still needs nothing but numpy.
+    """
+    if dof == 1:                                   # Cauchy
+        cdf = 0.5 + np.arctan(t_stat) / np.pi
+    elif dof == 2:
+        cdf = 0.5 + t_stat / (2.0 * np.sqrt(2.0 + t_stat * t_stat))
+    elif dof == 3:
+        u = t_stat / np.sqrt(3.0)
+        cdf = 0.5 + (u / (1.0 + u * u) + np.arctan(u)) / np.pi
+    elif dof == 4:
+        x = t_stat / np.sqrt(4.0 + t_stat * t_stat)
+        cdf = 0.5 + 0.25 * x * (3.0 - x * x)
+    else:
+        return float("nan")
+    return 1.0 - cdf
+
+
+def slope_p_value(x, y):
+    """One-sided p for a positive slope of y on x. NaN if there are too few points.
+
+    One-sided because quenching can only raise I0/I. A negative slope is evidence
+    against quenching, not weak evidence for it, and comes back with p near 1.
+    """
+    n = x.size
+    if n < 3:
+        return float("nan")
+    slope, _, _, r2 = ols(x, y)
+    if not np.isfinite(r2):
+        return float("nan")
+    if r2 >= 1.0:                       # no residual scatter left to test against
+        return 0.0 if slope > 0 else 1.0
+    dof = n - 2
+    t_stat = np.sign(slope) * np.sqrt(max(r2, 0.0) * dof / (1.0 - r2))
+    return student_t_sf(t_stat, dof)
+
+
+def slope_significance(chosen, conc, ratio):
+    """One-sided p for the trend, on the points the fit actually used.
+
+    WHY NOT ON ALL MEASURED POINTS
+        That was the first attempt and it is wrong. The range scan exists to cut a
+        collapsed well loose, and putting it back lets one bad reading carry the label:
+        PC11/Q44 fits at K_SV = 0.67 on its own points and 7276 across all six, because
+        the last well reads near zero. Testing what the fit used keeps the label and the
+        reported K_SV describing the same data.
+
+    WHY THE PENALTY
+        Testing the used points alone would reward the grooming instead. A pair that had
+        its worst point dropped was chosen as the best of n_measured candidates, so its
+        p is optimistic by roughly that factor -- simulation puts P(r2 > 0.95) under pure
+        noise at 0.023 for the best 5 of 6 against 0.0046 for a clean 5, a ratio of 5.0
+        against the 6 assumed here. Bonferroni over the candidates is the conservative
+        correction, and it is what makes a trimmed and an untrimmed pair comparable.
+
+        This is the whole reason the label cannot just read the fitted r2: r2 carries no
+        record of how many fits were tried to reach it.
+    """
+    x, y = conc[chosen], ratio[chosen]
+    p_raw = slope_p_value(x, y)
+    if not np.isfinite(p_raw):
+        return float("nan")
+    penalty = conc.size if x.size < conc.size else 1
+    return min(1.0, p_raw * penalty)
+
+
 def analyse(conc, intensity):
     """Returns the indices used, a note, and the concentration / I0-over-I arrays."""
     conc = np.asarray(conc, float)
@@ -276,6 +369,15 @@ def main():
         chosen, note, conc, ratio = analyse([c for c, _ in points], [i for _, i in points])
         slope, intercept, r2, method = finalise(chosen, conc, ratio)
         quenching = bool(slope >= K_SV_QUENCHING and r2 >= R2_QUENCHING)
+
+        # the all-points fit is a diagnostic, not the label: where it disagrees sharply
+        # with K_SV, a well the range scan dropped is the reason.
+        slope_all, _, _, r2_all = ols(conc, ratio)
+        p_slope = slope_significance(chosen, conc, ratio)
+        quenches = bool(
+            slope > K_SV_LABEL
+            or (slope > 0 and np.isfinite(p_slope) and p_slope < P_SLOPE_LABEL)
+        )
         rows.append({
             "pc_id": pc_id,
             "quencher_id": q_id,
@@ -284,6 +386,10 @@ def main():
             "r2": sig(r2),
             "num_points": len(chosen),
             "n_measured": int(conc.size),
+            "K_SV_all_points": sig(slope_all),
+            "r2_all_points": sig(r2_all),
+            "p_slope": sig(p_slope),
+            "quenches": int(quenches),
             "quenching_observed": quenching,
             "fit_method": method,
             "confidence": confidence(slope, r2, intercept, len(chosen), int(conc.size), quenching),
@@ -297,9 +403,14 @@ def main():
         writer.writerows(rows)
 
     quench = sum(1 for r in rows if r["quenching_observed"])
+    label = sum(1 for r in rows if r["quenches"])
+    rescued = sum(1 for r in rows if r["quenches"] and not (r["K_SV"] or 0) > K_SV_LABEL)
     print(f"{len(rows)} pairs -> {OUT.name}")
-    print(f"  quenching:     {quench}")
-    print(f"  non-quenching: {len(rows) - quench}")
+    print(f"  quenches (K_SV > {K_SV_LABEL:g}, or p_slope < {P_SLOPE_LABEL}): "
+          f"{label} yes, {len(rows) - label} no")
+    print(f"    of which carried by the slope test alone: {rescued}")
+    print(f"  quenching_observed (published, K_SV >= {K_SV_QUENCHING:g} and r2 >= {R2_QUENCHING}): "
+          f"{quench} yes, {len(rows) - quench} no")
     counts = defaultdict(int)
     for r in rows:
         counts[r["note"]] += 1

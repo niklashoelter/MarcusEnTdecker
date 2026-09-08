@@ -26,20 +26,36 @@ THE CENTRAL QUANTITY
 K_SV per pair from the Stern-Volmer fits, tau_0 per photocatalyst from the TCSPC
 traces. Both measured here.
 
-WHY k_q AND NOT K_SV
-    tau_0 spans 86x across the screen, from 51 ns to 6439 ns. K_SV = k_q * tau_0, so a
-    fixed cutoff on K_SV demands an 86x larger rate constant from the short-lived
-    photocatalysts than from the long-lived ones -- it would label the photocatalyst,
-    not the pair. Marcus and Rehm-Weller predict k_q, so k_q is what the ground truth
-    is defined on.
+WHY THE LABEL IS ON K_SV AND NOT k_q
+    K_SV is what the experiment measures. k_q = K_SV / tau_0 is derived, and dividing by
+    a photocatalyst-specific lifetime is what used to make the ground truth incoherent:
+    at a fixed k_q cutoff of 1e7 the Stern-Volmer detection floor, 25/tau_0, sits ABOVE
+    the cutoff for 19 of the 26 photocatalysts -- 33x above it for PC10. For those, "did
+    not quench" did not mean k_q < 1e7; it meant nothing was shown above a floor well
+    above 1e7, and 465 pairs could not be labelled at all.
+
+    On K_SV the detection floor is the same number for every photocatalyst, so every
+    pair is labelled by the same criterion and the indeterminate class does not arise.
+
+    The cost is real and is not hidden: tau_0 spans 86x across the screen, so a fixed
+    K_SV cutoff does correspond to different rate constants for different
+    photocatalysts. That is the honest trade -- a threshold on what was measured, whose
+    conversion to a rate varies, rather than a threshold on a derived rate that half the
+    screen could not have detected. k_q, log10_k_q and k_q_floor are all still carried,
+    because the rate is what the theories predict and what the rate-level analysis uses.
+
+TWO LABELS, AND WHICH IS WHICH
+    `quenches` is the label: K_SV > 10, or K_SV <= 10 with a slope significant across
+    the points the fit used. `quenches_strict` is the published criterion, K_SV >= 25
+    and r2 >= 0.90, carried so the stricter reading can be scored as a sensitivity
+    check. Both come straight from stern_volmer_fits.csv, which explains the difference.
 
 CENSORING IS CARRIED, NOT DROPPED
-    Roughly half the screen falls below the detection floor. Those pairs are one-sided
-    observations, not missing data, and every one of them is in this table with
-    `censored = 1` and its fitted K_SV intact, negative slopes included. `k_q_floor`
-    gives the smallest rate constant that pair could have shown, `25 / tau_0`, which is
-    the number a survival analysis needs and which varies by photocatalyst precisely
-    because tau_0 does.
+    A pair that does not clear the label is a one-sided observation, not missing data,
+    and every one is in this table with `censored = 1` and its fitted K_SV intact,
+    negative slopes included. `k_q_floor` gives the smallest rate constant that pair
+    could have shown, `K_SV_FLOOR / tau_0`, which is the number a survival analysis
+    needs and which varies by photocatalyst precisely because tau_0 does.
 
     Dropping them would bias every fit in the paper towards the pairs that happened to
     quench.
@@ -100,13 +116,15 @@ EXPERIMENTAL = ROOT / "data" / "experimental_data_processed"
 COMPUTATIONAL = ROOT / "data" / "computational_data_processed"
 OUT = Path(__file__).resolve().parent / "pairs.csv"
 
-# A pair counts as quenching above this rate constant. 1e7 M-1 s-1 is the historical
-# K_SV >= 10 threshold at a representative tau_0 of 1 microsecond.
+# The rate constant the old label used. Kept only to report, in the summary below, how
+# far the K_SV label and that k_q cutoff disagree; nothing is classified on it.
 K_Q_THRESHOLD = 1.0e7
 
-# The Stern-Volmer detection floor, in K_SV. Fixed in K_SV, photocatalyst-specific once
-# divided by tau_0 -- which is the whole reason the floor has to be carried per row.
-K_SV_FLOOR = 25.0
+# The K_SV a pair has to clear to count as detected, and so the left-censoring limit for
+# anything fitted on K_SV. Set where the label is set, in stern_volmer_fits.py, and equal
+# to K_SV_LABEL there. Fixed in K_SV; photocatalyst-specific once divided by tau_0, which
+# is why k_q_floor has to be carried per row.
+K_SV_FLOOR = 10.0
 
 SIGFIGS = 6
 
@@ -137,8 +155,8 @@ COLUMNS = [
     "K_SV / M-1", "r2", "n_points_fitted", "n_points_measured", "fit_method", "fit_note",
     "tau0 / ns", "tau0_rsd", "tau0_consistent",
     # the rate
-    "k_q / M-1 s-1", "log10_k_q", "quenches", "censored", "k_q_floor / M-1 s-1",
-    "label_class", "threshold_resolvable",
+    "k_q / M-1 s-1", "log10_k_q", "quenches", "quenches_strict", "censored",
+    "k_q_floor / M-1 s-1", "K_SV_floor / M-1",
     # quencher, experimental
     "q_E_Ox_vs_SCE_exp / V", "q_E_Ox_bound", "q_E_Red_vs_SCE_exp / V", "q_E_Red_bound",
     "q_redox_source_type", "q_redox_doi",
@@ -184,34 +202,11 @@ def number(row, field):
     return float(value) if value not in ("", None) else None
 
 
-def label_class(quenches, censored, floor):
-    """'positive', 'negative' or 'indeterminate' at K_Q_THRESHOLD.
-
-    `quenches` compares k_q against a single global threshold. `k_q_floor` is where
-    this photocatalyst's detection limit actually sits, 25/tau_0, and for a
-    short-lived photocatalyst that floor lies well ABOVE the global threshold -- 33x
-    above it for PC10. The two disagree, and which one is right depends on the pair:
-
-      positive       measured above the threshold AND the Stern-Volmer detection
-                     criterion was met, so quenching was actually observed
-      negative       measured below the threshold AND this photocatalyst's floor is
-                     below the threshold too, so quenching at that rate would have
-                     been seen had it occurred
-      indeterminate  everything else -- either labelled a quencher on a measurement
-                     that never passed detection, or labelled a non-quencher by a
-                     photocatalyst that could not have detected the threshold anyway
-
-    An indeterminate row is not a bad measurement. It is a measurement that does not
-    answer this particular question, and treating it as a negative asserts something
-    the experiment did not establish.
-    """
-    if floor is None:
-        return ""
-    if quenches and not censored:
-        return "positive"
-    if not quenches and floor <= K_Q_THRESHOLD:
-        return "negative"
-    return "indeterminate"
+# label_class() used to live here. It sorted pairs into positive / negative /
+# indeterminate because the k_q cutoff and the per-photocatalyst detection floor
+# disagreed, leaving 465 pairs the experiment could not speak to. Labelling on K_SV
+# removes the disagreement -- one floor, the same for every photocatalyst -- so every
+# pair is now either detected or censored and the third class has nothing in it.
 
 
 def better_set_channel(ox, red):
@@ -256,6 +251,7 @@ def main():
     pc_dft = load(COMPUTATIONAL / "photocatalyst_dft.csv", "pc_id")
 
     rows, no_tau0, quench_count, censored_count = [], set(), 0, 0
+    strict_count = disagrees_with_kq = 0
     excluded_rows = 0
 
     with fits_path.open(encoding="utf-8", newline="") as fh:
@@ -274,13 +270,18 @@ def main():
             k_q = (k_sv / (lifetime * 1e-9)) if (k_sv is not None and lifetime) else None
             floor = (K_SV_FLOOR / (lifetime * 1e-9)) if lifetime else None
 
-            quenches = (k_q is not None and k_q > K_Q_THRESHOLD)
-            # `quenching_observed` is the Stern-Volmer detection criterion, K_SV >= 25
-            # and r2 >= 0.90. A pair that fails it is left-censored: the true rate is
-            # somewhere below the floor, not zero and not missing.
-            censored = fit["quenching_observed"] != "True"
+            # Both labels are set in stern_volmer_fits.py, on the fit and its points.
+            # Nothing about them is re-decided here.
+            quenches = fit["quenches"] == "1"
+            quenches_strict = fit["quenching_observed"] == "True"
+            # Failing the label makes the pair left-censored: K_SV is somewhere below
+            # the floor, not zero and not missing.
+            censored = not quenches
             quench_count += quenches
+            strict_count += quenches_strict
             censored_count += censored
+            if quenches != (k_q is not None and k_q > K_Q_THRESHOLD):
+                disagrees_with_kq += 1
 
             pc = photocatalysts.get(pc_id)
             q = quenchers.get(q_id)
@@ -340,10 +341,10 @@ def main():
                 "k_q / M-1 s-1": sig(k_q),
                 "log10_k_q": sig(math.log10(k_q)) if (k_q and k_q > 0) else "",
                 "quenches": int(quenches),
+                "quenches_strict": int(quenches_strict),
                 "censored": int(censored),
                 "k_q_floor / M-1 s-1": sig(floor),
-                "label_class": label_class(quenches, censored, floor),
-                "threshold_resolvable": "" if floor is None else int(floor <= K_Q_THRESHOLD),
+                "K_SV_floor / M-1": sig(K_SV_FLOOR),
 
                 "q_E_Ox_vs_SCE_exp / V": sig(number(q, "E_Ox_vs_SCE_exp")),
                 "q_E_Ox_bound": (q or {}).get("E_Ox_bound", ""),
@@ -406,24 +407,16 @@ def main():
         print(f"  WARNING: no lifetime for photocatalysts {sorted(no_tau0)} — k_q is empty there")
 
     rates = [row["k_q / M-1 s-1"] for row in rows if row["k_q / M-1 s-1"] != ""]
-    print(f"  k_q computed for {len(rates)} pairs; "
-          f"{quench_count} above {K_Q_THRESHOLD:.0e}, {len(rates) - quench_count} below")
-    print(f"  left-censored (below the detection floor): {censored_count}")
+    print(f"  quenches (K_SV label):       {quench_count} yes, {len(rows) - quench_count} no")
+    print(f"  quenches_strict (published): {strict_count} yes, {len(rows) - strict_count} no")
+    print(f"  left-censored (below the K_SV floor of {K_SV_FLOOR:g}): {censored_count}")
+    print(f"  k_q computed for {len(rates)} pairs; the old k_q > {K_Q_THRESHOLD:.0e} cutoff "
+          f"disagrees with the label on {disagrees_with_kq}")
     if rates:
         floors = [row["k_q_floor / M-1 s-1"] for row in rows if row["k_q_floor / M-1 s-1"] != ""]
         print(f"  detection floor ranges {min(floors):.2e} to {max(floors):.2e} M-1 s-1 "
-              f"({max(floors) / min(floors):.0f}x, because tau_0 does)")
-
-    classes = collections.Counter(row["label_class"] for row in rows)
-    print(f"\n  label_class: {classes['positive']} positive, {classes['negative']} negative, "
-          f"{classes['indeterminate']} indeterminate")
-    unresolvable = {row["pc_id"] for row in rows if row["threshold_resolvable"] == 0}
-    if unresolvable:
-        print(f"  WARNING: {len(unresolvable)} of {len({r['pc_id'] for r in rows})} photocatalysts "
-              f"have a detection floor ABOVE the {K_Q_THRESHOLD:.0e} threshold,")
-        print(f"           so a 'does not quench' from them is not evidence of k_q < "
-              f"{K_Q_THRESHOLD:.0e}. Only {classes['negative']} of the "
-              f"{sum(1 for r in rows if r['quenches'] == 0)} apparent non-quenchers are established.")
+              f"({max(floors) / min(floors):.0f}x, because tau_0 does) -- which is why the "
+              f"label is not set on k_q")
 
     sources = collections.Counter(row["q_redox_source_type"] for row in rows)
     print(f"  redox provenance: " + ", ".join(f"{v} {k}" for k, v in sources.most_common() if k))
