@@ -47,6 +47,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts"
 
+# The directories this script owns and may therefore delete on a re-run.
+RE_PC = re.compile(r"PC_\d+")
+
 # source job directory -> (state directory, file stem)
 #
 # The naming is the quencher tree's: a state directory holds its own optimisation and
@@ -157,9 +160,21 @@ def main():
     if not pc_dirs:
         sys.exit(f"no PC_<n> directories under {source}")
 
-    if OUT_ROOT.exists():
-        shutil.rmtree(OUT_ROOT)
-    OUT_ROOT.mkdir(parents=True)
+    # Clear only the PC_<n> trees this script owns, and the manifest it writes.
+    #
+    # NOT the whole directory. `computational_data_raw/photocatalysts/` also holds
+    # files that predate this script and that nothing else has a copy of -- the
+    # directory is outside git, so anything removed here is gone. An earlier version
+    # rmtree'd the lot, which would have destroyed them on the next run.
+    OUT_ROOT.mkdir(parents=True, exist_ok=True)
+    for existing in OUT_ROOT.iterdir():
+        if existing.is_dir() and RE_PC.fullmatch(existing.name):
+            shutil.rmtree(existing)
+    (OUT_ROOT / "manifest.csv").unlink(missing_ok=True)
+
+    kept_out = sorted(p.name for p in OUT_ROOT.iterdir() if p.is_file())
+    if kept_out:
+        print(f"  leaving in place, not written by this script: {', '.join(kept_out)}")
 
     manifest = []
     kept = omitted = failed = 0
