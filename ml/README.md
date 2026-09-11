@@ -104,8 +104,9 @@ Its element vocabulary is **H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I**. Iri
 and ruthenium (44) are not in it, and encoding one raises `UnknownAtomError` rather than
 returning a bad answer.
 
-**28 of the 29 photocatalysts are Ir or Ru complexes.** Only PC7, an organic
-thioxanthone, can be passed to the model as a structure — verified, it predicts fine.
+**All 27 photocatalysts are Ir or Ru complexes**, so none can be passed to the model as a
+structure. (iPr-TXT, the one organic sensitizer measured, predicts fine, but it is not in the
+data.)
 This is a property of the training set, which is organic triplet sensitizers, not a
 defect, and it is not something authoring the SMILES could fix. The SMILES were still
 needed, and they were needed for the DFT-to-structure correspondence; they simply cannot
@@ -127,7 +128,7 @@ partner and a predicted one for the other, carrying different errors. `uncertain
 reports only what the model estimates and `uncertainty_covers` names the partners it
 accounts for. It is not a total.
 
-PC19 raises rather than predicts: four of its ten jobs are missing, so it has no
+PC17 (old PC19) raises rather than predicts: four of its ten jobs are missing, so it has no
 triplet-surface reorganization energy.
 
 ### What it composes

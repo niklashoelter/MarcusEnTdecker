@@ -44,7 +44,9 @@ NAMING
     E(PC*/PC-) is how strong an oxidant the triplet is. The delivered file labels it
     `E_ox_ES`, and E(PC+/PC*) `E_red_ES`.
 
-PC30 and PC31 were computed but never screened, and are not part of the data.
+Photocatalysts are numbered by old id here. Old PC7, PC26, PC30 and PC31 were computed but
+are crossed out in the photocatalyst sheet and are not part of the data
+(../photocatalyst_ids.py).
 """
 
 from __future__ import annotations
@@ -62,8 +64,9 @@ HARTREE_KCAL = 627.509          # as used for every other energy difference
 FARADAY_KCAL_V = 23.061
 SCE_ABSOLUTE_V = 4.42
 
-# Computed, never screened, and so not part of the data.
-EXCLUDED = {30, 31}
+# Only the photocatalysts in the data; the crossed-out ones are skipped. Old ids.
+sys.path.insert(0, str(ROOT))
+from photocatalyst_ids import IN_DATA  # noqa: E402
 
 # state directory, file stem -> the key it is stored under
 JOBS = {
@@ -142,7 +145,7 @@ def main():
         sys.exit(f"missing input: {RAW}\nthe raw job files are not in git; fetch the deposit")
 
     pc_dirs = sorted((p for p in RAW.glob("PC_*")
-                      if int(p.name.split("_")[1]) not in EXCLUDED),
+                      if int(p.name.split("_")[1]) in IN_DATA),
                      key=lambda p: int(p.name.split("_")[1]))
     if not pc_dirs:
         sys.exit(f"no PC_<n> directories under {RAW}")

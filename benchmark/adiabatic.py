@@ -84,6 +84,6 @@ if __name__ == "__main__":
 
     import run_benchmark
 
-    # Extra flags pass straight through, so `--exclude-pc PC19` and the rest work here
+    # Extra flags pass straight through, so `--exclude-pc PC17` and the rest work here
     # exactly as they do on the harness.
     run_benchmark.main(["--theories", NAME, *sys.argv[1:]])

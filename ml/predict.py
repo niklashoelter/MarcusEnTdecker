@@ -57,8 +57,8 @@ THE MODEL CANNOT SEE THE PHOTOCATALYSTS
     Its element vocabulary is H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I. Iridium
     (77) and ruthenium (44) are not in it, and encoding one raises `UnknownAtomError`
     rather than returning a poor answer -- which is the right behaviour, but it means
-    28 of the 29 screened photocatalysts cannot be passed to it as a structure at all.
-    Only PC7, an organic thioxanthone, can.
+    none of the 27 screened photocatalysts can be passed to it as a structure: all are
+    Ir or Ru complexes.
 
     This is a property of the training set, not a defect: the model was trained on
     organic triplet sensitizers. So a pair is predicted from two different sources,
@@ -67,10 +67,8 @@ THE MODEL CANNOT SEE THE PHOTOCATALYSTS
         the quencher       a SMILES -> the model         (organic, in the vocabulary)
         the photocatalyst  its DFT properties            (a metal complex)
 
-    `photocatalyst_properties(pc_id)` reads those from
-    `../data/computational_data_raw/photocatalysts/photocatalyst_dft.csv` -- the table
-    `photocatalyst_properties_calc.xlsx` is assembled from, read as CSV so the model
-    environment needs no spreadsheet reader. Passing a metal
+    `photocatalyst_properties(pc_id)` reads those from `../data/exp_dataset.csv`, by the
+    photocatalyst's new id (PC1-PC27, the paper numbering). Passing a metal
     complex as a SMILES will fail, loudly, and that is deliberate -- silently falling
     back to something else would hide which half of each prediction is a model output.
 
@@ -93,8 +91,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Sequence, Union
 
-PHOTOCATALYST_DFT = (Path(__file__).resolve().parent.parent / "data"
-                     / "computational_data_raw" / "photocatalysts" / "photocatalyst_dft.csv")
+EXP_DATASET = Path(__file__).resolve().parent.parent / "data" / "exp_dataset.csv"
 
 # Gas constant in kcal mol-1 K-1.
 R_KCAL = 1.987204259e-3
@@ -132,43 +129,40 @@ Partner = Union[str, "MolecularProperties"]
 
 
 def photocatalyst_properties(pc_id: int, path: Path | None = None) -> MolecularProperties:
-    """DFT properties for one photocatalyst, in the form `predict` takes.
+    """DFT properties for one photocatalyst, by new id, in the form `predict` takes.
 
     The model cannot encode iridium or ruthenium, so this is how a metal-complex
-    photocatalyst enters a prediction: from `photocatalyst_dft.csv`, which is derived
-    from the deposited ORCA jobs.
+    photocatalyst enters a prediction: from `../data/exp_dataset.csv`, whose photocatalyst
+    columns come from the deposited ORCA jobs.
 
     The two reorganization energies map across by which surface they relax on --
     `lambda_S0_to_T1` is the relaxation on the triplet surface from the singlet
     geometry, which is what the Marcus expression calls `lambda_S_T`.
     """
-    source = path or PHOTOCATALYST_DFT
+    source = path or EXP_DATASET
     if not source.exists():
-        raise FileNotFoundError(
-            f"{source} is missing; run "
-            f"`uv run data/computational_data_scripts/photocatalyst_dft.py` first"
-        )
+        raise FileNotFoundError(f"{source} is missing; run `uv run data/build_exp_dataset.py`")
 
     with source.open(encoding="utf-8", newline="") as fh:
-        row = next((r for r in csv.DictReader(fh) if int(r["pc_id"]) == pc_id), None)
+        row = next((r for r in csv.DictReader(fh) if int(r["pc_new_id"]) == pc_id), None)
 
     if row is None:
-        raise KeyError(f"no photocatalyst {pc_id} in {source.name}")
+        raise KeyError(f"no photocatalyst PC{pc_id} in {source.name}")
 
-    needed = ("E_T / kcal mol-1", "lambda_S0_to_T1 / kcal mol-1",
-              "lambda_T1_to_S0 / kcal mol-1")
+    needed = ("pc_E_T_dft / kcal mol-1", "pc_lambda_S0_to_T1_dft / kcal mol-1",
+              "pc_lambda_T1_to_S0_dft / kcal mol-1")
     absent = [c for c in needed if not row[c]]
     if absent:
         raise ValueError(
-            f"PC{pc_id} has no {', '.join(absent)} -- its jobs are incomplete "
-            f"({row['note']}). It cannot be used for a rate prediction."
+            f"PC{pc_id} has no {', '.join(absent)} -- its DFT jobs are incomplete. "
+            f"It cannot be used for a rate prediction."
         )
 
     return MolecularProperties(
         smiles=f"PC{pc_id}",
-        E_T=float(row["E_T / kcal mol-1"]),
-        lambda_S_T=float(row["lambda_S0_to_T1 / kcal mol-1"]),
-        lambda_T_S=float(row["lambda_T1_to_S0 / kcal mol-1"]),
+        E_T=float(row["pc_E_T_dft / kcal mol-1"]),
+        lambda_S_T=float(row["pc_lambda_S0_to_T1_dft / kcal mol-1"]),
+        lambda_T_S=float(row["pc_lambda_T1_to_S0_dft / kcal mol-1"]),
         source="dft",
     )
 

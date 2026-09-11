@@ -44,8 +44,12 @@ THE DRIVING FORCES
     (`>` or `<` in the quencher workbook) makes that channel's driving force a lower
     bound -- SET at least this endergonic -- and `dG_SET_exp_bound = lower` says so.
 
-PC24 is in the screen but not in the dataset: it was discarded from the screen, a
-scientific decision recorded in EXCLUDED_PHOTOCATALYSTS, not a quality filter.
+PHOTOCATALYST NUMBERING
+    Every row carries `pc_new_id`, the number used downstream and in the paper (1-27,
+    consecutive), `pc_old_id`, the number the raw files use, and `pc_name` = PC<new_id>.
+    The mapping is photocatalyst_ids.py. All 27 screened photocatalysts are here,
+    including PC22 (old PC24), whose emission was too weak; the theory benchmark drops it,
+    this table does not.
 """
 
 import csv
@@ -57,6 +61,7 @@ sys.path.insert(0, str(DATA))
 
 from openpyxl import load_workbook  # noqa: E402
 
+from photocatalyst_ids import NEW_ID  # noqa: E402
 from properties_workbook import Block, Column, write_workbook  # noqa: E402
 
 EXPERIMENTAL = DATA / "experimental_data_processed"
@@ -74,17 +79,16 @@ K_SV_FLOOR = 10.0
 SIGFIGS = 6
 F_KCAL_PER_V = 23.060548
 
-EXCLUDED_PHOTOCATALYSTS = {
-    24: "discarded from the screen; marked 'discard' in the photocatalyst record",
-}
-
 KCAL = "kcal mol-1"
 
 # (block, [(column, description, source)]). The order is the order of the table.
 LAYOUT = [
     ("Identity", [
-        ("pc_id", "Photocatalyst number.", "photocatalyst_properties_exp.xlsx"),
-        ("pc_name", "PC<n>.", "photocatalyst_properties_exp.xlsx"),
+        ("pc_new_id", "Photocatalyst number used downstream and in the paper, 1-27.",
+         "photocatalyst_properties_exp.xlsx: new_id"),
+        ("pc_old_id", "Photocatalyst number during the screen, used by the raw files.",
+         "photocatalyst_properties_exp.xlsx: old_id"),
+        ("pc_name", "PC<pc_new_id>.", "computed here"),
         ("quencher_id", "Quencher number.", "quencher_properties_exp.xlsx"),
         ("quencher_name", "Q<n>.", "quencher_properties_exp.xlsx"),
     ]),
@@ -173,18 +177,17 @@ def main():
     if not fits_path.exists():
         sys.exit(f"missing input: {fits_path}\nrun the data stage first")
 
-    pc_exp = load(EXPERIMENTAL / "photocatalyst_properties_exp.xlsx", "pc_id")
+    pc_exp = load(EXPERIMENTAL / "photocatalyst_properties_exp.xlsx", "old_id")
     q_exp = load(EXPERIMENTAL / "quencher_properties_exp.xlsx", "quencher_id")
-    pc_calc = load(COMPUTATIONAL / "photocatalyst_properties_calc.xlsx", "pc_id")
+    pc_calc = load(COMPUTATIONAL / "photocatalyst_properties_calc.xlsx", "old_id")
     q_calc = load(COMPUTATIONAL / "quencher_properties_calc.xlsx", "quencher_id")
 
-    rows, excluded = [], 0
+    rows = []
     with fits_path.open(encoding="utf-8", newline="") as fh:
         for fit in csv.DictReader(fh):
-            pc_id, q_id = int(fit["pc_id"]), int(fit["quencher_id"])
-            if pc_id in EXCLUDED_PHOTOCATALYSTS:
-                excluded += 1
-                continue
+            pc_id, q_id = int(fit["pc_id"]), int(fit["quencher_id"])   # old pc id
+            if pc_id not in NEW_ID:
+                sys.exit(f"Stern-Volmer fits for old PC{pc_id}, which is not in the data")
             pce, qe = pc_exp.get(pc_id), q_exp.get(q_id)
             pcc, qc = pc_calc.get(pc_id), q_calc.get(q_id)
 
@@ -217,8 +220,9 @@ def main():
                                                      number(qc, "E_Red_vs_SCE_calc / V")))
 
             rows.append({
-                "pc_id": pc_id,
-                "pc_name": (pce or {}).get("pc_name", ""),
+                "pc_new_id": NEW_ID[pc_id],
+                "pc_old_id": pc_id,
+                "pc_name": f"PC{NEW_ID[pc_id]}",
                 "quencher_id": q_id,
                 "quencher_name": (qe or {}).get("quencher_name", ""),
                 "K_SV / M-1": sig(k_sv),
@@ -241,7 +245,7 @@ def main():
                 f"dG_SET_calc / {KCAL}": sig(set_calc),
             })
 
-    rows.sort(key=lambda row: (row["pc_id"], row["quencher_id"]))
+    rows.sort(key=lambda row: (row["pc_new_id"], row["quencher_id"]))
     with OUT_CSV.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=COLUMNS, lineterminator="\n")
         writer.writeheader()
@@ -252,17 +256,16 @@ def main():
                             for name, description, source in columns])
               for title, columns in LAYOUT]
     write_workbook(OUT_XLSX, "Pairs", list(range(len(rows))), blocks, """
-        One row per photocatalyst-quencher pair, sorted by pc_id then quencher_id. Built by
-        data/build_exp_dataset.py; exp_dataset.csv is the same table.
-        PC24 is excluded: discarded from the screen.
+        One row per photocatalyst-quencher pair, sorted by pc_new_id then quencher_id. Built
+        by data/build_exp_dataset.py; exp_dataset.csv is the same table. PC numbers are new
+        ids (pc_old_id: the raw files'). PC22 (old PC24) is included; its emission was too
+        weak, and the theory benchmark drops it.
     """)
 
-    n_pc = len({r["pc_id"] for r in rows})
+    n_pc = len({r["pc_new_id"] for r in rows})
     n_q = len({r["quencher_id"] for r in rows})
     print(f"{len(rows)} pairs ({n_pc} photocatalysts x {n_q} quenchers) -> "
           f"{OUT_CSV.name}, {OUT_XLSX.name}")
-    for pc_id, reason in EXCLUDED_PHOTOCATALYSTS.items():
-        print(f"  excluded PC{pc_id} ({excluded} pairs): {reason}")
     print(f"  quenches {sum(r['quenches'] for r in rows)}, "
           f"quenches_strict {sum(r['quenches_strict'] for r in rows)}, "
           f"censored {sum(r['censored'] for r in rows)}")

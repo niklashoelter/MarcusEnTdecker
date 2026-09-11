@@ -4,7 +4,7 @@ data/computational_data_raw/*
 # The exceptions are small and have to stay readable without the deposit: the tables the
 # extraction scripts write next to the jobs they read, which the property workbooks in
 # computational_data_processed/ are assembled from, and the photocatalyst manifest --
-# 480 rows saying which delivered job was kept, which was dropped and why -- and its
+# 446 rows saying which delivered job was kept, which was dropped and why -- and its
 # quencher counterpart, saying which pipeline and conformer each state was taken from.
 !data/computational_data_raw/photocatalysts/
 data/computational_data_raw/photocatalysts/*

@@ -72,7 +72,10 @@ import pandas as pd
 PAIRS_CSV = Path(__file__).resolve().parent.parent / "data" / "exp_dataset.csv"
 
 # --- identity ---------------------------------------------------------------------
-PC_ID = "pc_id"
+# Photocatalysts are named by their new id, PC1-PC27; `pc_old_id` is the number the raw
+# files use. See data/photocatalyst_ids.py.
+PC_ID = "pc_new_id"
+PC_OLD_ID = "pc_old_id"
 PC_NAME = "pc_name"
 Q_ID = "quencher_id"
 Q_NAME = "quencher_name"
@@ -137,20 +140,26 @@ K_Q_THRESHOLD = 1.0e7
 # potential difference by hand. The dataset uses 23.060548.
 F_KCAL_PER_MOL_V = 23.0605
 
-# Photocatalysts whose DFT input is known to be suspect, and which are still in the
-# table. Nothing is dropped on account of this list: it exists so a run says out loud
-# what is in the numbers. `run_benchmark.py --exclude-pc` drops one for a sensitivity
-# check, and reports that it did.
-#
-# PC24 is not here. It was excluded upstream, by name, in `data/build_exp_dataset.py`, so
-# exp_dataset.csv is 26 photocatalysts and this benchmark never sees it. That is a
-# scientific decision recorded there, not something this folder can revisit.
+# Photocatalysts in the dataset that no theory is scored on. The dataset keeps every
+# screened photocatalyst; this is where one is set aside, with the reason, and load_pairs()
+# says so every time it does it.
+EXCLUDED_PHOTOCATALYSTS = {
+    "PC22": "old PC24, [Ir(d(OMe)ppy)2(dtbbpy)]PF6. Its emission was too weak for the "
+            "Stern-Volmer intensities to be trusted, so it is not used for the theory "
+            "analyses, as stated in the SI.",
+}
+
+# Photocatalysts whose DFT input is known to be suspect, and which are still scored.
+# Nothing is dropped on account of this list: it exists so a run says out loud what is in
+# the numbers. `run_benchmark.py --exclude-pc` drops one for a sensitivity check, and
+# reports that it did.
 FLAGGED_PHOTOCATALYSTS = {
-    "PC19": "imaginary frequencies in both the S0 and the reduced optimization. It has "
+    "PC17": "old PC19. Imaginary frequencies in both the S0 and the reduced optimization. "
+            "It has "
             "a triplet energy but no triplet-surface reorganization energy, so its 48 "
             "pairs drop out of every barrier and rate method. They stay in the "
             "adiabatic and DvTE numbers, which need only E_T.",
-    "PC20": "lambda on the triplet surface is 33.67 kcal/mol against 12.70 on the "
+    "PC18": "old PC20. Lambda on the triplet surface is 33.67 kcal/mol against 12.70 on the "
             "singlet surface, a 2.7x asymmetry no other non-pmb complex shows. Never "
             "verified. It is the pair of numbers the asymmetric Marcus form is most "
             "sensitive to.",
@@ -168,13 +177,19 @@ class MissingColumns(KeyError):
         return self.args[0]
 
 
-def load_pairs(path: Path = PAIRS_CSV) -> pd.DataFrame:
-    """Read the pair table. No filtering, no imputation, no derived columns."""
+def load_pairs(path: Path = PAIRS_CSV, verbose: bool = True) -> pd.DataFrame:
+    """Read the pair table, minus EXCLUDED_PHOTOCATALYSTS. No imputation, no derived
+    columns, and no other filtering."""
     if not path.exists():
         raise FileNotFoundError(
             f"{path} not found. Build it first:  uv run data/build_exp_dataset.py"
         )
-    return pd.read_csv(path)
+    df = pd.read_csv(path)
+    dropped = df[PC_NAME].isin(EXCLUDED_PHOTOCATALYSTS)
+    if verbose:
+        for name, reason in EXCLUDED_PHOTOCATALYSTS.items():
+            print(f"not scored: {name} ({int((df[PC_NAME] == name).sum())} pairs), {reason}")
+    return df[~dropped].reset_index(drop=True)
 
 
 def require(df: pd.DataFrame, columns, wanted_by: str) -> None:
@@ -223,7 +238,7 @@ def dG_set(df: pd.DataFrame, source: str = "exp"):
 def label_regimes(df: pd.DataFrame) -> dict:
     """The two ways of reading the ground truth, both of them, always.
 
-    Returns {name: (subset, y)}. Both cover all 1248 pairs -- nothing is dropped now that
+    Returns {name: (subset, y)}. Both cover all 1248 scored pairs -- nothing is dropped now that
     the label is set on the observable -- and they differ only in how permissive the
     criterion is:
 

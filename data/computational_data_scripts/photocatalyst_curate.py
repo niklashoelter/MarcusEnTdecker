@@ -40,7 +40,8 @@ WHAT IS ADDED
     photocatalyst: the parallel retries in the delivery are not deposited at all. See
     above.
 
-PC30 and PC31 are in the delivery but were never screened, and are not deposited.
+Old PC7, PC26, PC30 and PC31 are in the delivery but crossed out in the photocatalyst
+sheet, and are not deposited (../photocatalyst_ids.py).
 
 Writes `../computational_data_raw/photocatalysts/` and a `manifest.csv` recording
 every source directory of the deposited photocatalysts, kept or omitted, with its
@@ -61,8 +62,11 @@ OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts"
 # The directories this script owns and may therefore delete on a re-run.
 RE_PC = re.compile(r"PC_\d+")
 
-# Delivered, but computed only -- never screened -- and so not part of the data.
-EXCLUDED = {30, 31}
+# Delivered, but crossed out in the photocatalyst sheet and so not part of the data.
+sys.path.insert(0, str(ROOT))
+from photocatalyst_ids import CROSSED_OUT  # noqa: E402
+
+EXCLUDED = set(CROSSED_OUT)
 
 # source job directory -> (state directory, file stem)
 #

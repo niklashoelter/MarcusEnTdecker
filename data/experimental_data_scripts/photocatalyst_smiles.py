@@ -14,7 +14,7 @@ Writes  ../experimental_data_raw/compound_records/compound_records_photocatalyst
 
 WHY THIS FILE EXISTS AT ALL
     Every other column in this package is read out of an instrument file or a
-    calculation. A structure is neither. The 29 photocatalysts are recorded in the
+    calculation. A structure is neither. The 27 photocatalysts are recorded in the
     source spreadsheets only as names -- `[Ir(dF(CF3)ppy)2(dtbbpy)][PF6]`,
     `Ir_dCF3_CF3_ppy2_d55_OMe_bpy` -- and a name is not a machine-readable structure.
     The ML model in ../../ml/ takes a SMILES and nothing else, so without this column
@@ -101,7 +101,7 @@ RECORDS = ROOT / "experimental_data_raw" / "compound_records" / "compound_record
 RCOV = {"H": 0.31, "C": 0.76, "N": 0.71, "O": 0.66, "F": 0.57, "S": 1.05}
 BOND_SCALE = 1.25
 
-# Metal-ligand contacts are not covalent-radius territory. In these 28 complexes the six
+# Metal-ligand contacts are not covalent-radius territory. In these 27 complexes the six
 # donor atoms sit at 2.00-2.15 A and the next atom in is beyond 2.9 A, so any cutoff in
 # that gap gives the same answer. The gap itself is checked rather than assumed.
 METALS = {"Ir", "Ru"}
@@ -109,7 +109,7 @@ METAL_CUTOFF = 2.60
 METAL_GAP = 2.80
 N_DONORS = 6
 
-# Hand-authored, one entry per photocatalyst. Ligand fragments repeat verbatim across
+# Hand-authored, one entry per photocatalyst, keyed by old id (../photocatalyst_ids.py). Ligand fragments repeat verbatim across
 # entries on purpose: they are written out in full rather than assembled from pieces, so
 # that what is validated is exactly what is read.
 #
@@ -142,8 +142,6 @@ SMILES = {
     6: "[Ru+2]%10%11%12(<-n1ccncc1-c1cnccn->%101)"
        "(<-n1ccncc1-c1cnccn->%111)"
        "<-n1ccncc1-c1cnccn->%121",
-    # PC7  iPr-TXT, 2-isopropyl-9H-thioxanthen-9-one. The one purely organic sensitizer.
-    7: "CC(C)c1ccc2sc3ccccc3c(=O)c2c1",
     # PC8  fac-Ir(CF3-pmb)3
     8: "[Ir+3]%10%11%12(<-[c-]1cc(C(F)(F)F)ccc1-n1c2ccccc2[n+](C)[c-]1->%10)"
        "(<-[c-]1cc(C(F)(F)F)ccc1-n1c2ccccc2[n+](C)[c-]1->%11)"
@@ -217,9 +215,6 @@ SMILES = {
     25: "[Ir+3]%10%11%12(<-[c-]1cc(F)cc(F)c1-c1cc(C)ccn->%101)"
         "(<-[c-]1cc(F)cc(F)c1-c1cc(C)ccn->%111)"
         "<-n1ccc(C(C)(C)C)cc1-c1cc(C(C)(C)C)ccn->%121",
-    # PC26 [Ir(dFppy)2(MeCN)2]+ -- two nitriles in place of the diimine
-    26: "[Ir+3]%10%11(<-[c-]1cc(F)cc(F)c1-c1ccccn->%101)"
-        "(<-[c-]1cc(F)cc(F)c1-c1ccccn->%111)(<-N#CC)<-N#CC",
     # PC27 [Ir(ppy)2(phen)]+
     27: "[Ir+3]%10%11%12(<-[c-]1ccccc1-c1ccccn->%101)"
         "(<-[c-]1ccccc1-c1ccccn->%111)"

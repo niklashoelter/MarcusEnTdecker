@@ -28,6 +28,7 @@ from pathlib import Path
 DATA = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(DATA))
 
+from photocatalyst_ids import NEW_ID  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
 RAW = DATA / "computational_data_raw"
@@ -53,6 +54,10 @@ def src(path, column):
 def photocatalysts():
     dft = read_table(PC_DFT, "pc_id")
     records = read_table(PC_RECORDS, "pc_id")
+    for name, table in (("DFT", dft), ("records", records)):
+        if set(table) != set(NEW_ID):
+            sys.exit(f"photocatalyst {name} disagree with photocatalyst_ids.py: "
+                     f"{sorted(set(table) ^ set(NEW_ID))}")
 
     def col(header, name, description, table=dft, path=PC_DFT):
         return Column(header, description, src(path, name), field(table, name))
@@ -65,9 +70,10 @@ def photocatalysts():
     ]
     blocks = [
         Block("Identity", [
-            col("pc_id", "pc_id", "Photocatalyst number."),
-            Column("pc_name", "Label used throughout, PC<n>.", "PC<pc_id>",
-                   lambda i: f"PC{i}"),
+            Column("new_id", "PC number used downstream and in the paper, 1-27.",
+                   "photocatalyst_ids.py", lambda i: NEW_ID[i]),
+            Column("old_id", "PC number during the screen, used by the raw files.",
+                   src(PC_DFT, "pc_id"), lambda i: i),
             col("compound", "name", "Compound, from the experimental record.",
                 records, PC_RECORDS),
         ]),
@@ -96,16 +102,17 @@ def photocatalysts():
         ]),
     ]
     note = """
-        One row per photocatalyst in the screen's records. Every value is computed from the
+        One row per photocatalyst in the screen, sorted by new_id; the raw files use old_id.
+        Every value is computed from the
         ORCA outputs with the arithmetic of Leon's delivered file
         (spectroscopy_data_processed/dataset/properties_photocatalysts_calc.xlsx) and
-        reproduces it to 5e-8, except E_T for PC10, PC13, PC25 and PC28, where that file
-        carries values no delivered job reproduces. PC19 lacks four single points, so four
-        of its lambdas are blank. Total energies, Gibbs corrections and frequency checks are
+        reproduces it to 5e-8, except E_T for old PC10, PC13, PC25 and PC28 (new 8, 11, 23,
+        26), where that file carries values no delivered job reproduces. Old PC19 (new 17)
+        lacks four single points, so four of its lambdas are blank. Total energies, Gibbs corrections and frequency checks are
         in computational_data_raw/photocatalysts/photocatalyst_dft.csv.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
-    return sorted(dft), blocks, note
+    return sorted(dft, key=NEW_ID.get), blocks, note
 
 
 def quenchers():

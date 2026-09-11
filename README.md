@@ -45,7 +45,7 @@ data/experimental_data_processed/    photocatalyst_properties_exp.xlsx
                                      stern_volmer_intensities.csv, stern_volmer_fits.csv
 data/computational_data_processed/   photocatalyst_properties_calc.xlsx
                                      quencher_properties_calc.xlsx
-data/                                exp_dataset.csv, exp_dataset.xlsx   (1248 pairs)
+data/                                exp_dataset.csv, exp_dataset.xlsx   (1296 pairs)
 ```
 
 Each workbook has one row per compound and its columns in blocks, with a `Column key`
@@ -83,9 +83,9 @@ re-derive the extracted tables from scratch.
 | stage                 | state                                                                                                                                      |
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | `data/` experimental  | **complete and verified** — every table rebuilds byte-identically from the instrument files                                                |
-| `data/` computational | **complete and verified** — 48 quenchers and 29 photocatalysts; reproduces the published tables except four stale photocatalyst E_T values |
-| `data/exp_dataset`    | **1248 pairs**; the ground truth is settled on K_SV, both readings carried                                                                 |
-| `benchmark/`          | **ported and running** — five theories scored under both label regimes; open items in its README                                           |
+| `data/` computational | **complete and verified** — 48 quenchers and 27 photocatalysts; reproduces the published tables except four stale photocatalyst E_T values |
+| `data/exp_dataset`    | **1296 pairs**, PC1–PC27 by new id; the ground truth is settled on K_SV, both readings carried                                             |
+| `benchmark/`          | **ported and running** — five theories scored under both label regimes on 1248 pairs (PC22 not scored); open items in its README           |
 | `ml/`                 | **models in place**, checkpoint included; `predict.py` runs end to end, but its λ sweep predates the label change                          |
 | `webapp/`             | **deployable** — builds from `ml/` instead of cloning a branch                                                                             |
 | `figures/`, `paper/`  | not started                                                                                                                                |

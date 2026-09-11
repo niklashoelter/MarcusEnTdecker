@@ -224,7 +224,7 @@ What is left is how permissive the criterion is, and both readings are scored:
 | `inclusive` | 790 | 458 | K_SV > 10, or K_SV ≤ 10 with a slope significant across the points the fit used |
 | `strict` | 634 | 614 | the published criterion, K_SV ≥ 25 and r² ≥ 0.90 |
 
-Both cover all 1248 pairs; nothing is dropped. `strict` is a subset of `inclusive` by
+Both cover all 1248 scored pairs; the labels drop nothing. `strict` is a subset of `inclusive` by
 construction, and `pairs.py` raises if that ever stops holding.
 
 The 156 pairs between them are weak but real quenchers — monotone 3–4 % intensity drops
@@ -274,7 +274,7 @@ whether the benchmark should become a censored regression.
 
 ## Where it stands
 
-Default run: all 26 photocatalysts, no mechanism filter, `k_diff = 2×10¹⁰`, geometric
+Default run: all 26 scored photocatalysts, no mechanism filter, `k_diff = 2×10¹⁰`, geometric
 mean λ. MCC.
 
 | method | free | α | `inclusive` | held-out | `strict` |
@@ -349,7 +349,7 @@ on the table as it stands.
 --mechanism-rules none strict relaxed dominant_ddG_5
 --set-source exp calc
 --bounds face|respect
---exclude-pc PC19 PC20
+--exclude-pc PC17 PC18
 --k-diff 2e10
 --mean-type geometric|arithmetic
 --legacy-lambda-pairing
@@ -373,25 +373,30 @@ respect` admits those pairs. Neither is obviously right, so the default is `face
 every run using a rule prints how many pairs the two policies disagree about (26 under
 `strict/exp`, 18 under `relaxed/exp`).
 
-**`--exclude-pc`** drops nothing by default. Two photocatalysts are flagged in `pairs.py`
-and named in every run's header:
+Photocatalysts are named by their new id, PC1–PC27, the paper numbering; `pc_old_id` in
+`exp_dataset.csv` gives the number the raw files use (`data/photocatalyst_ids.py`).
 
-- **PC19** has imaginary frequencies in both the S₀ and the reduced optimization and no
+**PC22 is not scored.** It is old PC24, [Ir(d(OMe)ppy)₂(dtbbpy)]PF₆, whose emission was
+too weak for its Stern–Volmer intensities to be trusted, as the SI states. It stays in
+`exp_dataset.csv`; `pairs.py` drops its 48 pairs when it loads the table and says so, which
+is why every number here is over 26 photocatalysts and 1248 pairs.
+
+**`--exclude-pc`** drops nothing further by default. Two photocatalysts are flagged in
+`pairs.py` and named in every run's header:
+
+- **PC17** (old PC19) has imaginary frequencies in both the S₀ and the reduced optimization and no
   triplet-surface reorganization energy (`pc_lambda_S0_to_T1_dft` is blank). Its 48 pairs
   fall out of every barrier and rate method automatically — the run reports this as 48
   non-finite inputs — but they stay in the adiabatic and DvTE numbers, which need only
   E_T. So the barrier methods have a prediction for only 1200 of the 1248 pairs they are
-  scored on, and every one of PC19's pairs is handed to them as a predicted non-quencher.
-  Excluding PC19 and PC20 raises every barrier and rate method by 0.02 to 0.04 MCC and
+  scored on, and every one of PC17's pairs is handed to them as a predicted non-quencher.
+  Excluding PC17 and PC18 raises every barrier and rate method by 0.02 to 0.04 MCC and
   the baselines by about 0.01 or less. The headline moves by about +0.03 and stays on top
   under both regimes, but the middle of the table reorders — on `inclusive`, for
   instance, the unscaled asymmetric Marcus and Rehm–Weller barriers move past DvTE.
-- **PC20** has λ = 33.67 on the triplet surface against 12.70 on the singlet, a 2.7×
+- **PC18** (old PC20) has λ = 33.67 on the triplet surface against 12.70 on the singlet, a 2.7×
   asymmetry no other non-pmb complex shows, never verified. It is exactly the pair of
   numbers the asymmetric Marcus form is most sensitive to.
-
-PC24 is not in this list. It was excluded upstream by name in `data/build_exp_dataset.py`,
-so `exp_dataset.csv` is 26 photocatalysts and this folder never sees it.
 
 ## What is deliberately not ported
 
@@ -417,6 +422,6 @@ so `exp_dataset.csv` is 26 photocatalysts and this folder never sees it.
 - **Tuning and reporting on the same data.** Every `_scaled` row is a best-of-16-α, and
   the held-out column is the honest counterpart. If a single method is to be quoted in
   the paper, it should be quoted with its held-out number.
-- **PC19's 48 pairs** are silently predicted "does not quench" by the barrier methods,
+- **PC17's 48 pairs** are silently predicted "does not quench" by the barrier methods,
   which is a free pass on every true negative among them. The run warns; nothing corrects
   for it.

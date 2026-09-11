@@ -70,6 +70,9 @@ from pathlib import Path
 
 import openpyxl
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from photocatalyst_ids import CROSSED_OUT, IN_DATA  # noqa: E402
+
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "compound_records"
 OUT_DIR = RAW
 
@@ -165,8 +168,9 @@ REDOX_SOURCE = {
     48: ("CV", ""),
 }
 
+# pc_id is the old id; see ../photocatalyst_ids.py.
 PHOTOCATALYST_COLUMNS = [
-    "pc_id", "pc_name", "name", "excitation_nm", "emission_nm",
+    "pc_id", "name", "excitation_nm", "emission_nm",
 ]
 
 
@@ -323,16 +327,19 @@ def photocatalysts():
     rows = []
     for r in range(2, sheet.max_row + 1):
         pc_id = sheet.cell(r, column["PC ID"]).value
-        if pc_id is None:
+        if pc_id is None or int(pc_id) in CROSSED_OUT:
             continue
         rows.append({
             "pc_id": int(pc_id),
-            "pc_name": sheet.cell(r, named).value,
             "name": sheet.cell(r, name_column).value if name_column else "",
             "excitation_nm": sheet.cell(r, column["excitation"]).value or "",
             "emission_nm": sheet.cell(r, column["emission"]).value or "",
         })
 
+    found = {row["pc_id"] for row in rows}
+    if found != IN_DATA:
+        sys.exit(f"photocatalyst records disagree with photocatalyst_ids.py: "
+                 f"{sorted(found ^ IN_DATA)}")
     rows.sort(key=lambda row: row["pc_id"])
     return rows
 

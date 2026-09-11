@@ -15,7 +15,7 @@ Writes  results/benchmark_full.csv     every method at every setting, both label
     uv run benchmark/run_benchmark.py
     uv run benchmark/run_benchmark.py --theories marcus rehm_weller
     uv run benchmark/run_benchmark.py --mechanism-rules none strict relaxed dominant_ddG_5
-    uv run benchmark/run_benchmark.py --exclude-pc PC19 PC20
+    uv run benchmark/run_benchmark.py --exclude-pc PC17 PC18
     uv run benchmark/run_benchmark.py --legacy-lambda-pairing
 
 ON ONE FOOTING MEANS
@@ -26,21 +26,13 @@ ON ONE FOOTING MEANS
     its tuned one.
 
 THE TWO NUMBERS THAT ARE NOT THE SAME NUMBER
-    inclusive    all 1248 pairs, y = `quenches`: K_SV > 10, or K_SV <= 10 with a
+    inclusive    all 1248 scored pairs, y = `quenches`: K_SV > 10, or K_SV <= 10 with a
                  slope significant across the points the fit used. 458 negatives.
-    strict       all 1248 pairs, y = `quenches_strict`: the published K_SV >= 25 and
-                 r2 >= 0.90. 614 negatives.
+    strict       all 1248 scored pairs, y = `quenches_strict`: the published K_SV >= 25
+                 and r2 >= 0.90. 614 negatives.
 
-    The gap between them is not a rounding difference. The classification cutoff of
-    1e7 M-1 s-1 lies below the Stern-Volmer detection floor `25 / tau_0` for 19 of the 26
-    photocatalysts, covering 912 of the 1248 pairs, so for most of the screen "did not
-    quench" records that the measurement could not resolve a rate constant, not that the
-    rate constant is small. PC10's floor is 3.35e8 M-1 s-1: it could have a pair going at
-    3e8 and still be counted a non-quencher.
-
-    397 of the 553 apparent non-quenchers are in that position. A method scored against
-    all of them has its specificity measured partly against pairs that carry no
-    information, and its MCC with it.
+    The 1248 are the 1296 pairs of exp_dataset.csv less PC22's 48, which no theory is
+    scored on (pairs.EXCLUDED_PHOTOCATALYSTS).
 
     Which regime the paper should report is a scientific question about what counts
     as quenching, not a data-processing one. The 156 pairs between the two are weak
@@ -404,8 +396,9 @@ def main(argv=None):
                              "singlet-surface term. See marcus.py. Affects only the "
                              "asymmetric Marcus form.")
     parser.add_argument("--exclude-pc", nargs="*", default=[],
-                        help="photocatalysts to drop, by pc_name. Nothing is dropped by "
-                             "default; see the notice printed for flagged photocatalysts.")
+                        help="photocatalysts to drop, by pc_name (new ids, e.g. PC17). "
+                             "Nothing flagged is dropped by default; see the notice "
+                             "printed for flagged photocatalysts.")
     parser.add_argument("--results-dir", type=Path, default=RESULTS)
     parser.add_argument("--no-write", action="store_true", help="print only")
     args = parser.parse_args(argv)

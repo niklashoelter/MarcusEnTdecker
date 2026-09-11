@@ -24,9 +24,13 @@ beside them in their own rows. Recomputing from the ORCA outputs gives the value
 | Q18 |         44.0 |       −2.54 | **−2.53** |
 
 Four photocatalyst triplet energies in the delivered DFT table
-(`properties_photocatalysts_calc.xlsx`) match no job in the delivery: PC10, PC13, PC25 and
-PC28 differ from their jobs by +2.23, −0.70, +0.61 and −0.55 kcal/mol. `../data/` uses the
+(`properties_photocatalysts_calc.xlsx`) match no job in the delivery: PC8, PC11, PC23 and
+PC26 (old 10, 13, 25, 28) differ from their jobs by +2.23, −0.70, +0.61 and −0.55 kcal/mol. `../data/` uses the
 job values. See `../data/computational_data_scripts/photocatalyst_dft.py`.
+
+PC numbers here are the new ids, PC1–PC27 (`../data/photocatalyst_ids.py`). Leon's Table S2
+in the SI uses a third numbering (26 entries, no old PC19, old PC27 in slot 17) and has to
+be brought in line with it.
 
 Not an erratum, but the SI methods need it: PC4's τ₀ is fitted from 1500 ns, past a fast
 early component, and reproduces the published 1494.54 ns only that way (from the

@@ -42,7 +42,7 @@ HOW THE PAIR'S REORGANIZATION ENERGY IS ASSEMBLED
     It matters in one place only. The symmetric form and the whole of Rehm-Weller combine
     the two into a symmetric mean, so swapping them changes nothing there. The asymmetric
     form is the exception, and it is most sensitive on exactly the photocatalysts with
-    the largest forward/reverse asymmetry -- PC20, PC28, PC29. `--legacy-lambda-pairing`
+    the largest forward/reverse asymmetry -- PC18, PC26, PC27. `--legacy-lambda-pairing`
     restores the original assignment so the difference can be measured rather than
     argued about.
 
@@ -265,6 +265,6 @@ if __name__ == "__main__":
 
     import run_benchmark
 
-    # Extra flags pass straight through, so `--exclude-pc PC19` and the rest work here
+    # Extra flags pass straight through, so `--exclude-pc PC17` and the rest work here
     # exactly as they do on the harness.
     run_benchmark.main(["--theories", NAME, *sys.argv[1:]])

@@ -9,7 +9,6 @@ Reads   ../experimental_data_raw/compound_records/compound_records_photocatalyst
         ../experimental_data_raw/compound_records/compound_records_quenchers.csv
         ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
         ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
-        ../experimental_data_processed/stern_volmer_fits.csv    (screen membership only)
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
 
@@ -22,13 +21,13 @@ Downstream, `../build_exp_dataset.py` reads these two workbooks and the Stern-Vo
 and nothing else from the experimental side.
 """
 
-import csv
 import sys
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(DATA))
 
+from photocatalyst_ids import NEW_ID  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
 RAW = DATA / "experimental_data_raw"
@@ -40,7 +39,6 @@ PC_RECORDS = RAW / "compound_records" / "compound_records_photocatalysts.csv"
 Q_RECORDS = RAW / "compound_records" / "compound_records_quenchers.csv"
 TAU0 = RAW / "pc_tcspc" / "lifetimes_tcspc.csv"
 ABSORPTION = RAW / "quencher_absorption" / "absorption_extinction.csv"
-FITS = OUT_DIR / "stern_volmer_fits.csv"
 
 EPSILON_NM = [380, 390, 400, 405, 415, 425, 450, 475, 490, 495, 500,
               510, 520, 580, 590, 600, 625, 645]
@@ -67,26 +65,24 @@ def bound(table, name):
 def photocatalysts():
     records = read_table(PC_RECORDS, "pc_id")
     tau0 = read_table(TAU0, "pc_id")
-    screened = screened_photocatalysts()
 
-    stray = sorted(set(tau0) - set(records))
-    if stray:
-        sys.exit(f"lifetimes for photocatalysts with no record: {stray}")
+    for name, table in (("records", records), ("lifetimes", tau0)):
+        if set(table) != set(NEW_ID):
+            sys.exit(f"photocatalyst {name} disagree with photocatalyst_ids.py: "
+                     f"{sorted(set(table) ^ set(NEW_ID))}")
 
     def col(header, table, path, name, description):
         return Column(header, description, src(path, name), field(table, name))
 
     blocks = [
         Block("Identity", [
-            col("pc_id", records, PC_RECORDS, "pc_id", "Photocatalyst number."),
-            col("pc_name", records, PC_RECORDS, "pc_name", "Label used throughout, PC<n>."),
+            Column("new_id", "PC number used downstream and in the paper, 1-27.",
+                   "photocatalyst_ids.py", lambda i: NEW_ID[i]),
+            Column("old_id", "PC number during the screen, used by the raw files.",
+                   src(PC_RECORDS, "pc_id"), lambda i: i),
             col("compound", records, PC_RECORDS, "name", "Compound, as recorded."),
         ]),
         Block("Stern-Volmer screen", [
-            Column("in_screen",
-                   "1 if the photocatalyst has Stern-Volmer fits against the quencher set, "
-                   "0 if not.",
-                   src(FITS, "pc_id"), lambda i: int(i in screened)),
             col("excitation / nm", records, PC_RECORDS, "excitation_nm",
                 "Excitation wavelength used in the screen."),
             col("emission / nm", records, PC_RECORDS, "emission_nm",
@@ -100,12 +96,12 @@ def photocatalysts():
         ]),
     ]
     note = """
-        One row per photocatalyst with a compound record. PC7 and PC26 are not in the screen
-        and have no lifetime. PC24 is in the screen and excluded from the dataset in
-        data/build_exp_dataset.py, not here.
+        One row per photocatalyst in the screen, sorted by new_id. The raw files use old_id;
+        the mapping is data/photocatalyst_ids.py. new_id 22 (old 24) is kept here and dropped
+        by the theory benchmark: its emission was too weak.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
-    return sorted(records), blocks, note
+    return sorted(records, key=NEW_ID.get), blocks, note
 
 
 def quenchers():
@@ -168,14 +164,6 @@ def quenchers():
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(records), blocks, note
-
-
-def screened_photocatalysts():
-    """Photocatalysts with Stern-Volmer fits. The fits have one row per pair, not per id."""
-    if not FITS.exists():
-        sys.exit(f"missing input: {FITS}\nrun stern_volmer_fits.py first")
-    with FITS.open(encoding="utf-8", newline="") as fh:
-        return {int(row["pc_id"]) for row in csv.DictReader(fh)}
 
 
 def main():

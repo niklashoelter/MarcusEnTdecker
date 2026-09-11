@@ -35,15 +35,17 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from photocatalyst_ids import IN_DATA  # noqa: E402
+
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "pc_emission"
 OUT = RAW / "emission_spectra.csv"
 
 SCAN = "Emission_Scan_Exc_380_405_425_450_Gain_1500.csv"
 
-# Photocatalysts are numbered 1-29. The 380 nm block carries one extra row labelled 96,
-# after PC27, which is not a photocatalyst; it is reported and skipped rather than
-# silently dropped.
-MAX_PC_ID = 29
+# Rows are labelled with the old photocatalyst id. Only the photocatalysts in the data are
+# kept (../photocatalyst_ids.py): the crossed-out ones are skipped, and so is one extra row
+# labelled 96 in the 380 nm block, which is not a photocatalyst. Both are reported.
 
 COLUMNS = ["pc_id", "excitation_nm", "emission_nm", "intensity_au"]
 
@@ -94,7 +96,7 @@ def main():
     skipped = set()
     for excitation, wavelengths, rows in parse_blocks(path):
         for pc_id in sorted(rows):
-            if not 1 <= pc_id <= MAX_PC_ID:
+            if pc_id not in IN_DATA:
                 skipped.add(pc_id)
                 continue
             values = rows[pc_id]
@@ -121,7 +123,7 @@ def main():
           f"excitations {excitations}")
     print(f"  photocatalysts present: {photocatalysts}")
     if skipped:
-        print(f"  rows skipped, label outside the photocatalyst range 1-{MAX_PC_ID}: "
+        print(f"  rows skipped, not a photocatalyst in the data: "
               f"{sorted(skipped)}")
     print("  brightest excitation per photocatalyst (peak emission):")
     for pc_id in photocatalysts:
