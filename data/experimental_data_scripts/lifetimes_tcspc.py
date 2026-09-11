@@ -15,6 +15,13 @@ is NOT made here. That curated pick lives in the compound records and is the val
 that goes into k_q.
 
 Ported from Photocatalysts/plot_lifetimes.py, which produced the published numbers.
+
+PC4 is the one exception to the automatic fit start. Its decay has a fast early
+component ahead of the triplet, and the count-threshold start (about 500 ns) puts both
+in one single-exponential fit. Its published lifetime came from a re-fit of the same
+code with the window opened at a fixed 1500 ns on the instrument's time axis;
+FIT_START_NS reproduces it (1494.54 +/- 19.32 ns). Every other photocatalyst keeps the
+count-threshold start.
 """
 
 import csv
@@ -33,6 +40,9 @@ FIT_START_COUNT_THRESHOLD = 1000.0    # start at the first post-peak channel at 
 PULSE_END_FRACTION = 0.5              # fallback: pulse is over below this fraction of the peak
 STABILIZATION_POINTS = 4              # ... and once this many consecutive channels are non-rising
 MIN_FIT_POINTS = 15                   # fewer usable channels than this and the trace is not fitted
+# pc_id -> fit from the first channel at or after this time (ns, instrument axis, not from
+# the pulse) instead of the count threshold. PC4 only: skips its fast early component.
+FIT_START_NS = {4: 1500.0}
 TAU_GRID_POINTS = 320
 TAU_REFINE_POINTS = 200
 SIGFIGS = 6
@@ -166,11 +176,19 @@ def fit_single_exponential(x, y):
     return a, tau, stderr
 
 
-def analyse(time_ns, counts):
+def analyse(time_ns, counts, fit_start_ns=None):
     background = estimate_background(counts)
     signal = counts - background
     pulse_index = int(np.nanargmax(counts)) if np.any(np.isfinite(counts)) else 0
-    start = detect_decay_start(signal, pulse_index)
+    if fit_start_ns is None:
+        start = detect_decay_start(signal, pulse_index)
+    else:
+        late = np.where(time_ns >= fit_start_ns)[0]
+        if late.size == 0:
+            return {"background": background, "pulse_channel": pulse_index, "n_fit_points": 0,
+                    "note": f"not fitted: window ends at {time_ns[-1]:g} ns, "
+                            f"before the fixed fit start at {fit_start_ns:g} ns"}
+        start = int(late[0])
 
     finite_positive = np.isfinite(signal) & (signal > 0)
     peak = signal[pulse_index] if 0 <= pulse_index < signal.size else np.nan
@@ -207,7 +225,8 @@ def analyse(time_ns, counts):
         "amplitude": a, "tau_ns": tau, "tau_stderr_ns": stderr,
         "fit_channel_start": int(idx[0]), "fit_channel_end": int(idx[-1]),
         "fit_start_ns": float(x[0]), "fit_end_ns": float(x[-1]),
-        "span_ns": float(x[-1] - x[0]), "note": "",
+        "span_ns": float(x[-1] - x[0]),
+        "note": "" if fit_start_ns is None else f"fit start fixed at {fit_start_ns:g} ns",
     })
     return result
 
@@ -234,7 +253,7 @@ def main():
             duplicate_of = "" if original == f.stem else original
             if duplicate_of:
                 duplicates.append((f.stem, duplicate_of))
-            r = analyse(time_ns, counts)
+            r = analyse(time_ns, counts, FIT_START_NS.get(pc_id))
             tau, span = r.get("tau_ns"), r.get("span_ns")
             rows.append({
                 "pc_id": pc_id,

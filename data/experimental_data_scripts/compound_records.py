@@ -25,7 +25,8 @@ WHAT IS DELIBERATELY NOT TAKEN
 
     Both were checked against the derived values before being dropped: the extinction
     coefficients agree to the six-significant-figure rounding on all 864, and the
-    lifetimes agree exactly on 26 of the 27 screened photocatalysts, PC4 excepted.
+    lifetimes agree exactly on all 27 screened photocatalysts (PC4 once fitted from
+    1500 ns, see lifetimes_tcspc.py).
 
 BOUNDS ARE NOT MEASUREMENTS
     Six oxidation and several reduction potentials are recorded as limits rather than

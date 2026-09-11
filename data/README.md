@@ -45,6 +45,9 @@ gives each column's description and the raw table it came from.
 a `source` — `CV` (measured here), the DOI of the paper, or `estimated` (Q19, Q32, Q33) —
 and a free-text `comment`.
 
+**Photocatalyst lifetimes** are fitted from an automatic start after the pulse, except PC4,
+fitted from 1500 ns to skip a fast early component (`FIT_START_NS` in `lifetimes_tcspc.py`).
+
 **Photocatalyst DFT** uses Leon's arithmetic and reproduces his delivered file
 (`spectroscopy_data_processed/dataset/properties_photocatalysts_calc.xlsx`) except E_T for
 PC10, PC13, PC25 and PC28, which that file carries stale.

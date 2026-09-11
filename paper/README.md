@@ -23,6 +23,6 @@ beside them in their own rows. Recomputing from the ORCA outputs gives the value
 | Q14 | 159.0 | 2.46 | **2.45** |
 | Q18 | 44.0 | −2.54 | **−2.53** |
 
-And one photocatalyst lifetime does not reproduce from its traces: PC4's curated
-τ₀ of 1494.54 ns matches none of its TCSPC measurements, which give 1228.49 and
-1039.14 ns. See `../data/experimental_data_scripts/lifetimes_tau0.py`.
+Not an erratum, but the SI methods need it: PC4's τ₀ is fitted from 1500 ns, past a fast
+early component, and reproduces the published 1494.54 ns only that way (from the
+automatic start it gives 1228.49 ns). See `../data/experimental_data_scripts/lifetimes_tcspc.py`.

@@ -29,9 +29,9 @@ SELECTION
     3. A trace is dropped if its acquisition window is shorter than
        MIN_SPAN_IN_LIFETIMES * tau. A window that does not contain several lifetimes
        cannot separate the decay from the baseline, and the fit collapses onto
-       whatever fits inside the window. This removes exactly one trace across the
-       whole set: PC4's 200 ns range, which returns 51 ns against roughly 1100 ns
-       from the same compound's microsecond ranges.
+       whatever fits inside the window. No trace currently fails it; it is a guard.
+       The one short window in the set, PC4's 200 ns range, ends before PC4's fixed
+       1500 ns fit start and is already dropped at step 2.
 
     4. Where a photocatalyst was measured more than once, tau_0 is the LONGEST of the
        surviving measurements, not their mean.
@@ -60,17 +60,19 @@ UNCERTAINTY
     real uncertainty, flagged by `n_measurements = 1`.
 
 AGREEMENT WITH THE CURATED TABLE
-    This rule reproduces 26 of the 27 curated tau_0 values in
+    This rule reproduces all 27 curated tau_0 values in
     spectroscopy_data_processed/dataset/properties_photocatalysts.xlsx exactly, which
     establishes that the curated table was itself derived from these traces.
 
-    PC4 is the exception and is deliberately not reconciled here. Its curated value is
-    1494.54 ns, which matches none of its measurements: the two usable ones give
-    1228.49 and 1039.14 ns, both at unusually low amplitude (133 and 123 counts,
-    against 900+ for a typical trace here). Taking the longest gives 1228.49 ns, 18 %
-    below the curated figure, which scales k_q for all 48 of PC4's pairs by 1.22. The
-    curated value appears to come from a re-fit that is not in the data. PC4 needs a
-    decision, not a rule, and `consistent = 0` marks it as such.
+    PC4 agrees only because `lifetimes_tcspc.py` fits it from a fixed 1500 ns
+    (FIT_START_NS), skipping a fast early component ahead of the triplet; that is how
+    the curated value was fitted. Its two usable measurements then give 1494.54 and
+    1381.92 ns, and the longest is the curated 1494.54 ns. From the default start,
+    about 500 ns, they give 1228.49 and 1039.14 ns instead.
+
+    The curated error column is not reproduced for repeated photocatalysts (PC4, PC15,
+    PC22): it holds the chosen trace's within-fit standard error, where `tau0_std_ns`
+    holds the spread across repeats, as described above.
 """
 
 import csv
