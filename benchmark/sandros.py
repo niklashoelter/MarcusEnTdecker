@@ -5,7 +5,7 @@
 """
 Sandros: a barrierless rate, thermodynamics and a diffusion plateau and nothing else.
 
-Reads   ../dataset/pairs.csv (through pairs.py)
+Reads   ../data/exp_dataset.csv (through pairs.py)
 Writes  nothing -- run_benchmark.py collects the predictions
 
     uv run benchmark/sandros.py       score this one theory on its own

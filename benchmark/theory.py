@@ -14,7 +14,7 @@ THE INTERFACE
 
         NAME               str, the short name used in the output tables
         DESCRIPTION        one line, printed in the run header
-        required_columns() the pairs.csv columns it cannot run without
+        required_columns() the exp_dataset.csv columns it cannot run without
         prepare(df, **kw)  heavy per-pair computation, done once for the whole grid.
                            Takes k_diff, mean_type and legacy_pairing; a module with no
                            use for them swallows them, so the harness need not know
@@ -45,7 +45,7 @@ FREE PARAMETERS ARE DECLARED, NOT HIDDEN
 
 UNITS
     Energies kcal/mol throughout, rate constants M-1 s-1, potentials V vs SCE. The
-    column headers in pairs.csv carry their units after " / " and this module keeps to
+    column headers in exp_dataset.csv carry their units after " / " and this module keeps to
     them.
 """
 

@@ -5,7 +5,7 @@
 """
 Rehm-Weller: the empirical barrier, and the Balzani rate built on it.
 
-Reads   ../dataset/pairs.csv (through pairs.py)
+Reads   ../data/exp_dataset.csv (through pairs.py)
 Writes  nothing -- run_benchmark.py collects the predictions
 
     uv run benchmark/rehm_weller.py       score this one theory on its own

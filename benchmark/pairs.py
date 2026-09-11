@@ -5,13 +5,13 @@
 """
 The pair table, and the column contract every theory in this folder reads it through.
 
-Reads   ../dataset/pairs.csv
+Reads   ../data/exp_dataset.csv
 Writes  nothing
 
 WHY THIS MODULE EXISTS
     Every column name in the benchmark is written down once, here. The theory modules
     take arrays, never a file path and never a header string, so a rename in
-    `dataset/build_dataset.py` breaks in one place with a message instead of in six
+    `data/build_exp_dataset.py` breaks in one place with a message instead of in six
     places with a KeyError. This is the centralization rule the original implementation
     kept in `property_retrieval.py`, minus the part that made it unreproducible: nothing
     is copied in from a sibling directory, and importing this module has no side effect
@@ -28,7 +28,7 @@ THE TWO LABEL REGIMES
     number for every photocatalyst and every pair is labelled by the same criterion, so
     the indeterminate class is gone and with it the 'resolvable' regime.
 
-    What remains is a choice of how permissive the criterion is, and `pairs.csv` carries
+    What remains is a choice of how permissive the criterion is, and `exp_dataset.csv` carries
     both readings:
 
       `quenches`         K_SV > 10, or K_SV <= 10 with a slope significant across the
@@ -41,7 +41,7 @@ THE TWO LABEL REGIMES
     question, so `label_regimes()` returns both and this module takes no position.
 
 WHICH SURFACE EACH LAMBDA LIVES ON
-    The quencher and photocatalyst reorganization energies reach pairs.csv under two
+    The quencher and photocatalyst reorganization energies reach exp_dataset.csv under two
     different naming schemes, and they do not line up the way the letters suggest. Both
     are differences on ONE potential energy surface between TWO geometries:
 
@@ -69,27 +69,24 @@ from pathlib import Path
 
 import pandas as pd
 
-PAIRS_CSV = Path(__file__).resolve().parent.parent / "dataset" / "pairs.csv"
+PAIRS_CSV = Path(__file__).resolve().parent.parent / "data" / "exp_dataset.csv"
 
 # --- identity ---------------------------------------------------------------------
 PC_ID = "pc_id"
 PC_NAME = "pc_name"
-PC_COMPOUND = "pc_compound"
 Q_ID = "quencher_id"
 Q_NAME = "quencher_name"
 
 # --- measurement and ground truth ---------------------------------------------------
-K_Q = "k_q / M-1 s-1"
-LOG10_K_Q = "log10_k_q"
-QUENCHES = "quenches"
-CENSORED = "censored"
-K_Q_FLOOR = "k_q_floor / M-1 s-1"
-QUENCHES_STRICT = "quenches_strict"
-K_SV_FLOOR = "K_SV_floor / M-1"
+K_SV = "K_SV / M-1"
 TAU0_NS = "tau0 / ns"
+K_Q = "k_q / M-1 s-1"
+K_Q_FLOOR = "k_q_floor / M-1 s-1"
+QUENCHES = "quenches"
+QUENCHES_STRICT = "quenches_strict"
+CENSORED = "censored"
 
 # --- quencher, computed --------------------------------------------------------------
-Q_E_T = "q_E_T_dft / kcal mol-1"
 Q_LAMBDA_S_T = "q_lambda_S_T_dft / kcal mol-1"
 Q_LAMBDA_T_S = "q_lambda_T_S_dft / kcal mol-1"
 Q_DVTE_MU = "q_dvte_mu_md / kcal mol-1"
@@ -104,12 +101,6 @@ PC_LAMBDA_T1_TO_S0 = "pc_lambda_T1_to_S0_dft / kcal mol-1"
 # site cannot pair them up wrongly. This is the only naming the theory modules use.
 LAMBDA_SINGLET_SURFACE = {"pc": PC_LAMBDA_T1_TO_S0, "q": Q_LAMBDA_S_T}
 LAMBDA_TRIPLET_SURFACE = {"pc": PC_LAMBDA_S0_TO_T1, "q": Q_LAMBDA_T_S}
-
-# --- quencher, experimental redox and its bounds -------------------------------------
-Q_E_OX_EXP = "q_E_Ox_vs_SCE_exp / V"
-Q_E_OX_BOUND = "q_E_Ox_bound"
-Q_E_RED_EXP = "q_E_Red_vs_SCE_exp / V"
-Q_E_RED_BOUND = "q_E_Red_bound"
 
 # --- driving forces ------------------------------------------------------------------
 # Quencher-centric, negative = exergonic, F = 23.0605 kcal mol-1 V-1:
@@ -127,29 +118,23 @@ SET_SOURCES = ("exp", "calc")
 
 
 def set_columns(source: str) -> dict:
-    """The SET driving-force column names for one source."""
+    """The SET driving-force column names for one source: the more accessible channel,
+    and for the measured potentials the flag saying it is a lower bound."""
     if source not in SET_SOURCES:
         raise ValueError(f"unknown SET source {source!r}; expected one of {SET_SOURCES}")
-    cols = {
-        "ox": f"dG_SET_ox_{source} / kcal mol-1",
-        "red": f"dG_SET_red_{source} / kcal mol-1",
-        "combined": f"dG_SET_{source} / kcal mol-1",
-        "channel": f"dG_SET_{source}_channel",
-    }
+    cols = {"combined": f"dG_SET_{source} / kcal mol-1"}
     if source == "exp":
         cols["bound"] = "dG_SET_exp_bound"
     return cols
 
 
-# A pair counts as quenching above this rate constant. Set in `dataset/build_dataset.py`;
-# repeated here for reporting only, never to relabel anything.
 # The rate cutoff the ground truth used to be set on. Nothing is labelled or classified
 # on it any more -- the label is K_SV > 10 and the matching rate cutoff is per-pair,
 # k_q_floor. Kept so the old reading can still be quoted for comparison.
 K_Q_THRESHOLD = 1.0e7
 
 # The Faraday constant in the units the driving forces use, for anyone converting a
-# potential difference by hand. The value `dataset/README.md` states.
+# potential difference by hand. The dataset uses 23.060548.
 F_KCAL_PER_MOL_V = 23.0605
 
 # Photocatalysts whose DFT input is known to be suspect, and which are still in the
@@ -157,12 +142,12 @@ F_KCAL_PER_MOL_V = 23.0605
 # what is in the numbers. `run_benchmark.py --exclude-pc` drops one for a sensitivity
 # check, and reports that it did.
 #
-# PC24 is not here. It was excluded upstream, by name, in `dataset/build_dataset.py`, so
-# pairs.csv is 26 photocatalysts and this benchmark never sees it. That is a scientific
-# decision recorded in dataset/README.md, not something this folder can revisit.
+# PC24 is not here. It was excluded upstream, by name, in `data/build_exp_dataset.py`, so
+# exp_dataset.csv is 26 photocatalysts and this benchmark never sees it. That is a
+# scientific decision recorded there, not something this folder can revisit.
 FLAGGED_PHOTOCATALYSTS = {
     "PC19": "imaginary frequencies in both the S0 and the reduced optimization. It has "
-            "a triplet energy but no singlet-surface reorganization energy, so its 48 "
+            "a triplet energy but no triplet-surface reorganization energy, so its 48 "
             "pairs drop out of every barrier and rate method. They stay in the "
             "adiabatic and DvTE numbers, which need only E_T.",
     "PC20": "lambda on the triplet surface is 33.67 kcal/mol against 12.70 on the "
@@ -173,7 +158,7 @@ FLAGGED_PHOTOCATALYSTS = {
 
 
 class MissingColumns(KeyError):
-    """A required column is not in pairs.csv.
+    """A required column is not in exp_dataset.csv.
 
     Raised instead of scoring on whatever subset happens to be available. The message
     names the columns, who wanted them, and where their definition lives.
@@ -187,7 +172,7 @@ def load_pairs(path: Path = PAIRS_CSV) -> pd.DataFrame:
     """Read the pair table. No filtering, no imputation, no derived columns."""
     if not path.exists():
         raise FileNotFoundError(
-            f"{path} not found. Build it first:  uv run dataset/build_dataset.py"
+            f"{path} not found. Build it first:  uv run data/build_exp_dataset.py"
         )
     return pd.read_csv(path)
 
@@ -204,13 +189,13 @@ def require(df: pd.DataFrame, columns, wanted_by: str) -> None:
     if not missing:
         return
     raise MissingColumns("\n".join([
-        f"{wanted_by} needs {len(missing)} column(s) that pairs.csv does not have:",
+        f"{wanted_by} needs {len(missing)} column(s) that exp_dataset.csv does not have:",
         *(f"    {c!r}" for c in missing),
         "",
         "Every column name this benchmark expects is defined at the top of",
         "benchmark/pairs.py, with the sign and surface conventions each one follows.",
         "If the dataset renamed something, change it there and nowhere else.",
-        "See dataset/README.md for what the table does and does not yet state.",
+        "See data/build_exp_dataset.py for what the table carries and why.",
     ]))
 
 
@@ -263,7 +248,6 @@ def label_regimes(df: pd.DataFrame) -> dict:
             f"{int((strict & ~inclusive).sum())} pairs quench under the strict criterion "
             "but not the inclusive one, which cannot happen while the strict K_SV cutoff "
             "is the higher of the two. One of the two has been redefined in "
-            "dataset/build_dataset.py or in "
             "data/experimental_data_scripts/stern_volmer_fits.py."
         )
     return {"inclusive": (df, inclusive), "strict": (df, strict)}

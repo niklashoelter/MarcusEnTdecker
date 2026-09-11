@@ -102,8 +102,8 @@ R_KCAL = 1.987204259e-3
 # Acetonitrile diffusion limit, M-1 s-1. A solvent property, not a fitted parameter.
 K_DIFF_ACETONITRILE = 2.0e10
 
-# A pair counts as quenching above this rate constant. Defined once in `dataset/`;
-# repeated here so the API can answer without loading the dataset.
+# A pair counts as quenching above this rate constant. Repeated here so the API can
+# answer without loading the dataset.
 K_Q_THRESHOLD = 1.0e7
 
 DEFAULT_TEMPERATURE_K = 298.15

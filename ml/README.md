@@ -104,7 +104,7 @@ Its element vocabulary is **H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I**. Iri
 and ruthenium (44) are not in it, and encoding one raises `UnknownAtomError` rather than
 returning a bad answer.
 
-**28 of the 29 screened photocatalysts are Ir or Ru complexes.** Only PC7, an organic
+**28 of the 29 photocatalysts are Ir or Ru complexes.** Only PC7, an organic
 thioxanthone, can be passed to the model as a structure — verified, it predicts fine.
 This is a property of the training set, which is organic triplet sensitizers, not a
 defect, and it is not something authoring the SMILES could fix. The SMILES were still
@@ -128,7 +128,7 @@ reports only what the model estimates and `uncertainty_covers` names the partner
 accounts for. It is not a total.
 
 PC19 raises rather than predicts: four of its ten jobs are missing, so it has no
-reorganization energies.
+triplet-surface reorganization energy.
 
 ### What it composes
 
@@ -217,7 +217,8 @@ values is used.
 
 ## predict.py has now been run end to end
 
-Against `../dataset/pairs.csv`, over every photocatalyst with complete DFT. The plumbing
+Against the pair table (now `../data/exp_dataset.csv`), over every photocatalyst with
+complete DFT. The plumbing
 is confirmed: the checkpoint loads, the driving forces come out on the same scale as the
 DFT ones, and the Marcus barrier and Balzani rate follow.
 
@@ -245,7 +246,7 @@ on the same footing. The default remains 1.0 so that nothing is silently scaled.
 ## Training
 
 `examples/train.py` is the training entry point and `training_data/dataset.csv` its
-dataset. Neither is wired to `../dataset/pairs.csv` yet.
+dataset. Neither is wired to `../data/exp_dataset.csv` yet.
 
 When it is, the split matters more than it looks: an earlier audit found ML
 classifiers on this data were largely memorizing per-photocatalyst λ fingerprints. A

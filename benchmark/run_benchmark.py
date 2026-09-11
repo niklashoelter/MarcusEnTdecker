@@ -5,7 +5,7 @@
 """
 Score every theory in this folder against the measured rate constants, on one footing.
 
-Reads   ../dataset/pairs.csv
+Reads   ../data/exp_dataset.csv
 Writes  results/benchmark_full.csv     every method at every setting, both label regimes
         results/benchmark_best.csv     the best setting per method family, plus its
                                        leave-one-photocatalyst-out score
@@ -127,7 +127,7 @@ def mechanism_mask(df, rule, set_source="exp", bounds="face"):
         lower bound always points towards "yes, it is ruled out" -- and reading the bound
         at face value therefore understates how inaccessible the channel is, in the
         direction that wrongly drops pairs out of the energy-transfer positives. That is
-        the specific mistake dataset/README.md says the bound flags exist to prevent.
+        the specific mistake the bound flags in the dataset exist to prevent.
 
         `bounds='face'` reads the number as written, which is what the original did.
         `bounds='respect'` treats a lower-bounded pair as one where single-electron
@@ -345,7 +345,7 @@ def print_regime_comparison(regimes_df, best_df):
     print("free        free parameters selected by maximizing MCC on the scored data.")
     print()
     print("Neither MCC column is the answer. The scientific choice between them is open --")
-    print("see dataset/README.md and the README beside this script.")
+    print("see the README beside this script.")
     print()
 
     best_inclusive = best_df[best_df["label_regime"] == "inclusive"].set_index(

@@ -5,7 +5,7 @@
 """
 DvTE: the quencher's triplet energy as a distribution over geometries, not a number.
 
-Reads   ../dataset/pairs.csv (through pairs.py)
+Reads   ../data/exp_dataset.csv (through pairs.py)
 Writes  nothing -- run_benchmark.py collects the predictions
 
     uv run benchmark/dvte.py       score this one theory on its own
@@ -37,18 +37,18 @@ WHAT IT COMPUTES
     should not be quoted as if it were.
 
 WHAT IS AND IS NOT PORTED
-    The normal-quantile form is ported. It is exact from what pairs.csv carries, since
+    The normal-quantile form is ported. It is exact from what exp_dataset.csv carries, since
     `q_dvte_mu_md` and `q_dvte_std_md` are the mean and standard deviation of the sampled
     gaps and the quantile is a closed-form function of them.
 
     The `_kde` variant is NOT ported. It takes the same quantile from a Gaussian kernel
     density estimate of the samples rather than from a normal fit, so it needs the sample
-    distribution, which pairs.csv does not carry -- it lives in
+    distribution, which exp_dataset.csv does not carry -- it lives in
     `../data/computational_data_processed/quencher_properties_calc.xlsx` and, sample by
     sample, `../data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz`. Everything downstream in this repository reads
-    pairs.csv and nothing else, so rather than reach around that rule for a variant that
+    exp_dataset.csv and nothing else, so rather than reach around that rule for a variant that
     tracked the normal one to within 0.07 kcal/mol, it is left out. If it turns out to be
-    wanted, the right fix is to carry the four `_kde` quantiles into pairs.csv.
+    wanted, the right fix is to carry the four `_kde` quantiles into exp_dataset.csv.
 
     The cutoff is not swept. The original swept the four values and reported the best,
     which is an in-sample choice, and its own audit recorded that a finer grid moved MCC

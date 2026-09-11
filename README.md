@@ -4,9 +4,9 @@ Companion repository for *A Hybrid Machine-Learning and Marcus Theory Approach f
 Predicting Triplet Energy Transfer Kinetics*.
 
 It holds everything needed to regenerate the paper's numbers from instrument output:
-the experimental and computational data with the scripts that process them, the
-assembled pair-level dataset, the physical-organic theory benchmarks, and the training
-and evaluation of the machine-learning models.
+the experimental and computational data with the scripts that process them and the
+pair-level dataset built from them, the physical-organic theory benchmarks, and the
+training and evaluation of the machine-learning models.
 
 ## The screen
 
@@ -17,8 +17,8 @@ quenching in acetonitrile on an Opentrons Flex and a BMG VantaStar plate reader;
 ## Layout
 
 ```
-data/           instrument output and DFT job files, and the scripts that process them
-dataset/        the pair-level table -- where the processed data becomes one row per pair
+data/           instrument output and DFT job files, the scripts that process them, and
+                the pair-level dataset built from them
 benchmark/      physical-organic theory as classifiers: adiabatic, Marcus, Rehm-Weller, DvTE
 ml/             the pyrates models and the prediction API
 figures/        every figure in the paper, regenerated from processed data
@@ -29,7 +29,7 @@ webapp/         shipping EnTdecker: image definition and Kubernetes manifests
 Dependencies run strictly one way:
 
 ```
-data  ->  dataset  ->  { benchmark, ml }  ->  figures, paper
+data  ->  { benchmark, ml }  ->  figures, paper
 ```
 
 Nothing reaches sideways or backwards. A script reads only from directories to its
@@ -37,7 +37,7 @@ left, so any number in the paper can be traced to the instrument file it came fr
 following that chain in one direction.
 
 Inside `data/`, the processed folders hold one workbook per compound class and side, and
-the Stern–Volmer tables:
+the Stern–Volmer tables; `build_exp_dataset.py` joins them into one row per pair:
 
 ```
 data/experimental_data_processed/    photocatalyst_properties_exp.xlsx
@@ -45,6 +45,7 @@ data/experimental_data_processed/    photocatalyst_properties_exp.xlsx
                                      stern_volmer_intensities.csv, stern_volmer_fits.csv
 data/computational_data_processed/   photocatalyst_properties_calc.xlsx
                                      quencher_properties_calc.xlsx
+data/                                exp_dataset.csv, exp_dataset.xlsx   (1248 pairs)
 ```
 
 Each workbook has one row per compound and its columns in blocks, with a `Column key`
@@ -79,18 +80,18 @@ re-derive the extracted tables from scratch.
 
 ## State
 
-| stage | state |
-|---|---|
-| `data/` experimental | **complete and verified** — 5 of 6 scripts written, all round-trip byte-identical |
+| stage                 | state                                                                                                                                      |
+|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| `data/` experimental  | **complete and verified** — every table rebuilds byte-identically from the instrument files                                                |
 | `data/` computational | **complete and verified** — 48 quenchers and 29 photocatalysts; reproduces the published tables except four stale photocatalyst E_T values |
-| `dataset/` | **1248 pairs**; the ground truth is settled on K_SV, both readings carried |
-| `benchmark/` | **ported and running** — five theories scored under both label regimes; open items in its README |
-| `ml/` | **models in place**, checkpoint included; `predict.py` runs end to end, but its λ sweep predates the label change |
-| `webapp/` | **deployable** — builds from `ml/` instead of cloning a branch |
-| `figures/`, `paper/` | not started |
+| `data/exp_dataset`    | **1248 pairs**; the ground truth is settled on K_SV, both readings carried                                                                 |
+| `benchmark/`          | **ported and running** — five theories scored under both label regimes; open items in its README                                           |
+| `ml/`                 | **models in place**, checkpoint included; `predict.py` runs end to end, but its λ sweep predates the label change                          |
+| `webapp/`             | **deployable** — builds from `ml/` instead of cloning a branch                                                                             |
+| `figures/`, `paper/`  | not started                                                                                                                                |
 
-Each directory's own README says what is in it, what produced it, and what is known to
-be wrong with it.
+Each directory's README says what is in it, what produced it, and what is known to be
+wrong with it; `data/` has one README for all of its subfolders.
 
 ## Predicting from structure
 

@@ -166,8 +166,7 @@ def rate_agreement(k_q, k_q_floor, censored, k_pred) -> dict:
                              non-detections the theory is consistent with
 
     This is descriptive. It is not a censored-likelihood fit, and it takes no position on
-    whether the benchmark should become a censored regression -- that is the open
-    question `../dataset/README.md` leaves open.
+    whether the benchmark should become a censored regression -- that question is open.
     """
     k_q = np.asarray(k_q, dtype=float)
     floor = np.asarray(k_q_floor, dtype=float)

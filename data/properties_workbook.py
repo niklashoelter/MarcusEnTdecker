@@ -193,7 +193,7 @@ def _write_pinned(buf: io.BytesIO, path: Path) -> None:
 def read_workbook(path: Path, key: str) -> dict[int, dict[str, object]]:
     """A property workbook as {id: {header: value}}, blanks as "".
 
-    Separator columns are skipped. This is the reader `dataset/build_dataset.py` mirrors.
+    Separator columns are skipped. This is the reader `build_exp_dataset.py` mirrors.
     """
     ws = load_workbook(path, read_only=True, data_only=True).worksheets[0]
     rows = ws.iter_rows(min_row=HEADER_ROW, values_only=True)

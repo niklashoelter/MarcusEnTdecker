@@ -5,15 +5,15 @@
 """
 Marcus theory: the crossing of two harmonic parabolas, as a barrier and as a rate.
 
-Reads   ../dataset/pairs.csv (through pairs.py)
+Reads   ../data/exp_dataset.csv (through pairs.py)
 Writes  nothing -- run_benchmark.py collects the predictions
 
     uv run benchmark/marcus.py       score this one theory on its own
 
 HOW THE PAIR'S REORGANIZATION ENERGY IS ASSEMBLED
-    `dataset/README.md` leaves this to the benchmark on purpose: "how the two partners'
-    terms add is a modelling decision -- it belongs in `benchmark/`, where it can be
-    stated and varied, not frozen into the table." So here it is, stated.
+    The dataset carries each partner's lambda and leaves the combination to the benchmark
+    on purpose: how the two terms add is a modelling decision, and it belongs where it can
+    be stated and varied, not frozen into the table. So here it is, stated.
 
     The forward reaction is PC(T1) + Q(S0) -> PC(S0) + Q(T1). For a reaction R -> P the
     reorganization energy is the product state evaluated at the reactant geometry, minus

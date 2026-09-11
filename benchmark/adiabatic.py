@@ -5,7 +5,7 @@
 """
 The adiabatic rule: a pair quenches if triplet energy transfer is downhill.
 
-Reads   ../dataset/pairs.csv (through pairs.py)
+Reads   ../data/exp_dataset.csv (through pairs.py)
 Writes  nothing -- run_benchmark.py collects the predictions
 
     uv run benchmark/adiabatic.py       score this one theory on its own

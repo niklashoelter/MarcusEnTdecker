@@ -33,11 +33,13 @@ PROVENANCE
 
 TWO LABELS COME OUT OF THIS FILE
     `quenching_observed` is the published criterion, K_SV >= 25 and r2 >= 0.90, kept
-    byte-for-byte so the published table stays reproducible. Nothing downstream uses it.
+    byte-for-byte so the published table stays reproducible. It reaches the dataset as
+    `quenches_strict` and is scored as the stricter reading.
 
     `quenches` is the label this project classifies on: K_SV > 10, or K_SV <= 10 with a
-    slope that is significant across all measured points. The two differences from the
-    published rule are deliberate.
+    slope that is significant across the points the fit used, Bonferroni-corrected when
+    the range scan dropped one. The two differences from the published rule are
+    deliberate.
 
     The threshold moved to 10 because a weak quencher is still a quencher, and because
     K_SV 5-10 is real signal here rather than noise: 19 such pairs clear r2 > 0.95 where
@@ -49,7 +51,10 @@ TWO LABELS COME OUT OF THIS FILE
     all-points r2 is 0.45 can never be cleaned while one at 0.55 can be cleaned to 0.99.
     Of the low-K_SV pairs, 19 of the 50 that had a point dropped reach r2 > 0.95 and
     0 of the 103 that did not -- an artifact of that gate, not a property of the sample.
-    The slope test reads every measured point and so judges both alike.
+    The slope test reads the points each fit used and pays for the dropped-point search
+    with the Bonferroni factor, so it judges both alike. It does not put a dropped point
+    back: the scan exists to cut a collapsed well loose, and restoring it would let one
+    bad reading carry the label.
 """
 
 import csv

@@ -7,7 +7,7 @@ Regenerate everything, in dependency order.
 
     uv run reproduce.py              every stage
     uv run reproduce.py data         one stage
-    uv run reproduce.py data dataset several stages
+    uv run reproduce.py data benchmark   several stages
     uv run reproduce.py --list       what would run, without running it
 
 Each script is standalone and declares its own dependencies, so this is only a
@@ -64,12 +64,12 @@ PIPELINE = [
      "data/computational_data_raw/photocatalysts/PC_1"),
     ("data", "data/computational_data_scripts/properties_calc.py",
      "data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv"),
-    ("dataset", "dataset/build_dataset.py",
+    ("data", "data/build_exp_dataset.py",
      "data/experimental_data_processed/stern_volmer_fits.csv"),
-    ("benchmark", "benchmark/run_benchmark.py", "dataset/pairs.csv"),
+    ("benchmark", "benchmark/run_benchmark.py", "data/exp_dataset.csv"),
 ]
 
-STAGES = ["data", "dataset", "benchmark", "ml", "figures", "paper"]
+STAGES = ["data", "benchmark", "ml", "figures", "paper"]
 
 
 def run(script):

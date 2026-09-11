@@ -18,7 +18,7 @@ tables stay in the raw folders beside the instrument files they were derived fro
 only selects from them and lays the result out in blocks (see ../properties_workbook.py).
 No value is computed here.
 
-Downstream, `dataset/build_dataset.py` reads these two workbooks and the Stern-Volmer fits,
+Downstream, `../build_exp_dataset.py` reads these two workbooks and the Stern-Volmer fits,
 and nothing else from the experimental side.
 """
 
@@ -102,7 +102,7 @@ def photocatalysts():
     note = """
         One row per photocatalyst with a compound record. PC7 and PC26 are not in the screen
         and have no lifetime. PC24 is in the screen and excluded from the dataset in
-        dataset/build_dataset.py, not here.
+        data/build_exp_dataset.py, not here.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(records), blocks, note

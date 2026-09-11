@@ -1,6 +1,6 @@
 # figures
 
-Every figure in the paper and the SI, regenerated from `../dataset/` and
+Every figure in the paper and the SI, regenerated from `../data/exp_dataset.csv` and
 `../benchmark/results/`. One script per figure, named for the figure it makes.
 
 The rule is that no figure is drawn from a number typed by hand. If a figure cannot be
