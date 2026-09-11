@@ -184,9 +184,9 @@ worst are:
 
 | | compound | ml | dft | error | λ_S→T (DFT) |
 |---|---|---:|---:|---:|---:|
-| Q17 | (BnSe)₂ | 79.9 | 47.1 | **+32.8** | 36.8 |
+| Q17 | dibenzyl diselenide | 79.9 | 47.1 | **+32.8** | 36.8 |
 | Q10 | diphenyl disulfide | 72.2 | 40.3 | **+31.9** | 77.6 |
-| Q45 | vinyl selenoxide | 77.2 | 48.3 | **+28.9** | 104.8 |
+| Q45 | phenyl vinyl selenoxide | 77.2 | 48.3 | **+28.9** | 104.8 |
 | Q11 | dibenzyl disulfide | 75.6 | 56.6 | **+19.0** | 45.5 |
 | Q44 | 2-acetylpyridine | 65.6 | 82.5 | −16.9 | 11.4 |
 

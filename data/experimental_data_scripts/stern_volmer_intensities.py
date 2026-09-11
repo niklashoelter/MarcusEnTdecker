@@ -56,7 +56,7 @@ PROTOCOL_WAVELENGTHS = {
 }
 
 COLUMNS = [
-    "batch", "well", "pc_old_id", "quencher_id", "quencher_label",
+    "batch", "well", "pc_old_id", "quencher_id",
     "excitation_nm", "emission_nm", "quencher_conc_M", "intensity_au",
     "n_reads_total", "n_reads_used", "n_saturated", "n_deviant",
 ]
@@ -213,7 +213,7 @@ def main():
         for well in sorted(wells, key=well_sort_key):
             entry = wells[well]
             pc, q = entry["photocatalyst"], entry["quencher"]
-            quencher_id, quencher_name = layout[well]
+            quencher_id, _ = layout[well]   # the map's own label is not carried; see records
 
             # Concentration comes from the pipetted volume and the stock, never from the
             # rounded concentration_mM the map also carries.
@@ -227,7 +227,6 @@ def main():
                 "well": well,
                 "pc_old_id": int(re.fullmatch(r"PC(\d+)", pc["compound"]).group(1)),
                 "quencher_id": quencher_id,
-                "quencher_label": quencher_name,
                 "excitation_nm": filters["excitation_nm"],
                 "emission_nm": filters["emission_nm"],
                 "quencher_conc_M": sig(conc_M),

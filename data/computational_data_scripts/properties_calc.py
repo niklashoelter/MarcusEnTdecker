@@ -131,7 +131,7 @@ def quenchers():
             col("quencher_id", "quencher_id", "Quencher number."),
             col("quencher_name", "quencher_name", "Label used throughout, Q<n>.",
                 records, Q_RECORDS),
-            col("compound", "name", "Compound, from the experimental record.",
+            col("compound", "name", "Name derived from the SMILES, as in the experimental workbook.",
                 records, Q_RECORDS),
             col("smiles", "smiles", "Structure.", records, Q_RECORDS),
         ]),

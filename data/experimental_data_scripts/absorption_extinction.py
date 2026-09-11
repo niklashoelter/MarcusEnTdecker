@@ -137,7 +137,6 @@ def read_plate_map(path):
             continue
         out.append({
             "quencher_id": int(row[idx["quencher_id"]]),
-            "quencher_name": str(row[idx["name"]]).strip(),
             "c_stock_mM": float(row[idx["c_Stock / mM"]]),
             "well": normalise_well(row[idx["well_pos"]]),
         })
@@ -159,7 +158,7 @@ def main():
         raise ValueError(f"blank wells absent from the scan: {missing_blanks}")
     blank = {wl: statistics.fmean([means[w][wl] for w in BLANK_WELLS]) for wl in WAVELENGTHS}
 
-    columns = (["quencher_id", "quencher_name", "well", "c_stock_mM"]
+    columns = (["quencher_id", "well", "c_stock_mM"]
                + [f"epsilon_{wl}_mM-1cm-1" for wl in WAVELENGTHS]
                + ["max_read_rsd_percent"])
 
@@ -168,7 +167,7 @@ def main():
         well = q["well"]
         if well not in means:
             raise ValueError(f"quencher {q['quencher_id']} maps to well {well}, absent from the scan")
-        row = {"quencher_id": q["quencher_id"], "quencher_name": q["quencher_name"],
+        row = {"quencher_id": q["quencher_id"],
                "well": well, "c_stock_mM": q["c_stock_mM"]}
         for wl in WAVELENGTHS:
             absorbance = means[well][wl] - blank[wl]
@@ -187,7 +186,7 @@ def main():
     print(f"  path length {PATH_LENGTH_MM} mm, scaled to {REFERENCE_PATH_MM} mm")
     print(f"  blanked against {len(BLANK_WELLS)} solvent wells ({BLANK_WELLS[0]}-{BLANK_WELLS[-1]})")
     print(f"  worst repeat-read spread: {worst['max_read_rsd_percent']}% "
-          f"(Q{worst['quencher_id']}, {worst['quencher_name']})")
+          f"(Q{worst['quencher_id']})")
 
 
 if __name__ == "__main__":

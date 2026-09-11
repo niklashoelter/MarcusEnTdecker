@@ -134,7 +134,8 @@ def quenchers():
             col("quencher_id", records, Q_RECORDS, "quencher_id", "Quencher number."),
             col("quencher_name", records, Q_RECORDS, "quencher_name",
                 "Label used throughout, Q<n>."),
-            col("compound", records, Q_RECORDS, "name", "Compound, as recorded."),
+            col("compound", records, Q_RECORDS, "name",
+                "Name derived from the SMILES (checked by name-to-structure conversion)."),
             col("smiles", records, Q_RECORDS, "smiles", "Structure."),
         ]),
         Block("Redox potentials, as recorded / V vs SCE", [
