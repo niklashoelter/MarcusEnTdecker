@@ -7,7 +7,7 @@ Experimental tables -> one property workbook per compound class.
 
 Reads   ../experimental_data_raw/compound_records/compound_records_photocatalysts.csv
         ../experimental_data_raw/compound_records/compound_records_quenchers.csv
-        ../experimental_data_raw/pc_tcspc/lifetimes_tau0.csv
+        ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
         ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
         ../experimental_data_processed/stern_volmer_fits.csv    (screen membership only)
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
@@ -38,7 +38,7 @@ Q_OUT = OUT_DIR / "quencher_properties_exp.xlsx"
 
 PC_RECORDS = RAW / "compound_records" / "compound_records_photocatalysts.csv"
 Q_RECORDS = RAW / "compound_records" / "compound_records_quenchers.csv"
-TAU0 = RAW / "pc_tcspc" / "lifetimes_tau0.csv"
+TAU0 = RAW / "pc_tcspc" / "lifetimes_tcspc.csv"
 ABSORPTION = RAW / "quencher_absorption" / "absorption_extinction.csv"
 FITS = OUT_DIR / "stern_volmer_fits.csv"
 
@@ -94,26 +94,15 @@ def photocatalysts():
         ]),
         Block("Excited-state lifetime, TCSPC in MeCN under Ar", [
             col("tau0 / ns", tau0, TAU0, "tau0_ns",
-                "Unquenched lifetime: the longest of the usable measurements, because "
-                "residual oxygen can only shorten it."),
-            col("tau0_std / ns", tau0, TAU0, "tau0_std_ns",
-                "Spread across repeats; with one measurement, that fit's standard error."),
-            col("tau0_rsd", tau0, TAU0, "tau0_rsd", "tau0_std / tau0."),
-            col("n_measurements", tau0, TAU0, "n_measurements",
-                "Usable traces behind tau0."),
-            col("n_traces_rejected", tau0, TAU0, "n_traces_rejected",
-                "Traces dropped as duplicates, unfitted, or with too short a window."),
-            col("tau0_consistent", tau0, TAU0, "consistent",
-                "With repeats: 1 if they agree within 10 %, 0 if not. Blank for one "
-                "measurement."),
-            col("trace_used", tau0, TAU0, "trace_used", "The trace tau0 is taken from."),
-            col("tau0_note", tau0, TAU0, "note", "How tau0 was selected, and what was rejected."),
+                "Unquenched lifetime, single-exponential fit of pc_tcspc/PC<n>.txt."),
+            col("tau0_err / ns", tau0, TAU0, "tau0_err_ns", "Standard error of that fit."),
+            col("tau0_note", tau0, TAU0, "note", "Deviation from the standard fit window."),
         ]),
     ]
     note = """
-        One row per photocatalyst with a compound record. PC7 was measured but is not in the
-        screen; PC26 has no record beyond its number. PC24 is in the screen and excluded from
-        the dataset in dataset/build_dataset.py, not here.
+        One row per photocatalyst with a compound record. PC7 and PC26 are not in the screen
+        and have no lifetime. PC24 is in the screen and excluded from the dataset in
+        dataset/build_dataset.py, not here.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(records), blocks, note

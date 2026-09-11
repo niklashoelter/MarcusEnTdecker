@@ -162,7 +162,7 @@ COLUMNS = [
     "quencher_smiles",
     # the measurement
     "K_SV / M-1", "r2", "n_points_fitted", "n_points_measured", "fit_method", "fit_note",
-    "tau0 / ns", "tau0_rsd", "tau0_consistent",
+    "tau0 / ns", "tau0_err / ns",
     # the rate
     "k_q / M-1 s-1", "log10_k_q", "quenches", "quenches_strict", "censored",
     "k_q_floor / M-1 s-1", "K_SV_floor / M-1",
@@ -354,8 +354,7 @@ def main():
                 "fit_method": fit["fit_method"],
                 "fit_note": fit["note"],
                 "tau0 / ns": sig(lifetime),
-                "tau0_rsd": sig(number(tau0.get(pc_id), "tau0_rsd")),
-                "tau0_consistent": (tau0.get(pc_id) or {}).get("tau0_consistent", ""),
+                "tau0_err / ns": sig(number(tau0.get(pc_id), "tau0_err / ns")),
 
                 "k_q / M-1 s-1": sig(k_q),
                 "log10_k_q": sig(math.log10(k_q)) if (k_q and k_q > 0) else "",

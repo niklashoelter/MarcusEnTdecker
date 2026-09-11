@@ -42,8 +42,6 @@ PIPELINE = [
      "data/experimental_data_processed/stern_volmer_intensities.csv"),
     ("data", "data/experimental_data_scripts/lifetimes_tcspc.py",
      "data/experimental_data_raw/pc_tcspc"),
-    ("data", "data/experimental_data_scripts/lifetimes_tau0.py",
-     "data/experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv"),
     ("data", "data/experimental_data_scripts/absorption_extinction.py",
      "data/experimental_data_raw/quencher_absorption"),
     ("data", "data/experimental_data_scripts/emission_spectra.py",

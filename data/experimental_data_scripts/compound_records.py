@@ -21,11 +21,11 @@ WHAT IS DELIBERATELY NOT TAKEN
     quantity into circulation:
 
       * the 18 epsilon columns in the quencher sheet     -> absorption_extinction.py
-      * `t0 / ns` and `t0_err / ns` in the photocatalyst sheet -> lifetimes_tau0.py
+      * `t0 / ns` and `t0_err / ns` in the photocatalyst sheet -> lifetimes_tcspc.py
 
     Both were checked against the derived values before being dropped: the extinction
     coefficients agree to the six-significant-figure rounding on all 864, and the
-    lifetimes agree exactly on all 27 screened photocatalysts (PC4 once fitted from
+    lifetimes and their errors agree on all 27 screened photocatalysts (PC4 fitted from
     1500 ns, see lifetimes_tcspc.py).
 
 BOUNDS ARE NOT MEASUREMENTS

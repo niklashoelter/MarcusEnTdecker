@@ -9,7 +9,7 @@ data/
 ├── experimental_data_raw/           instrument files, plus the tables derived from them
 │   ├── compound_records/            lab records (xlsx) -> compound_records_*.csv
 │   ├── pc_emission/                 emission scans -> emission_spectra.csv
-│   ├── pc_tcspc/                    TCSPC traces -> lifetimes_tcspc.csv, lifetimes_tau0.csv
+│   ├── pc_tcspc/                    PC<n>.txt/.FL, one trace each -> lifetimes_tcspc.csv
 │   ├── quencher_absorption/         absorption scans -> absorption_extinction.csv
 │   ├── quencher_cyclic_voltammetry/ CV traces -> cyclic_voltammetry_redox.csv, _traces.csv
 │   └── stern_volmer/                plate reads and pipetting maps
@@ -45,8 +45,10 @@ gives each column's description and the raw table it came from.
 a `source` — `CV` (measured here), the DOI of the paper, or `estimated` (Q19, Q32, Q33) —
 and a free-text `comment`.
 
-**Photocatalyst lifetimes** are fitted from an automatic start after the pulse, except PC4,
-fitted from 1500 ns to skip a fast early component (`FIT_START_NS` in `lifetimes_tcspc.py`).
+**Photocatalyst lifetimes** come from one TCSPC trace per photocatalyst; τ0 and its error are
+the value and standard error of a single-exponential fit. The fit starts automatically after
+the pulse, except for PC4, fitted from 1500 ns to skip a fast early component
+(`FIT_START_NS` in `lifetimes_tcspc.py`).
 
 **Photocatalyst DFT** uses Leon's arithmetic and reproduces his delivered file
 (`spectroscopy_data_processed/dataset/properties_photocatalysts_calc.xlsx`) except E_T for

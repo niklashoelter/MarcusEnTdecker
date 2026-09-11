@@ -3,29 +3,26 @@
 # dependencies = ["numpy"]
 # ///
 """
-TCSPC decay traces -> excited-state lifetime per trace.
+TCSPC decay traces -> the excited-state lifetime tau0 of each photocatalyst.
 
-Reads   ../experimental_data_raw/pc_tcspc/*.txt   tab-separated, header block then
-                                                  time (ns) vs counts, 2048 channels
+Reads   ../experimental_data_raw/pc_tcspc/PC<n>.txt   tab-separated, header block then
+                                                    time (ns) vs counts, 2048 channels
 Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
 
-One row per trace, not per photocatalyst. Several photocatalysts were measured more
-than once on different timebases; choosing which trace to trust is a human call and
-is NOT made here. That curated pick lives in the compound records and is the value
-that goes into k_q.
+One trace per photocatalyst (MeCN, Ar, 10 uM, 3 mL), fitted with a single exponential,
+1/y weights and a background taken from the trace tail. tau0 and its error are that fit's
+value and standard error. The instrument's own export, `PC<n>.FL`, sits beside each trace.
 
 Ported from Photocatalysts/plot_lifetimes.py, which produced the published numbers.
 
-PC4 is the one exception to the automatic fit start. Its decay has a fast early
-component ahead of the triplet, and the count-threshold start (about 500 ns) puts both
-in one single-exponential fit. Its published lifetime came from a re-fit of the same
-code with the window opened at a fixed 1500 ns on the instrument's time axis;
-FIT_START_NS reproduces it (1494.54 +/- 19.32 ns). Every other photocatalyst keeps the
-count-threshold start.
+The fit window opens at the first post-pulse channel at or below 1000 counts, except for
+PC4. Its decay has a fast early component ahead of the triplet, and that start (about
+500 ns) puts both in one exponential. Its published lifetime came from the same fit with
+the window opened at a fixed 1500 ns on the instrument's time axis; FIT_START_NS does
+that (1494.54 +/- 19.32 ns).
 """
 
 import csv
-import hashlib
 import re
 import sys
 from pathlib import Path
@@ -40,6 +37,7 @@ FIT_START_COUNT_THRESHOLD = 1000.0    # start at the first post-peak channel at 
 PULSE_END_FRACTION = 0.5              # fallback: pulse is over below this fraction of the peak
 STABILIZATION_POINTS = 4              # ... and once this many consecutive channels are non-rising
 MIN_FIT_POINTS = 15                   # fewer usable channels than this and the trace is not fitted
+MIN_SPAN_IN_LIFETIMES = 5             # the fit window must span this many lifetimes
 # pc_id -> fit from the first channel at or after this time (ns, instrument axis, not from
 # the pulse) instead of the count threshold. PC4 only: skips its fast early component.
 FIT_START_NS = {4: 1500.0}
@@ -48,10 +46,9 @@ TAU_REFINE_POINTS = 200
 SIGFIGS = 6
 
 COLUMNS = [
-    "pc_id", "trace", "n_traces", "n_distinct_traces", "duplicate_of",
-    "tau_ns", "tau_stderr_ns", "amplitude",
+    "pc_id", "tau0_ns", "tau0_err_ns", "amplitude",
     "background_counts", "pulse_channel", "fit_channel_start", "fit_channel_end",
-    "fit_start_ns", "fit_end_ns", "n_fit_points", "span_ns", "covers_decay", "note",
+    "fit_start_ns", "fit_end_ns", "n_fit_points", "span_ns", "note",
 ]
 
 
@@ -62,13 +59,8 @@ def sig(x, n=SIGFIGS):
 
 
 def read_trace(path):
-    """time_ns, counts, and a digest of the data rows.
-
-    The digest covers only the numeric rows, not the header. Two files in this folder
-    are the same measurement saved twice -- one pair is byte-identical, the other
-    differs solely in its `Labels` line -- so hashing the header would miss it.
-    """
-    t, c, raw = [], [], []
+    """time_ns, counts."""
+    t, c = [], []
     for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
         parts = line.split()
         if len(parts) < 2:
@@ -79,11 +71,9 @@ def read_trace(path):
             continue
         t.append(a)
         c.append(b)
-        raw.append(f"{parts[0]} {parts[1]}")
     if not t:
         raise ValueError(f"no numeric data in {path.name}")
-    digest = hashlib.sha256("\n".join(raw).encode()).hexdigest()
-    return np.asarray(t, float), np.asarray(c, float), digest
+    return np.asarray(t, float), np.asarray(c, float)
 
 
 def estimate_background(counts):
@@ -235,54 +225,39 @@ def main():
     files = sorted(RAW.glob("*.txt"))
     if not files:
         sys.exit(f"no TCSPC traces found in {RAW}")
+    stray = [f.name for f in files if not re.fullmatch(r"PC\d+", f.stem)]
+    if stray:
+        sys.exit(f"traces must be named PC<n>.txt: {stray}")
+    files.sort(key=lambda f: int(f.stem[2:]))
 
-    per_pc = {}
+    rows, problems = [], []
     for f in files:
-        m = re.match(r"(\d+)_", f.stem)
-        if not m:
-            raise ValueError(f"cannot read a photocatalyst number from {f.name!r}")
-        per_pc.setdefault(int(m.group(1)), []).append(f)
-
-    rows = []
-    duplicates = []
-    for pc_id in sorted(per_pc):
-        seen = {}                      # data digest -> first trace name carrying it
-        for f in sorted(per_pc[pc_id]):
-            time_ns, counts, digest = read_trace(f)
-            original = seen.setdefault(digest, f.stem)
-            duplicate_of = "" if original == f.stem else original
-            if duplicate_of:
-                duplicates.append((f.stem, duplicate_of))
-            r = analyse(time_ns, counts, FIT_START_NS.get(pc_id))
-            tau, span = r.get("tau_ns"), r.get("span_ns")
-            rows.append({
-                "pc_id": pc_id,
-                "trace": f.stem,
-                "n_traces": len(per_pc[pc_id]),
-                "n_distinct_traces": len(seen),   # provisional; corrected below
-                "duplicate_of": duplicate_of,
-                "tau_ns": sig(tau),
-                "tau_stderr_ns": sig(r.get("tau_stderr_ns")),
-                "amplitude": sig(r.get("amplitude")),
-                "background_counts": sig(r["background"]),
-                "pulse_channel": r["pulse_channel"],
-                "fit_channel_start": r.get("fit_channel_start", ""),
-                "fit_channel_end": r.get("fit_channel_end", ""),
-                "fit_start_ns": sig(r.get("fit_start_ns")),
-                "fit_end_ns": sig(r.get("fit_end_ns")),
-                "n_fit_points": r["n_fit_points"],
-                "span_ns": sig(span),
-                # does the window actually span the decay, or was it cut short?
-                "covers_decay": "" if (tau is None or span is None) else (span >= 3 * tau),
-                "note": r.get("note", ""),
-            })
-
-    # n_distinct_traces is only final once a photocatalyst's files have all been read
-    distinct = {}
-    for r in rows:
-        distinct[r["pc_id"]] = distinct.get(r["pc_id"], 0) + (1 if not r["duplicate_of"] else 0)
-    for r in rows:
-        r["n_distinct_traces"] = distinct[r["pc_id"]]
+        pc_id = int(f.stem[2:])
+        time_ns, counts = read_trace(f)
+        r = analyse(time_ns, counts, FIT_START_NS.get(pc_id))
+        tau, span = r.get("tau_ns"), r.get("span_ns")
+        if tau is None:
+            problems.append(f"{f.stem}: {r.get('note', 'not fitted')}")
+        elif span < MIN_SPAN_IN_LIFETIMES * tau:
+            problems.append(f"{f.stem}: the window spans {span / tau:.1f} lifetimes, "
+                            f"fewer than {MIN_SPAN_IN_LIFETIMES}")
+        rows.append({
+            "pc_id": pc_id,
+            "tau0_ns": sig(tau),
+            "tau0_err_ns": sig(r.get("tau_stderr_ns")),
+            "amplitude": sig(r.get("amplitude")),
+            "background_counts": sig(r["background"]),
+            "pulse_channel": r["pulse_channel"],
+            "fit_channel_start": r.get("fit_channel_start", ""),
+            "fit_channel_end": r.get("fit_channel_end", ""),
+            "fit_start_ns": sig(r.get("fit_start_ns")),
+            "fit_end_ns": sig(r.get("fit_end_ns")),
+            "n_fit_points": r["n_fit_points"],
+            "span_ns": sig(span),
+            "note": r.get("note", ""),
+        })
+    if problems:
+        sys.exit("every photocatalyst needs one usable trace:\n  " + "\n  ".join(problems))
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="", encoding="utf-8") as fh:
@@ -290,17 +265,10 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
-    fitted = sum(1 for r in rows if r["tau_ns"] != "")
-    print(f"{len(files)} trace files, {len(per_pc)} photocatalysts -> {OUT.name}")
-    print(f"  fitted:      {fitted}")
-    print(f"  not fitted:  {len(rows) - fitted}")
-    print(f"  files that duplicate another measurement: {len(duplicates)}")
-    for dup, original in duplicates:
-        print(f"    {dup}  is the same data as  {original}")
-    print(f"  distinct measurements: {sum(distinct.values())}")
+    print(f"{len(rows)} photocatalysts -> {OUT.name}")
     for r in rows:
         if r["note"]:
-            print(f"    {r['trace']}: {r['note']}")
+            print(f"  PC{r['pc_id']}: {r['note']}")
 
 
 if __name__ == "__main__":
