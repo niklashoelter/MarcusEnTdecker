@@ -194,7 +194,7 @@ varied, not frozen into the table.
 | rate | `k_q / M-1 s-1`, `log10_k_q`, `quenches`, `quenches_strict`, `censored`, `k_q_floor / M-1 s-1`, `K_SV_floor / M-1` |
 | quencher, experimental | `q_E_Ox_vs_SCE_exp / V`, `q_E_Ox_bound`, `q_E_Red_vs_SCE_exp / V`, `q_E_Red_bound`, `q_redox_source_type`, `q_redox_doi`, `q_epsilon_at_pc_excitation / mM-1 cm-1`, `pc_excitation / nm` |
 | quencher, computed | `q_E_T_dft`, `q_lambda_S_T_dft`, `q_lambda_T_S_dft`, `q_E_Ox_vs_SCE_calc`, `q_E_Red_vs_SCE_calc`, `q_dvte_mu_md`, `q_dvte_std_md` |
-| photocatalyst, computed | `pc_E_T_dft`, `pc_lambda_S0_to_T1_dft`, `pc_lambda_T1_to_S0_dft`, `pc_E_PCplus_PC`, `pc_E_PC_PCminus`, `pc_E_PCstar_PCminus`, `pc_E_PCplus_PCstar` |
+| photocatalyst, computed | `pc_E_T_dft`, `pc_lambda_S0_to_T1_dft`, `pc_lambda_T1_to_S0_dft`, `pc_E_PCstar_PCminus`, `pc_E_PCplus_PCstar` |
 | driving forces | `dG_EnT`, `dG_SET_ox_exp`, `dG_SET_ox_exp_bound`, `dG_SET_red_exp`, `dG_SET_red_exp_bound`, `dG_SET_exp`, `dG_SET_exp_bound`, `dG_SET_exp_channel`, `dG_SET_ox_calc`, `dG_SET_red_calc`, `dG_SET_calc`, `dG_SET_calc_channel` |
 
 `_exp` and `_calc` redox potentials are kept as separate columns and never merged. A

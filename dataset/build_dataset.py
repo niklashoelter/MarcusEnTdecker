@@ -147,6 +147,10 @@ EXCLUDED_PHOTOCATALYSTS = {
     24: "discarded from the screen; marked 'discard' in the photocatalyst record",
 }
 
+# The quencher workbook writes a bounded potential the way the lab records do, as the
+# inequality it is read with; this table names the side of the limit instead.
+BOUND_NAME = {">": "lower", "<": "upper"}
+
 # Wavelengths at which an extinction coefficient was measured, for matching a quencher's
 # absorbance to the wavelength its photocatalyst was excited at.
 EPSILON_NM = [380, 390, 400, 405, 415, 425, 450, 475, 490, 495, 500,
@@ -173,7 +177,6 @@ COLUMNS = [
     # photocatalyst, computed
     "pc_E_T_dft / kcal mol-1",
     "pc_lambda_S0_to_T1_dft / kcal mol-1", "pc_lambda_T1_to_S0_dft / kcal mol-1",
-    "pc_E_PCplus_PC / V", "pc_E_PC_PCminus / V",
     "pc_E_PCstar_PCminus / V", "pc_E_PCplus_PCstar / V",
     # driving forces
     "dG_EnT / kcal mol-1",
@@ -363,9 +366,9 @@ def main():
                 "K_SV_floor / M-1": sig(K_SV_FLOOR),
 
                 "q_E_Ox_vs_SCE_exp / V": sig(number(q, "E_Ox_vs_SCE_exp / V")),
-                "q_E_Ox_bound": (q or {}).get("E_Ox_bound", ""),
+                "q_E_Ox_bound": BOUND_NAME.get((q or {}).get("E_Ox_bound", ""), ""),
                 "q_E_Red_vs_SCE_exp / V": sig(number(q, "E_Red_vs_SCE_exp / V")),
-                "q_E_Red_bound": (q or {}).get("E_Red_bound", ""),
+                "q_E_Red_bound": BOUND_NAME.get((q or {}).get("E_Red_bound", ""), ""),
                 "q_redox_source_type": (q or {}).get("redox_source_type", ""),
                 "q_redox_doi": (q or {}).get("redox_doi", ""),
                 "q_epsilon_at_pc_excitation / mM-1 cm-1":
@@ -387,8 +390,6 @@ def main():
                     sig(number(pcc, "lambda_S0_to_T1 / kcal mol-1")),
                 "pc_lambda_T1_to_S0_dft / kcal mol-1":
                     sig(number(pcc, "lambda_T1_to_S0 / kcal mol-1")),
-                "pc_E_PCplus_PC / V": sig(number(pcc, "E_PCplus_PC / V")),
-                "pc_E_PC_PCminus / V": sig(number(pcc, "E_PC_PCminus / V")),
                 "pc_E_PCstar_PCminus / V": sig(pc_star_ox),
                 "pc_E_PCplus_PCstar / V": sig(pc_star_red),
 

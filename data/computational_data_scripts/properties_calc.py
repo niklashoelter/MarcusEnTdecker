@@ -19,8 +19,7 @@ though the jobs are not, so this runs without the deposit. It only selects from 
 lays the result out in blocks (see ../properties_workbook.py). No value is computed here.
 
 The compound names come from the experimental records, so a row reads the same in the
-computed and the measured workbook. PC30 and PC31 were computed but never screened and
-have no record, so their name is blank.
+computed and the measured workbook.
 """
 
 import sys
@@ -58,53 +57,52 @@ def photocatalysts():
     def col(header, name, description, table=dft, path=PC_DFT):
         return Column(header, description, src(path, name), field(table, name))
 
+    # (header, surface, name in Leon's delivered file)
     lambdas = [
-        ("S0", "T1", "triplet"), ("T1", "S0", "singlet"),
-        ("S0", "ox", "cation"), ("ox", "S0", "neutral"),
-        ("S0", "red", "anion"), ("red", "S0", "neutral"),
+        ("S0", "T1", "triplet", "lamba_T-S"), ("T1", "S0", "singlet", "lambda_S-T"),
+        ("S0", "ox", "cation", "lambda_D+_S0"), ("ox", "S0", "neutral", "lambda_S0_D+"),
+        ("S0", "red", "anion", "lambda_D-_S0"), ("red", "S0", "neutral", "lambda_S0_D-"),
     ]
     blocks = [
         Block("Identity", [
             col("pc_id", "pc_id", "Photocatalyst number."),
             Column("pc_name", "Label used throughout, PC<n>.", "PC<pc_id>",
                    lambda i: f"PC{i}"),
-            col("compound", "name", "Compound, from the experimental record. Blank for "
-                "PC30 and PC31, which were never screened.", records, PC_RECORDS),
-            col("n_atoms", "n_atoms", "Atoms in the S0 structure."),
-            col("charge", "charge", "Charge of the ground state."),
+            col("compound", "name", "Compound, from the experimental record.",
+                records, PC_RECORDS),
         ]),
         Block(f"Triplet energy / {KCAL}", [
             col(f"E_T / {KCAL}", f"E_T / {KCAL}",
-                "Adiabatic, Gibbs-corrected: (E_T1 + G_T1) - (E_S0 + G_S0)."),
+                "Adiabatic, Gibbs-corrected: ((E_T1 + G_T1) - (E_S0 + G_S0)) x 627.503. "
+                "E_T_calc in the delivered file."),
         ]),
         Block(f"Reorganization energies / {KCAL}", [
             col(f"lambda_{a}_to_{b} / {KCAL}", f"lambda_{a}_to_{b} / {KCAL}",
                 f"Relaxation from the {a} geometry to the {b} geometry on the {surface} "
-                f"surface. Electronic energies only.")
-            for a, b, surface in lambdas
+                f"surface, electronic energies x 627.509. {leon} in the delivered file.")
+            for a, b, surface, leon in lambdas
         ]),
-        Block("Redox potentials / V vs SCE", [
-            col("E_PCplus_PC / V", "E_PCplus_PC / V", "PC+/PC, ground-state oxidation."),
-            col("E_PC_PCminus / V", "E_PC_PCminus / V", "PC/PC-, ground-state reduction."),
+        Block(f"Excited-state redox / {KCAL} and V vs SCE", [
+            col(f"dG_ox_ES / {KCAL}", f"dG_ox_ES / {KCAL}",
+                "PC* -> PC+: ((E_ox + G_ox) - (E_T1 + G_T1)) x 627.509."),
+            col(f"dG_red_ES / {KCAL}", f"dG_red_ES / {KCAL}",
+                "PC* -> PC-: ((E_red + G_red) - (E_T1 + G_T1)) x 627.509."),
             col("E_PCstar_PCminus / V", "E_PCstar_PCminus / V",
-                "PC*/PC-: how strong an oxidant the triplet is. E_PC_PCminus + E_T."),
+                "PC*/PC-, how strong an oxidant the triplet is: -dG_red_ES / 23.061 - 4.42. "
+                "E_ox_ES in the delivered file."),
             col("E_PCplus_PCstar / V", "E_PCplus_PCstar / V",
-                "PC+/PC*: how strong a reductant the triplet is. E_PCplus_PC - E_T."),
-        ]),
-        Block("Calculation checks", [
-            *[col(f"n_imag_{s}", f"n_imag_{s}", f"Imaginary frequencies in the {s} optimization.")
-              for s in ("S0", "T1", "ox", "red")],
-            col("minimum_confirmed", "minimum_confirmed",
-                "1 if none of the four optimizations has an imaginary frequency. Says "
-                "nothing about missing jobs; n_jobs does."),
-            col("n_jobs", "n_jobs", "Jobs found, of the ten the scheme needs."),
-            col("note", "note", "What is missing or flagged."),
+                "PC+/PC*, how strong a reductant the triplet is: dG_ox_ES / 23.061 - 4.42. "
+                "E_red_ES in the delivered file."),
         ]),
     ]
     note = """
-        One row per computed photocatalyst. Total energies and Gibbs corrections per job are in
-        computational_data_raw/photocatalysts/photocatalyst_dft.csv.
-        PC19 lacks four single points, so four of its six lambdas are blank; see its note.
+        One row per photocatalyst in the screen's records. Every value is computed from the
+        ORCA outputs with the arithmetic of Leon's delivered file
+        (spectroscopy_data_processed/dataset/properties_photocatalysts_calc.xlsx) and
+        reproduces it to 5e-8, except E_T for PC10, PC13, PC25 and PC28, where that file
+        carries values no delivered job reproduces. PC19 lacks four single points, so four
+        of its lambdas are blank. Total energies, Gibbs corrections and frequency checks are
+        in computational_data_raw/photocatalysts/photocatalyst_dft.csv.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(dft), blocks, note

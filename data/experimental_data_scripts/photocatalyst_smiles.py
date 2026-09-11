@@ -14,7 +14,7 @@ Writes  ../experimental_data_raw/compound_records/compound_records_photocatalyst
 
 WHY THIS FILE EXISTS AT ALL
     Every other column in this package is read out of an instrument file or a
-    calculation. A structure is neither. The 31 photocatalysts are recorded in the
+    calculation. A structure is neither. The 29 photocatalysts are recorded in the
     source spreadsheets only as names -- `[Ir(dF(CF3)ppy)2(dtbbpy)][PF6]`,
     `Ir_dCF3_CF3_ppy2_d55_OMe_bpy` -- and a name is not a machine-readable structure.
     The ML model in ../../ml/ takes a SMILES and nothing else, so without this column
@@ -77,14 +77,6 @@ RUN THIS AFTER compound_records.py, NOT BEFORE
     Re-running that one afterwards drops `smiles` again, silently, because it knows
     nothing about this column. Re-running this one restores it and is idempotent. The
     order is compound_records.py, then this.
-
-TWO PHOTOCATALYSTS HAVE NO ROW TO WRITE TO
-    The table holds all 31 and all 31 are validated, but
-    compound_records_photocatalysts.csv carries 29. PC30 and PC31 were computed and are
-    in the photocatalyst spreadsheet, but they were never screened, so
-    properties_photocatalysts.xlsx has no row for them. Rows are not invented here --
-    that file's row set belongs to compound_records.py. Their validated SMILES are
-    printed at the end so they are not lost.
 """
 
 import collections
@@ -109,7 +101,7 @@ RECORDS = ROOT / "experimental_data_raw" / "compound_records" / "compound_record
 RCOV = {"H": 0.31, "C": 0.76, "N": 0.71, "O": 0.66, "F": 0.57, "S": 1.05}
 BOND_SCALE = 1.25
 
-# Metal-ligand contacts are not covalent-radius territory. In these 30 complexes the six
+# Metal-ligand contacts are not covalent-radius territory. In these 28 complexes the six
 # donor atoms sit at 2.00-2.15 A and the next atom in is beyond 2.9 A, so any cutoff in
 # that gap gives the same answer. The gap itself is checked rather than assumed.
 METALS = {"Ir", "Ru"}
@@ -241,14 +233,6 @@ SMILES = {
     29: "[Ir+3]%10%11%12(<-[c-]1ccccc1-n1c2ccccc2[n+](C)[c-]1->%10)"
         "(<-[c-]1ccccc1-n1c2ccccc2[n+](C)[c-]1->%11)"
         "<-[c-]1ccccc1-n1c2ccccc2[n+](C)[c-]1->%12",
-    # PC30 fac-Ir(p-F-pmb)3 -- computed and in the photocatalyst sheet, never screened
-    30: "[Ir+3]%10%11%12(<-[c-]1cc(F)ccc1-n1c2ccccc2[n+](C)[c-]1->%10)"
-        "(<-[c-]1cc(F)ccc1-n1c2ccccc2[n+](C)[c-]1->%11)"
-        "<-[c-]1cc(F)ccc1-n1c2ccccc2[n+](C)[c-]1->%12",
-    # PC31 fac-Ir(pmi)3 -- imidazolylidene, not benzimidazolylidene; never screened
-    31: "[Ir+3]%10%11%12(<-[c-]1ccccc1-n1cc[n+](C)[c-]1->%10)"
-        "(<-[c-]1ccccc1-n1cc[n+](C)[c-]1->%11)"
-        "<-[c-]1ccccc1-n1cc[n+](C)[c-]1->%12",
 }
 
 ELEMENT_ORDER = ["C", "H", "N", "O", "F", "S", "Ir", "Ru"]
@@ -437,14 +421,6 @@ def main():
           f"{sum(1 for r in rows if r['smiles'])} with a SMILES")
     if unmatched:
         print(f"  NOTE: no structure for {unmatched}")
-
-    spare = sorted(set(canonical) - {int(r["pc_id"]) for r in rows})
-    if spare:
-        print(f"\n{len(spare)} validated structure(s) have no row in {RECORDS.name}. "
-              f"They were computed but never screened, so\nproperties_photocatalysts."
-              f"xlsx has no row for them and none is invented here:")
-        for pc_id in spare:
-            print(f"  PC{pc_id}  {canonical[pc_id]}")
 
 
 if __name__ == "__main__":

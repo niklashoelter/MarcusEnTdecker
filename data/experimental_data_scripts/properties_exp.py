@@ -9,7 +9,6 @@ Reads   ../experimental_data_raw/compound_records/compound_records_photocatalyst
         ../experimental_data_raw/compound_records/compound_records_quenchers.csv
         ../experimental_data_raw/pc_tcspc/lifetimes_tau0.csv
         ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
-        ../experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_redox.csv
         ../experimental_data_processed/stern_volmer_fits.csv    (screen membership only)
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
@@ -41,7 +40,6 @@ PC_RECORDS = RAW / "compound_records" / "compound_records_photocatalysts.csv"
 Q_RECORDS = RAW / "compound_records" / "compound_records_quenchers.csv"
 TAU0 = RAW / "pc_tcspc" / "lifetimes_tau0.csv"
 ABSORPTION = RAW / "quencher_absorption" / "absorption_extinction.csv"
-CV = RAW / "quencher_cyclic_voltammetry" / "cyclic_voltammetry_redox.csv"
 FITS = OUT_DIR / "stern_volmer_fits.csv"
 
 EPSILON_NM = [380, 390, 400, 405, 415, 425, 450, 475, 490, 495, 500,
@@ -50,6 +48,20 @@ EPSILON_NM = [380, 390, 400, 405, 415, 425, 450, 475, 490, 495, 500,
 
 def src(path, column):
     return f"{path.relative_to(DATA).as_posix()}: {column}"
+
+
+# The records say which side of a limit the true potential lies on; the workbook writes
+# it the way the lab records do, as the inequality the number is read with.
+BOUND_SIGN = {"lower": ">", "upper": "<"}
+
+
+def bound(table, name):
+    def value(i):
+        text = (table.get(i) or {}).get(name, "")
+        if text and text not in BOUND_SIGN:
+            sys.exit(f"unknown bound {text!r} for {name}, quencher {i}")
+        return BOUND_SIGN.get(text)
+    return value
 
 
 def photocatalysts():
@@ -110,12 +122,10 @@ def photocatalysts():
 def quenchers():
     records = read_table(Q_RECORDS, "quencher_id")
     absorption = read_table(ABSORPTION, "quencher_id")
-    cv = read_table(CV, "quencher_id")
 
-    for name, table in (("absorption", absorption), ("cyclic voltammetry", cv)):
-        stray = sorted(set(table) - set(records))
-        if stray:
-            sys.exit(f"{name} rows for quenchers with no record: {stray}")
+    stray = sorted(set(absorption) - set(records))
+    if stray:
+        sys.exit(f"absorption rows for quenchers with no record: {stray}")
 
     def col(header, table, path, name, description):
         return Column(header, description, src(path, name), field(table, name))
@@ -138,30 +148,21 @@ def quenchers():
         Block("Redox potentials, as recorded / V vs SCE", [
             col("E_Ox_vs_SCE_exp / V", records, Q_RECORDS, "E_Ox_vs_SCE_exp",
                 "Oxidation potential. Where E_Ox_bound is set, a limit, not a value."),
-            col("E_Ox_bound", records, Q_RECORDS, "E_Ox_bound",
-                "'lower': not oxidized below this potential; the true value lies above it."),
+            Column("E_Ox_bound",
+                   "'>': not oxidized within the window; the true value lies above the one "
+                   "given. Blank: a value.",
+                   src(Q_RECORDS, "E_Ox_bound"), bound(records, "E_Ox_bound")),
             col("E_Red_vs_SCE_exp / V", records, Q_RECORDS, "E_Red_vs_SCE_exp",
                 "Reduction potential. Where E_Red_bound is set, a limit, not a value."),
-            col("E_Red_bound", records, Q_RECORDS, "E_Red_bound",
-                "'upper': not reduced above this potential; the true value lies below it."),
+            Column("E_Red_bound",
+                   "'<': not reduced within the window; the true value lies below the one "
+                   "given. Blank: a value.",
+                   src(Q_RECORDS, "E_Red_bound"), bound(records, "E_Red_bound")),
             col("redox_source_type", records, Q_RECORDS, "redox_source_type",
                 "measured (CV in this lab), literature, estimated, or unattributed."),
             col("redox_source_note", records, Q_RECORDS, "redox_source_note",
                 "Free-text provenance from the lab record."),
             col("redox_doi", records, Q_RECORDS, "redox_doi", "Literature source, where given."),
-        ]),
-        Block("Cyclic voltammetry, re-read from the traces / V vs SCE", [
-            col("E_Ox_CV / V", cv, CV, "E_ox_V",
-                "Oxidation potential extracted from the deposited trace. A check on the "
-                "recorded value, not a replacement for it."),
-            col("E_Ox_CV_basis", cv, CV, "E_ox_basis", "onset, or half-wave where reversible."),
-            col("E_Ox_CV_agrees", cv, CV, "ox_agrees",
-                "1 if consistent with the recorded value within 0.15 V (or with its bound)."),
-            col("E_Red_CV / V", cv, CV, "E_red_V",
-                "Reduction potential extracted from the deposited trace."),
-            col("E_Red_CV_basis", cv, CV, "E_red_basis", "onset, or half-wave where reversible."),
-            col("E_Red_CV_agrees", cv, CV, "red_agrees",
-                "1 if consistent with the recorded value within 0.15 V (or with its bound)."),
         ]),
         Block("Molar extinction coefficients in MeCN / mM-1 cm-1", epsilon),
         Block("Sample", [
@@ -172,10 +173,9 @@ def quenchers():
         ]),
     ]
     note = """
-        One row per quencher. Cyclic voltammetry traces are deposited for 19 quenchers; the
-        re-read block is blank for the rest. The traces themselves, the per-sample detail and
-        the reasons for any disagreement are in
-        experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_redox.csv.
+        One row per quencher. The potentials are the recorded ones. The cyclic voltammetry
+        traces deposited for 19 quenchers, and the potentials re-read from them as a check,
+        are in experimental_data_raw/quencher_cyclic_voltammetry/.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(records), blocks, note

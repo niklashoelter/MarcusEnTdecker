@@ -40,8 +40,11 @@ WHAT IS ADDED
     photocatalyst: the parallel retries in the delivery are not deposited at all. See
     above.
 
+PC30 and PC31 are in the delivery but were never screened, and are not deposited.
+
 Writes `../computational_data_raw/photocatalysts/` and a `manifest.csv` recording
-every source directory, kept or omitted, with its termination status.
+every source directory of the deposited photocatalysts, kept or omitted, with its
+termination status.
 """
 
 from __future__ import annotations
@@ -57,6 +60,9 @@ OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts"
 
 # The directories this script owns and may therefore delete on a re-run.
 RE_PC = re.compile(r"PC_\d+")
+
+# Delivered, but computed only -- never screened -- and so not part of the data.
+EXCLUDED = {30, 31}
 
 # source job directory -> (state directory, file stem)
 #
@@ -162,7 +168,8 @@ def main():
         sys.exit(f"not a directory: {source}")
 
     pc_dirs = sorted(
-        (d for d in source.iterdir() if d.is_dir() and d.name.startswith("PC_")),
+        (d for d in source.iterdir() if d.is_dir() and d.name.startswith("PC_")
+         and int(d.name.split("_")[1]) not in EXCLUDED),
         key=lambda d: int(d.name.split("_")[1]),
     )
     if not pc_dirs:

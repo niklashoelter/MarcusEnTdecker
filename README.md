@@ -82,7 +82,7 @@ re-derive the extracted tables from scratch.
 | stage | state |
 |---|---|
 | `data/` experimental | **complete and verified** — 5 of 6 scripts written, all round-trip byte-identical |
-| `data/` computational | **complete and verified** — quenchers and all 31 photocatalysts, every table reproducing the published one |
+| `data/` computational | **complete and verified** — 48 quenchers and 29 photocatalysts; reproduces the published tables except four stale photocatalyst E_T values |
 | `dataset/` | **1248 pairs**; the ground truth is settled on K_SV, both readings carried |
 | `benchmark/` | **ported and running** — five theories scored under both label regimes; open items in its README |
 | `ml/` | **models in place**, checkpoint included; `predict.py` runs end to end, but its λ sweep predates the label change |

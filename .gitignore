@@ -4,9 +4,8 @@ data/computational_data_raw/*
 # The exceptions are small and have to stay readable without the deposit: the tables the
 # extraction scripts write next to the jobs they read, which the property workbooks in
 # computational_data_processed/ are assembled from, and the photocatalyst manifest --
-# 512 rows saying which delivered job was kept, which was dropped and why.
-!data/computational_data_raw/photocatalysts_computed_properties.xlsx
-!data/computational_data_raw/photocatalysts_computed_properties.md
+# 480 rows saying which delivered job was kept, which was dropped and why -- and its
+# quencher counterpart, saying which pipeline and conformer each state was taken from.
 !data/computational_data_raw/photocatalysts/
 data/computational_data_raw/photocatalysts/*
 !data/computational_data_raw/photocatalysts/manifest.csv
@@ -15,12 +14,13 @@ data/computational_data_raw/photocatalysts/*
 data/computational_data_raw/quencher_adiabatic_DFT/*
 !data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
 !data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft_conformers.csv
+!data/computational_data_raw/quencher_adiabatic_DFT/provenance.csv
 !data/computational_data_raw/quencher_adiabatic_DvTE/
 data/computational_data_raw/quencher_adiabatic_DvTE/*
 !data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
 !data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
 
-# The READMEs under data/ are kept locally and out of the repository.
+# data/README.md is kept locally and out of the repository; no README sits below it.
 data/**/README.md
 
 # The pyrates package in ml/ IS committed, checkpoint included, so that

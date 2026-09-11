@@ -55,7 +55,8 @@ VERTICALS = {
 }
 
 # Where a rerun, not the earliest calculation, supplies a quantity. Established by testing
-# which run reproduces the published table, not by a general rule -- see the README. Q17's
+# which run reproduces the published table, not by a general rule -- see the note column of
+# computational_data_raw/quencher_adiabatic_DFT/provenance.csv. Q17's
 # S0 is the only case: its published dG_Red needs calc3's thermal correction, while every
 # other published Q17 quantity needs calc1's single points.
 RERUN_FIELD_SOURCE = {
