@@ -185,7 +185,7 @@ def main():
     rows = []
     with fits_path.open(encoding="utf-8", newline="") as fh:
         for fit in csv.DictReader(fh):
-            pc_id, q_id = int(fit["pc_id"]), int(fit["quencher_id"])   # old pc id
+            pc_id, q_id = int(fit["pc_old_id"]), int(fit["quencher_id"])
             if pc_id not in NEW_ID:
                 sys.exit(f"Stern-Volmer fits for old PC{pc_id}, which is not in the data")
             pce, qe = pc_exp.get(pc_id), q_exp.get(q_id)

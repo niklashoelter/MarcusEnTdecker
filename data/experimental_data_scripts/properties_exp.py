@@ -8,6 +8,7 @@ Experimental tables -> one property workbook per compound class.
 Reads   ../experimental_data_raw/compound_records/compound_records_photocatalysts.csv
         ../experimental_data_raw/compound_records/compound_records_quenchers.csv
         ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
+        ../experimental_data_raw/stern_volmer/plate_reader_filters.csv
         ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
@@ -38,6 +39,7 @@ Q_OUT = OUT_DIR / "quencher_properties_exp.xlsx"
 PC_RECORDS = RAW / "compound_records" / "compound_records_photocatalysts.csv"
 Q_RECORDS = RAW / "compound_records" / "compound_records_quenchers.csv"
 TAU0 = RAW / "pc_tcspc" / "lifetimes_tcspc.csv"
+FILTERS = RAW / "stern_volmer" / "plate_reader_filters.csv"
 ABSORPTION = RAW / "quencher_absorption" / "absorption_extinction.csv"
 
 EPSILON_NM = [380, 390, 400, 405, 415, 425, 450, 475, 490, 495, 500,
@@ -65,8 +67,11 @@ def bound(table, name):
 def photocatalysts():
     records = read_table(PC_RECORDS, "pc_id")
     tau0 = read_table(TAU0, "pc_id")
+    # One row per batch; all batches of a photocatalyst share one filter pair, which
+    # stern_volmer_intensities.py checks, so the last row read for an id stands for all.
+    filters = read_table(FILTERS, "pc_old_id")
 
-    for name, table in (("records", records), ("lifetimes", tau0)):
+    for name, table in (("records", records), ("lifetimes", tau0), ("filters", filters)):
         if set(table) != set(NEW_ID):
             sys.exit(f"photocatalyst {name} disagree with photocatalyst_ids.py: "
                      f"{sorted(set(table) ^ set(NEW_ID))}")
@@ -83,10 +88,12 @@ def photocatalysts():
             col("compound", records, PC_RECORDS, "name", "Compound, as recorded."),
         ]),
         Block("Stern-Volmer screen", [
-            col("excitation / nm", records, PC_RECORDS, "excitation_nm",
-                "Excitation wavelength used in the screen."),
-            col("emission / nm", records, PC_RECORDS, "emission_nm",
-                "Emission wavelength read in the screen."),
+            col("excitation / nm", filters, FILTERS, "excitation_nm",
+                "Excitation filter centre in the Stern-Volmer screen, from the plate export "
+                "(old PC1 and PC3: from the photocatalyst sheet)."),
+            col("emission / nm", filters, FILTERS, "emission_nm",
+                "Emission filter centre in the Stern-Volmer screen, from the plate export "
+                "(old PC1 and PC3: from the photocatalyst sheet)."),
         ]),
         Block("Excited-state lifetime, TCSPC in MeCN under Ar", [
             col("tau0 / ns", tau0, TAU0, "tau0_ns",

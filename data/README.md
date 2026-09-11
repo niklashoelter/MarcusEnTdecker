@@ -12,7 +12,7 @@ data/
 │   ├── pc_tcspc/                    PC<n>.txt/.FL, one trace each -> lifetimes_tcspc.csv
 │   ├── quencher_absorption/         absorption scans -> absorption_extinction.csv
 │   ├── quencher_cyclic_voltammetry/ CV traces -> cyclic_voltammetry_redox.csv, _traces.csv
-│   └── stern_volmer/                plate reads and pipetting maps
+│   └── stern_volmer/                plate reads, pipetting maps -> plate_reader_filters.csv
 ├── experimental_data_processed/
 │   ├── photocatalyst_properties_exp.xlsx
 │   ├── quencher_properties_exp.xlsx
@@ -58,6 +58,12 @@ benchmark reads: ids, K_SV, τ0, k_q = K_SV/τ0 and its floor 10/τ0, the two la
 `quenches` (K_SV > 10, or a significant slope below it) and `quenches_strict` (K_SV ≥ 25
 and r² ≥ 0.90) — and `censored`, the DFT/MD inputs of the theories, and the EnT and SET
 driving forces. The xlsx is the same table in the workbook layout.
+
+**Stern–Volmer wavelengths** are the filter pairs in the plate-reader export headers,
+collected with their bandwidths in `stern_volmer/plate_reader_filters.csv`. Old PC1 and PC3
+were read with saved protocols that name no filters; their wavelengths come from the
+screen's photocatalyst sheet. The pipetting maps' wavelength fields are placeholders and
+are not read.
 
 **Quencher redox potentials** carry a bound column (`>` or `<` where the value is a limit),
 a `source` — `CV` (measured here), the DOI of the paper, or `estimated` (Q19, Q32, Q33) —

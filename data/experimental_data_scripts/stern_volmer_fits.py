@@ -81,7 +81,7 @@ SIGFIGS = 6
 EPS = np.finfo(np.double).eps
 
 COLUMNS = [
-    "pc_id", "quencher_id", "K_SV", "intercept", "r2", "num_points", "n_measured",
+    "pc_old_id", "quencher_id", "K_SV", "intercept", "r2", "num_points", "n_measured",
     "K_SV_all_points", "r2_all_points", "p_slope",
     "quenches", "quenching_observed", "fit_method", "confidence", "note",
 ]
@@ -363,7 +363,7 @@ def main():
 
     pairs = defaultdict(list)
     for row in csv.DictReader(IN.open(encoding="utf-8")):
-        pairs[(int(row["pc_id"]), int(row["quencher_id"]))].append((
+        pairs[(int(row["pc_old_id"]), int(row["quencher_id"]))].append((
             float(row["quencher_conc_M"]),
             float(row["intensity_au"]) if row["intensity_au"] else float("nan"),
         ))
@@ -384,7 +384,7 @@ def main():
             or (slope > 0 and np.isfinite(p_slope) and p_slope < P_SLOPE_LABEL)
         )
         rows.append({
-            "pc_id": pc_id,
+            "pc_old_id": pc_id,
             "quencher_id": q_id,
             "K_SV": sig(slope),
             "intercept": sig(intercept),

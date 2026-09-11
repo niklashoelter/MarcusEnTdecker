@@ -1,4 +1,4 @@
-pc_id,quencher_id,K_SV,intercept,r2,num_points,n_measured,K_SV_all_points,r2_all_points,p_slope,quenches,quenching_observed,fit_method,confidence,note
+pc_old_id,quencher_id,K_SV,intercept,r2,num_points,n_measured,K_SV_all_points,r2_all_points,p_slope,quenches,quenching_observed,fit_method,confidence,note
 1,1,3379.65,1.40686,0.996371,6,6,3379.65,0.996371,2.47191e-06,1,True,linear,medium,"perfect measurement, no range scan"
 1,2,2839.96,1.33285,0.996464,6,6,2839.96,0.996464,2.34746e-06,1,True,linear,medium,"perfect measurement, no range scan"
 1,3,-7.48601,0.98463,0.630207,6,6,-7.48601,0.630207,0.970319,0,False,linear,high,negative initial slope

@@ -168,9 +168,11 @@ REDOX_SOURCE = {
     48: ("CV", ""),
 }
 
-# pc_id is the old id; see ../photocatalyst_ids.py.
+# pc_id is the old id; see ../photocatalyst_ids.py. The sheet's excitation and emission
+# wavelengths are not taken: the plate exports record what was used, and
+# stern_volmer_intensities.py reads them from there.
 PHOTOCATALYST_COLUMNS = [
-    "pc_id", "name", "excitation_nm", "emission_nm",
+    "pc_id", "name",
 ]
 
 
@@ -332,8 +334,6 @@ def photocatalysts():
         rows.append({
             "pc_id": int(pc_id),
             "name": sheet.cell(r, name_column).value if name_column else "",
-            "excitation_nm": sheet.cell(r, column["excitation"]).value or "",
-            "emission_nm": sheet.cell(r, column["emission"]).value or "",
         })
 
     found = {row["pc_id"] for row in rows}
