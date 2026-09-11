@@ -158,11 +158,11 @@ def quenchers():
                    "'<': not reduced within the window; the true value lies below the one "
                    "given. Blank: a value.",
                    src(Q_RECORDS, "E_Red_bound"), bound(records, "E_Red_bound")),
-            col("redox_source_type", records, Q_RECORDS, "redox_source_type",
-                "measured (CV in this lab), literature, estimated, or unattributed."),
-            col("redox_source_note", records, Q_RECORDS, "redox_source_note",
-                "Free-text provenance from the lab record."),
-            col("redox_doi", records, Q_RECORDS, "redox_doi", "Literature source, where given."),
+            col("source", records, Q_RECORDS, "redox_source",
+                "CV: measured in this lab. Otherwise the DOI of the paper the potentials "
+                "were taken from, or 'estimated' where neither exists."),
+            col("comment", records, Q_RECORDS, "redox_comment",
+                "From the lab record: solvent, conversion, who measured, caveats."),
         ]),
         Block("Molar extinction coefficients in MeCN / mM-1 cm-1", epsilon),
         Block("Sample", [

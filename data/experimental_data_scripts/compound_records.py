@@ -50,27 +50,11 @@ EXPERIMENTAL VERSUS COMPUTED
     part of what it has to report.
 
 WHERE THE REDOX POTENTIALS CAME FROM
-    `quenchers_exp_values.xlsx` carries a free-text Comment and a DOI per quencher, and
-    together they resolve the provenance of every potential. Across the 48:
-
-        measured       24    cyclic voltammetry in this lab, several naming who ran it
-        literature     19    a DOI, or a bare URL typed into the Comment
-        estimated       4    inferred from a related compound
-        unattributed    1    a value with nothing recorded about its origin (Q9)
-
-    Two consequences.
-
-    First, the manuscript currently describes these as literature values throughout.
-    That is not accurate: half of them were measured here, and 19 of those have raw
-    voltammograms sitting in experimental_data_raw/quencher_cyclic_voltammetry/.
-
-    Second, `estimated` is not a weaker citation, it is a different quantity. "similar
-    bifunctional with Me instead of iPr" is the potential of a surrogate compound, not
-    of the one in the screen. Those four are marked so that an analysis can choose to
-    exclude them rather than discovering it later.
-
-    The comment describes the row, so the label is per quencher rather than per
-    potential. Splitting it would invent detail the record does not contain.
+    Each quencher carries a `redox_source` -- "CV" for a voltammogram measured in this
+    lab (25), the DOI of the paper it was taken from (20), or "estimated" where neither
+    exists (Q19, Q32, Q33) -- and a free-text `redox_comment`. The table is REDOX_SOURCE
+    below, resolved by hand from the record, and checked against it on every run. Q8's
+    DOI is for a surrogate: the paper reports the Me analog of the iPr compound screened.
 
     Before the provenance is attached, the potentials and SMILES in the two
     spreadsheets are compared and any disagreement is fatal. Attaching a source to a
@@ -106,7 +90,7 @@ BOUND = re.compile(r"^\s*(?P<op>[<>]=?)\s*(?P<value>-?\d+(?:[.,]\d+)?)\s*$")
 QUENCHER_COLUMNS = [
     "quencher_id", "quencher_name", "name", "smiles",
     "E_Ox_vs_SCE_exp", "E_Ox_bound", "E_Red_vs_SCE_exp", "E_Red_bound",
-    "redox_source_type", "redox_source_note", "redox_doi",
+    "redox_source", "redox_comment",
     "c_stock_mM", "deck_position", "well_position",
 ]
 
@@ -117,6 +101,69 @@ SOURCE_RULES = [
     ("measured", ("measured",)),
     ("estimated", ("estimated", "similar", "ask ")),
 ]
+DOI = "https://doi.org/"
+ESTIMATED = "estimated"
+
+# Where each recorded redox potential comes from: "CV" for a voltammogram measured in this
+# lab, a DOI for a paper, "estimated" where neither exists. Curated by hand from the
+# Comment and DOI columns of quenchers_exp_values.xlsx, which hold a DOI for some rows, a
+# publisher URL or a paper title for others. Every URL and title was resolved to its DOI
+# through Crossref (2026-09-11); the values themselves were not re-read from the papers.
+# main() checks this table against the record, so it cannot drift from it silently.
+REDOX_SOURCE = {
+    1: ("CV", "measured by PPR"),
+    2: (DOI + "10.1002/chem.201901175", "in MeCN"),
+    3: (DOI + "10.1016/j.jelechem.2003.09.011", "converted from Fc/Fc+ to SCE"),
+    4: (DOI + "10.1016/j.chempr.2019.06.004", ""),
+    5: (DOI + "10.1039/j19680000381", ""),
+    6: (DOI + "10.1039/j19680000381", ""),
+    7: (DOI + "10.1038/s41586-022-04636-x", "in MeCN"),
+    8: (DOI + "10.1038/s41557-022-01008-w",
+        "estimated: the value is for the analog with Me instead of iPr"),
+    9: ("CV", "no lab record; consistent with the deposited voltammogram (009)"),
+    10: (DOI + "10.1016/j.electacta.2005.02.033; " + DOI + "10.1080/08843759008915951",
+         "two references recorded, not assigned to E_Ox or E_Red"),
+    11: (DOI + "10.1016/j.electacta.2005.02.033; " + DOI + "10.1080/08843759008915951",
+         "two references recorded, not assigned to E_Ox or E_Red"),
+    12: ("CV", ""),
+    13: (DOI + "10.1016/S0040-4039(00)01248-X", ""),
+    14: (DOI + "10.1246/bcsj.51.339", ""),
+    15: (DOI + "10.1038/s41929-023-01089-x", "reduction potential not reported"),
+    16: ("CV", "measured by NHO/PAU"),
+    17: ("CV", "poor-quality voltammogram"),
+    18: ("CV", ""),
+    19: (ESTIMATED, "no source recorded (lab record: 'ask RET')"),
+    20: (DOI + "10.1021/ja00417a017", ""),
+    21: ("CV", ""),
+    22: ("CV", ""),
+    23: ("CV", ""),
+    24: ("CV", ""),
+    25: ("CV", "measured by TJS"),
+    26: ("CV", "measured by TJS"),
+    27: ("CV", ""),
+    28: ("CV", ""),
+    29: (DOI + "10.1021/jacs.4c18080", ""),
+    30: (DOI + "10.1039/d2sc05229f", ""),
+    31: ("CV", "measured by NHO"),
+    32: (ESTIMATED, "estimated from Leandro's thioamides; no reference recorded"),
+    33: (ESTIMATED, "estimated from Leandro's thioamides; no reference recorded"),
+    34: ("CV", ""),
+    35: (DOI + "10.1039/d2sc05229f", ""),
+    36: ("CV", ""),
+    37: ("CV", ""),
+    38: (DOI + "10.1149/1.2425951", "oxidation only; the reduction bound is not attributed"),
+    39: ("CV", ""),
+    40: (DOI + "10.1021/jacs.5c09249", ""),
+    41: (DOI + "10.1002/hlca.200490027", ""),
+    42: ("CV", ""),
+    43: ("CV", ""),
+    44: ("CV", ""),
+    45: ("CV", ""),
+    46: ("CV", "measured by MJK; also reported in " + DOI + "10.1021/jacs.4c18080"),
+    47: (DOI + "10.1021/jacs.2c05687", ""),
+    48: ("CV", ""),
+}
+
 PHOTOCATALYST_COLUMNS = [
     "pc_id", "pc_name", "name", "excitation_nm", "emission_nm",
 ]
@@ -250,10 +297,10 @@ def quenchers():
             "E_Ox_bound": ox_bound,
             "E_Red_vs_SCE_exp": sig(red),
             "E_Red_bound": red_bound,
-            "redox_source_type": classify_source(source.get("Comment"), source.get("DOI"))
-                                 if source else "",
-            "redox_source_note": (source.get("Comment") or "") if source else "",
-            "redox_doi": (source.get("DOI") or "") if source else "",
+            "record_kind": classify_source(source.get("Comment"), source.get("DOI"))
+                           if source else "",
+            "redox_source": REDOX_SOURCE.get(int(qid), ("", ""))[0],
+            "redox_comment": REDOX_SOURCE.get(int(qid), ("", ""))[1],
             "c_stock_mM": sig(source.get("c_Stock / mM")) if source else "",
             "deck_position": (source.get("deck_pos") or "") if source else "",
             "well_position": (source.get("well_pos") or "") if source else "",
@@ -289,6 +336,28 @@ def photocatalysts():
     return rows
 
 
+def source_kind(source):
+    return "DOI" if source.startswith(DOI) else source
+
+
+def check_sources(rows):
+    """The curated sources must cover every quencher and agree with the lab record.
+
+    A row the record calls measured must be sourced to CV, and a row whose record cites
+    a paper must be sourced to a DOI. Q9 has no record at all and is sourced to its
+    deposited voltammogram; Q46 was measured here and also published, and is CV.
+    """
+    ids = {r["quencher_id"] for r in rows}
+    if set(REDOX_SOURCE) != ids:
+        sys.exit(f"REDOX_SOURCE and the records disagree on quenchers "
+                 f"{sorted(set(REDOX_SOURCE) ^ ids)}")
+    wrong = [(r["quencher_id"], r["record_kind"], r["redox_source"]) for r in rows
+             if (r["record_kind"] == "measured" and r["redox_source"] != "CV")
+             or (r["record_kind"] == "literature" and source_kind(r["redox_source"]) != "DOI")]
+    if wrong:
+        sys.exit(f"curated redox sources contradict the lab record: {wrong}")
+
+
 def write(path, columns, rows):
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
@@ -322,18 +391,13 @@ def main():
         print(f"  experimental {label}: {have} values, of which {limits} are bounds")
     print(f"  quenchers with at least one bound: {sorted(set(bounded))}")
 
-    kinds = collections.Counter(r["redox_source_type"] for r in quencher_rows)
-    print(f"\n  where the redox potentials came from:")
-    for kind in ("measured", "literature", "estimated", "unattributed"):
-        ids = [r["quencher_id"] for r in quencher_rows if r["redox_source_type"] == kind]
+    check_sources(quencher_rows)
+    kinds = collections.Counter(source_kind(r["redox_source"]) for r in quencher_rows)
+    print("\n  where the redox potentials came from:")
+    for kind in ("CV", "DOI", ESTIMATED):
+        ids = [r["quencher_id"] for r in quencher_rows if source_kind(r["redox_source"]) == kind]
         if ids:
-            print(f"    {kind:13} {kinds[kind]:>2}   {ids}")
-    if kinds["measured"]:
-        print(f"  NOTE: {kinds['measured']} of {len(quencher_rows)} were measured in this lab, so"
-              f" 'literature values throughout' is not an accurate description of this set.")
-    if kinds["estimated"]:
-        print(f"  NOTE: {kinds['estimated']} are inferred from a related compound rather than"
-              f" measured or cited — see redox_source_note.")
+            print(f"    {kind:10} {kinds[kind]:>2}   {ids}")
 
     print(f"\n{len(pc_rows)} photocatalysts -> {PHOTOCATALYSTS_OUT.name}")
 

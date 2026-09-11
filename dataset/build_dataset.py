@@ -168,7 +168,7 @@ COLUMNS = [
     "k_q_floor / M-1 s-1", "K_SV_floor / M-1",
     # quencher, experimental
     "q_E_Ox_vs_SCE_exp / V", "q_E_Ox_bound", "q_E_Red_vs_SCE_exp / V", "q_E_Red_bound",
-    "q_redox_source_type", "q_redox_doi",
+    "q_redox_source",
     "q_epsilon_at_pc_excitation / mM-1 cm-1", "pc_excitation / nm",
     # quencher, computed
     "q_E_T_dft / kcal mol-1", "q_lambda_S_T_dft / kcal mol-1", "q_lambda_T_S_dft / kcal mol-1",
@@ -369,8 +369,7 @@ def main():
                 "q_E_Ox_bound": BOUND_NAME.get((q or {}).get("E_Ox_bound", ""), ""),
                 "q_E_Red_vs_SCE_exp / V": sig(number(q, "E_Red_vs_SCE_exp / V")),
                 "q_E_Red_bound": BOUND_NAME.get((q or {}).get("E_Red_bound", ""), ""),
-                "q_redox_source_type": (q or {}).get("redox_source_type", ""),
-                "q_redox_doi": (q or {}).get("redox_doi", ""),
+                "q_redox_source": (q or {}).get("source", ""),
                 "q_epsilon_at_pc_excitation / mM-1 cm-1":
                     sig(nearest_epsilon(absorption.get(q_id), excitation)),
                 "pc_excitation / nm": sig(excitation),
@@ -437,7 +436,9 @@ def main():
               f"({max(floors) / min(floors):.0f}x, because tau_0 does) -- which is why the "
               f"label is not set on k_q")
 
-    sources = collections.Counter(row["q_redox_source_type"] for row in rows)
+    sources = collections.Counter(
+        "DOI" if row["q_redox_source"].startswith("https://doi.org/") else row["q_redox_source"]
+        for row in rows)
     print(f"  redox provenance: " + ", ".join(f"{v} {k}" for k, v in sources.most_common() if k))
 
     for label, field in (("quencher SMILES", "quencher_smiles"),

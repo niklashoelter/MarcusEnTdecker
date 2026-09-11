@@ -20,8 +20,8 @@ data/computational_data_raw/quencher_adiabatic_DvTE/*
 !data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
 !data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
 
-# data/README.md is kept locally and out of the repository; no README sits below it.
-data/**/README.md
+# data/ has one README, data/README.md. None below it.
+data/*/**/README.md
 
 # The pyrates package in ml/ IS committed, checkpoint included, so that
 # the deployed model is pinned by this repository. Its own .gitignore was removed for

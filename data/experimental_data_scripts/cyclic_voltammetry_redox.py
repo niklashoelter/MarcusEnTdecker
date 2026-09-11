@@ -533,7 +533,7 @@ def main():
                              f"{delta:+.2f} V, beyond the {AGREEMENT_TOLERANCE_V} V "
                              f"tolerance")
 
-        record_note = records[quencher_id]["redox_source_note"]
+        record_note = records[quencher_id]["redox_comment"]
         if record_note:
             notes.append(f"lab record: {record_note}")
         row["note"] = "; ".join(notes)
