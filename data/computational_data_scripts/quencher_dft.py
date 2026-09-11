@@ -42,7 +42,10 @@ OUT_CONF = OUT_DIR / "quencher_dft_conformers.csv"
 
 H_TO_KCAL = 627.509          # Hartree -> kcal/mol
 F_KCAL_PER_V = 23.061        # kcal mol-1 V-1, as used by the original conversion
-SHE_TO_SCE = 4.442           # V offset in E = dG/F - 4.442
+# V offset in E = dG/F - 4.42, the absolute SCE potential. The original used 4.442 here but
+# 4.42 for the photocatalysts (photocatalyst_dft.py); harmonized to 4.42 so that both sides
+# of a SET driving force are on the same reference.
+SHE_TO_SCE = 4.42
 
 STATES = ("S0", "T1", "ox", "red")
 

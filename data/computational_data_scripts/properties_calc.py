@@ -145,7 +145,7 @@ def quenchers():
         ]),
         Block("Oxidation, adiabatic DFT", [
             col(f"dG_Ox / {KCAL}", "dG_Ox", "Free energy of Q -> Q+."),
-            col("E_Ox_vs_SCE_calc / V", "E_Ox_vs_SCE_calc", "dG_Ox / F - 4.442 V."),
+            col("E_Ox_vs_SCE_calc / V", "E_Ox_vs_SCE_calc", "dG_Ox / F - 4.42 V."),
             col(f"lambda_S0_D+ / {KCAL}", "lambda_S0_D+",
                 "Neutral surface: E_S0 at the cation geometry minus E_S0."),
             col(f"lambda_D+_S0 / {KCAL}", "lambda_D+_S0",
@@ -153,7 +153,7 @@ def quenchers():
         ]),
         Block("Reduction, adiabatic DFT", [
             col(f"dG_Red / {KCAL}", "dG_Red", "Free energy released by Q -> Q-."),
-            col("E_Red_vs_SCE_calc / V", "E_Red_vs_SCE_calc", "dG_Red / F - 4.442 V."),
+            col("E_Red_vs_SCE_calc / V", "E_Red_vs_SCE_calc", "dG_Red / F - 4.42 V."),
             col(f"lambda_S0_D- / {KCAL}", "lambda_S0_D-",
                 "Neutral surface: E_S0 at the anion geometry minus E_S0."),
             col(f"lambda_D-_S0 / {KCAL}", "lambda_D-_S0",
