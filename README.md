@@ -36,6 +36,22 @@ Nothing reaches sideways or backwards. A script reads only from directories to i
 left, so any number in the paper can be traced to the instrument file it came from by
 following that chain in one direction.
 
+Inside `data/`, the processed folders hold one workbook per compound class and side, and
+the Stern–Volmer tables:
+
+```
+data/experimental_data_processed/    photocatalyst_properties_exp.xlsx
+                                     quencher_properties_exp.xlsx
+                                     stern_volmer_intensities.csv, stern_volmer_fits.csv
+data/computational_data_processed/   photocatalyst_properties_calc.xlsx
+                                     quencher_properties_calc.xlsx
+```
+
+Each workbook has one row per compound and its columns in blocks, with a `Column key`
+sheet naming the table each column was copied from. Those tables — fitted lifetimes,
+extracted spectra, CV traces, conformer energies — are intermediates, and sit in the raw
+folder beside the instrument files or jobs they were derived from.
+
 ## Reproducing
 
 ```
@@ -56,10 +72,10 @@ to each script's own location, so the working directory does not matter.
 ### The one thing that is not in this repository
 
 `data/computational_data_raw/` is about 11 GB of ORCA and Milo job files. It is
-archived to Zenodo rather than versioned here, and everything downstream of it is
-already committed as processed CSVs — so the repository is fully usable without it.
-You only need it to re-derive the computational tables from scratch. See
-`data/computational_data_raw/README.md`.
+archived to Zenodo rather than versioned here. The tables extracted from it are
+committed — in the same folders, next to where the jobs go — and so are the workbooks
+built from them, so the repository is fully usable without it. You only need it to
+re-derive the extracted tables from scratch.
 
 ## State
 

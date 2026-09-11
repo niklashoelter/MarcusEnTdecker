@@ -5,13 +5,18 @@ photocatalyst–quencher pair. Everything downstream — benchmarks, models, fig
 reads `pairs.csv` and nothing else.
 
 ```
-data/experimental_data_processed/   ┐
+data/experimental_data_processed/   ┐   stern_volmer_fits.csv
+                                    │   photocatalyst_properties_exp.xlsx
+                                    │   quencher_properties_exp.xlsx
                                     ├──> build_dataset.py ──> pairs.csv   (1248 rows)
-data/computational_data_processed/  ┘
+data/computational_data_processed/  ┘   photocatalyst_properties_calc.xlsx
+                                        quencher_properties_calc.xlsx
 ```
 
-Nothing is read from outside `data/`. No XLSX is consulted at run time and no file is
-copied in as an import side effect.
+Nothing is read from outside the processed folders of `data/`, and no file is copied in
+as an import side effect. The workbooks are generated, not curated: each one's `Column
+key` sheet names the intermediate table in `data/*_raw/` that every column was copied
+from.
 
 ## The central quantity
 
@@ -20,7 +25,8 @@ k_q = K_SV / tau_0
 ```
 
 `K_SV` per pair from `stern_volmer_fits.csv`, `tau_0` per photocatalyst from
-`lifetimes_tau0.csv`. Both measured here, both traceable to instrument files.
+`photocatalyst_properties_exp.xlsx`. Both measured here, both traceable to instrument
+files.
 
 **The label is `quenches`: K_SV > 10, or K_SV ≤ 10 with a slope significant across the
 points the fit used. 790 pairs quench, 458 do not.**

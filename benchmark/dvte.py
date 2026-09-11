@@ -44,8 +44,8 @@ WHAT IS AND IS NOT PORTED
     The `_kde` variant is NOT ported. It takes the same quantile from a Gaussian kernel
     density estimate of the samples rather than from a normal fit, so it needs the sample
     distribution, which pairs.csv does not carry -- it lives in
-    `../data/computational_data_processed/quencher_dvte.csv` and
-    `quencher_dvte_samples.csv.gz`. Everything downstream in this repository reads
+    `../data/computational_data_processed/quencher_properties_calc.xlsx` and, sample by
+    sample, `../data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz`. Everything downstream in this repository reads
     pairs.csv and nothing else, so rather than reach around that rule for a variant that
     tracked the normal one to within 0.07 kcal/mol, it is left out. If it turns out to be
     wanted, the right fix is to carry the four `_kde` quantiles into pairs.csv.
@@ -81,7 +81,8 @@ def dvte_threshold(mu, sigma, cutoff):
 
     `statistics.NormalDist().inv_cdf` is the standard library's exact inverse normal CDF,
     so this needs no scipy. It reproduces the `dvte_<p>` columns of
-    `data/computational_data_processed/quencher_dvte.csv` to the rounding of that file.
+    `data/computational_data_processed/quencher_properties_calc.xlsx` to the rounding of
+    that file.
     """
     z = statistics.NormalDist().inv_cdf(cutoff)
     return np.asarray(mu, dtype=float) + z * np.asarray(sigma, dtype=float)

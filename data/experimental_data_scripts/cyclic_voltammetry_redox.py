@@ -6,9 +6,9 @@
 Cyclic voltammograms -> the redox potentials that were measured in this lab.
 
 Reads   ../experimental_data_raw/quencher_cyclic_voltammetry/   (21 traces + 19 blanks)
-        ../experimental_data_processed/compound_records_quenchers.csv  (for comparison)
-Writes  ../experimental_data_processed/cyclic_voltammetry_redox.csv     (19 samples)
-        ../experimental_data_processed/cyclic_voltammetry_traces.csv    (25821 points)
+        ../experimental_data_raw/compound_records/compound_records_quenchers.csv  (for comparison)
+Writes  ../experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_redox.csv   (19 samples)
+        ../experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_traces.csv  (25821 points)
 
 Half of the 48 quencher redox potentials were measured here rather than taken from the
 literature, and for 19 of them the voltammogram itself is in the package. Until now the
@@ -139,10 +139,10 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 RAW = HERE.parent / "experimental_data_raw" / "quencher_cyclic_voltammetry"
-PROCESSED = HERE.parent / "experimental_data_processed"
-RECORDS = PROCESSED / "compound_records_quenchers.csv"
-OUT = PROCESSED / "cyclic_voltammetry_redox.csv"
-TRACES_OUT = PROCESSED / "cyclic_voltammetry_traces.csv"
+RECORDS = HERE.parent / "experimental_data_raw" / "compound_records" / "compound_records_quenchers.csv"
+# Written next to the traces they come from, so the sample scan below has to step over them.
+OUT = RAW / "cyclic_voltammetry_redox.csv"
+TRACES_OUT = RAW / "cyclic_voltammetry_traces.csv"
 
 SIGFIGS = 6
 
@@ -429,7 +429,7 @@ def main():
 
     samples = {}
     for path in sorted(RAW.glob("*.csv")):
-        if path.stem.endswith("_blank"):
+        if path.stem.endswith("_blank") or path in (OUT, TRACES_OUT):
             continue
         match = SAMPLE.match(path.stem)
         if not match:
@@ -539,7 +539,6 @@ def main():
         row["note"] = "; ".join(notes)
         rows.append(row)
 
-    PROCESSED.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=COLUMNS)
         writer.writeheader()

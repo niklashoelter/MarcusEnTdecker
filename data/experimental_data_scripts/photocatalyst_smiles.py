@@ -9,7 +9,7 @@ Reads   the table below, which is hand-authored and is the only place in this pa
         where a structure is asserted rather than measured or computed
         ../computational_data_raw/photocatalysts/PC_<n>/S0/opt_geometry.xyz
         ../computational_data_raw/photocatalysts/PC_<n>/S0/opt_input.inp
-Writes  ../experimental_data_processed/compound_records_photocatalysts.csv
+Writes  ../experimental_data_raw/compound_records/compound_records_photocatalysts.csv
         (the existing file, with `smiles` appended; no row is added or removed)
 
 WHY THIS FILE EXISTS AT ALL
@@ -102,7 +102,7 @@ RDLogger.DisableLog("rdApp.*")
 
 ROOT = Path(__file__).resolve().parent.parent
 DFT = ROOT / "computational_data_raw" / "photocatalysts"
-RECORDS = ROOT / "experimental_data_processed" / "compound_records_photocatalysts.csv"
+RECORDS = ROOT / "experimental_data_raw" / "compound_records" / "compound_records_photocatalysts.csv"
 
 # Covalent radii / Angstrom, Cordero 2008. Used only to decide whether two light atoms
 # are bonded, where the distance distribution is bimodal and the cutoff is not delicate.

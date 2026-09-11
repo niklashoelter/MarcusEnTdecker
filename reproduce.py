@@ -43,7 +43,7 @@ PIPELINE = [
     ("data", "data/experimental_data_scripts/lifetimes_tcspc.py",
      "data/experimental_data_raw/pc_tcspc"),
     ("data", "data/experimental_data_scripts/lifetimes_tau0.py",
-     "data/experimental_data_processed/lifetimes_tcspc.csv"),
+     "data/experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv"),
     ("data", "data/experimental_data_scripts/absorption_extinction.py",
      "data/experimental_data_raw/quencher_absorption"),
     ("data", "data/experimental_data_scripts/emission_spectra.py",
@@ -52,12 +52,20 @@ PIPELINE = [
      "data/experimental_data_raw/compound_records"),
     ("data", "data/experimental_data_scripts/cyclic_voltammetry_redox.py",
      "data/experimental_data_raw/quencher_cyclic_voltammetry"),
+    ("data", "data/experimental_data_scripts/properties_exp.py",
+     "data/experimental_data_raw/compound_records/compound_records_quenchers.csv"),
+    # The computational extraction needs the deposit, which is not in git. Each stage
+    # checks for a job directory rather than for its folder, because the folders are
+    # present in a clone -- they hold the tables these stages write -- and would
+    # otherwise send a clone without the deposit into three failures instead of skips.
     ("data", "data/computational_data_scripts/quencher_dft.py",
-     "data/computational_data_raw/quencher_adiabatic_DFT"),
+     "data/computational_data_raw/quencher_adiabatic_DFT/Q1"),
     ("data", "data/computational_data_scripts/quencher_dvte.py",
-     "data/computational_data_raw/quencher_adiabatic_DvTE"),
+     "data/computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz"),
     ("data", "data/computational_data_scripts/photocatalyst_dft.py",
-     "data/computational_data_raw/photocatalysts"),
+     "data/computational_data_raw/photocatalysts/PC_1"),
+    ("data", "data/computational_data_scripts/properties_calc.py",
+     "data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv"),
     ("dataset", "dataset/build_dataset.py",
      "data/experimental_data_processed/stern_volmer_fits.csv"),
     ("benchmark", "benchmark/run_benchmark.py", "dataset/pairs.csv"),

@@ -6,7 +6,7 @@
 Photocatalyst triplet energies, reorganization energies and redox potentials from DFT.
 
 Reads   ../computational_data_raw/photocatalysts/PC_<n>/{S0,T1,ox,red}/*_output.out
-Writes  ../computational_data_processed/photocatalyst_dft.csv
+Writes  ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
 
     uv run data/computational_data_scripts/photocatalyst_dft.py
 
@@ -55,7 +55,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "computational_data_raw" / "photocatalysts"
-OUT = ROOT / "computational_data_processed" / "photocatalyst_dft.csv"
+OUT = RAW / "photocatalyst_dft.csv"
 
 HARTREE_KCAL = 627.509474
 HARTREE_EV = 27.211386

@@ -6,8 +6,8 @@
 Quencher ORCA outputs -> adiabatic triplet energy, redox potentials, reorganization energies.
 
 Reads   ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/
-Writes  ../computational_data_processed/quencher_dft.csv             one row per quencher
-        ../computational_data_processed/quencher_dft_conformers.csv  one row per conformer
+Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv             one row per quencher
+        ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft_conformers.csv  one row per conformer
 
 48 quenchers, four states each: S0, T1, ox, red.
 
@@ -36,7 +36,7 @@ from collections import defaultdict
 from pathlib import Path
 
 RAW = Path(__file__).resolve().parent.parent / "computational_data_raw" / "quencher_adiabatic_DFT"
-OUT_DIR = Path(__file__).resolve().parent.parent / "computational_data_processed"
+OUT_DIR = RAW
 OUT = OUT_DIR / "quencher_dft.csv"
 OUT_CONF = OUT_DIR / "quencher_dft_conformers.csv"
 

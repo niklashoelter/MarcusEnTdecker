@@ -8,7 +8,7 @@ Quencher absorption scan -> molar extinction coefficient per quencher per wavele
 Reads   ../experimental_data_raw/quencher_absorption/
         2025-12-22 10-53-28 Absorption_Scan_360_650_56well_published.csv
         quenchers_deepwell.xlsx     deep-well plate map: quencher, well, stock concentration
-Writes  ../experimental_data_processed/absorption_extinction.csv
+Writes  ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
 
 48 quenchers, 18 wavelengths.
 
@@ -29,7 +29,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "quencher_absorption"
-OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "absorption_extinction.csv"
+OUT = RAW / "absorption_extinction.csv"
 
 SCAN = "2025-12-22 10-53-28 Absorption_Scan_360_650_56well_published.csv"
 PLATE_MAP = "quenchers_deepwell.xlsx"

@@ -1,14 +1,27 @@
 # Raw computational job files (~11 GB) — archived to Zenodo, fetched on demand.
-# The README explaining what belongs there is kept.
 data/computational_data_raw/*
-!data/computational_data_raw/README.md
 
-# The photocatalyst manifest is the one exception: 512 rows saying which delivered job
-# was kept, which was dropped and why. It is small, and it is the part of the deposit
-# that has to remain readable without the 483 MB it describes.
+# The exceptions are small and have to stay readable without the deposit: the tables the
+# extraction scripts write next to the jobs they read, which the property workbooks in
+# computational_data_processed/ are assembled from, and the photocatalyst manifest --
+# 512 rows saying which delivered job was kept, which was dropped and why.
+!data/computational_data_raw/photocatalysts_computed_properties.xlsx
+!data/computational_data_raw/photocatalysts_computed_properties.md
 !data/computational_data_raw/photocatalysts/
 data/computational_data_raw/photocatalysts/*
 !data/computational_data_raw/photocatalysts/manifest.csv
+!data/computational_data_raw/photocatalysts/photocatalyst_dft.csv
+!data/computational_data_raw/quencher_adiabatic_DFT/
+data/computational_data_raw/quencher_adiabatic_DFT/*
+!data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
+!data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft_conformers.csv
+!data/computational_data_raw/quencher_adiabatic_DvTE/
+data/computational_data_raw/quencher_adiabatic_DvTE/*
+!data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
+!data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
+
+# The READMEs under data/ are kept locally and out of the repository.
+data/**/README.md
 
 # The pyrates package in ml/ IS committed, checkpoint included, so that
 # the deployed model is pinned by this repository. Its own .gitignore was removed for

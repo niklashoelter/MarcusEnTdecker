@@ -153,7 +153,7 @@ an in-sample choice its own audit found worth less than 0.02 MCC. All four are r
 here as separate methods, so the reader sees the spread rather than its maximum.
 
 The `_kde` variant is not ported: it needs the sample distribution, which lives in
-`data/computational_data_processed/` rather than in `pairs.csv`, and everything
+`data/computational_data_raw/quencher_adiabatic_DvTE/` rather than in `pairs.csv`, and everything
 downstream in this repository reads `pairs.csv` and nothing else. It tracked the normal
 form to within 0.07 kcal/mol. If it is wanted, the fix is to carry the four `_kde`
 quantiles into `pairs.csv`.

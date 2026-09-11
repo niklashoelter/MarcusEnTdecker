@@ -1,23 +1,22 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = []
+# dependencies = ["openpyxl>=3.1"]
 # ///
 """
 Processed tables -> one row per photocatalyst-quencher pair.
 
 Reads   ../data/experimental_data_processed/stern_volmer_fits.csv
-        ../data/experimental_data_processed/lifetimes_tau0.csv
-        ../data/experimental_data_processed/compound_records_quenchers.csv
-        ../data/experimental_data_processed/compound_records_photocatalysts.csv
-        ../data/experimental_data_processed/absorption_extinction.csv
-        ../data/computational_data_processed/quencher_dft.csv
-        ../data/computational_data_processed/quencher_dvte.csv
-        ../data/computational_data_processed/photocatalyst_dft.csv
+        ../data/experimental_data_processed/photocatalyst_properties_exp.xlsx
+        ../data/experimental_data_processed/quencher_properties_exp.xlsx
+        ../data/computational_data_processed/photocatalyst_properties_calc.xlsx
+        ../data/computational_data_processed/quencher_properties_calc.xlsx
 Writes  pairs.csv
 
-Nothing is read from outside ../data/. No spreadsheet is consulted at run time and no
-file is copied in as an import side effect. Every column below can be followed back to
-the instrument file or job output it came from by walking the chain one step at a time.
+Nothing is read from outside the processed folders of ../data/, and no file is copied in
+as an import side effect. The four workbooks are generated, not curated: each column's
+`Column key` entry names the intermediate table in the raw folders it was copied from,
+and from there every value can be followed back to the instrument file or job output it
+came from, one step at a time.
 
 THE CENTRAL QUANTITY
 
@@ -111,10 +110,16 @@ import math
 import sys
 from pathlib import Path
 
+from openpyxl import load_workbook
+
 ROOT = Path(__file__).resolve().parent.parent
 EXPERIMENTAL = ROOT / "data" / "experimental_data_processed"
 COMPUTATIONAL = ROOT / "data" / "computational_data_processed"
 OUT = Path(__file__).resolve().parent / "pairs.csv"
+
+# Row 1 of every property workbook names the column blocks; the headers are on row 2.
+# See data/properties_workbook.py, whose read_workbook() this mirrors.
+WORKBOOK_HEADER_ROW = 2
 
 # The rate constant the old label used. Kept only to report, in the summary below, how
 # far the K_SV label and that k_q cutoff disagree; nothing is classified on it.
@@ -187,11 +192,22 @@ def sig(x, n=SIGFIGS):
 
 
 def load(path, key):
-    """Read a processed CSV into {key: row}. Missing file is fatal, not skipped."""
+    """Read a property workbook into {key: row}. Missing file is fatal, not skipped.
+
+    Blank cells come back as "", so a row reads exactly as the CSV it replaced did, and the
+    empty columns that separate the blocks are dropped.
+    """
     if not path.exists():
         sys.exit(f"missing input: {path}\nrun the data stage first: uv run reproduce.py data")
-    with path.open(encoding="utf-8", newline="") as fh:
-        return {int(row[key]): row for row in csv.DictReader(fh)}
+    sheet = load_workbook(path, read_only=True, data_only=True).worksheets[0]
+    rows = sheet.iter_rows(min_row=WORKBOOK_HEADER_ROW, values_only=True)
+    header = next(rows)
+    table = {}
+    for values in rows:
+        row = {h: ("" if v is None else v) for h, v in zip(header, values) if h}
+        if row.get(key) not in ("", None):
+            table[int(row[key])] = row
+    return table
 
 
 def number(row, field):
@@ -234,7 +250,7 @@ def nearest_epsilon(absorption_row, excitation_nm):
     if absorption_row is None or excitation_nm is None:
         return None
     nm = min(EPSILON_NM, key=lambda w: abs(w - excitation_nm))
-    return number(absorption_row, f"epsilon_{nm}_mM-1cm-1")
+    return number(absorption_row, f"epsilon_{nm} / mM-1 cm-1")
 
 
 def main():
@@ -242,13 +258,13 @@ def main():
     if not fits_path.exists():
         sys.exit(f"missing input: {fits_path}\nrun the data stage first")
 
-    tau0 = load(EXPERIMENTAL / "lifetimes_tau0.csv", "pc_id")
-    quenchers = load(EXPERIMENTAL / "compound_records_quenchers.csv", "quencher_id")
-    photocatalysts = load(EXPERIMENTAL / "compound_records_photocatalysts.csv", "pc_id")
-    absorption = load(EXPERIMENTAL / "absorption_extinction.csv", "quencher_id")
-    dft = load(COMPUTATIONAL / "quencher_dft.csv", "quencher_id")
-    dvte = load(COMPUTATIONAL / "quencher_dvte.csv", "quencher_id")
-    pc_dft = load(COMPUTATIONAL / "photocatalyst_dft.csv", "pc_id")
+    # One workbook per compound class and side. The lifetimes, redox records and
+    # extinction coefficients share a row, as do the adiabatic DFT and the DvTE columns,
+    # so each name below is the same table seen for one purpose.
+    photocatalysts = tau0 = load(EXPERIMENTAL / "photocatalyst_properties_exp.xlsx", "pc_id")
+    quenchers = absorption = load(EXPERIMENTAL / "quencher_properties_exp.xlsx", "quencher_id")
+    dft = dvte = load(COMPUTATIONAL / "quencher_properties_calc.xlsx", "quencher_id")
+    pc_dft = load(COMPUTATIONAL / "photocatalyst_properties_calc.xlsx", "pc_id")
 
     rows, no_tau0, quench_count, censored_count = [], set(), 0, 0
     strict_count = disagrees_with_kq = 0
@@ -261,7 +277,7 @@ def main():
                 excluded_rows += 1
                 continue
 
-            lifetime = number(tau0.get(pc_id), "tau0_ns")
+            lifetime = number(tau0.get(pc_id), "tau0 / ns")
             if lifetime is None:
                 no_tau0.add(pc_id)
 
@@ -285,14 +301,14 @@ def main():
 
             pc = photocatalysts.get(pc_id)
             q = quenchers.get(q_id)
-            excitation = number(pc, "excitation_nm")
+            excitation = number(pc, "excitation / nm")
 
             pcc = pc_dft.get(pc_id)
             pc_e_t = number(pcc, "E_T / kcal mol-1")
             pc_star_ox = number(pcc, "E_PCstar_PCminus / V")   # PC* as the oxidant
             pc_star_red = number(pcc, "E_PCplus_PCstar / V")   # PC* as the reductant
 
-            q_e_t = number(dft.get(q_id), "E_T")
+            q_e_t = number(dft.get(q_id), "E_T / kcal mol-1")
             dG_ent = (q_e_t - pc_e_t) if None not in (q_e_t, pc_e_t) else None
 
             def set_driving_forces(e_ox, e_red):
@@ -304,10 +320,10 @@ def main():
                 return ox, red
 
             dG_ox_exp, dG_red_exp = set_driving_forces(
-                number(q, "E_Ox_vs_SCE_exp"), number(q, "E_Red_vs_SCE_exp"))
+                number(q, "E_Ox_vs_SCE_exp / V"), number(q, "E_Red_vs_SCE_exp / V"))
             dG_ox_calc, dG_red_calc = set_driving_forces(
-                number(dft.get(q_id), "E_Ox_vs_SCE_calc"),
-                number(dft.get(q_id), "E_Red_vs_SCE_calc"))
+                number(dft.get(q_id), "E_Ox_vs_SCE_calc / V"),
+                number(dft.get(q_id), "E_Red_vs_SCE_calc / V"))
 
             # A bound on either potential becomes a lower bound on the driving force:
             # the quencher was not oxidized below the recorded value, so SET is at
@@ -322,10 +338,10 @@ def main():
             rows.append({
                 "pc_id": pc_id,
                 "pc_name": (pc or {}).get("pc_name", ""),
-                "pc_compound": (pc or {}).get("name", ""),
+                "pc_compound": (pc or {}).get("compound", ""),
                 "quencher_id": q_id,
                 "quencher_name": (q or {}).get("quencher_name", ""),
-                "quencher_compound": (q or {}).get("name", ""),
+                "quencher_compound": (q or {}).get("compound", ""),
                 "quencher_smiles": (q or {}).get("smiles", ""),
 
                 "K_SV / M-1": sig(k_sv),
@@ -336,7 +352,7 @@ def main():
                 "fit_note": fit["note"],
                 "tau0 / ns": sig(lifetime),
                 "tau0_rsd": sig(number(tau0.get(pc_id), "tau0_rsd")),
-                "tau0_consistent": (tau0.get(pc_id) or {}).get("consistent", ""),
+                "tau0_consistent": (tau0.get(pc_id) or {}).get("tau0_consistent", ""),
 
                 "k_q / M-1 s-1": sig(k_q),
                 "log10_k_q": sig(math.log10(k_q)) if (k_q and k_q > 0) else "",
@@ -346,9 +362,9 @@ def main():
                 "k_q_floor / M-1 s-1": sig(floor),
                 "K_SV_floor / M-1": sig(K_SV_FLOOR),
 
-                "q_E_Ox_vs_SCE_exp / V": sig(number(q, "E_Ox_vs_SCE_exp")),
+                "q_E_Ox_vs_SCE_exp / V": sig(number(q, "E_Ox_vs_SCE_exp / V")),
                 "q_E_Ox_bound": (q or {}).get("E_Ox_bound", ""),
-                "q_E_Red_vs_SCE_exp / V": sig(number(q, "E_Red_vs_SCE_exp")),
+                "q_E_Red_vs_SCE_exp / V": sig(number(q, "E_Red_vs_SCE_exp / V")),
                 "q_E_Red_bound": (q or {}).get("E_Red_bound", ""),
                 "q_redox_source_type": (q or {}).get("redox_source_type", ""),
                 "q_redox_doi": (q or {}).get("redox_doi", ""),
@@ -356,13 +372,15 @@ def main():
                     sig(nearest_epsilon(absorption.get(q_id), excitation)),
                 "pc_excitation / nm": sig(excitation),
 
-                "q_E_T_dft / kcal mol-1": sig(number(dft.get(q_id), "E_T")),
-                "q_lambda_S_T_dft / kcal mol-1": sig(number(dft.get(q_id), "lambda_S_T")),
-                "q_lambda_T_S_dft / kcal mol-1": sig(number(dft.get(q_id), "lambda_T_S")),
-                "q_E_Ox_vs_SCE_calc / V": sig(number(dft.get(q_id), "E_Ox_vs_SCE_calc")),
-                "q_E_Red_vs_SCE_calc / V": sig(number(dft.get(q_id), "E_Red_vs_SCE_calc")),
-                "q_dvte_mu_md / kcal mol-1": sig(number(dvte.get(q_id), "dvte_mu")),
-                "q_dvte_std_md / kcal mol-1": sig(number(dvte.get(q_id), "dvte_std")),
+                "q_E_T_dft / kcal mol-1": sig(q_e_t),
+                "q_lambda_S_T_dft / kcal mol-1":
+                    sig(number(dft.get(q_id), "lambda_S_T / kcal mol-1")),
+                "q_lambda_T_S_dft / kcal mol-1":
+                    sig(number(dft.get(q_id), "lambda_T_S / kcal mol-1")),
+                "q_E_Ox_vs_SCE_calc / V": sig(number(dft.get(q_id), "E_Ox_vs_SCE_calc / V")),
+                "q_E_Red_vs_SCE_calc / V": sig(number(dft.get(q_id), "E_Red_vs_SCE_calc / V")),
+                "q_dvte_mu_md / kcal mol-1": sig(number(dvte.get(q_id), "dvte_mu / kcal mol-1")),
+                "q_dvte_std_md / kcal mol-1": sig(number(dvte.get(q_id), "dvte_std / kcal mol-1")),
 
                 "pc_E_T_dft / kcal mol-1": sig(pc_e_t),
                 "pc_lambda_S0_to_T1_dft / kcal mol-1":

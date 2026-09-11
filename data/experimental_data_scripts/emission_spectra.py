@@ -7,7 +7,7 @@ Photocatalyst emission scan -> one intensity per photocatalyst, excitation and w
 
 Reads   ../experimental_data_raw/pc_emission/
         Emission_Scan_Exc_380_405_425_450_Gain_1500.csv
-Writes  ../experimental_data_processed/emission_spectra.csv
+Writes  ../experimental_data_raw/pc_emission/emission_spectra.csv
 
 This is the only file in pc_emission/ that identifies its samples. Its rows are labelled
 with the photocatalyst number directly, so no plate map is needed. Every other file in
@@ -36,7 +36,7 @@ import sys
 from pathlib import Path
 
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "pc_emission"
-OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "emission_spectra.csv"
+OUT = RAW / "emission_spectra.csv"
 
 SCAN = "Emission_Scan_Exc_380_405_425_450_Gain_1500.csv"
 

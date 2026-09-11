@@ -1,8 +1,11 @@
 """
 Predict triplet energies and reorganization energies for the 48 screened quenchers.
 
-Reads   ../data/experimental_data_processed/compound_records_quenchers.csv   (SMILES)
-        ../data/computational_data_processed/quencher_dft.csv                (comparison)
+Reads   ../data/experimental_data_raw/compound_records/compound_records_quenchers.csv   (SMILES)
+        ../data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv          (comparison)
+
+The same values are in the property workbooks in `data/*_processed/`. The intermediate
+CSVs are read instead so that the model environment does not need a spreadsheet reader.
 Writes  predictions_quenchers.csv
 
 Run it with the model environment, which is not the one the data pipeline uses:
@@ -32,8 +35,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RECORDS = ROOT / "data" / "experimental_data_processed" / "compound_records_quenchers.csv"
-DFT = ROOT / "data" / "computational_data_processed" / "quencher_dft.csv"
+RECORDS = (ROOT / "data" / "experimental_data_raw" / "compound_records"
+           / "compound_records_quenchers.csv")
+DFT = ROOT / "data" / "computational_data_raw" / "quencher_adiabatic_DFT" / "quencher_dft.csv"
 OUT = Path(__file__).resolve().parent / "predictions_quenchers.csv"
 
 SIGFIGS = 6

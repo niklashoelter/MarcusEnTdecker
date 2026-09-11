@@ -5,9 +5,9 @@
 """
 Fitted TCSPC traces -> one excited-state lifetime per photocatalyst.
 
-Reads   ../experimental_data_processed/lifetimes_tcspc.csv
+Reads   ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
         ../experimental_data_processed/stern_volmer_fits.csv   (screen membership only)
-Writes  ../experimental_data_processed/lifetimes_tau0.csv
+Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tau0.csv
 
 tau_0 is the quantity that turns a Stern-Volmer constant into a rate constant,
 k_q = K_SV / tau_0, so it sets the scale of every rate in the paper. It is measured
@@ -79,10 +79,10 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-PROCESSED = Path(__file__).resolve().parent.parent / "experimental_data_processed"
-FITS = PROCESSED / "lifetimes_tcspc.csv"
-SCREEN = PROCESSED / "stern_volmer_fits.csv"
-OUT = PROCESSED / "lifetimes_tau0.csv"
+DATA = Path(__file__).resolve().parent.parent
+FITS = DATA / "experimental_data_raw" / "pc_tcspc" / "lifetimes_tcspc.csv"
+SCREEN = DATA / "experimental_data_processed" / "stern_volmer_fits.csv"
+OUT = DATA / "experimental_data_raw" / "pc_tcspc" / "lifetimes_tau0.csv"
 
 # An acquisition window must contain at least this many lifetimes for the fit to
 # determine tau rather than the window determining it.

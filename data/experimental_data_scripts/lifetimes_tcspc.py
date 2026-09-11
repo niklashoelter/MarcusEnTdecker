@@ -7,7 +7,7 @@ TCSPC decay traces -> excited-state lifetime per trace.
 
 Reads   ../experimental_data_raw/pc_tcspc/*.txt   tab-separated, header block then
                                                   time (ns) vs counts, 2048 channels
-Writes  ../experimental_data_processed/lifetimes_tcspc.csv
+Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
 
 One row per trace, not per photocatalyst. Several photocatalysts were measured more
 than once on different timebases; choosing which trace to trust is a human call and
@@ -26,7 +26,7 @@ from pathlib import Path
 import numpy as np
 
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "pc_tcspc"
-OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "lifetimes_tcspc.csv"
+OUT = RAW / "lifetimes_tcspc.csv"
 
 FIT_OFFSET_POINTS = 3                 # channels skipped after the pulse peak before looking for the start
 FIT_START_COUNT_THRESHOLD = 1000.0    # start at the first post-peak channel at or below this

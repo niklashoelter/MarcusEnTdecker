@@ -68,7 +68,9 @@ THE MODEL CANNOT SEE THE PHOTOCATALYSTS
         the photocatalyst  its DFT properties            (a metal complex)
 
     `photocatalyst_properties(pc_id)` reads those from
-    `../data/computational_data_processed/photocatalyst_dft.csv`. Passing a metal
+    `../data/computational_data_raw/photocatalysts/photocatalyst_dft.csv` -- the table
+    `photocatalyst_properties_calc.xlsx` is assembled from, read as CSV so the model
+    environment needs no spreadsheet reader. Passing a metal
     complex as a SMILES will fail, loudly, and that is deliberate -- silently falling
     back to something else would hide which half of each prediction is a model output.
 
@@ -92,7 +94,7 @@ from pathlib import Path
 from typing import Iterable, Sequence, Union
 
 PHOTOCATALYST_DFT = (Path(__file__).resolve().parent.parent / "data"
-                     / "computational_data_processed" / "photocatalyst_dft.csv")
+                     / "computational_data_raw" / "photocatalysts" / "photocatalyst_dft.csv")
 
 # Gas constant in kcal mol-1 K-1.
 R_KCAL = 1.987204259e-3

@@ -7,8 +7,8 @@ Compound records -> identity and experimental redox potentials.
 
 Reads   ../experimental_data_raw/compound_records/properties_quenchers.xlsx
         ../experimental_data_raw/compound_records/properties_photocatalysts.xlsx
-Writes  ../experimental_data_processed/compound_records_quenchers.csv
-        ../experimental_data_processed/compound_records_photocatalysts.csv
+Writes  ../experimental_data_raw/compound_records/compound_records_quenchers.csv
+        ../experimental_data_raw/compound_records/compound_records_photocatalysts.csv
 
 These two spreadsheets are the only inputs in the package that are records rather than
 instrument output: someone wrote them by hand. They are read for exactly what cannot be
@@ -44,7 +44,7 @@ BOUNDS ARE NOT MEASUREMENTS
 EXPERIMENTAL VERSUS COMPUTED
     Everything here is the experimental side, suffixed `_exp`. The computed potentials
     are a separate quantity with a separate provenance and live in
-    computational_data_processed/quencher_dft.csv as `E_Ox_vs_SCE_calc` and
+    computational_data_processed/quencher_properties_calc.xlsx as `E_Ox_vs_SCE_calc` and
     `E_Red_vs_SCE_calc`. They are never merged into one column: a measured potential
     and a DFT potential are not interchangeable, and which one an analysis used is
     part of what it has to report.
@@ -86,7 +86,7 @@ from pathlib import Path
 import openpyxl
 
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "compound_records"
-OUT_DIR = Path(__file__).resolve().parent.parent / "experimental_data_processed"
+OUT_DIR = RAW
 
 QUENCHERS_IN = RAW / "properties_quenchers.xlsx"
 QUENCHERS_PROVENANCE_IN = RAW / "quenchers_exp_values.xlsx"
