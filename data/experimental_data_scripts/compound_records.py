@@ -28,6 +28,13 @@ WHAT IS DELIBERATELY NOT TAKEN
     lifetimes and their errors agree on all 27 screened photocatalysts (PC4 fitted from
     1500 ns, see lifetimes_tcspc.py).
 
+QUENCHER NAMES
+    The name column of properties_quenchers.xlsx holds names derived from the SMILES in the
+    same sheet, each checked by converting it back to a structure with OPSIN (all 48 match,
+    stereo included; 2026-09-11). The sheet is the one place a quencher's name and structure
+    are defined; everything downstream carries them by quencher_id. The other lab files keep
+    their own shorthand labels, and nothing reads a name from them.
+
 BOUNDS ARE NOT MEASUREMENTS
     Six oxidation and several reduction potentials are recorded as limits rather than
     values -- `> 2.0`, `< -2.10` -- meaning the compound was not oxidized or reduced
@@ -92,7 +99,7 @@ SIGFIGS = 6
 BOUND = re.compile(r"^\s*(?P<op>[<>]=?)\s*(?P<value>-?\d+(?:[.,]\d+)?)\s*$")
 
 QUENCHER_COLUMNS = [
-    "quencher_id", "quencher_name", "name", "lab_label", "smiles",
+    "quencher_id", "quencher_name", "name", "smiles",
     "E_Ox_vs_SCE_exp", "E_Ox_bound", "E_Red_vs_SCE_exp", "E_Red_bound",
     "redox_source", "redox_comment",
     "c_stock_mM", "deck_position", "well_position",
@@ -107,62 +114,6 @@ SOURCE_RULES = [
 ]
 DOI = "https://doi.org/"
 ESTIMATED = "estimated"
-
-# Quencher names, derived from the SMILES rather than taken from the lab record, whose
-# labels are shorthand ("OiPr bifunc", "Br-Benzothiophen") and in one case name a different
-# compound ("maleimide" for N-methylmaleimide). Each name was checked by converting it back
-# to a structure with OPSIN and comparing canonical SMILES, stereo included: all 48 match
-# (2026-09-11). The lab label is kept beside it as `lab_label`, for tracing the raw files.
-QUENCHER_NAME = {
-    1: "6-methylquinoline",
-    2: "styrene",
-    3: "1,3-dimethyl-2-nitrobenzene",
-    4: "benzo[b]thiophene",
-    5: "quinoxaline",
-    6: "isoquinoline",
-    7: "coumarin",
-    8: "benzophenone O-(isopropoxycarbonyl) oxime",
-    9: "3-methyl-2-phenylthiophene",
-    10: "diphenyl disulfide",
-    11: "dibenzyl disulfide",
-    12: "1,2-dihydro-1,2-benzazaborinine",
-    13: "N-methylmaleimide",
-    14: "butyl methacrylate",
-    15: "indene",
-    16: "5-methylpyridin-2(1H)-one",
-    17: "dibenzyl diselenide",
-    18: "5,5-dimethyl-3-phenyl-4,5-dihydro-1,2,4-oxadiazole",
-    19: "benzophenone O-[(benzylsulfanyl)carbonyl] oxime",
-    20: "naphthalene",
-    21: "ethyl 3-phenylpropiolate",
-    22: "4-oxo-2-phenylquinazolin-3(4H)-yl 3-phenylpropanoate",
-    23: "2-(benzo[b]thiophen-2-yl)-4,4,5,5-tetramethyl-1,3,2-dioxaborolane",
-    24: "2-(benzofuran-2-yl)-4,4,5,5-tetramethyl-1,3,2-dioxaborolane",
-    25: "2-bromobenzo[b]thiophene",
-    26: "2-bromobenzofuran",
-    27: "2,5-dibromothiophene",
-    28: "2-benzoylthiazole",
-    29: "4,4-dimethyl-3-phenylisoxazol-5(4H)-one",
-    30: "(E)-stilbene",
-    31: "6-phenyl-5-oxa-6-azaspiro[2.4]heptane-4,7-dione",
-    32: "1-(thiobenzoyl)pyrrolidine",
-    33: "N-methyl-N-phenylpropanethioamide",
-    34: "(Z)-3,4-dihydronaphthalen-1(2H)-one O-methyl oxime",
-    35: "(Z)-stilbene",
-    36: "2-acetyl-1-methylpyrrole",
-    37: "1-bromo-4-(2,2-difluorovinyl)benzene",
-    38: "1,3-butadiene",
-    39: "4-methyl-2-phenylthiazole",
-    40: "2-phenyloxazole",
-    41: "alpha-methylstyrene",
-    42: "2-benzoylfuran",
-    43: "2-acetyl-4-methylthiophene",
-    44: "2-acetylpyridine",
-    45: "phenyl vinyl selenoxide",
-    46: "2,2-dimethyl-3-phenyl-2H-azirine",
-    47: "methyl quinoline-8-carboxylate",
-    48: "cyclohex-2-en-1-one",
-}
 
 # Where each recorded redox potential comes from: "CV" for a voltammogram measured in this
 # lab, a DOI for a paper, "estimated" where neither exists. Curated by hand from the
@@ -354,8 +305,7 @@ def quenchers():
         rows.append({
             "quencher_id": int(qid),
             "quencher_name": sheet.cell(r, column["quencher_name"]).value,
-            "name": QUENCHER_NAME.get(int(qid), ""),
-            "lab_label": sheet.cell(r, column["name"]).value,
+            "name": sheet.cell(r, column["name"]).value,
             "smiles": smiles,
             "E_Ox_vs_SCE_exp": sig(ox),
             "E_Ox_bound": ox_bound,
@@ -457,9 +407,6 @@ def main():
     print(f"  quenchers with at least one bound: {sorted(set(bounded))}")
 
     check_sources(quencher_rows)
-    ids = {r["quencher_id"] for r in quencher_rows}
-    if set(QUENCHER_NAME) != ids:
-        sys.exit(f"QUENCHER_NAME and the records disagree on quenchers {sorted(set(QUENCHER_NAME) ^ ids)}")
     kinds = collections.Counter(source_kind(r["redox_source"]) for r in quencher_rows)
     print("\n  where the redox potentials came from:")
     for kind in ("CV", "DOI", ESTIMATED):

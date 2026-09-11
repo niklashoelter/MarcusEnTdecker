@@ -65,11 +65,13 @@ were read with saved protocols that name no filters; their wavelengths come from
 screen's photocatalyst sheet. The pipetting maps' wavelength fields are placeholders and
 are not read.
 
-**Quencher names** are derived from the SMILES (`QUENCHER_NAME` in `compound_records.py`),
-each checked by converting it back to a structure. The lab label survives only as `lab_label`
-in `compound_records_quenchers.csv`; the pipetting maps' own labels, which call seven of the
-thiophenes and furans thiazoles and oxazoles, are not carried — the recorded molar masses
-confirm the SMILES.
+**Quencher names and structures** have one source: the name and SMILES columns of
+`compound_records/properties_quenchers.xlsx`. The names there are derived from the SMILES,
+each checked by converting it back to a structure. Everything downstream carries them by
+`quencher_id`; the other lab files and the pipetting maps keep their own shorthand labels
+(the maps call seven of the thiophenes and furans thiazoles and oxazoles — the recorded
+molar masses confirm the SMILES), and nothing reads a name from them. Photocatalyst names
+come from `compound_records/properties_photocatalysts.xlsx` the same way.
 
 **Quencher redox potentials** carry a bound column (`>` or `<` where the value is a limit),
 a `source` — `CV` (measured here), the DOI of the paper, or `estimated` (Q19, Q32, Q33) —
