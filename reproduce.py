@@ -22,6 +22,12 @@ NOT EVERY SCRIPT IN THE TREE IS A STAGE
     an argument, which this runner cannot supply, and it is a record of how the deposit
     was made rather than a step that remakes it.
 
+    `quencher_ml.py` is absent for a different reason: it runs the model, so it needs the
+    ml extra -- torch, torch-geometric, rdkit -- which every stage below deliberately does
+    without. Run it by hand when the predictions have to be remade:
+    `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`. The workbook
+    it writes is in git, so nothing downstream has to.
+
     `compound_identification.py` and `properties_workbook.py` are modules, not stages:
     the first is the one source of what each compound is, the second the shared workbook
     layout. Both are imported, never run.
@@ -68,7 +74,7 @@ PIPELINE = [
     ("benchmark", "benchmark/run_benchmark.py", "data/exp_dataset.csv"),
 ]
 
-STAGES = ["data", "benchmark", "ml", "figures", "paper"]
+STAGES = ["data", "benchmark", "ml"]
 
 
 def run(script):
