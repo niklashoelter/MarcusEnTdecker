@@ -1,10 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "kinetics-ent"
 version = "0.1.0"
 description = "Data, benchmarks and models for triplet energy transfer kinetics"
 readme = "README.md"
 requires-python = ">=3.12"
-license = { file = "LICENSE" }
 authors = [
     { name = "Niklas Hölter" },
     { name = "Leon Schlosser" },
@@ -24,21 +27,53 @@ benchmark = [
     "matplotlib>=3.9",
 ]
 
-# The models and the prediction API. `pyrates` is the package in ml/, installed from
-# its own pyproject.toml, which is what pins torch, torch-geometric, rdkit and the
-# rest. Kept out of the default install because it is a multi-gigabyte dependency
-# tree that the data pipeline does not need.
+# The `ml` package: the graph MDN, its training and inference, and the prediction
+# API and CLI built on them. A multi-gigabyte tree, which is why it is optional --
+# the data pipeline and the benchmark never need it.
 #
 #   uv sync --extra ml
 ml = [
-    "pyrates",
+    "numpy==2.4.2",
+    "pandas==2.3.3",
+    "scipy>=1.14",
+    "matplotlib==3.10.8",
+    "rdkit==2025.9.4",
+    "scikit-learn==1.8.0",
+    "joblib>=1.4",
+    "torch==2.5.1",
+    "torch-geometric==2.7.0",
+    "openpyxl==3.1.5",
 ]
 
-[tool.uv.sources]
-pyrates = { path = "ml", editable = true }
+# The `webapp` package: EnTdecker. It is a consumer of `ml`, so it takes that extra
+# whole and adds only what serving the page needs.
+#
+#   uv sync --extra webapp
+webapp = [
+    "kinetics-ent[ml]",
+    "fastapi==0.135.2",
+    "uvicorn[standard]==0.42.0",
+    "pydantic>=2",
+    "plotly==6.6.0",
+    "pillow>=10",
+]
 
+[project.scripts]
+ent-ml = "ml.cli:main"
 
-[tool.uv]
-# This repository is a collection of scripts, not an installable package. Keeping it
-# unbuilt means `uv run reproduce.py` does not drag in the ml extra on every call.
-package = false
+[dependency-groups]
+dev = ["pytest==9.0.2"]
+
+# ml/ and webapp/ are the two packages. Everything else in the tree -- data/,
+# benchmark/, reproduce.py -- is scripts, and neither package may reach into them.
+[tool.setuptools.packages.find]
+include = ["ml*", "webapp*"]
+exclude = ["ml.tests*", "ml.examples*", "ml.training_data*", "webapp.tests*", "webapp.deploy*"]
+
+[tool.setuptools.package-data]
+"ml.data" = ["model.pt"]
+"webapp.data" = ["photocatalysts.csv", "pc_structures/*.png"]
+"webapp" = ["templates/*.html", "static/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["ml/tests", "webapp/tests"]

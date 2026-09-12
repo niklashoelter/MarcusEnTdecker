@@ -1,7 +1,7 @@
 import torch
 import pytest
 import numpy as np
-from pyrates.utilities.dataset.molecule_dataset import MoleculeDataset
+from ml.utilities.dataset.molecule_dataset import MoleculeDataset
 from unittest.mock import patch
 
 class MockGraph:
@@ -17,7 +17,7 @@ class MockGraph:
 
 @pytest.fixture
 def mock_smiles_to_graph_func():
-    with patch('pyrates.utilities.dataset.molecule_dataset.smiles_to_graph') as mock:
+    with patch('ml.utilities.dataset.molecule_dataset.smiles_to_graph') as mock:
         # Default behavior: return a MockGraph with 2 nodes
         mock.return_value = MockGraph(num_nodes=2)
         yield mock

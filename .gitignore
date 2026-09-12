@@ -20,9 +20,12 @@ data/computational_data_raw/quencher_adiabatic_DvTE/*
 # data/ has one README, data/README.md. None below it.
 data/*/**/README.md
 
-# The pyrates package in ml/ IS committed, checkpoint included, so that
+# The ml package IS committed, checkpoint included, so that
 # the deployed model is pinned by this repository. Its own .gitignore was removed for
 # exactly that reason — see ml/README.md.
+
+# Site-specific deployment: the image build and the university cluster manifests, not published.
+webapp/deploy/
 
 # Python
 __pycache__/
@@ -46,3 +49,4 @@ desktop.ini
 
 # Local overrides
 paths.local.toml
+

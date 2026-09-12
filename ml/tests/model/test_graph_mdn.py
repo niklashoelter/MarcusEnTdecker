@@ -1,7 +1,7 @@
 import torch
 import pytest
 from torch_geometric.data import Data, Batch
-from pyrates.model.graph_mdn import GraphMDN
+from ml.model.graph_mdn import GraphMDN
 
 def create_dummy_batch(num_graphs=2, num_nodes=5, num_edges=10, feature_dim=10):
     data_list = []

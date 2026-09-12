@@ -1,6 +1,6 @@
 import torch
 import pytest
-from pyrates.model.loss import mdn_loss, calibration_loss
+from ml.model.loss import mdn_loss, calibration_loss
 
 def test_mdn_loss_perfect_fit():
     # If the model predicts perfectly, the loss should be minimized.

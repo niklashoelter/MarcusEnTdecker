@@ -2,7 +2,7 @@
 import pytest
 import numpy as np
 from unittest.mock import MagicMock
-from pyrates.model.inference import predict
+from ml.model.inference import predict
 
 # Mock data batch
 class MockBatch:

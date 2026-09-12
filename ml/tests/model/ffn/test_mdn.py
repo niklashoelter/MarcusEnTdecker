@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import pytest
-from pyrates.model.ffn.mixture_density_network import MDN
+from ml.model.ffn.mixture_density_network import MDN
 
 def test_mdn_init():
     model = MDN(

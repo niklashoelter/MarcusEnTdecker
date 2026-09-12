@@ -1,6 +1,6 @@
 import pytest
 import math
-from pyrates.energy.eyring import eyring_equation
+from ml.energy.eyring import eyring_equation
 
 def test_eyring_equation_kj_mol():
     dG = 100.0 # kJ/mol

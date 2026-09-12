@@ -20,24 +20,39 @@ quenching in acetonitrile on an Opentrons Flex and a BMG VantaStar plate reader;
 data/           instrument output and DFT job files, the scripts that process them, and
                 the pair-level dataset built from them
 benchmark/      physical-organic theory as classifiers: adiabatic, Marcus, Rehm-Weller, DvTE
-ml/             the pyrates models and the prediction API
-figures/        every figure in the paper, regenerated from processed data
-paper/          tables destined for the manuscript and SI, generated rather than typed
-webapp/         shipping EnTdecker: image definition and Kubernetes manifests
+ml/             the `ml` package: the graph MDN, its training and inference, the trained
+                checkpoint, and the prediction API and `ent-ml` command line on top
+webapp/         the `webapp` package: EnTdecker, the FastAPI application that serves `ml`
+                in a browser
+```
+
+`data/` and `benchmark/` are scripts. `ml/` and `webapp/` are the two installable
+packages, and both are built from the single root `pyproject.toml`:
+
+```
+uv sync --extra ml         # the models, the prediction API and the ent-ml CLI
+uv sync --extra webapp     # the same, plus what serving EnTdecker needs
 ```
 
 Dependencies run strictly one way:
 
 ```
-data  ->  { benchmark, ml }  ->  figures, paper
+data  ->  { benchmark, ml  ->  webapp }
 ```
 
 Nothing reaches sideways or backwards. A script reads only from directories to its
 left, so any number in the paper can be traced to the instrument file it came from by
-following that chain in one direction.
+following that chain in one direction. The packages are held to the same rule from the
+other side: neither `ml` nor `webapp` may read anything under `data/` or `benchmark/`,
+and `ml` may not import `webapp`. Each package carries its own resources instead —
+`ml/data/model.pt`, `webapp/data/` — and reads them with `importlib.resources`.
+`webapp/tests/test_no_reverse_dependency.py` is what keeps that from regressing.
+Figures and generated tables will be made inside `benchmark/`, from its output.
 
 Inside `data/`, the processed folders hold one workbook per compound class and side, and
-the Stern–Volmer tables; `build_exp_dataset.py` joins them into one row per pair:
+the Stern–Volmer tables; `build_exp_dataset.py` turns the experimental ones into one row
+per pair. The calculated workbooks stay one row per compound and are joined on by whoever
+compares them — `benchmark/pairs.py` does, and derives the driving forces there:
 
 ```
 data/experimental_data_processed/    photocatalyst_properties_exp.xlsx
@@ -45,7 +60,8 @@ data/experimental_data_processed/    photocatalyst_properties_exp.xlsx
                                      stern_volmer_intensities.csv, stern_volmer_fits.csv
 data/computational_data_processed/   photocatalyst_properties_calc.xlsx
                                      quencher_properties_calc.xlsx
-data/                                exp_dataset.csv, exp_dataset.xlsx   (1296 pairs)
+data/                                exp_dataset.csv, exp_dataset.xlsx   (1296 pairs,
+                                     measured values and labels only)
 ```
 
 Each workbook has one row per compound and its columns in blocks, with a `Column key`
@@ -84,11 +100,10 @@ re-derive the extracted tables from scratch.
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | `data/` experimental  | **complete and verified** — every table rebuilds byte-identically from the instrument files                                                |
 | `data/` computational | **complete and verified** — 48 quenchers and 27 photocatalysts; reproduces the published tables except four stale photocatalyst E_T values |
-| `data/exp_dataset`    | **1296 pairs**, PC1–PC27 by new id; the ground truth is settled on K_SV, both readings carried                                             |
+| `data/exp_dataset`    | **1296 pairs**, PC1–PC27 by new id; twelve experimental columns, nothing calculated; the ground truth is settled on K_SV, both readings carried |
 | `benchmark/`          | **ported and running** — five theories scored under both label regimes on 1248 pairs (PC22 not scored); open items in its README           |
 | `ml/`                 | **models in place**, checkpoint included; `predict.py` runs end to end, but its λ sweep predates the label change                          |
-| `webapp/`             | **deployable** — builds from `ml/` instead of cloning a branch                                                                             |
-| `figures/`, `paper/`  | not started                                                                                                                                |
+| `webapp/`             | **deployable** — serves `webapp.app:app`, built from this repository rather than a cloned branch; `deploy/` is untracked                |
 
 Each directory's README says what is in it, what produced it, and what is known to be
 wrong with it; `data/` has one README for all of its subfolders.
@@ -103,16 +118,16 @@ result = predictor.predict(photocatalyst=PC_SMILES, quencher=Q_SMILES)
 result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.quenches
 ```
 
-`uv sync --extra ml` first. There is no command-line interface; for a browser, that is
-what EnTdecker is.
+`uv sync --extra ml` first. The same calls are also a command line — `ent-ml`, see
+`ent-ml --help` — and for a browser instead, that is what EnTdecker is, in `webapp/`.
 
 ## The models, and who wrote them
 
 The models are not this repository's work. They are
 [pyrates](https://github.com/le-schlo/pyrates), by **Leon Schlosser**, MIT licensed,
-and the package lives at `ml/pyrates/` — including the trained checkpoint the web
-application serves. His licence is kept alongside it as `ml/LICENSE-pyrates` and must
-travel with any redistribution.
+and they are carried here as the `ml` package — including the trained checkpoint at
+`ml/data/model.pt` that the web application serves. His licence is kept alongside it as
+`ml/LICENSE-pyrates` and must travel with any redistribution.
 
 It is carried in this repository rather than pinned as a remote dependency because the
 paper's numbers have to stay reproducible after the library moves on, and because the
@@ -123,4 +138,4 @@ merged, which does not affect the physics but should be reconciled before public
 
 ## Citing
 
-See `CITATION.cff`. Code is MIT (`LICENSE`); data is CC BY 4.0 (`LICENSE-DATA`).
+See `CITATION.cff`. Code is MIT; data is CC BY 4.0.

@@ -1,4 +1,4 @@
-from pyrates.model.inference import get_predictions
+from ml.model.inference import get_predictions
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np

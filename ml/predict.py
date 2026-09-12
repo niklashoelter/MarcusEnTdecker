@@ -1,10 +1,10 @@
 """
 Python API for predicting triplet energy transfer rates from structure alone.
 
-    from ml.predict import RatePredictor
+    from ml.predict import RatePredictor, photocatalyst_properties
 
     predictor = RatePredictor()
-    result = predictor.predict(photocatalyst=photocatalyst_properties(1),
+    result = predictor.predict(photocatalyst=photocatalyst_properties(pc_table, 1),
                                quencher=Q_SMILES)
 
     result.dG_kcal          driving force
@@ -13,19 +13,19 @@ Python API for predicting triplet energy transfer rates from structure alone.
     result.quenches         k_ent above the detection threshold
     result.uncertainty      from the mixture density network
 
-There is no command-line interface. This is a library: import it.
+`ml.cli` wraps these same calls as the `ent-ml` command.
 
 WHAT IT COMPOSES
-    Nothing here re-implements the model or the theory. Both come from the `pyrates`
+    Nothing here re-implements the model or the theory. Both come from the `ml`
     package alongside this file, and this module is the seam between them:
 
-        pyrates prediction.predict(smiles)         graph -> E_T, lambda_S_T, lambda_T_S
-        pyrates marcus_theory                      properties -> dG, dG barrier
+        ml.prediction.predict(smiles)              graph -> E_T, lambda_S_T, lambda_T_S
+        ml.energy.marcus_ent                       properties -> dG, dG barrier
         Balzani rate expression (below)            barrier -> k
 
-    Keeping the barrier in `pyrates` means the web application, the paper's numbers
+    Keeping the barrier in `ml.energy` means the web application, the paper's numbers
     and this API all compute it the same way. Only the last step is written here,
-    because `pyrates` stops at the barrier and does not combine it with diffusion.
+    because `ml.energy` stops at the barrier and does not combine it with diffusion.
 
 THE RATE EXPRESSION
 
@@ -42,13 +42,13 @@ LAMBDA SCALING
     `lambda_scale` multiplies the DFT-like reorganization energies the model predicts
     before they reach the barrier. It defaults to 1.0, the raw prediction.
 
-    On this dataset the benchmark finds an optimum near 0.35-0.45 for Marcus. That is
-    not a fudge factor: the classical Marcus barrier applies only to modes with
-    energy well below k_BT, while a harmonic reorganization energy sums over all of
-    them. High-frequency modes tunnel rather than contribute classically, exchange
-    coupling is insensitive to outer-sphere solvent reorganization, and continuum
-    solvation over-predicts the outer-sphere part. Each effect pushes the same way,
-    and together they predict an effective scale of roughly 0.3-0.5.
+    A scale below one is expected, and it is not a fudge factor: the classical Marcus
+    barrier applies only to modes with energy well below k_BT, while a harmonic
+    reorganization energy sums over all of them. High-frequency modes tunnel rather
+    than contribute classically, exchange coupling is insensitive to outer-sphere
+    solvent reorganization, and continuum solvation over-predicts the outer-sphere
+    part. Each effect pushes the same way, and together they predict an effective
+    scale of roughly 0.3-0.5.
 
     Set it deliberately. The default is left at 1.0 so that nothing is silently
     scaled, but 1.0 is known to over-estimate the barrier.
@@ -67,10 +67,12 @@ THE MODEL CANNOT SEE THE PHOTOCATALYSTS
         the quencher       a SMILES -> the model         (organic, in the vocabulary)
         the photocatalyst  its DFT properties            (a metal complex)
 
-    `photocatalyst_properties(pc_id)` reads those from `../data/exp_dataset.csv`, by the
-    photocatalyst's new id (PC1-PC27, the paper numbering). Passing a metal
-    complex as a SMILES will fail, loudly, and that is deliberate -- silently falling
-    back to something else would hide which half of each prediction is a model output.
+    `photocatalyst_properties(source, pc_id)` builds that second kind of argument from a
+    table the caller supplies: one row per photocatalyst, selected by its `new_id`. This
+    package ships no such table and does not know where one lives -- that is the
+    caller's business. Passing a metal complex as a SMILES will fail, loudly, and that
+    is deliberate -- silently falling back to something else would hide which half of
+    each prediction is a model output.
 
     Both arguments accept either form, so an organic photocatalyst can still be given
     as a SMILES and a quencher can be given as measured properties.
@@ -87,11 +89,17 @@ from __future__ import annotations
 
 import csv
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Sequence, Union
+from typing import Any, Iterable, Sequence, Union
 
-EXP_DATASET = Path(__file__).resolve().parent.parent / "data" / "exp_dataset.csv"
+# Row 1 of a property workbook names the column blocks; the headers are on row 2.
+WORKBOOK_HEADER_ROW = 2
+
+#: What a photocatalyst row has to carry, beyond `new_id`, to yield a prediction.
+PC_COLUMNS = ("E_T / kcal mol-1", "lambda_S0_to_T1 / kcal mol-1",
+              "lambda_T1_to_S0 / kcal mol-1")
 
 # Gas constant in kcal mol-1 K-1.
 R_KCAL = 1.987204259e-3
@@ -128,41 +136,84 @@ class MolecularProperties:
 Partner = Union[str, "MolecularProperties"]
 
 
-def photocatalyst_properties(pc_id: int, path: Path | None = None) -> MolecularProperties:
-    """DFT properties for one photocatalyst, by new id, in the form `predict` takes.
+def _rows(source: Any) -> list[dict]:
+    """A photocatalyst table as row dicts, in whichever form the caller supplied it."""
+    if source is None:
+        raise ValueError(
+            "photocatalyst_properties needs a photocatalyst table: a path to an .xlsx "
+            "or .csv, a pandas DataFrame, or a mapping. One row per photocatalyst, "
+            "with a `new_id` column and " + ", ".join(f"`{c}`" for c in PC_COLUMNS) + "."
+        )
+
+    if hasattr(source, "to_dict") and hasattr(source, "columns"):  # a DataFrame
+        return source.to_dict("records")
+
+    if isinstance(source, Mapping):
+        # Either a whole table keyed by id, or one row already picked out of one.
+        values = list(source.values())
+        if values and all(isinstance(v, Mapping) for v in values):
+            return [{"new_id": key, **row} for key, row in source.items()]
+        return [dict(source)]
+
+    path = Path(source)
+    if not path.exists():
+        raise FileNotFoundError(f"no photocatalyst table at {path}")
+
+    if path.suffix.lower() == ".csv":
+        with path.open(newline="", encoding="utf-8-sig") as handle:
+            return list(csv.DictReader(handle))
+
+    from openpyxl import load_workbook
+
+    sheet = load_workbook(path, read_only=True, data_only=True).worksheets[0]
+    values = sheet.iter_rows(min_row=WORKBOOK_HEADER_ROW, values_only=True)
+    header = next(values)
+    return [dict(zip(header, v)) for v in values]
+
+
+def photocatalyst_properties(source: Any = None,
+                             pc_id: int | str | None = None) -> MolecularProperties:
+    """DFT properties for one photocatalyst, in the form `predict` takes.
 
     The model cannot encode iridium or ruthenium, so this is how a metal-complex
-    photocatalyst enters a prediction: from `../data/exp_dataset.csv`, whose photocatalyst
-    columns come from the deposited ORCA jobs.
+    photocatalyst enters a prediction: from a table the caller supplies. `source` is a
+    path to an .xlsx or .csv, a pandas DataFrame, a mapping of id to row, or a single
+    row as a mapping. `pc_id` picks the row by its `new_id`, and may be left out when
+    the table holds exactly one row.
 
     The two reorganization energies map across by which surface they relax on --
     `lambda_S0_to_T1` is the relaxation on the triplet surface from the singlet
     geometry, which is what the Marcus expression calls `lambda_S_T`.
     """
-    source = path or EXP_DATASET
-    if not source.exists():
-        raise FileNotFoundError(f"{source} is missing; run `uv run data/build_exp_dataset.py`")
+    rows = _rows(source)
 
-    with source.open(encoding="utf-8", newline="") as fh:
-        row = next((r for r in csv.DictReader(fh) if int(r["pc_new_id"]) == pc_id), None)
+    if pc_id is None:
+        if len(rows) != 1:
+            raise ValueError(
+                f"the photocatalyst table has {len(rows)} rows; say which one with pc_id"
+            )
+        row = rows[0]
+    else:
+        # An id read from a .csv or a command line is a string, one from an .xlsx an int.
+        row = next((r for r in rows if str(r.get("new_id")) == str(pc_id)), None)
+        if row is None:
+            raise KeyError(f"no photocatalyst PC{pc_id} in the table")
 
-    if row is None:
-        raise KeyError(f"no photocatalyst PC{pc_id} in {source.name}")
+    identifier = row.get("new_id", pc_id)
+    name = f"PC{identifier}" if identifier is not None else "photocatalyst"
 
-    needed = ("pc_E_T_dft / kcal mol-1", "pc_lambda_S0_to_T1_dft / kcal mol-1",
-              "pc_lambda_T1_to_S0_dft / kcal mol-1")
-    absent = [c for c in needed if not row[c]]
+    absent = [c for c in PC_COLUMNS if row.get(c) in (None, "")]
     if absent:
         raise ValueError(
-            f"PC{pc_id} has no {', '.join(absent)} -- its DFT jobs are incomplete. "
+            f"{name} has no {', '.join(absent)} -- its DFT jobs are incomplete. "
             f"It cannot be used for a rate prediction."
         )
 
     return MolecularProperties(
-        smiles=f"PC{pc_id}",
-        E_T=float(row["pc_E_T_dft / kcal mol-1"]),
-        lambda_S_T=float(row["pc_lambda_S0_to_T1_dft / kcal mol-1"]),
-        lambda_T_S=float(row["pc_lambda_T1_to_S0_dft / kcal mol-1"]),
+        smiles=name,
+        E_T=float(row[PC_COLUMNS[0]]),
+        lambda_S_T=float(row[PC_COLUMNS[1]]),
+        lambda_T_S=float(row[PC_COLUMNS[2]]),
         source="dft",
     )
 
@@ -230,7 +281,7 @@ class RatePredictor:
         missing = [s for s in dict.fromkeys(wanted) if s not in self._cache]
 
         if missing:
-            from pyrates.webapp.science_utils.prediction import predict as _predict
+            from ml.prediction import predict as _predict
 
             frame = _predict(missing)
             for _, row in frame.iterrows():
@@ -279,8 +330,8 @@ class RatePredictor:
         return [self._rate(resolve(pc), resolve(q)) for pc, q in pairs]
 
     def _rate(self, pc: MolecularProperties, q: MolecularProperties) -> RatePrediction:
-        from pyrates.energy.eyring import eyring_equation
-        from pyrates.webapp.science_utils.marcus_theory import (
+        from ml.energy.eyring import eyring_equation
+        from ml.energy.marcus_ent import (
             calculate_driving_force_and_barrier,
         )
 
@@ -338,7 +389,8 @@ class RatePredictor:
 
     @staticmethod
     def _is_symmetric(pc: MolecularProperties, q: MolecularProperties, a: float) -> bool:
-        """Whether pyrates would have fallen back to the symmetric approximation."""
+        """Whether ml.energy.marcus_ent would have fallen back to the symmetric
+        approximation."""
         forward = a * (pc.lambda_T_S + q.lambda_S_T)
         reverse = a * (pc.lambda_S_T + q.lambda_T_S)
         dG = q.E_T - pc.E_T

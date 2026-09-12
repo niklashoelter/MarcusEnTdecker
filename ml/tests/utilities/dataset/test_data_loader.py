@@ -5,7 +5,7 @@ import tempfile
 import os
 import ast
 from pathlib import Path
-from pyrates.utilities.dataset.data_loader import DataLoader
+from ml.utilities.dataset.data_loader import DataLoader
 
 @pytest.fixture
 def sample_csv():

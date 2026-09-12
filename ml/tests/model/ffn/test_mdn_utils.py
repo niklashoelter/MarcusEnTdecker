@@ -1,7 +1,7 @@
 import torch
 import pytest
 import math
-from pyrates.model.ffn.mdn_utils import compute_mixture_mean, compute_max_mode
+from ml.model.ffn.mdn_utils import compute_mixture_mean, compute_max_mode
 
 def test_compute_mixture_mean():
     # Batch size 1, output dim 1, 2 components

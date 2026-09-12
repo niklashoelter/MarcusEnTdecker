@@ -1,7 +1,7 @@
 import torch
 import pytest
 from torch_geometric.data import Data, Batch
-from pyrates.model.gnn.mpnn import MPNN
+from ml.model.gnn.mpnn import MPNN
 
 def create_dummy_batch(num_graphs=2, num_nodes=5, num_edges=10, feature_dim=10):
     data_list = []

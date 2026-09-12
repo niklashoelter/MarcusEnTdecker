@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from pyrates.utilities.metrics.digitize import digitize_spin_populations
-from pyrates.utilities.metrics.jaccard import top_k_jaccard_similarity
-from pyrates.utilities.metrics.ranked_score import ranked_score, highest_dens
+from ml.utilities.metrics.digitize import digitize_spin_populations
+from ml.utilities.metrics.jaccard import top_k_jaccard_similarity
+from ml.utilities.metrics.ranked_score import ranked_score, highest_dens
 
 def test_top_k_jaccard_similarity_perfect():
     y_true = np.array([0.1, 0.2, 0.9, 0.8, 0.3])

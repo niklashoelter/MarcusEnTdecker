@@ -1,5 +1,5 @@
 import numpy as np
-from pyrates.energy.marcus_theory import marcus_symmetric, marcus_asymmetric
+from ml.energy.marcus_theory import marcus_symmetric, marcus_asymmetric
 
 def test_marcus_symmetric_basic():
     dG = 0.0
@@ -7,7 +7,8 @@ def test_marcus_symmetric_basic():
     lambda_don = 1.0
     # Expected: (0 + 1 + 1)^2 / (4 * (1+1)) = 4 / 8 = 0.5
     expected = 0.5
-    result = marcus_symmetric(dG, lambda_acc, lambda_don)
+    # marcus_symmetric takes the total reorganization energy, not the two halves.
+    result = marcus_symmetric(dG, lambda_acc + lambda_don)
     assert np.isclose(result, expected)
 
 def test_marcus_symmetric_vectorized():
@@ -17,7 +18,8 @@ def test_marcus_symmetric_vectorized():
     # Case 1: 0.5
     # Case 2: (0 + 2 + 2)^2 / (4 * (2+2)) = 16 / 16 = 1.0
     expected = np.array([0.5, 1.0])
-    result = marcus_symmetric(dG, lambda_acc, lambda_don)
+    # marcus_symmetric takes the total reorganization energy, not the two halves.
+    result = marcus_symmetric(dG, lambda_acc + lambda_don)
     assert np.allclose(result, expected)
 
 def test_marcus_asymmetric_basic():
