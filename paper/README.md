@@ -28,7 +28,7 @@ Four photocatalyst triplet energies in the delivered DFT table
 PC26 (old 10, 13, 25, 28) differ from their jobs by +2.23, −0.70, +0.61 and −0.55 kcal/mol. `../data/` uses the
 job values. See `../data/computational_data_scripts/photocatalyst_dft.py`.
 
-PC numbers here are the new ids, PC1–PC27 (`../data/photocatalyst_ids.py`). Leon's Table S2
+PC numbers here are the new ids, PC1–PC27 (`../data/compound_identification.xlsx`). Leon's Table S2
 in the SI uses a third numbering (26 entries, no old PC19, old PC27 in slot 17) and has to
 be brought in line with it.
 

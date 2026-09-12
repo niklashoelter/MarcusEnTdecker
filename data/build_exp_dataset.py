@@ -47,7 +47,7 @@ THE DRIVING FORCES
 PHOTOCATALYST NUMBERING
     Every row carries `pc_new_id`, the number used downstream and in the paper (1-27,
     consecutive), `pc_old_id`, the number the raw files use, and `pc_name` = PC<new_id>.
-    The mapping is photocatalyst_ids.py. All 27 screened photocatalysts are here,
+    The mapping is compound_identification.py. All 27 screened photocatalysts are here,
     including PC22 (old PC24), whose emission was too weak; the theory benchmark drops it,
     this table does not.
 """
@@ -61,7 +61,7 @@ sys.path.insert(0, str(DATA))
 
 from openpyxl import load_workbook  # noqa: E402
 
-from photocatalyst_ids import NEW_ID  # noqa: E402
+from compound_identification import NEW_ID  # noqa: E402
 from properties_workbook import Block, Column, write_workbook  # noqa: E402
 
 EXPERIMENTAL = DATA / "experimental_data_processed"

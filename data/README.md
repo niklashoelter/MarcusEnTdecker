@@ -7,7 +7,6 @@ which is all that `../benchmark/` reads.
 ```
 data/
 ├── experimental_data_raw/           instrument files, plus the tables derived from them
-│   ├── compound_records/            lab records (xlsx) -> compound_records_*.csv
 │   ├── pc_emission/                 emission scans -> emission_spectra.csv
 │   ├── pc_tcspc/                    PC<n>.txt/.FL, one trace each -> lifetimes_tcspc.csv
 │   ├── quencher_absorption/         absorption scans -> absorption_extinction.csv
@@ -20,14 +19,15 @@ data/
 │   └── stern_volmer_fits.csv
 ├── computational_data_raw/          ORCA/Milo jobs (Zenodo, not in git), plus derived tables
 │   ├── photocatalysts/              PC_<n>/{S0,T1,ox,red,conf}/ -> photocatalyst_dft.csv
-│   ├── quencher_adiabatic_DFT/      Q<n>/{S0,T1,ox,red}/ -> quencher_dft.csv, _conformers.csv
+│   ├── quencher_adiabatic_DFT/      Q<n>/{S0,T1,ox,red}/ -> quencher_dft.csv
 │   └── quencher_adiabatic_DvTE/     MD trajectories -> quencher_dvte.csv, _samples.csv.gz
 ├── computational_data_processed/
 │   ├── photocatalyst_properties_calc.xlsx
 │   └── quencher_properties_calc.xlsx
 ├── experimental_data_scripts/       one script per raw folder, plus properties_exp.py
 ├── computational_data_scripts/      one script per raw folder, plus properties_calc.py
-├── photocatalyst_ids.py             which photocatalysts are in the data; old -> new id
+├── compound_identification.py/.xlsx which compounds are in the data, what they are,
+│                                    and the old -> new photocatalyst id mapping
 ├── properties_workbook.py           layout shared by the workbooks
 ├── build_exp_dataset.py             processed folders -> one row per pair
 └── exp_dataset.csv, .xlsx           the pair-level dataset
@@ -44,7 +44,9 @@ number from the screen (`PC10_QBatch1.csv`, `pc_tcspc/PC4.txt`). The new id, PC1
 gaps, enters only at the end: the processed photocatalyst workbooks carry `old_id` and
 `new_id`, `exp_dataset` carries `pc_old_id` and `pc_new_id`, and everything downstream uses
 the new id. Old PC7, PC26, PC30 and PC31 are crossed out in the screen's photocatalyst
-sheet and are not in the data. `photocatalyst_ids.py` holds the mapping.
+sheet and are not in the data. `compound_identification.xlsx` holds the mapping, and
+`compound_identification.py` reads it with the standard library alone, so importing it
+adds no dependency to any script.
 
 **Workbooks.** One row per compound, sorted by new id (PC1–27) or quencher id (Q1–48). Columns in blocks —
 identity first, then one block per property — separated by an empty column and named in
@@ -65,13 +67,13 @@ were read with saved protocols that name no filters; their wavelengths come from
 screen's photocatalyst sheet. The pipetting maps' wavelength fields are placeholders and
 are not read.
 
-**Quencher names and structures** have one source: the name and SMILES columns of
-`compound_records/properties_quenchers.xlsx`. The names there are derived from the SMILES,
-each checked by converting it back to a structure. Everything downstream carries them by
-`quencher_id`; the other lab files and the pipetting maps keep their own shorthand labels
-(the maps call seven of the thiophenes and furans thiazoles and oxazoles — the recorded
-molar masses confirm the SMILES), and nothing reads a name from them. Photocatalyst names
-come from `compound_records/properties_photocatalysts.xlsx` the same way.
+**Compound identity** has one source, `compound_identification.xlsx`: a sheet per compound
+class with the ids, the photocatalyst old→new mapping, the names, the quencher SMILES and
+the molar masses. Every script asks `compound_identification.py` for them, so there is one
+answer to what a compound is. The quencher names are derived from the SMILES, each checked
+by converting it back to a structure; the pipetting maps keep their own shorthand labels
+(they call seven of the thiophenes and furans thiazoles and oxazoles — the recorded molar
+masses confirm the SMILES), and nothing reads a name from them.
 
 **Quencher redox potentials** carry a bound column (`>` or `<` where the value is a limit),
 a `source` — `CV` (measured here), the DOI of the paper, or `estimated` (Q19, Q32, Q33) —
@@ -83,9 +85,19 @@ the pulse, except for old PC4, fitted from 1500 ns to skip a fast early componen
 (`FIT_START_NS` in `lifetimes_tcspc.py`).
 
 **Photocatalyst DFT** uses Leon's arithmetic and reproduces his delivered file
-(`spectroscopy_data_processed/dataset/properties_photocatalysts_calc.xlsx`) except E_T for
-old PC10, PC13, PC25 and PC28 (new 8, 11, 23, 26), which that file carries stale.
+except E_T for old PC10, PC13, PC25 and PC28 (new 8, 11, 23, 26), which that file carries
+stale.
 
-**In git from** `computational_data_raw/`**:** only the derived tables, the photocatalyst
-`manifest.csv` (which delivered job was kept) and the quencher `provenance.csv` (which
-pipeline and conformer each state came from).
+**One calculation per state, and no other.** Both computational folders hold only the job
+each published number came from: `Q<n>/<state>/` and `PC_<n>/<state>/` carry one geometry
+optimisation and its single points, named by what they are -- `opt`, `sp`, `sp_vert_<kind>`
+-- with no conformer number and no pipeline number. The delivery held several conformers
+per quencher state, and a few states were computed twice in parallel pipelines; the
+conformer that won on energy is the one kept and the rest are not deposited, so nothing
+downstream has to choose. Two exceptions are worth knowing when reading a folder: Q17's S0
+takes its thermal correction, and Q18's S0 its reduced-state vertical single point, from a
+second run of the same conformer, so in those two folders `opt_output.out` is not the run
+that `sp_output.out` came from.
+
+**In git from** `computational_data_raw/`**:** only the derived tables and the photocatalyst
+`manifest.csv`, which records which delivered job was kept and which was dropped and why.

@@ -8,7 +8,7 @@ Computational tables -> one property workbook per compound class.
 Reads   ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
         ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
         ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
-        ../experimental_data_raw/compound_records/compound_records_*.csv   (names only)
+        ../compound_identification.xlsx   (ids, names, SMILES)
 Writes  ../computational_data_processed/photocatalyst_properties_calc.xlsx
         ../computational_data_processed/quencher_properties_calc.xlsx
 
@@ -18,7 +18,7 @@ detail -- into the raw folders beside the jobs they read. Those tables are in gi
 though the jobs are not, so this runs without the deposit. It only selects from them and
 lays the result out in blocks (see ../properties_workbook.py). No value is computed here.
 
-The compound names come from the experimental records, so a row reads the same in the
+The compound names come from compound_identification.xlsx, so a row reads the same in the
 computed and the measured workbook.
 """
 
@@ -28,7 +28,7 @@ from pathlib import Path
 DATA = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(DATA))
 
-from photocatalyst_ids import NEW_ID  # noqa: E402
+from compound_identification import NEW_ID, PHOTOCATALYSTS, QUENCHERS  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
 RAW = DATA / "computational_data_raw"
@@ -39,25 +39,29 @@ Q_OUT = OUT_DIR / "quencher_properties_calc.xlsx"
 PC_DFT = RAW / "photocatalysts" / "photocatalyst_dft.csv"
 Q_DFT = RAW / "quencher_adiabatic_DFT" / "quencher_dft.csv"
 Q_DVTE = RAW / "quencher_adiabatic_DvTE" / "quencher_dvte.csv"
-RECORDS = DATA / "experimental_data_raw" / "compound_records"
-PC_RECORDS = RECORDS / "compound_records_photocatalysts.csv"
-Q_RECORDS = RECORDS / "compound_records_quenchers.csv"
 
 KCAL = "kcal mol-1"
 DVTE_CUTOFFS = ["0.005", "0.008", "0.01", "0.015"]
+
+
+IDENTIFICATION = "compound_identification.xlsx"
 
 
 def src(path, column):
     return f"{path.relative_to(DATA).as_posix()}: {column}"
 
 
+def identity(header, table, sheet, name, description):
+    """A column taken from compound_identification.xlsx by id."""
+    return Column(header, description, f"{IDENTIFICATION}: {sheet}/{name}",
+                  lambda i: table[i][name])
+
+
 def photocatalysts():
     dft = read_table(PC_DFT, "pc_id")
-    records = read_table(PC_RECORDS, "pc_id")
-    for name, table in (("DFT", dft), ("records", records)):
-        if set(table) != set(NEW_ID):
-            sys.exit(f"photocatalyst {name} disagree with photocatalyst_ids.py: "
-                     f"{sorted(set(table) ^ set(NEW_ID))}")
+    if set(dft) != set(NEW_ID):
+        sys.exit(f"photocatalyst DFT disagree with {IDENTIFICATION}: "
+                 f"{sorted(set(dft) ^ set(NEW_ID))}")
 
     def col(header, name, description, table=dft, path=PC_DFT):
         return Column(header, description, src(path, name), field(table, name))
@@ -71,11 +75,11 @@ def photocatalysts():
     blocks = [
         Block("Identity", [
             Column("new_id", "PC number used downstream and in the paper, 1-27.",
-                   "photocatalyst_ids.py", lambda i: NEW_ID[i]),
+                   f"{IDENTIFICATION}: Photocatalysts/new_id", lambda i: NEW_ID[i]),
             Column("old_id", "PC number during the screen, used by the raw files.",
                    src(PC_DFT, "pc_id"), lambda i: i),
-            col("compound", "name", "Compound, from the experimental record.",
-                records, PC_RECORDS),
+            identity("compound", PHOTOCATALYSTS, "Photocatalysts", "name",
+                     "Compound."),
         ]),
         Block(f"Triplet energy / {KCAL}", [
             col(f"E_T / {KCAL}", f"E_T / {KCAL}",
@@ -104,8 +108,7 @@ def photocatalysts():
     note = """
         One row per photocatalyst in the screen, sorted by new_id; the raw files use old_id.
         Every value is computed from the
-        ORCA outputs with the arithmetic of Leon's delivered file
-        (spectroscopy_data_processed/dataset/properties_photocatalysts_calc.xlsx) and
+        ORCA outputs with the arithmetic of Leon's delivered photocatalyst property file and
         reproduces it to 5e-8, except E_T for old PC10, PC13, PC25 and PC28 (new 8, 11, 23,
         26), where that file carries values no delivered job reproduces. Old PC19 (new 17)
         lacks four single points, so four of its lambdas are blank. Total energies, Gibbs corrections and frequency checks are
@@ -118,7 +121,6 @@ def photocatalysts():
 def quenchers():
     dft = read_table(Q_DFT, "quencher_id")
     dvte = read_table(Q_DVTE, "quencher_id")
-    records = read_table(Q_RECORDS, "quencher_id")
 
     def col(header, name, description, table=dft, path=Q_DFT):
         return Column(header, description, src(path, name), field(table, name))
@@ -129,11 +131,11 @@ def quenchers():
     blocks = [
         Block("Identity", [
             col("quencher_id", "quencher_id", "Quencher number."),
-            col("quencher_name", "quencher_name", "Label used throughout, Q<n>.",
-                records, Q_RECORDS),
-            col("compound", "name", "Name derived from the SMILES, as in the experimental workbook.",
-                records, Q_RECORDS),
-            col("smiles", "smiles", "Structure.", records, Q_RECORDS),
+            Column("quencher_name", "Label used throughout, Q<n>.",
+                   f"{IDENTIFICATION}: Quenchers/quencher_id", lambda i: f"Q{i}"),
+            identity("compound", QUENCHERS, "Quenchers", "name",
+                     "Name derived from the SMILES, as in the experimental workbook."),
+            identity("smiles", QUENCHERS, "Quenchers", "smiles", "Structure."),
         ]),
         Block(f"Triplet state, adiabatic DFT / {KCAL}", [
             col(f"E_T / {KCAL}", "E_T",
@@ -159,11 +161,6 @@ def quenchers():
             col(f"lambda_D-_S0 / {KCAL}", "lambda_D-_S0",
                 "Anion surface: E_anion at the S0 geometry minus E_anion."),
         ]),
-        Block("Conformers", [
-            col(f"n_conformers_{s}", f"n_conformers_{s}",
-                f"Conformers computed for {s}; the lowest in energy is used.")
-            for s in ("S0", "T1", "ox", "red")
-        ]),
         Block(f"Vertical triplet energy distribution, DvTE / {KCAL}", [
             dv("n_samples", "n_samples", "Sampled geometries with both single points."),
             dv("n_trajectories", "n_trajectories", "MD trajectories sampled."),
@@ -179,14 +176,14 @@ def quenchers():
     ]
     note = """
         One row per quencher. Roundings are the original pipeline's: 1 decimal in kcal/mol,
-        2 in V. Per-conformer energies are in
-        computational_data_raw/quencher_adiabatic_DFT/quencher_dft_conformers.csv, and every
-        sampled gap in computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz.
+        2 in V. The energies behind each value are in the deposited ORCA outputs under
+        computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/, and every sampled gap in
+        computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
-    stray = sorted((set(dvte) | set(records)) ^ set(dft))
+    stray = sorted((set(dvte) | set(QUENCHERS)) ^ set(dft))
     if stray:
-        sys.exit(f"quencher ids not shared by DFT, DvTE and the records: {stray}")
+        sys.exit(f"quencher ids not shared by DFT, DvTE and {IDENTIFICATION}: {stray}")
     return sorted(dft), blocks, note
 
 

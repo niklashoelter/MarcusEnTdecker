@@ -3,28 +3,33 @@
 # dependencies = ["numpy"]
 # ///
 """
-Cyclic voltammograms -> the redox potentials that were measured in this lab.
+Cyclic voltammograms, and the literature where there are none -> one redox table.
 
 Reads   ../experimental_data_raw/quencher_cyclic_voltammetry/   (21 traces + 19 blanks)
-        ../experimental_data_raw/compound_records/compound_records_quenchers.csv  (for comparison)
+        ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_literature_data.csv
 Writes  ../experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_redox.csv   (19 samples)
         ../experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_traces.csv  (25821 points)
+        ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv  (48 quenchers)
 
-Half of the 48 quencher redox potentials were measured here rather than taken from the
-literature, and for 19 of them the voltammogram itself is in the package. Until now the
-numbers travelled without the measurement behind them. This script puts the two side by
-side.
+WHICH NUMBER IS USED
+    A quencher's potential comes from its voltammogram whenever one is deposited (19
+    quenchers), and from quencher_literature_data.csv only where there is none: a DOI for
+    a published value, "CV" for one measured in this lab whose trace is not in the data,
+    "estimated" where neither exists. The literature file may not hold a value the
+    voltammogram already gives; the one fallback is Q22's oxidation, whose two repeats
+    disagree (below). quencher_redox_potentials.csv records, per quencher, which it was.
 
 THE SAMPLE NUMBER IS THE QUENCHER ID
     The file names carry a three-digit sample number and nothing else -- the one text
     line at the top of each export, `i400sN1_1#034`, is the instrument's own run counter
     and does NOT track the sample (`009.csv` is run #034). The lab record says the sample
-    number is the quencher id, and this script checks that claim instead of assuming it:
-    every extracted potential is compared against the value recorded for that quencher in
-    `compound_records_quenchers.csv`, and the comparison is written out per sample. The
-    circumstantial support is that 18 of the 19 numbers land on a quencher whose
-    provenance says `measured`, and the 19th, 009, is Q9 -- the single quencher in the
-    whole set whose potential has no attribution at all.
+    number is the quencher id. That was checked against the potentials the lab had read
+    off these traces by eye (2026-09-11, before those readings were dropped from the
+    package): the extraction reproduced 29 of 32 plain values within 0.15 V, median
+    deviation 0.050 V, and all five recorded bounds. Where it did not, the extracted value
+    is the one used: Q17 reduction (recorded -0.2 V, a few-uA shoulder on a sloping
+    background; extracted -1.57 V), Q46 reduction (-2.0 V; -2.29 V), Q23 oxidation (1.84 V;
+    1.69 V).
 
 WHAT IS IN A FILE
     Semicolon-separated, three header lines (run label, blank, column names), then
@@ -33,30 +38,24 @@ WHAT IS IN A FILE
     (201 points) or 0.005 V (2001 points) per exported point. Each `<nnn>.csv` has a
     `<nnn>_blank.csv` measured on the same potential axis, point for point.
 
-    The potential axis is ALREADY on the scale the values are reported on. It is not
-    referenced to an internal standard: the script finds no reversible couple anywhere on
-    any anodic branch, so there is no ferrocene wave near +0.4 V to correct against, and
-    the extracted potentials land on the recorded vs.-SCE values without one. Across the
-    29 branches that agree, the mean SIGNED deviation is +0.046 V -- a small bias of the
-    tangent construction, a tenth of the ~0.4 V that a missed ferrocene correction would
-    have put on every potential in the set. So no correction is applied, and none is
-    needed.
+    The potential axis is ALREADY on the scale the values are reported on. There is no
+    reversible couple anywhere on any anodic branch, so no ferrocene wave near +0.4 V to
+    correct against, and the extracted potentials matched the lab's vs.-SCE readings with
+    a mean signed offset of +0.046 V -- a tenth of the ~0.4 V a missed ferrocene
+    correction would put on every potential. No correction is applied.
 
     There is no time column and no scan rate anywhere in the export, so `scan_rate_V_s`
-    cannot be filled in from these files and is left empty rather than guessed. What can
-    be recovered -- window, step, point count, direction -- is written out.
+    is left empty rather than guessed.
 
 THE BLANK IS SUBTRACTED POINT FOR POINT
     Sample and blank share the same potential grid exactly, so the background is removed
-    by plain subtraction, no interpolation and no scaling. The blanks are small (a few uA
-    against tens to hundreds) but they carry the electrolyte's own solvent-window edges,
-    which is precisely the region where the interesting waves sit.
+    by plain subtraction, no interpolation and no scaling.
 
 WHAT IS EXTRACTED, AND WHICH NUMBER IS REPORTED
-    35 of the 38 branches here are irreversible -- an oxidation or reduction that runs
-    into the solvent limit with no return peak -- so for those there is no reversible
-    E_1/2 to report and the onset is all there is. Four descriptors are written per
-    branch, and `E_ox_basis` / `E_red_basis` says which of them `E_ox_V` / `E_red_V` is:
+    35 of the 38 branches are irreversible -- a wave that runs into the solvent limit with
+    no return peak -- so there is no E_1/2 and the onset is all there is. Four descriptors
+    are written per branch, and `E_ox_basis` / `E_red_basis` says which of them `E_ox_V` /
+    `E_red_V` is:
 
       E_ox_onset_V / E_red_onset_V   tangent at the point of steepest rise, extrapolated
                                      back to the local baseline
@@ -66,68 +65,32 @@ WHAT IS EXTRACTED, AND WHICH NUMBER IS REPORTED
       E_ox_half_wave_V / ...         (forward peak + return peak) / 2, only where a
                                      return peak was found
 
-    The ONSET is the reported number on an irreversible wave, because it is what the
-    experimenters read: across the branches whose recorded value is a plain measurement
-    the extraction reproduces it to a median of 0.050 V, while the peak sits
-    systematically 0.2 V beyond it. The other descriptors are carried so that a reader
-    who prefers a different convention can see what it would give.
-
-    The HALF-WAVE is the reported number wherever a return peak was found within
-    REVERSIBLE_WINDOW_V of the forward one, because that is the thermodynamic quantity
-    and an onset is not. Three branches qualify, all reductions -- Q28, Q39 and Q42 --
-    and on all three the half-wave lands closer to the recorded value than the onset
-    does (Q28 +0.025 V against +0.135, Q42 +0.050 V against +0.173). That the recorded
-    values follow the same switch is itself evidence that the sample numbers are the
-    quencher ids.
-
-    For the other 35, treat the potential as kinetic. An irreversible onset is not a
-    redox equilibrium and should not be fed into a driving-force calculation as though
-    it were one.
+    The ONSET is reported on an irreversible wave, because it is what the experimenters
+    read; the peak sits systematically 0.2 V beyond it. The HALF-WAVE is reported wherever
+    a return peak was found within REVERSIBLE_WINDOW_V of the forward one: Q28, Q39 and Q42,
+    all reductions. An irreversible onset is a kinetic quantity, not a redox equilibrium.
 
 FINDING THE WAVE
-    The FIRST resolvable wave on each branch, not the largest. A compound's own oxidation
-    comes before the electrolyte's breakdown, and the breakdown is usually the bigger
-    feature, so taking the largest would report the solvent on half these traces.
+    The FIRST resolvable wave on each branch, not the largest: a compound's own oxidation
+    comes before the electrolyte's breakdown, which is usually the bigger feature.
 
-    A wave is called resolvable when the blank-corrected current rises MIN_WAVE_UA (or
-    NOISE_K robust standard deviations, whichever is larger) above its own trailing
-    minimum, at least EDGE_MARGIN_V inside the vertex. A rise that only begins in the
-    last EDGE_MARGIN_V of the sweep is not a wave in this window; it is the edge of the
-    window, and it is reported as no wave rather than as a potential.
+    A wave is resolvable when the blank-corrected current rises MIN_WAVE_UA (or NOISE_K
+    robust standard deviations, whichever is larger) above its own trailing minimum, at
+    least EDGE_MARGIN_V inside the vertex.
 
-BOUNDS ARE CHECKED AS BOUNDS
-    Five of the recorded values are limits, not measurements -- `> 2.4`, `< -2.5` -- and
-    mean the compound was not oxidized or reduced anywhere in the accessible window.
-    Comparing a number against those would be a category error. They are checked the only
-    way they can be: the trace must show no wave inside the window, or a wave only beyond
-    the limit. `delta_*_V` is left empty for them on purpose.
+NO WAVE IS A BOUND
+    A branch with no resolvable wave says the compound was not oxidized (reduced) inside
+    the window. That is reported as a limit, `>` or `<`, at EDGE_MARGIN_V inside the
+    vertex, the last potential at which a wave could still have been resolved: +2.4 V and
+    -2.4 V. The number and the bound sit in separate columns so neither travels alone.
 
-HOW WELL IT AGREES, AND WHERE IT DOES NOT
-    32 of the 38 branches carry a plain recorded measurement rather than a bound. The
-    extraction reproduces 29 of them to within AGREEMENT_TOLERANCE_V, median deviation
-    0.050 V, which is about the width of one exported point on the coarse traces. All
-    five bounds are consistent. Four branches are not reproduced, and every one of them
-    was already visible as a problem in the lab record or in the trace itself:
-
-      * 017 reduction, recorded -0.2 V, extracted -1.57 V. Its own lab comment reads
-        "ugly CV measured". The -0.2 V feature is a few-uA shoulder on a sloping
-        background; the first wave that clears the detection threshold is more than a
-        volt further negative. The disagreement is written out, not suppressed and not
-        fitted around.
-      * 046 reduction, recorded -2.0 V, extracted -2.29 V, and its oxidation is a broad
-        hump of a few uA with no defined foot. The oxidation onset happens to land near
-        the recorded 1.9 V, but the feature is too weak for that to mean anything.
-      * 023 oxidation, off by -0.153 V, three thousandths of a volt outside the
-        tolerance. The wave is clean; this is where a tangent construction and an eye
-        disagree, nothing more.
-      * 022 oxidation, withheld. Its two repeats do not agree: the second run shows a
-        small feature near 0.3 V that is absent from the first, so the two disagree by
-        well over a volt. Rather than average them into a number that describes neither,
-        the value is left empty and both are named in `note`.
-
-    Repeats are averaged only when they agree to REPEAT_TOLERANCE_V. 021 and 022 are the
-    only samples measured twice. 021's second run shows no oxidation wave at all, so its
-    oxidation rests on one of the two.
+REPEATS
+    Averaged only when they agree to REPEAT_TOLERANCE_V. 021 and 022 are the only samples
+    measured twice. 021's second run shows no oxidation wave, so its oxidation rests on
+    the first. 022's two runs disagree on the oxidation by more than a volt -- the second
+    shows a small feature near +0.3 V absent from the first -- so the voltammograms give
+    no value; the lab's reading of +1.9 V is taken from the literature file instead, with
+    that said in its comment.
 """
 
 import csv
@@ -138,11 +101,16 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from compound_identification import QUENCHERS  # noqa: E402
+
 RAW = HERE.parent / "experimental_data_raw" / "quencher_cyclic_voltammetry"
-RECORDS = HERE.parent / "experimental_data_raw" / "compound_records" / "compound_records_quenchers.csv"
+LITERATURE = RAW / "quencher_literature_data.csv"
 # Written next to the traces they come from, so the sample scan below has to step over them.
 OUT = RAW / "cyclic_voltammetry_redox.csv"
 TRACES_OUT = RAW / "cyclic_voltammetry_traces.csv"
+REDOX_OUT = RAW / "quencher_redox_potentials.csv"
+WRITTEN = {OUT, TRACES_OUT, REDOX_OUT, LITERATURE}
 
 SIGFIGS = 6
 
@@ -158,7 +126,7 @@ MIN_WAVE_UA = 4.0
 NOISE_K = 6.0
 
 # A rise beginning within this distance of the vertex is the edge of the window, not a
-# wave inside it.
+# wave inside it. A branch without a wave is a bound at this distance from the vertex.
 EDGE_MARGIN_V = 0.10
 
 # The local baseline is the median over BASE_WINDOW_V of sweep ending BASE_GAP_V before
@@ -176,22 +144,16 @@ REVERSIBLE_WINDOW_V = 0.30
 # Repeats are averaged when they agree to this; otherwise the value is withheld.
 REPEAT_TOLERANCE_V = 0.15
 
-# Extraction counts as reproducing the recorded value within this. It is deliberately
-# loose: the recorded numbers were read off plots by eye, by several different people.
-AGREEMENT_TOLERANCE_V = 0.15
-
 SAMPLE = re.compile(r"^(?P<sample>\d{3})(?:_(?P<repeat>\d+))?$")
 
 COLUMNS = [
     "quencher_id", "sample", "n_repeats", "traces",
-    "E_ox_V", "E_ox_basis",
+    "E_ox_V", "E_ox_bound", "E_ox_basis",
     "E_ox_onset_V", "E_ox_peak_V", "E_ox_half_peak_V", "i_ox_peak_uA",
     "E_ox_onset_spread_V", "ox_reversible", "E_ox_half_wave_V",
-    "E_red_V", "E_red_basis",
+    "E_red_V", "E_red_bound", "E_red_basis",
     "E_red_onset_V", "E_red_peak_V", "E_red_half_peak_V", "i_red_peak_uA",
     "E_red_onset_spread_V", "red_reversible", "E_red_half_wave_V",
-    "E_ox_recorded_V", "E_ox_recorded_bound", "delta_E_ox_V", "ox_agrees",
-    "E_red_recorded_V", "E_red_recorded_bound", "delta_E_red_V", "red_agrees",
     "window_min_V", "window_max_V", "step_V", "n_points", "scan_rate_V_s",
     "note",
 ]
@@ -201,6 +163,11 @@ TRACE_COLUMNS = [
     "potential_V", "current_uA", "blank_uA", "corrected_uA",
 ]
 
+# The redox table has the literature file's columns, so the two read the same way.
+REDOX_COLUMNS = [
+    "quencher_id", "E_Ox_vs_SCE_V", "E_Ox_bound", "E_Red_vs_SCE_V", "E_Red_bound",
+    "source", "comment",
+]
 
 def sig(x, n=SIGFIGS):
     if x is None:
@@ -229,6 +196,8 @@ def smooth(y, width):
     pad = width // 2
     padded = np.concatenate([np.full(pad, y[0]), y, np.full(pad, y[-1])])
     return np.convolve(padded, np.ones(width) / width, mode="valid")
+
+
 
 
 def find_wave(u, y, step):
@@ -391,58 +360,30 @@ def combine(values, label, notes, tolerance=REPEAT_TOLERANCE_V, unit="V"):
     return sum(usable) / len(usable), spread
 
 
-def read_records():
-    if not RECORDS.exists():
-        sys.exit(f"missing input: {RECORDS}\nrun compound_records.py first")
-    with RECORDS.open(encoding="utf-8", newline="") as fh:
-        return {int(row["quencher_id"]): row for row in csv.DictReader(fh)}
+
+def read_literature():
+    """quencher_id -> row of quencher_literature_data.csv."""
+    if not LITERATURE.exists():
+        sys.exit(f"missing input: {LITERATURE}")
+    with LITERATURE.open(encoding="utf-8", newline="") as fh:
+        rows = {int(row["quencher_id"]): row for row in csv.DictReader(fh)}
+    for qid, row in rows.items():
+        for side, sign in (("Ox", ">"), ("Red", "<")):
+            if row[f"E_{side}_bound"] not in ("", sign):
+                sys.exit(f"Q{qid}: E_{side}_bound must be '{sign}' or blank, "
+                         f"got {row[f'E_{side}_bound']!r}")
+            if row[f"E_{side}_bound"] and not row[f"E_{side}_vs_SCE_V"]:
+                sys.exit(f"Q{qid}: a bound on E_{side} without a value")
+    return rows
 
 
-def compare(extracted, recorded, bound, sign):
-    """-> (delta or None, agrees flag, note).
-
-    `sign` is +1 for oxidation and -1 for reduction, so that "beyond the limit" is one
-    comparison rather than two. A bound is never differenced against a number: it says
-    the compound did not react inside the window, and the only thing that can agree or
-    disagree with it is the presence of a wave.
-    """
-    if recorded is None:
-        return None, "", "no recorded value to compare against"
-    if bound:
-        if extracted is None:
-            return None, 1, "recorded as a bound; no wave in the window, consistent"
-        beyond = sign * (extracted - recorded) >= -AGREEMENT_TOLERANCE_V
-        return None, int(beyond), (
-            f"recorded as a bound at {recorded:+.2f} V; extracted wave at "
-            f"{extracted:+.3f} V is "
-            f"{'beyond it, consistent' if beyond else 'INSIDE it, inconsistent'}")
-    if extracted is None:
-        return None, 0, f"recorded {recorded:+.2f} V but no wave found in the window"
-    delta = extracted - recorded
-    return delta, int(abs(delta) <= AGREEMENT_TOLERANCE_V), ""
-
-
-def main():
-    if not RAW.is_dir():
-        sys.exit(f"missing input directory: {RAW}")
-    records = read_records()
-
-    samples = {}
-    for path in sorted(RAW.glob("*.csv")):
-        if path.stem.endswith("_blank") or path in (OUT, TRACES_OUT):
-            continue
-        match = SAMPLE.match(path.stem)
-        if not match:
-            sys.exit(f"cannot read a sample number from {path.name}")
-        samples.setdefault(match["sample"], []).append((int(match["repeat"] or 1), path))
-    if not samples:
-        sys.exit(f"no CV traces found in {RAW}")
-
+def extract(samples):
+    """One row per sample, plus the blank-corrected traces."""
     rows, trace_rows = [], []
     for sample in sorted(samples):
         quencher_id = int(sample)
-        if quencher_id not in records:
-            sys.exit(f"sample {sample} has no quencher {quencher_id} in {RECORDS.name}")
+        if quencher_id not in QUENCHERS:
+            sys.exit(f"sample {sample} is not a quencher in compound_identification.xlsx")
         blank = RAW / f"{sample}_blank.csv"
         if not blank.exists():
             sys.exit(f"sample {sample} has no blank ({blank.name})")
@@ -467,7 +408,8 @@ def main():
         row.update(meta)
         row["scan_rate_V_s"] = ""      # not recorded anywhere in the export
 
-        for side, key, sign in (("ox", 2, +1), ("red", 3, -1)):
+        for side, key, edge in (("ox", 2, meta["window_max_V"] - EDGE_MARGIN_V),
+                                ("red", 3, meta["window_min_V"] + EDGE_MARGIN_V)):
             branches = [r[key] for r in per_repeat]
             found = [b for b in branches if b["detected"]]
             onset, spread = combine([b.get("onset") for b in found],
@@ -494,12 +436,18 @@ def main():
             row[f"E_{side}_half_wave_V"] = sig(half_wave)
 
             # A reversible couple has a thermodynamic E_1/2 and that is the number to
-            # report; an irreversible wave has only its onset. Which one was used is
-            # written out beside it rather than left to be inferred.
-            reported = half_wave if half_wave is not None else onset
+            # report; an irreversible wave has only its onset; no wave at all is a bound.
+            # Which one it is is written out beside it rather than left to be inferred.
+            if not found:
+                reported, bound, basis = edge, (">" if side == "ox" else "<"), "no wave"
+            else:
+                reported = half_wave if half_wave is not None else onset
+                bound = ""
+                basis = ("" if reported is None else
+                         "half-wave" if half_wave is not None else "onset")
             row[f"E_{side}_V"] = sig(reported)
-            row[f"E_{side}_basis"] = ("" if reported is None else
-                                      "half-wave" if half_wave is not None else "onset")
+            row[f"E_{side}_bound"] = bound
+            row[f"E_{side}_basis"] = basis
             if half_wave is not None:
                 notes.append(f"{side} couple is quasi-reversible: forward peak "
                              f"{peak:+.3f} V, return peak {reverse:+.3f} V, "
@@ -515,97 +463,111 @@ def main():
                 if whys:
                     notes.append(f"{side}: " + "; ".join(whys))
 
-            column = "E_Ox_vs_SCE_exp" if side == "ox" else "E_Red_vs_SCE_exp"
-            bound_column = "E_Ox_bound" if side == "ox" else "E_Red_bound"
-            raw = records[quencher_id][column]
-            recorded = float(raw) if raw else None
-            bound = records[quencher_id][bound_column]
-            delta, agrees, why = compare(reported, recorded, bound, sign)
-
-            row[f"E_{side}_recorded_V"] = sig(recorded)
-            row[f"E_{side}_recorded_bound"] = bound
-            row[f"delta_E_{side}_V"] = sig(delta)
-            row[f"{side}_agrees"] = agrees
-            if why:
-                notes.append(why)
-            elif agrees == 0:
-                notes.append(f"{side} potential differs from the recorded value by "
-                             f"{delta:+.2f} V, beyond the {AGREEMENT_TOLERANCE_V} V "
-                             f"tolerance")
-
-        record_note = records[quencher_id]["redox_comment"]
-        if record_note:
-            notes.append(f"lab record: {record_note}")
         row["note"] = "; ".join(notes)
         rows.append(row)
+    return rows, trace_rows
 
-    with OUT.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=COLUMNS)
+
+def redox_table(cv_rows, literature):
+    """Per quencher: the voltammogram's value where it gives one, the literature's otherwise."""
+    cv = {row["quencher_id"]: row for row in cv_rows}
+    missing = sorted(set(QUENCHERS) - set(cv) - set(literature))
+    if missing:
+        sys.exit(f"no voltammogram and no literature entry for quenchers {missing}")
+    stray = sorted(set(literature) - set(QUENCHERS))
+    if stray:
+        sys.exit(f"literature entries for quenchers not in compound_identification.xlsx: {stray}")
+
+    table = []
+    for qid in sorted(QUENCHERS):
+        lit = literature.get(qid, {})
+        out = {"quencher_id": qid}
+        sources, comments = [], []
+        for side, cv_side, word in (("Ox", "ox", "oxidation"), ("Red", "red", "reduction")):
+            value, bound = "", ""
+            if qid in cv and cv[qid][f"E_{cv_side}_V"] != "":
+                if lit.get(f"E_{side}_vs_SCE_V"):
+                    sys.exit(f"Q{qid}: the literature file gives E_{side}, but the "
+                             f"voltammogram already does; it is only for what the "
+                             f"voltammograms cannot give")
+                # To the millivolt: the traces are exported every 5 or 50 mV.
+                value = round(float(cv[qid][f"E_{cv_side}_V"]), 3)
+                bound = cv[qid][f"E_{cv_side}_bound"]
+                sources.append("CV")
+                basis = cv[qid][f"E_{cv_side}_basis"]
+                comments.append(f"E_{side}: no {word} wave inside the window" if bound
+                                else f"E_{side}: {basis}")
+            elif lit.get(f"E_{side}_vs_SCE_V"):
+                value, bound = lit[f"E_{side}_vs_SCE_V"], lit[f"E_{side}_bound"]
+                sources.append(lit["source"])
+                if lit["comment"] and lit["comment"] not in comments:
+                    comments.append(lit["comment"])
+            out[f"E_{side}_vs_SCE_V"] = value
+            out[f"E_{side}_bound"] = bound
+        if not sources and lit:
+            sources.append(lit["source"])
+            if lit["comment"]:
+                comments.append(lit["comment"])
+        out["source"] = "; ".join(dict.fromkeys(sources))
+        out["comment"] = "; ".join(comments)
+        table.append(out)
+    return table
+
+
+def write(path, columns, rows):
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=columns)
         writer.writeheader()
-        writer.writerows([{c: row.get(c, "") for c in COLUMNS} for row in rows])
-    with TRACES_OUT.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=TRACE_COLUMNS)
-        writer.writeheader()
-        writer.writerows(trace_rows)
-
-    report(rows, len(trace_rows))
+        writer.writerows([{c: row.get(c, "") for c in columns} for row in rows])
 
 
-def report(rows, n_points):
+def main():
+    if not RAW.is_dir():
+        sys.exit(f"missing input directory: {RAW}")
+    literature = read_literature()
+
+    samples = {}
+    for path in sorted(RAW.glob("*.csv")):
+        if path.stem.endswith("_blank") or path in WRITTEN:
+            continue
+        match = SAMPLE.match(path.stem)
+        if not match:
+            sys.exit(f"cannot read a sample number from {path.name}")
+        samples.setdefault(match["sample"], []).append((int(match["repeat"] or 1), path))
+    if not samples:
+        sys.exit(f"no CV traces found in {RAW}")
+
+    rows, trace_rows = extract(samples)
+    table = redox_table(rows, literature)
+    write(OUT, COLUMNS, rows)
+    write(TRACES_OUT, TRACE_COLUMNS, trace_rows)
+    write(REDOX_OUT, REDOX_COLUMNS, table)
+    report(rows, len(trace_rows), table)
+
+
+def report(rows, n_points, table):
     print(f"{len(rows)} samples -> {OUT.name}")
     print(f"{n_points} trace points -> {TRACES_OUT.name}")
+    print(f"{len(table)} quenchers -> {REDOX_OUT.name}")
 
-    print("\n  extracted potential against the value recorded for that quencher")
-    print(f"  {'q':>3} {'sample':>6} | {'ox ext':>7} {'ox rec':>8} {'delta':>7} | "
-          f"{'red ext':>7} {'red rec':>8} {'delta':>7}")
-    deltas = []
-    show = lambda v, w: (f"{float(v):+{w}.3f}" if v != "" else ".".rjust(w + 1))
+    show = lambda row, side: ((row[f"E_{side}_bound"] or " ")
+                              + (f"{float(row[f'E_{side}_V']):+.3f}"
+                                 if row[f"E_{side}_V"] != "" else "     .")
+                              + f" {row[f'E_{side}_basis']:<9}")
+    print(f"\n  {'q':>3} | {'oxidation':<17} | {'reduction':<17} | note")
     for row in rows:
-        cells = []
-        for side in ("ox", "red"):
-            recorded = row[f"E_{side}_recorded_V"]
-            delta = row[f"delta_E_{side}_V"]
-            mark = {"lower": ">", "upper": "<"}.get(row[f"E_{side}_recorded_bound"], " ")
-            cells.append(f"{show(row[f'E_{side}_V'], 6)} "
-                         f"{mark}{show(recorded, 6)} {show(delta, 6)}")
-            if delta != "":
-                deltas.append(abs(float(delta)))
-        print(f"  {row['quencher_id']:>3} {row['sample']:>6} | " + " | ".join(cells))
+        print(f"  {row['quencher_id']:>3} | {show(row, 'ox')} | {show(row, 'red')} | "
+              f"{row['note'][:70]}")
 
-    if deltas:
-        within = [d for d in deltas if abs(d) <= AGREEMENT_TOLERANCE_V]
-        absolute = sorted(abs(d) for d in deltas)
-        print(f"\n  {len(deltas)} plain measurements compared: median |delta| "
-              f"{absolute[len(absolute) // 2]:.3f} V, max {absolute[-1]:.3f} V, "
-              f"{len(within)} within {AGREEMENT_TOLERANCE_V} V")
-        # The SIGNED mean is the one that would catch a reference-scale error: a missed
-        # ferrocene correction shifts every potential the same way, by several hundred
-        # mV, and would show up here rather than in the scatter.
-        print(f"  mean signed offset over those {len(within)}: "
-              f"{sum(within) / len(within):+.3f} V, nowhere near the ~0.4 V a missed "
-              f"ferrocene correction would give")
-
-    bounds = [(row, side) for row in rows for side in ("ox", "red")
-              if row[f"E_{side}_recorded_bound"]]
-    ok = sum(1 for row, side in bounds if row[f"{side}_agrees"] == 1)
-    print(f"  {len(bounds)} recorded bounds checked as bounds: {ok} consistent, "
-          f"{len(bounds) - ok} not")
-
-    disagreeing = [(row, side) for row in rows for side in ("ox", "red")
-                   if row[f"{side}_agrees"] == 0]
-    if disagreeing:
-        print(f"\n  {len(disagreeing)} extractions do not reproduce the record:")
-        for row, side in disagreeing:
-            print(f"    Q{row['quencher_id']} {side}: {row['note']}")
-
-    reversible = [(row, side) for row in rows for side in ("ox", "red")
-                  if row[f"{side}_reversible"]]
-    print(f"\n  {len(rows) * 2 - len(reversible)} of {len(rows) * 2} branches are "
-          f"irreversible - no return peak, so no thermodynamic E_1/2")
-    for row, side in reversible:
-        print(f"    Q{row['quencher_id']} {side}: E_1/2 "
-              f"{row[f'E_{side}_half_wave_V']} V against a recorded "
-              f"{row[f'E_{side}_recorded_V']} V")
+    kinds = {}
+    for row in table:
+        kind = ("CV (voltammogram)" if row["quencher_id"] in {r["quencher_id"] for r in rows}
+                else "DOI" if row["source"].startswith("https://doi.org/")
+                else f"{row['source']} (no voltammogram)")
+        kinds.setdefault(kind, []).append(row["quencher_id"])
+    print("\n  where the 48 quenchers' potentials come from:")
+    for kind, ids in kinds.items():
+        print(f"    {kind:<28} {len(ids):>2}   {ids}")
 
 
 if __name__ == "__main__":

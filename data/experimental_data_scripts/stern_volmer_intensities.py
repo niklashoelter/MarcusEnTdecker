@@ -12,7 +12,7 @@ Writes  ../experimental_data_processed/stern_volmer_intensities.csv
         ../experimental_data_raw/stern_volmer/plate_reader_filters.csv   one row per batch
 
 81 batches x 96 wells = 7776 rows. Photocatalysts are old ids (`pc_old_id`); see
-../photocatalyst_ids.py.
+../compound_identification.py.
 
 THE WAVELENGTHS COME FROM THE EXPORT, NOT FROM THE MAP
     The plate reader writes the filter pair it used into the export header, e.g.
@@ -23,8 +23,10 @@ THE WAVELENGTHS COME FROM THE EXPORT, NOT FROM THE MAP
 
     Two photocatalysts were measured with a saved protocol whose name, not its filters,
     is all the export carries: old PC1 ("FI: Ir-F") and old PC3 ("FI: Ir(ppy)3"). Their
-    wavelengths come from the photocatalyst sheet of the screen
-    (Photocatalysts/photocatalysts.xlsx); their bandwidths are not recorded.
+    settings live in PROTOCOL_WAVELENGTHS below, which is their source of record -- no
+    file in this package carries them. The centre wavelengths were read off the screen's
+    photocatalyst sheet; the bandwidths were never recorded and are the instrument's
+    standing values. Both are marked as such in the `source` column of the filter table.
 """
 
 import csv
@@ -48,11 +50,22 @@ INTENSITY_DP = 1      # a mean of integer counts; the fraction below 0.1 is mean
 FILTERS_OUT = RAW / "plate_reader_filters.csv"
 # "FI: Ex: 425-8 Em: 620-50" -> centre and bandwidth of each filter, nm
 MODE = re.compile(r"Ex:\s*(\d+)-(\d+)\s*Em:\s*(\d+)-(\d+)")
-# Saved protocols whose export names no filters: (excitation, emission) from the
-# photocatalyst sheet of the screen. Bandwidths unknown.
+# Saved protocols whose export names no filters. This table is the source of record for
+# these two photocatalysts -- no file in the package carries their settings.
+#
+#   centre wavelengths: read off the screen's photocatalyst sheet at acquisition time.
+#   bandwidths: NOT recorded anywhere, and set here to the instrument's standing values.
+#     Excitation 8 nm is what all 25 exports that do name their filters used, without
+#     exception. Emission 20 nm is what 20 of those 25 used, and it is what every
+#     photocatalyst read at 475 nm (old PC9) or at 520 nm (old PC15, 16, 21, 25, 27)
+#     used -- the exceptions are the 415 nm carbenes at 10 nm and old PC10 and PC24 at
+#     50 and 25 nm. So these two numbers are inferred, not measured; the `source` column
+#     of plate_reader_filters.csv says so for every row that comes from here. Nothing in
+#     the pipeline reads a bandwidth -- they are carried for the methods section.
 PROTOCOL_WAVELENGTHS = {
-    "FI: Ir-F": (425, 475),        # old PC1
-    "FI: Ir(ppy)3": (425, 520),    # old PC3
+    # mode name: (excitation, excitation bandwidth, emission, emission bandwidth) / nm
+    "FI: Ir-F": (425, 8, 475, 20),        # old PC1
+    "FI: Ir(ppy)3": (425, 8, 520, 20),    # old PC3
 }
 
 COLUMNS = [
@@ -161,10 +174,11 @@ def filters_from_mode(mode, name):
         return {"mode_name": mode, "excitation_nm": ex, "excitation_bandwidth_nm": ex_bw,
                 "emission_nm": em, "emission_bandwidth_nm": em_bw, "source": "export"}
     if mode in PROTOCOL_WAVELENGTHS:
-        ex, em = PROTOCOL_WAVELENGTHS[mode]
-        return {"mode_name": mode, "excitation_nm": ex, "excitation_bandwidth_nm": "",
-                "emission_nm": em, "emission_bandwidth_nm": "",
-                "source": "photocatalyst sheet (protocol names no filters)"}
+        ex, ex_bw, em, em_bw = PROTOCOL_WAVELENGTHS[mode]
+        return {"mode_name": mode, "excitation_nm": ex, "excitation_bandwidth_nm": ex_bw,
+                "emission_nm": em, "emission_bandwidth_nm": em_bw,
+                "source": "protocol names no filters: wavelengths from the photocatalyst "
+                          "sheet, bandwidths inferred from the instrument's standing values"}
     raise ValueError(f"{name}: no filter pair in mode {mode!r} and no known protocol")
 
 

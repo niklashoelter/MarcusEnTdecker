@@ -36,7 +36,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from photocatalyst_ids import IN_DATA  # noqa: E402
+from compound_identification import IN_DATA  # noqa: E402
 
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "pc_emission"
 OUT = RAW / "emission_spectra.csv"
@@ -44,7 +44,7 @@ OUT = RAW / "emission_spectra.csv"
 SCAN = "Emission_Scan_Exc_380_405_425_450_Gain_1500.csv"
 
 # Rows are labelled with the old photocatalyst id. Only the photocatalysts in the data are
-# kept (../photocatalyst_ids.py): the crossed-out ones are skipped, and so is one extra row
+# kept (../compound_identification.py): the crossed-out ones are skipped, and so is one extra row
 # labelled 96 in the 380 nm block, which is not a photocatalyst. Both are reported.
 
 COLUMNS = ["pc_id", "excitation_nm", "emission_nm", "intensity_au"]

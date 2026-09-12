@@ -41,7 +41,7 @@ WHAT IS ADDED
     above.
 
 Old PC7, PC26, PC30 and PC31 are in the delivery but crossed out in the photocatalyst
-sheet, and are not deposited (../photocatalyst_ids.py).
+sheet, and are not deposited (../compound_identification.py).
 
 Writes `../computational_data_raw/photocatalysts/` and a `manifest.csv` recording
 every source directory of the deposited photocatalysts, kept or omitted, with its
@@ -64,7 +64,7 @@ RE_PC = re.compile(r"PC_\d+")
 
 # Delivered, but crossed out in the photocatalyst sheet and so not part of the data.
 sys.path.insert(0, str(ROOT))
-from photocatalyst_ids import CROSSED_OUT  # noqa: E402
+from compound_identification import CROSSED_OUT  # noqa: E402
 
 EXCLUDED = set(CROSSED_OUT)
 

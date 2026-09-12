@@ -18,12 +18,13 @@ A stage whose inputs are not present is reported as skipped rather than failed, 
 partial checkout (no computational_data_raw, say) still gets as far as it can.
 
 NOT EVERY SCRIPT IN THE TREE IS A STAGE
-    `photocatalyst_smiles.py` is deliberately absent. It adds a `smiles` column to the
-    photocatalyst file that `compound_records.py` writes from scratch, so it would have
-    to run after it -- and nothing downstream reads photocatalyst SMILES, the model
-    taking the photocatalyst from DFT instead. Running it here would only add an
-    ordering constraint for a column nothing wants. Run it by hand if the column is
-    ever needed.
+    `photocatalyst_curate.py` is deliberately absent. It takes the delivered job tree as
+    an argument, which this runner cannot supply, and it is a record of how the deposit
+    was made rather than a step that remakes it.
+
+    `compound_identification.py` and `properties_workbook.py` are modules, not stages:
+    the first is the one source of what each compound is, the second the shared workbook
+    layout. Both are imported, never run.
 """
 
 import argparse
@@ -46,12 +47,10 @@ PIPELINE = [
      "data/experimental_data_raw/quencher_absorption"),
     ("data", "data/experimental_data_scripts/emission_spectra.py",
      "data/experimental_data_raw/pc_emission"),
-    ("data", "data/experimental_data_scripts/compound_records.py",
-     "data/experimental_data_raw/compound_records"),
     ("data", "data/experimental_data_scripts/cyclic_voltammetry_redox.py",
      "data/experimental_data_raw/quencher_cyclic_voltammetry"),
     ("data", "data/experimental_data_scripts/properties_exp.py",
-     "data/experimental_data_raw/compound_records/compound_records_quenchers.csv"),
+     "data/experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv"),
     # The computational extraction needs the deposit, which is not in git. Each stage
     # checks for a job directory rather than for its folder, because the folders are
     # present in a clone -- they hold the tables these stages write -- and would

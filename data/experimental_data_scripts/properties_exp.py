@@ -5,11 +5,11 @@
 """
 Experimental tables -> one property workbook per compound class.
 
-Reads   ../experimental_data_raw/compound_records/compound_records_photocatalysts.csv
-        ../experimental_data_raw/compound_records/compound_records_quenchers.csv
+Reads   ../compound_identification.xlsx   (ids, names, SMILES)
         ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
         ../experimental_data_raw/stern_volmer/plate_reader_filters.csv
         ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
+        ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
 
@@ -22,13 +22,14 @@ Downstream, `../build_exp_dataset.py` reads these two workbooks and the Stern-Vo
 and nothing else from the experimental side.
 """
 
+import csv
 import sys
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(DATA))
 
-from photocatalyst_ids import NEW_ID  # noqa: E402
+from compound_identification import NEW_ID, PHOTOCATALYSTS, QUENCHERS  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
 RAW = DATA / "experimental_data_raw"
@@ -36,44 +37,43 @@ OUT_DIR = DATA / "experimental_data_processed"
 PC_OUT = OUT_DIR / "photocatalyst_properties_exp.xlsx"
 Q_OUT = OUT_DIR / "quencher_properties_exp.xlsx"
 
-PC_RECORDS = RAW / "compound_records" / "compound_records_photocatalysts.csv"
-Q_RECORDS = RAW / "compound_records" / "compound_records_quenchers.csv"
+IDENTIFICATION = "compound_identification.xlsx"
 TAU0 = RAW / "pc_tcspc" / "lifetimes_tcspc.csv"
 FILTERS = RAW / "stern_volmer" / "plate_reader_filters.csv"
 ABSORPTION = RAW / "quencher_absorption" / "absorption_extinction.csv"
+REDOX = RAW / "quencher_cyclic_voltammetry" / "quencher_redox_potentials.csv"
 
-EPSILON_NM = [380, 390, 400, 405, 415, 425, 450, 475, 490, 495, 500,
-              510, 520, 580, 590, 600, 625, 645]
+
+def epsilon_wavelengths(path):
+    """The wavelengths absorption_extinction.py actually wrote, read off its header.
+
+    Restating the list here would make a second source for it, and the two would drift
+    the first time a filter changes. The extraction script owns the grid; this reads it.
+    """
+    with path.open(encoding="utf-8", newline="") as fh:
+        header = next(csv.reader(fh))
+    return [int(h.split("_")[1]) for h in header if h.startswith("epsilon_")]
 
 
 def src(path, column):
     return f"{path.relative_to(DATA).as_posix()}: {column}"
 
 
-# The records say which side of a limit the true potential lies on; the workbook writes
-# it the way the lab records do, as the inequality the number is read with.
-BOUND_SIGN = {"lower": ">", "upper": "<"}
-
-
-def bound(table, name):
-    def value(i):
-        text = (table.get(i) or {}).get(name, "")
-        if text and text not in BOUND_SIGN:
-            sys.exit(f"unknown bound {text!r} for {name}, quencher {i}")
-        return BOUND_SIGN.get(text)
-    return value
+def identity(header, table, sheet, name, description):
+    """A column taken from compound_identification.xlsx by id."""
+    return Column(header, description, f"{IDENTIFICATION}: {sheet}/{name}",
+                  lambda i: table[i][name])
 
 
 def photocatalysts():
-    records = read_table(PC_RECORDS, "pc_id")
     tau0 = read_table(TAU0, "pc_id")
     # One row per batch; all batches of a photocatalyst share one filter pair, which
     # stern_volmer_intensities.py checks, so the last row read for an id stands for all.
     filters = read_table(FILTERS, "pc_old_id")
 
-    for name, table in (("records", records), ("lifetimes", tau0), ("filters", filters)):
+    for name, table in (("lifetimes", tau0), ("filters", filters)):
         if set(table) != set(NEW_ID):
-            sys.exit(f"photocatalyst {name} disagree with photocatalyst_ids.py: "
+            sys.exit(f"photocatalyst {name} disagree with {IDENTIFICATION}: "
                      f"{sorted(set(table) ^ set(NEW_ID))}")
 
     def col(header, table, path, name, description):
@@ -82,10 +82,10 @@ def photocatalysts():
     blocks = [
         Block("Identity", [
             Column("new_id", "PC number used downstream and in the paper, 1-27.",
-                   "photocatalyst_ids.py", lambda i: NEW_ID[i]),
+                   f"{IDENTIFICATION}: Photocatalysts/new_id", lambda i: NEW_ID[i]),
             Column("old_id", "PC number during the screen, used by the raw files.",
-                   src(PC_RECORDS, "pc_id"), lambda i: i),
-            col("compound", records, PC_RECORDS, "name", "Compound, as recorded."),
+                   f"{IDENTIFICATION}: Photocatalysts/old_id", lambda i: i),
+            identity("compound", PHOTOCATALYSTS, "Photocatalysts", "name", "Compound."),
         ]),
         Block("Stern-Volmer screen", [
             col("excitation / nm", filters, FILTERS, "excitation_nm",
@@ -104,74 +104,75 @@ def photocatalysts():
     ]
     note = """
         One row per photocatalyst in the screen, sorted by new_id. The raw files use old_id;
-        the mapping is data/photocatalyst_ids.py. new_id 22 (old 24) is kept here and dropped
+        the mapping is data/compound_identification.xlsx. new_id 22 (old 24) is kept here and dropped
         by the theory benchmark: its emission was too weak.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
-    return sorted(records, key=NEW_ID.get), blocks, note
+    return sorted(NEW_ID, key=NEW_ID.get), blocks, note
 
 
 def quenchers():
-    records = read_table(Q_RECORDS, "quencher_id")
     absorption = read_table(ABSORPTION, "quencher_id")
+    redox = read_table(REDOX, "quencher_id")
 
-    stray = sorted(set(absorption) - set(records))
-    if stray:
-        sys.exit(f"absorption rows for quenchers with no record: {stray}")
+    for name, table in (("absorption", absorption), ("redox", redox)):
+        stray = sorted(set(table) - set(QUENCHERS))
+        if stray:
+            sys.exit(f"{name} rows for quenchers not in {IDENTIFICATION}: {stray}")
+    if set(redox) != set(QUENCHERS):
+        sys.exit(f"redox table misses quenchers {sorted(set(QUENCHERS) - set(redox))}")
 
     def col(header, table, path, name, description):
         return Column(header, description, src(path, name), field(table, name))
 
     epsilon = [col(f"epsilon_{nm} / mM-1 cm-1", absorption, ABSORPTION,
                    f"epsilon_{nm}_mM-1cm-1", f"Molar extinction coefficient at {nm} nm.")
-               for nm in EPSILON_NM]
+               for nm in epsilon_wavelengths(ABSORPTION)]
     epsilon.append(col("max_read_rsd / %", absorption, ABSORPTION, "max_read_rsd_percent",
                        "Largest relative spread between repeat reads across the 18 "
                        "wavelengths."))
 
     blocks = [
         Block("Identity", [
-            col("quencher_id", records, Q_RECORDS, "quencher_id", "Quencher number."),
-            col("quencher_name", records, Q_RECORDS, "quencher_name",
-                "Label used throughout, Q<n>."),
-            col("compound", records, Q_RECORDS, "name",
-                "Name derived from the SMILES (checked by name-to-structure conversion)."),
-            col("smiles", records, Q_RECORDS, "smiles", "Structure."),
+            Column("quencher_id", "Quencher number.",
+                   f"{IDENTIFICATION}: Quenchers/quencher_id", lambda i: i),
+            Column("quencher_name", "Label used throughout, Q<n>.",
+                   f"{IDENTIFICATION}: Quenchers/quencher_id", lambda i: f"Q{i}"),
+            identity("compound", QUENCHERS, "Quenchers", "name",
+                     "Name derived from the SMILES (checked by name-to-structure conversion)."),
+            identity("smiles", QUENCHERS, "Quenchers", "smiles", "Structure."),
         ]),
-        Block("Redox potentials, as recorded / V vs SCE", [
-            col("E_Ox_vs_SCE_exp / V", records, Q_RECORDS, "E_Ox_vs_SCE_exp",
+        Block("Redox potentials / V vs SCE", [
+            col("E_Ox_vs_SCE_exp / V", redox, REDOX, "E_Ox_vs_SCE_V",
                 "Oxidation potential. Where E_Ox_bound is set, a limit, not a value."),
-            Column("E_Ox_bound",
-                   "'>': not oxidized within the window; the true value lies above the one "
-                   "given. Blank: a value.",
-                   src(Q_RECORDS, "E_Ox_bound"), bound(records, "E_Ox_bound")),
-            col("E_Red_vs_SCE_exp / V", records, Q_RECORDS, "E_Red_vs_SCE_exp",
+            col("E_Ox_bound", redox, REDOX, "E_Ox_bound",
+                "'>': not oxidized within the window; the true value lies above the one "
+                "given. Blank: a value."),
+            col("E_Red_vs_SCE_exp / V", redox, REDOX, "E_Red_vs_SCE_V",
                 "Reduction potential. Where E_Red_bound is set, a limit, not a value."),
-            Column("E_Red_bound",
-                   "'<': not reduced within the window; the true value lies below the one "
-                   "given. Blank: a value.",
-                   src(Q_RECORDS, "E_Red_bound"), bound(records, "E_Red_bound")),
-            col("source", records, Q_RECORDS, "redox_source",
+            col("E_Red_bound", redox, REDOX, "E_Red_bound",
+                "'<': not reduced within the window; the true value lies below the one "
+                "given. Blank: a value."),
+            col("source", redox, REDOX, "source",
                 "CV: measured in this lab. Otherwise the DOI of the paper the potentials "
                 "were taken from, or 'estimated' where neither exists."),
-            col("comment", records, Q_RECORDS, "redox_comment",
-                "From the lab record: solvent, conversion, who measured, caveats."),
+            col("comment", redox, REDOX, "comment",
+                "For a deposited voltammogram, which descriptor was read (onset, half-wave, "
+                "or no wave inside the window); otherwise from the literature record."),
         ]),
         Block("Molar extinction coefficients in MeCN / mM-1 cm-1", epsilon),
         Block("Sample", [
-            col("c_stock / mM", records, Q_RECORDS, "c_stock_mM", "Stock concentration."),
-            col("deck_position", records, Q_RECORDS, "deck_position",
-                "Deck slot of the stock plate."),
-            col("well_position", records, Q_RECORDS, "well_position", "Well of the stock plate."),
+            col("c_stock / mM", absorption, ABSORPTION, "c_stock_mM", "Stock concentration."),
+            col("well_position", absorption, ABSORPTION, "well", "Well of the stock plate."),
         ]),
     ]
     note = """
-        One row per quencher. The potentials are the recorded ones. The cyclic voltammetry
-        traces deposited for 19 quenchers, and the potentials re-read from them as a check,
-        are in experimental_data_raw/quencher_cyclic_voltammetry/.
+        One row per quencher. The potentials are read from the voltammogram for the 19
+        quenchers that have one, and taken from the literature for the others; both are in
+        experimental_data_raw/quencher_cyclic_voltammetry/.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
-    return sorted(records), blocks, note
+    return sorted(QUENCHERS), blocks, note
 
 
 def main():

@@ -374,7 +374,7 @@ every run using a rule prints how many pairs the two policies disagree about (26
 `strict/exp`, 18 under `relaxed/exp`).
 
 Photocatalysts are named by their new id, PC1–PC27, the paper numbering; `pc_old_id` in
-`exp_dataset.csv` gives the number the raw files use (`data/photocatalyst_ids.py`).
+`exp_dataset.csv` gives the number the raw files use (`data/compound_identification.xlsx`).
 
 **PC22 is not scored.** It is old PC24, [Ir(d(OMe)ppy)₂(dtbbpy)]PF₆, whose emission was
 too weak for its Stern–Volmer intensities to be trusted, as the SI states. It stays in

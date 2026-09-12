@@ -1,11 +1,12 @@
 """
 Predict triplet energies and reorganization energies for the 48 screened quenchers.
 
-Reads   ../data/experimental_data_raw/compound_records/compound_records_quenchers.csv   (SMILES)
+Reads   ../data/compound_identification.xlsx                                       (ids, names, SMILES)
         ../data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv          (comparison)
 
-The same values are in the property workbooks in `data/*_processed/`. The intermediate
-CSVs are read instead so that the model environment does not need a spreadsheet reader.
+The same values are in the property workbooks in `data/*_processed/`. The identification
+workbook is read through data/compound_identification.py, a standard-library reader, so
+the model environment still does not need a spreadsheet dependency.
 Writes  predictions_quenchers.csv
 
 Run it with the model environment, which is not the one the data pipeline uses:
@@ -35,8 +36,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RECORDS = (ROOT / "data" / "experimental_data_raw" / "compound_records"
-           / "compound_records_quenchers.csv")
+sys.path.insert(0, str(ROOT / "data"))
+from compound_identification import QUENCHERS  # noqa: E402
+
 DFT = ROOT / "data" / "computational_data_raw" / "quencher_adiabatic_DFT" / "quencher_dft.csv"
 OUT = Path(__file__).resolve().parent / "predictions_quenchers.csv"
 
@@ -73,7 +75,7 @@ def number(row, field):
 
 
 def main():
-    records = read_csv(RECORDS, "quencher_id")
+    records = QUENCHERS
     dft = read_csv(DFT, "quencher_id")
 
     ordered = sorted(records)
@@ -104,7 +106,7 @@ def main():
 
         rows.append({
             "quencher_id": q,
-            "quencher_name": record["quencher_name"],
+            "quencher_name": f"Q{q}",
             "name": record["name"],
             "smiles": record["smiles"],
             "E_T_ml / kcal mol-1": sig(e_t_ml),

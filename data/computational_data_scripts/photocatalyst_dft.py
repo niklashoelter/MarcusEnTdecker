@@ -12,8 +12,7 @@ Writes  ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
 
 Every number is parsed out of an ORCA output in the deposit; no spreadsheet is read. The
 arithmetic is Leon Schlosser's, as it stands in the photocatalyst property file he
-delivered (spectroscopy_data_processed/dataset/properties_photocatalysts_calc.xlsx), so
-that this table reproduces it:
+delivered, so that this table reproduces it:
 
     E_T                ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.503
     lambda_X_to_Y      (E_Y at the X geometry - E_Y) * 627.509     electronic only
@@ -46,7 +45,7 @@ NAMING
 
 Photocatalysts are numbered by old id here. Old PC7, PC26, PC30 and PC31 were computed but
 are crossed out in the photocatalyst sheet and are not part of the data
-(../photocatalyst_ids.py).
+(../compound_identification.py).
 """
 
 from __future__ import annotations
@@ -66,7 +65,7 @@ SCE_ABSOLUTE_V = 4.42
 
 # Only the photocatalysts in the data; the crossed-out ones are skipped. Old ids.
 sys.path.insert(0, str(ROOT))
-from photocatalyst_ids import IN_DATA  # noqa: E402
+from compound_identification import IN_DATA  # noqa: E402
 
 # state directory, file stem -> the key it is stored under
 JOBS = {

@@ -8,7 +8,22 @@ QC'd well intensities -> one Stern-Volmer fit per photocatalyst/quencher pair.
 Reads   ../experimental_data_processed/stern_volmer_intensities.csv
 Writes  ../experimental_data_processed/stern_volmer_fits.csv
 
-Fits I0/I = 1 + K_SV*[Q]. 27 photocatalysts x 48 quenchers = 1296 pairs.
+Fits I0/I against [Q]. 27 photocatalysts x 48 quenchers = 1296 pairs.
+
+    uv run data/experimental_data_scripts/stern_volmer_fits.py
+    uv run data/experimental_data_scripts/stern_volmer_fits.py --fix-intercept
+
+THE INTERCEPT FLOATS BY DEFAULT
+    I0/I = 1 + K_SV*[Q] has no free intercept -- the [Q] = 0 well is in every series and
+    fixes it at 1 -- but the reported fit lets it float anyway, because that is what the
+    acquisition-time code did and what the published K_SV values are. 327 of the 1296
+    pairs land more than 0.05 away from 1 and twelve more than 0.5, so on those pairs the
+    intercept is absorbing curvature that belongs in the slope.
+
+    `--fix-intercept` anchors the line at (0, 1) instead, a genuine one-parameter fit
+    (ols_anchored). It changes K_SV on every pair, so it is off by default and the tables
+    in the repository are the free-intercept ones. Turn it on to see how much of a given
+    K_SV rests on the floating intercept.
 
 This is the one script that reads a generated file rather than raw instrument output.
 The replicate QC that produces those intensities is implemented once, in
@@ -76,6 +91,11 @@ K_SV_QUENCHING = 25.0         # published: a pair counts as quenching when K_SV 
 R2_QUENCHING = 0.90           # published: ... and r2 >= this
 K_SV_LABEL = 10.0             # this project: K_SV above this quenches outright ...
 P_SLOPE_LABEL = 0.01          # ... at or below it, only with a slope this significant
+
+# Anchor the reported fit at (0, 1) instead of letting the intercept float. OFF by
+# default: the published K_SV values are free-intercept fits, and turning this on moves
+# every number in the table. `--fix-intercept` sets it for one run. See ols_anchored.
+FIX_INTERCEPT = False
 SIGFIGS = 6
 
 EPS = np.finfo(np.double).eps
@@ -103,6 +123,28 @@ def score_fn(residuals, n_points):
 
 
 # --- estimators -------------------------------------------------------------
+
+def ols_anchored(x, y):
+    """Least squares through (0, 1): I0/I = 1 + K_SV [Q]. Returns slope, 1.0, pred, r2.
+
+    The genuine one-parameter Stern-Volmer fit, which `linear_fit(force_intercept=True)`
+    is not -- that one reproduces the original's shift-and-relabel and still lets the
+    estimator find its own intercept. Off by default; see FIX_INTERCEPT.
+
+    r2 is reported against the mean of y, the same reference the free-intercept fit uses,
+    so the two are comparable. It can go negative when the anchored line is a worse
+    description than a horizontal line, which is the honest answer for a pair whose
+    free-intercept fit only looked good because the intercept absorbed the curvature.
+    """
+    x = np.asarray(x, float)
+    y = np.asarray(y, float)
+    sxx = float(x @ x)
+    slope = float(x @ (y - 1.0)) / sxx if sxx else float("nan")
+    pred = 1.0 + slope * x
+    ss_res = float(((y - pred) ** 2).sum())
+    ss_tot = float(((y - y.mean()) ** 2).sum())
+    return slope, 1.0, pred, (1 - ss_res / ss_tot if ss_tot else float("nan"))
+
 
 def ols(x, y):
     """Ordinary least squares with a free intercept. Returns slope, intercept, pred, r2."""
@@ -323,9 +365,16 @@ def analyse(conc, intensity):
     return chosen, "range scanned", conc, ratio
 
 
-def finalise(chosen, conc, ratio):
-    """Refit the chosen points with a free intercept; keep whichever method has lower MAE."""
+def finalise(chosen, conc, ratio, fix_intercept=FIX_INTERCEPT):
+    """Refit the chosen points; keep whichever method has lower MAE.
+
+    With fix_intercept the line is anchored at (0, 1) instead and there is nothing to
+    choose between -- a one-parameter fit has no robust counterpart here.
+    """
     x, y = conc[chosen], ratio[chosen]
+    if fix_intercept:
+        slope, intercept, _, r2 = ols_anchored(x, y)
+        return slope, intercept, r2, "anchored"
     best = None
     best_mae = 100.0
     for method in ("linear", "theil-sen"):
@@ -357,9 +406,11 @@ def confidence(k_sv, r2, intercept, n_used, n_total, quenching):
     return "medium" if 25 < k_sv < 100 else "high"
 
 
-def main():
+def main(fix_intercept=FIX_INTERCEPT):
     if not IN.exists():
         sys.exit(f"{IN.name} not found -- run stern_volmer_intensities.py first")
+    if fix_intercept:
+        print("fitting through (0, 1): K_SV will not match the published table")
 
     pairs = defaultdict(list)
     for row in csv.DictReader(IN.open(encoding="utf-8")):
@@ -372,7 +423,7 @@ def main():
     for pc_id, q_id in sorted(pairs):
         points = sorted(pairs[(pc_id, q_id)])
         chosen, note, conc, ratio = analyse([c for c, _ in points], [i for _, i in points])
-        slope, intercept, r2, method = finalise(chosen, conc, ratio)
+        slope, intercept, r2, method = finalise(chosen, conc, ratio, fix_intercept)
         quenching = bool(slope >= K_SV_QUENCHING and r2 >= R2_QUENCHING)
 
         # the all-points fit is a diagnostic, not the label: where it disagrees sharply
@@ -424,4 +475,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(fix_intercept=FIX_INTERCEPT or "--fix-intercept" in sys.argv[1:])

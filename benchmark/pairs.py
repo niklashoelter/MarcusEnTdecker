@@ -73,7 +73,7 @@ PAIRS_CSV = Path(__file__).resolve().parent.parent / "data" / "exp_dataset.csv"
 
 # --- identity ---------------------------------------------------------------------
 # Photocatalysts are named by their new id, PC1-PC27; `pc_old_id` is the number the raw
-# files use. See data/photocatalyst_ids.py.
+# files use. See data/compound_identification.py.
 PC_ID = "pc_new_id"
 PC_OLD_ID = "pc_old_id"
 PC_NAME = "pc_name"
