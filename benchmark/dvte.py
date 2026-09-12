@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas"]
+# dependencies = ["numpy", "openpyxl>=3.1", "pandas"]
 # ///
 """
 DvTE: the quencher's triplet energy as a distribution over geometries, not a number.
@@ -37,18 +37,18 @@ WHAT IT COMPUTES
     should not be quoted as if it were.
 
 WHAT IS AND IS NOT PORTED
-    The normal-quantile form is ported. It is exact from what exp_dataset.csv carries, since
+    The normal-quantile form is ported. It is exact from what the pair table carries, since
     `q_dvte_mu_md` and `q_dvte_std_md` are the mean and standard deviation of the sampled
     gaps and the quantile is a closed-form function of them.
 
     The `_kde` variant is NOT ported. It takes the same quantile from a Gaussian kernel
-    density estimate of the samples rather than from a normal fit, so it needs the sample
-    distribution, which exp_dataset.csv does not carry -- it lives in
-    `../data/computational_data_processed/quencher_properties_calc.xlsx` and, sample by
-    sample, `../data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz`. Everything downstream in this repository reads
-    exp_dataset.csv and nothing else, so rather than reach around that rule for a variant that
-    tracked the normal one to within 0.07 kcal/mol, it is left out. If it turns out to be
-    wanted, the right fix is to carry the four `_kde` quantiles into exp_dataset.csv.
+    density estimate of the samples rather than from a normal fit. Its four quantiles are
+    already computed in
+    `../data/computational_data_processed/quencher_properties_calc.xlsx`, the workbook
+    pairs.py joins onto the pair table, so carrying them would cost four column names --
+    but they tracked the normal form to within 0.07 kcal/mol, and a second threshold that
+    close is a second method only on paper. If it turns out to be wanted, the fix is four
+    names in pairs.py and four more entries here.
 
     The cutoff is not swept. The original swept the four values and reported the best,
     which is an in-sample choice, and its own audit recorded that a finer grid moved MCC

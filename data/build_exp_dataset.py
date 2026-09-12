@@ -3,53 +3,42 @@
 # dependencies = ["openpyxl>=3.1"]
 # ///
 """
-The processed data -> one row per photocatalyst-quencher pair, with exactly the columns
-the analysis downstream reads.
+The processed experimental data -> one row per photocatalyst-quencher pair: what was
+measured, the labels read off it, and nothing else.
 
 Reads   experimental_data_processed/stern_volmer_fits.csv
         experimental_data_processed/photocatalyst_properties_exp.xlsx
         experimental_data_processed/quencher_properties_exp.xlsx
-        computational_data_processed/photocatalyst_properties_calc.xlsx
-        computational_data_processed/quencher_properties_calc.xlsx
-Writes  exp_dataset.csv     what ../benchmark/ reads
-        exp_dataset.xlsx    the same table in the property-workbook layout, with a
-                            Column key sheet
+Writes  exp_dataset.csv     the table ../benchmark/ starts from
+        exp_dataset.xlsx    the same table in the property-workbook layout
 
     uv run data/build_exp_dataset.py
 
-THE RATE CONSTANT
-    k_q = K_SV / tau_0, K_SV per pair from the Stern-Volmer fits, tau_0 per
-    photocatalyst from its TCSPC trace. Both measured here.
-
 THE LABEL IS SET ON K_SV, NOT ON k_q
-    Both labels are made in experimental_data_scripts/stern_volmer_fits.py and copied here
-    unchanged. `quenches`: K_SV > 10, or K_SV <= 10 with a slope significant across the
-    points the fit used. `quenches_strict`: the published criterion, K_SV >= 25 and
-    r2 >= 0.90. K_SV is the observable; dividing by a photocatalyst-specific tau_0 would
-    move the detection floor with the photocatalyst, which is why no cutoff is set on k_q.
+    k_q = K_SV / tau_0, both measured here. Both labels come from stern_volmer_fits.py
+    unchanged: `quenches`, a ladder of (K_SV, r2) rungs where weaker quenching demands a
+    straighter line, and `quenches_strict`, the published K_SV >= 25 and r2 >= 0.90.
+    K_SV is the observable, and dividing it by a photocatalyst-specific tau_0 would move
+    the detection floor with the photocatalyst, so no cutoff is set on k_q.
 
     A pair that does not quench is left-censored, not missing: `censored = 1`, its fitted
-    K_SV kept, and `k_q_floor = 10 / tau_0` the smallest rate constant it could have shown.
+    K_SV kept, and `k_q_floor = 10 / tau_0` the smallest rate it could have shown.
 
-THE DRIVING FORCES
-    Quencher-centric, negative when exergonic, F = 23.060548 kcal mol-1 V-1:
-
-        dG_EnT     = E_T(Q) - E_T(PC)
-        dG_SET     = the more accessible of
-                     F * (E_Ox(Q) - E(PC*/PC-))     Q oxidized, PC* the oxidant
-                     F * (E(PC+/PC*) - E_Red(Q))    Q reduced,  PC* the reductant
-
-    dG_SET is computed from the measured quencher potentials (`_exp`) and from the
-    computed ones (`_calc`), never merged. A measured potential recorded as a limit
-    (`>` or `<` in the quencher workbook) makes that channel's driving force a lower
-    bound -- SET at least this endergonic -- and `dG_SET_exp_bound = lower` says so.
+NO CALCULATED COLUMN, AND NO DRIVING FORCE
+    A computed property is a property of a compound and stays one row per compound in
+    computational_data_processed/. dG_EnT and dG_SET are differences across a pair, so
+    they are built by whoever compares the two -- ../benchmark/pairs.py joins the
+    calculated workbooks onto this table and derives them there. dG_SET shows why the rule
+    is worth stating: half of it is a measured quencher potential and half a calculated
+    photocatalyst one, so a column of it would sit among the measurements without being
+    one. The measured potentials stay in quencher_properties_exp.xlsx with their bound
+    flags.
 
 PHOTOCATALYST NUMBERING
-    Every row carries `pc_new_id`, the number used downstream and in the paper (1-27,
-    consecutive), `pc_old_id`, the number the raw files use, and `pc_name` = PC<new_id>.
-    The mapping is compound_identification.py. All 27 screened photocatalysts are here,
-    including PC22 (old PC24), whose emission was too weak; the theory benchmark drops it,
-    this table does not.
+    Each row carries `pc_new_id` (1-27, used downstream and in the paper), `pc_old_id`
+    (what the raw files use) and `pc_name` = PC<new_id>; the mapping is
+    compound_identification.py. All 27 are here, PC22 (old PC24) included -- its emission
+    was too weak and the theory benchmark drops it, this table does not.
 """
 
 import csv
@@ -65,21 +54,18 @@ from compound_identification import NEW_ID  # noqa: E402
 from properties_workbook import Block, Column, write_workbook  # noqa: E402
 
 EXPERIMENTAL = DATA / "experimental_data_processed"
-COMPUTATIONAL = DATA / "computational_data_processed"
 OUT_CSV = DATA / "exp_dataset.csv"
 OUT_XLSX = DATA / "exp_dataset.xlsx"
 
 # Row 1 of every property workbook names the column blocks; the headers are on row 2.
 WORKBOOK_HEADER_ROW = 2
 
-# The K_SV a pair has to clear to count as detected, and so the censoring limit. Equal to
-# K_SV_LABEL in stern_volmer_fits.py.
+# The K_SV a pair has to clear to count as detected, and so the censoring limit. The
+# label's lowest rung admits smaller K_SV on a near-perfect line, but 10 is the slope
+# below which this plate reader cannot see a drop at all.
 K_SV_FLOOR = 10.0
 
 SIGFIGS = 6
-F_KCAL_PER_V = 23.060548
-
-KCAL = "kcal mol-1"
 
 # (block, [(column, description, source)]). The order is the order of the table.
 LAYOUT = [
@@ -101,36 +87,11 @@ LAYOUT = [
          "computed here"),
     ]),
     ("Ground truth", [
-        ("quenches", "1: K_SV > 10, or K_SV <= 10 with a significant slope. The label.",
+        ("quenches", "1: the fit clears one rung of the (K_SV, r2) ladder. The label.",
          "stern_volmer_fits.csv: quenches"),
         ("quenches_strict", "1: K_SV >= 25 and r2 >= 0.90, the published criterion.",
          "stern_volmer_fits.csv: quenching_observed"),
         ("censored", "1 where quenches = 0: K_SV lies somewhere below the floor.",
-         "computed here"),
-    ]),
-    ("Photocatalyst, DFT", [
-        (f"pc_E_T_dft / {KCAL}", "Adiabatic triplet energy.", "photocatalyst_properties_calc.xlsx"),
-        (f"pc_lambda_S0_to_T1_dft / {KCAL}", "Relaxation on the triplet surface.",
-         "photocatalyst_properties_calc.xlsx"),
-        (f"pc_lambda_T1_to_S0_dft / {KCAL}", "Relaxation on the singlet surface.",
-         "photocatalyst_properties_calc.xlsx"),
-    ]),
-    ("Quencher, DFT and MD", [
-        (f"q_lambda_S_T_dft / {KCAL}", "Relaxation on the singlet surface.",
-         "quencher_properties_calc.xlsx"),
-        (f"q_lambda_T_S_dft / {KCAL}", "Relaxation on the triplet surface.",
-         "quencher_properties_calc.xlsx"),
-        (f"q_dvte_mu_md / {KCAL}", "Mean vertical triplet energy over the MD samples.",
-         "quencher_properties_calc.xlsx"),
-        (f"q_dvte_std_md / {KCAL}", "Its standard deviation.", "quencher_properties_calc.xlsx"),
-    ]),
-    ("Driving forces", [
-        (f"dG_EnT / {KCAL}", "E_T(Q) - E_T(PC), both DFT. Negative: exergonic.", "computed here"),
-        (f"dG_SET_exp / {KCAL}", "More accessible SET channel, measured quencher potentials.",
-         "computed here"),
-        ("dG_SET_exp_bound", "'lower': a bounded potential; the true value is more endergonic.",
-         "computed here"),
-        (f"dG_SET_calc / {KCAL}", "More accessible SET channel, computed quencher potentials.",
          "computed here"),
     ]),
 ]
@@ -166,12 +127,6 @@ def number(row, field):
     return float(value) if value not in ("", None) else None
 
 
-def better_channel(ox, red):
-    """The more accessible SET channel, (value, 'ox'|'red'), or (None, '') if neither."""
-    available = [(v, name) for v, name in ((ox, "ox"), (red, "red")) if v is not None]
-    return min(available) if available else (None, "")
-
-
 def main():
     fits_path = EXPERIMENTAL / "stern_volmer_fits.csv"
     if not fits_path.exists():
@@ -179,8 +134,6 @@ def main():
 
     pc_exp = load(EXPERIMENTAL / "photocatalyst_properties_exp.xlsx", "old_id")
     q_exp = load(EXPERIMENTAL / "quencher_properties_exp.xlsx", "quencher_id")
-    pc_calc = load(COMPUTATIONAL / "photocatalyst_properties_calc.xlsx", "old_id")
-    q_calc = load(COMPUTATIONAL / "quencher_properties_calc.xlsx", "quencher_id")
 
     rows = []
     with fits_path.open(encoding="utf-8", newline="") as fh:
@@ -189,7 +142,6 @@ def main():
             if pc_id not in NEW_ID:
                 sys.exit(f"Stern-Volmer fits for old PC{pc_id}, which is not in the data")
             pce, qe = pc_exp.get(pc_id), q_exp.get(q_id)
-            pcc, qc = pc_calc.get(pc_id), q_calc.get(q_id)
 
             tau0 = number(pce, "tau0 / ns")
             k_sv = number(fit, "K_SV")
@@ -197,27 +149,6 @@ def main():
             k_q = k_sv / (tau0 * 1e-9) if (k_sv is not None and tau0) else None
             floor = K_SV_FLOOR / (tau0 * 1e-9) if tau0 else None
             quenches = fit["quenches"] == "1"
-
-            pc_e_t = number(pcc, f"E_T / {KCAL}")
-            q_e_t = number(qc, f"E_T / {KCAL}")
-            pc_star_ox = number(pcc, "E_PCstar_PCminus / V")    # PC* as the oxidant
-            pc_star_red = number(pcc, "E_PCplus_PCstar / V")    # PC* as the reductant
-
-            def set_forces(e_ox, e_red):
-                ox = F_KCAL_PER_V * (e_ox - pc_star_ox) if None not in (e_ox, pc_star_ox) else None
-                red = (F_KCAL_PER_V * (pc_star_red - e_red)
-                       if None not in (e_red, pc_star_red) else None)
-                return ox, red
-
-            ox_exp, red_exp = set_forces(number(qe, "E_Ox_vs_SCE_exp / V"),
-                                         number(qe, "E_Red_vs_SCE_exp / V"))
-            set_exp, channel = better_channel(ox_exp, red_exp)
-            # Either bound becomes a lower bound on the driving force: the quencher was not
-            # oxidized (or reduced) within the window, so SET is at least this endergonic.
-            bound_column = {"ox": "E_Ox_bound", "red": "E_Red_bound"}.get(channel)
-            set_bound = "lower" if bound_column and (qe or {}).get(bound_column) else ""
-            set_calc, _ = better_channel(*set_forces(number(qc, "E_Ox_vs_SCE_calc / V"),
-                                                     number(qc, "E_Red_vs_SCE_calc / V")))
 
             rows.append({
                 "pc_new_id": NEW_ID[pc_id],
@@ -232,17 +163,6 @@ def main():
                 "quenches": int(quenches),
                 "quenches_strict": int(fit["quenching_observed"] == "True"),
                 "censored": int(not quenches),
-                f"pc_E_T_dft / {KCAL}": sig(pc_e_t),
-                f"pc_lambda_S0_to_T1_dft / {KCAL}": sig(number(pcc, f"lambda_S0_to_T1 / {KCAL}")),
-                f"pc_lambda_T1_to_S0_dft / {KCAL}": sig(number(pcc, f"lambda_T1_to_S0 / {KCAL}")),
-                f"q_lambda_S_T_dft / {KCAL}": sig(number(qc, f"lambda_S_T / {KCAL}")),
-                f"q_lambda_T_S_dft / {KCAL}": sig(number(qc, f"lambda_T_S / {KCAL}")),
-                f"q_dvte_mu_md / {KCAL}": sig(number(qc, f"dvte_mu / {KCAL}")),
-                f"q_dvte_std_md / {KCAL}": sig(number(qc, f"dvte_std / {KCAL}")),
-                f"dG_EnT / {KCAL}": sig(q_e_t - pc_e_t) if None not in (q_e_t, pc_e_t) else "",
-                f"dG_SET_exp / {KCAL}": sig(set_exp),
-                "dG_SET_exp_bound": set_bound,
-                f"dG_SET_calc / {KCAL}": sig(set_calc),
             })
 
     rows.sort(key=lambda row: (row["pc_new_id"], row["quencher_id"]))
@@ -257,9 +177,10 @@ def main():
               for title, columns in LAYOUT]
     write_workbook(OUT_XLSX, "Pairs", list(range(len(rows))), blocks, """
         One row per photocatalyst-quencher pair, sorted by pc_new_id then quencher_id. Built
-        by data/build_exp_dataset.py; exp_dataset.csv is the same table. PC numbers are new
-        ids (pc_old_id: the raw files'). PC22 (old PC24) is included; its emission was too
-        weak, and the theory benchmark drops it.
+        by data/build_exp_dataset.py; exp_dataset.csv is the same table. Measured values and
+        the labels only: nothing calculated is here, and the driving forces are derived by
+        ../benchmark/pairs.py. PC numbers are new ids (pc_old_id: the raw files'). PC22 (old
+        PC24) is included; its emission was too weak, and the theory benchmark drops it.
     """)
 
     n_pc = len({r["pc_new_id"] for r in rows})
@@ -271,7 +192,7 @@ def main():
           f"censored {sum(r['censored'] for r in rows)}")
     for name in COLUMNS:
         missing = sum(1 for r in rows if r[name] == "")
-        if missing and name != "dG_SET_exp_bound":
+        if missing:
             print(f"  {name}: blank for {missing} pairs")
 
 

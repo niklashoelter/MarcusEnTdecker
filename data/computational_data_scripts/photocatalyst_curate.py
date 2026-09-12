@@ -8,44 +8,30 @@ Curate the photocatalyst ORCA jobs into the raw-data layout.
     uv run data/computational_data_scripts/photocatalyst_curate.py <source_dir>
 
 `source_dir` is the delivered job tree: PC_<n>/<job>/output.out, 31 photocatalysts,
-587 outputs, 895 MB. It is not in this repository -- this script is the record of how
-the deposit under `../computational_data_raw/photocatalysts/` was made from it.
+587 outputs, 895 MB, not in this repository. This script is the record of how the deposit
+under `../computational_data_raw/photocatalysts/` was made from it, and writes that tree
+plus a `manifest.csv` naming every source directory, kept or omitted, and how it ended.
 
-WHAT IS KEPT AND WHY
-    Eleven jobs per photocatalyst, and not the other nine. The delivered tree carries
-    several parallel attempts at the same quantity -- `_uks`, `_m06`, `_lanl`,
-    `_slightlyold`, `_depr`, `_tddft` -- and picking between them by name would be a
-    guess. It is not a guess: every energy in the analysis spreadsheet
-    (`Photocatalysts/computed_PCs.xlsx`) was matched against every candidate job, and
-    all 31 photocatalysts x 10 quantities resolved to the plain, non-suffixed job to
-    better than 1e-6 Eh. The suffixed runs are alternative levels of theory that no
-    published number came from, so they are omitted rather than deposited as noise.
+WHAT IS KEPT
+    Eleven jobs per photocatalyst, not the other nine. The delivery carries parallel
+    attempts at the same quantity -- `_uks`, `_m06`, `_lanl`, `_slightlyold`, `_depr`,
+    `_tddft` -- and choosing by name would be a guess. It is not one: every energy in
+    `Photocatalysts/computed_PCs.xlsx` was matched against every candidate, and all 31
+    photocatalysts x 10 quantities resolved to the plain job to better than 1e-6 Eh. The
+    suffixed runs are other levels of theory that no published number came from.
 
-    `conf` is kept even though no energy comes from it: it is the GOAT/XTB2 conformer
-    search that produced the starting geometry, and without it the optimisations begin
-    from nowhere.
+    `conf` is kept although no energy comes from it: it is the GOAT/XTB2 conformer search
+    that produced the starting geometry.
 
 WHAT IS ADDED
-    The delivered files are ORCA outputs only -- no inputs, no geometries. Both are
-    recoverable from the output itself: ORCA echoes its input file verbatim, and the
-    last CARTESIAN COORDINATES block of an optimisation is the optimised geometry.
-
-    Every job therefore ends up as a complete set of three: `_input.inp`, `_geometry.xyz`
-    and `_output.out`. That is what makes a job directory readable on its own -- what was
-    asked, what geometry it ran on, what came back -- without parsing a 3 MB output to
-    find out. Two of the three are extracted rather than delivered, and the output they
-    came from sits beside them, so nothing here is authored.
-
-    Exactly one such set per calculation, and exactly one calculation of each kind per
-    photocatalyst: the parallel retries in the delivery are not deposited at all. See
-    above.
+    The delivered files are outputs only, but ORCA echoes its input verbatim and the last
+    CARTESIAN COORDINATES block of an optimisation is the optimised geometry. So every job
+    ends up complete -- `_input.inp`, `_geometry.xyz`, `_output.out` -- and readable on its
+    own without parsing a 3 MB output. The two extracted files sit beside the output they
+    came from, so nothing here is authored.
 
 Old PC7, PC26, PC30 and PC31 are in the delivery but crossed out in the photocatalyst
 sheet, and are not deposited (../compound_identification.py).
-
-Writes `../computational_data_raw/photocatalysts/` and a `manifest.csv` recording
-every source directory of the deposited photocatalysts, kept or omitted, with its
-termination status.
 """
 
 from __future__ import annotations

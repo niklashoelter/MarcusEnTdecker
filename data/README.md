@@ -1,8 +1,8 @@
 # data
 
 Measurements and calculations, from instrument files and ORCA jobs to one property
-workbook per compound class, and from those to the pair-level dataset `exp_dataset.csv`,
-which is all that `../benchmark/` reads.
+workbook per compound class, and from the experimental side of those to the pair-level
+dataset `exp_dataset.csv`, which is where `../benchmark/` starts.
 
 ```
 data/
@@ -23,21 +23,26 @@ data/
 │   └── quencher_adiabatic_DvTE/     MD trajectories -> quencher_dvte.csv, _samples.csv.gz
 ├── computational_data_processed/
 │   ├── photocatalyst_properties_calc.xlsx
-│   └── quencher_properties_calc.xlsx
+│   ├── quencher_properties_calc.xlsx
+│   └── quencher_properties_ml.xlsx  the same three quantities, predicted from the SMILES
 ├── experimental_data_scripts/       one script per raw folder, plus properties_exp.py
 ├── computational_data_scripts/      one script per raw folder, plus properties_calc.py
+│                                    and quencher_ml.py, which runs the model
 ├── compound_identification.py/.xlsx which compounds are in the data, what they are,
 │                                    and the old -> new photocatalyst id mapping
 ├── properties_workbook.py           layout shared by the workbooks
-├── build_exp_dataset.py             processed folders -> one row per pair
-└── exp_dataset.csv, .xlsx           the pair-level dataset
+├── build_exp_dataset.py             the experimental processed folder -> one row per pair
+└── exp_dataset.csv, .xlsx           the pair-level experimental dataset
 ```
 
 **Order.** Each extraction script reads one raw folder and writes its table into that same
 folder; only the two Stern–Volmer scripts write to `experimental_data_processed/`.
 `properties_exp.py` and `properties_calc.py` then copy the per-compound values into
-the workbooks; nothing is computed at that step. `build_exp_dataset.py` then joins the
-processed folders into `exp_dataset`. `uv run reproduce.py data` runs it all in order.
+the workbooks; nothing is computed at that step. `build_exp_dataset.py` then turns the
+experimental processed folder into `exp_dataset`, one row per pair. The calculated
+workbooks are not joined here — that is the consumer's step, and `../benchmark/pairs.py`
+does it. `uv run reproduce.py data` runs it all in order. `quencher_ml.py` is the one
+script here it does not run — see below.
 
 **Photocatalyst numbers.** The raw files and the extraction scripts use the old id, the
 number from the screen (`PC10_QBatch1.csv`, `pc_tcspc/PC4.txt`). The new id, PC1–PC27 without
@@ -55,11 +60,30 @@ gives each column's description and the raw table it came from.
 
 **exp_dataset.** One row per photocatalyst–quencher pair, 27 × 48 = 1296, sorted by
 `pc_new_id` then `quencher_id`. It includes PC22 (old PC24), whose emission was too weak;
-the benchmark drops it, the dataset does not. It holds only what the
-benchmark reads: ids, K_SV, τ0, k_q = K_SV/τ0 and its floor 10/τ0, the two labels —
-`quenches` (K_SV > 10, or a significant slope below it) and `quenches_strict` (K_SV ≥ 25
-and r² ≥ 0.90) — and `censored`, the DFT/MD inputs of the theories, and the EnT and SET
-driving forces. The xlsx is the same table in the workbook layout.
+the benchmark drops it, the dataset does not. It holds twelve columns and they are all
+experimental: the ids, K_SV, τ0, k_q = K_SV/τ0 and its floor 10/τ0, the two labels —
+`quenches` and `quenches_strict` (K_SV ≥ 25 and r² ≥ 0.90, the published criterion) — and
+`censored`. The xlsx is the same table in the workbook layout.
+
+`quenches` is a ladder, in which the weaker the quenching the straighter the line has to
+be: K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99. Any one rung is
+enough, and `stern_volmer_fits.csv` records which one carried each pair. So no fit worse
+than r² 0.75 is ever called quenching however large its K_SV, and a K_SV of a few M⁻¹
+needs an almost perfect line. 735 of 1296 pairs quench, 637 of them strictly.
+
+The fit behind those numbers departs from the acquisition-time code in exactly one place:
+that code skipped its linear-range scan whenever the all-points r² fell below 0.5, so a
+pair that is linear and then saturates took its K_SV from the whole series. The scan now
+runs for every pair. 58 pairs choose different points because of it and say so in their
+`note`; the rest are unchanged. `stern_volmer_fits.py` gives the case that shows why.
+
+Nothing calculated is in it, and neither driving force is. A DFT triplet energy is a
+property of a compound and lives one row per compound in `computational_data_processed/`;
+ΔG_EnT and ΔG_SET are differences across a pair and are built by whoever compares them,
+which is `../benchmark/pairs.py`. ΔG_SET is the clearest case: half of it is a measured
+quencher potential and half a calculated excited-state potential of the photocatalyst, so
+a column of it would sit among the measurements without being one. The measured potentials
+stay in `quencher_properties_exp.xlsx` with the bound flags that say which are limits.
 
 **Stern–Volmer wavelengths** are the filter pairs in the plate-reader export headers,
 collected with their bandwidths in `stern_volmer/plate_reader_filters.csv`. Old PC1 and PC3
@@ -76,8 +100,9 @@ by converting it back to a structure; the pipetting maps keep their own shorthan
 masses confirm the SMILES), and nothing reads a name from them.
 
 **Quencher redox potentials** carry a bound column (`>` or `<` where the value is a limit),
-a `source` — `CV` (measured here), the DOI of the paper, or `estimated` (Q19, Q32, Q33) —
-and a free-text `comment`.
+a `source` — `CV` (measured here), the DOI of the paper, or `estimated` — and a free-text
+`comment`. Only Q32 and Q33 are estimated, and from one reading of the thioamide class for
+both; every other value is a voltammogram or a paper.
 
 **Photocatalyst lifetimes** come from one TCSPC trace per photocatalyst; τ0 and its error are
 the value and standard error of a single-exponential fit. The fit starts automatically after
@@ -87,6 +112,18 @@ the pulse, except for old PC4, fitted from 1500 ns to skip a fast early componen
 **Photocatalyst DFT** uses Leon's arithmetic and reproduces his delivered file
 except E_T for old PC10, PC13, PC25 and PC28 (new 8, 11, 23, 26), which that file carries
 stale.
+
+**Predicted quencher properties.** `quencher_properties_ml.xlsx` holds the same three
+quantities as the DFT quencher workbook — E_T, λ_S_T, λ_T_S — predicted from the SMILES
+alone by the graph mixture density network in `../ml/data/model.pt`, each
+with the model's own uncertainty, which a DFT number does not have. It is written by
+`computational_data_scripts/quencher_ml.py`, the only script in this folder that needs the
+model environment (`uv sync --extra ml`, then
+`uv run --extra ml python data/computational_data_scripts/quencher_ml.py`) and therefore
+the only one `reproduce.py` does not run: the rest of the folder rebuilds without
+installing torch, and the workbook is in git so a clone has the predictions anyway. The two
+workbooks are meant to be read side by side, not merged — whoever compares DFT, DvTE and
+the model does that where the comparison is made.
 
 **One calculation per state, and no other.** Both computational folders hold only the job
 each published number came from: `Q<n>/<state>/` and `PC_<n>/<state>/` carry one geometry

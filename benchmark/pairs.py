@@ -1,24 +1,37 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas"]
+# dependencies = ["numpy", "openpyxl>=3.1", "pandas"]
 # ///
 """
 The pair table, and the column contract every theory in this folder reads it through.
 
 Reads   ../data/exp_dataset.csv
+        ../data/computational_data_processed/photocatalyst_properties_calc.xlsx
+        ../data/computational_data_processed/quencher_properties_calc.xlsx
+        ../data/experimental_data_processed/quencher_properties_exp.xlsx
 Writes  nothing
 
 WHY THIS MODULE EXISTS
     Every column name in the benchmark is written down once, here. The theory modules
-    take arrays, never a file path and never a header string, so a rename in
-    `data/build_exp_dataset.py` breaks in one place with a message instead of in six
-    places with a KeyError. This is the centralization rule the original implementation
-    kept in `property_retrieval.py`, minus the part that made it unreproducible: nothing
-    is copied in from a sibling directory, and importing this module has no side effect
-    beyond reading one CSV.
+    take arrays, never a file path and never a header string, so a rename upstream breaks
+    in one place with a message instead of in six places with a KeyError. This is the
+    centralization rule the original implementation kept in `property_retrieval.py`, minus
+    the part that made it unreproducible: nothing is copied in from a sibling directory,
+    every path is inside ../data/, and importing this module has no side effect beyond
+    reading one CSV and three property workbooks.
 
     It also carries what the column names mean, which for the reorganization energies is
     not optional. See "WHICH SURFACE EACH LAMBDA LIVES ON" below.
+
+WHERE THE CALCULATED COLUMNS COME FROM
+    `exp_dataset.csv` is the experimental table -- ids, K_SV, tau_0, the rate constants
+    derived from them and the labels -- and carries nothing calculated. `load_pairs()`
+    joins the calculated properties on by id and derives the driving forces, which is the
+    arithmetic that used to sit in `data/build_exp_dataset.py`, moved here unchanged.
+
+    That move is mechanical. How the pairs ought to be assembled, and whether the driving
+    forces belong in this module at all rather than beside the theories that use them, is
+    an open question and deliberately not answered here.
 
 THE TWO LABEL REGIMES
     The ground truth is set on K_SV, the observable, and not on k_q. A cutoff on k_q was
@@ -31,19 +44,20 @@ THE TWO LABEL REGIMES
     What remains is a choice of how permissive the criterion is, and `exp_dataset.csv` carries
     both readings:
 
-      `quenches`         K_SV > 10, or K_SV <= 10 with a slope significant across the
-                         points the fit used. 790 of 1248.
-      `quenches_strict`  the published criterion, K_SV >= 25 and r2 >= 0.90. 634 of 1248.
+      `quenches`         a ladder of (K_SV, r2) rungs, weaker quenching needing a
+                         straighter line. 735 of 1248.
+      `quenches_strict`  the published criterion, K_SV >= 25 and r2 >= 0.90. 637 of 1248.
 
-    The 156 pairs between them are weak quenchers: real monotone 3-4 % signal, well above
+    The 98 pairs between them are weak quenchers: real monotone 3-4 % signal, well above
     read noise, at rate constants the strict criterion never counted. Whether the paper
     claims them is a scientific question about what "quenching" means, not a data
     question, so `label_regimes()` returns both and this module takes no position.
 
 WHICH SURFACE EACH LAMBDA LIVES ON
-    The quencher and photocatalyst reorganization energies reach exp_dataset.csv under two
-    different naming schemes, and they do not line up the way the letters suggest. Both
-    are differences on ONE potential energy surface between TWO geometries:
+    The quencher and photocatalyst reorganization energies reach the pair table from two
+    workbooks under two different naming schemes, and they do not line up the way the
+    letters suggest. Both are differences on ONE potential energy surface between TWO
+    geometries:
 
         q_lambda_S_T_dft   = E_singlet(T1 geometry) - E_singlet(S0 geometry)
                              the SINGLET surface, distorted to the triplet geometry
@@ -68,8 +82,13 @@ WHICH SURFACE EACH LAMBDA LIVES ON
 from pathlib import Path
 
 import pandas as pd
+from openpyxl import load_workbook
 
-PAIRS_CSV = Path(__file__).resolve().parent.parent / "data" / "exp_dataset.csv"
+DATA = Path(__file__).resolve().parent.parent / "data"
+PAIRS_CSV = DATA / "exp_dataset.csv"
+PC_CALC_XLSX = DATA / "computational_data_processed" / "photocatalyst_properties_calc.xlsx"
+Q_CALC_XLSX = DATA / "computational_data_processed" / "quencher_properties_calc.xlsx"
+Q_EXP_XLSX = DATA / "experimental_data_processed" / "quencher_properties_exp.xlsx"
 
 # --- identity ---------------------------------------------------------------------
 # Photocatalysts are named by their new id, PC1-PC27; `pc_old_id` is the number the raw
@@ -114,9 +133,9 @@ LAMBDA_TRIPLET_SURFACE = {"pc": PC_LAMBDA_S0_TO_T1, "q": Q_LAMBDA_T_S}
 DG_ENT = "dG_EnT / kcal mol-1"
 
 # The SET driving force exists twice over, from the measured quencher potentials and from
-# the computed ones. The dataset keeps them apart deliberately -- a measured potential and
-# a DFT potential are not interchangeable, and which one an analysis used is part of what
-# it reports -- so this module keeps them apart too and every output row says which.
+# the computed ones. They are kept apart deliberately -- a measured potential and a DFT
+# potential are not interchangeable, and which one an analysis used is part of what it
+# reports -- so both are derived, neither is merged, and every output row says which.
 SET_SOURCES = ("exp", "calc")
 
 
@@ -132,12 +151,13 @@ def set_columns(source: str) -> dict:
 
 
 # The rate cutoff the ground truth used to be set on. Nothing is labelled or classified
-# on it any more -- the label is K_SV > 10 and the matching rate cutoff is per-pair,
+# on it any more -- the label reads K_SV and r2, and the per-pair detection floor is
 # k_q_floor. Kept so the old reading can still be quoted for comparison.
 K_Q_THRESHOLD = 1.0e7
 
 # The Faraday constant in the units the driving forces use, for anyone converting a
-# potential difference by hand. The dataset uses 23.060548.
+# potential difference by hand. The driving forces themselves use F_KCAL_PER_V below,
+# which carries the digits the dataset was built with.
 F_KCAL_PER_MOL_V = 23.0605
 
 # Photocatalysts in the dataset that no theory is scored on. The dataset keeps every
@@ -166,8 +186,109 @@ FLAGGED_PHOTOCATALYSTS = {
 }
 
 
+# --- the join ------------------------------------------------------------------------
+# Everything from here to load_pairs() is `data/build_exp_dataset.py` as it stood before
+# the calculated columns left it: the same workbook reader, the same Faraday constant, the
+# same "more accessible channel" rule, the same six-significant-figure rounding. It was
+# moved rather than rewritten, so the numbers are the ones the dataset used to carry.
+
+# Row 1 of every property workbook names the column blocks; the headers are on row 2.
+WORKBOOK_HEADER_ROW = 2
+
+SIGFIGS = 6
+F_KCAL_PER_V = 23.060548
+
+
+def _load(path: Path, key: str) -> dict:
+    """A property workbook as {key: row}, blanks as "". A missing file is fatal."""
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} not found. Build it first:  uv run reproduce.py data"
+        )
+    sheet = load_workbook(path, read_only=True, data_only=True).worksheets[0]
+    rows = sheet.iter_rows(min_row=WORKBOOK_HEADER_ROW, values_only=True)
+    header = next(rows)
+    table = {}
+    for values in rows:
+        row = {h: ("" if v is None else v) for h, v in zip(header, values) if h}
+        if row.get(key) not in ("", None):
+            table[int(row[key])] = row
+    return table
+
+
+def _sig(x, n=SIGFIGS):
+    if x is None:
+        return None
+    return 0.0 if float(x) == 0 else float(f"{float(x):.{n}g}")
+
+
+def _number(row, field):
+    """A numeric field, or None when absent or blank."""
+    if row is None:
+        return None
+    value = row.get(field, "")
+    return float(value) if value not in ("", None) else None
+
+
+def _better_channel(ox, red):
+    """The more accessible SET channel, (value, 'ox'|'red'), or (None, '') if neither."""
+    available = [(v, name) for v, name in ((ox, "ox"), (red, "red")) if v is not None]
+    return min(available) if available else (None, "")
+
+
+def _computed(df: pd.DataFrame) -> pd.DataFrame:
+    """The calculated columns and the driving forces, one row per row of `df`.
+
+    Joined by id and nothing else: the photocatalyst workbook by `pc_old_id`, both
+    quencher workbooks by `quencher_id`. A value the calculation does not have stays
+    blank -- it is never filled in and never turned into a zero.
+    """
+    pc_calc = _load(PC_CALC_XLSX, "old_id")
+    q_calc = _load(Q_CALC_XLSX, "quencher_id")
+    q_exp = _load(Q_EXP_XLSX, "quencher_id")
+    exp_cols, calc_cols = set_columns("exp"), set_columns("calc")
+
+    rows = []
+    for pc_id, q_id in zip(df[PC_OLD_ID], df[Q_ID]):
+        pcc, qc, qe = pc_calc.get(int(pc_id)), q_calc.get(int(q_id)), q_exp.get(int(q_id))
+
+        pc_e_t = _number(pcc, "E_T / kcal mol-1")
+        q_e_t = _number(qc, "E_T / kcal mol-1")
+        pc_star_ox = _number(pcc, "E_PCstar_PCminus / V")    # PC* as the oxidant
+        pc_star_red = _number(pcc, "E_PCplus_PCstar / V")    # PC* as the reductant
+
+        def set_forces(e_ox, e_red):
+            ox = F_KCAL_PER_V * (e_ox - pc_star_ox) if None not in (e_ox, pc_star_ox) else None
+            red = (F_KCAL_PER_V * (pc_star_red - e_red)
+                   if None not in (e_red, pc_star_red) else None)
+            return ox, red
+
+        set_exp, channel = _better_channel(*set_forces(_number(qe, "E_Ox_vs_SCE_exp / V"),
+                                                       _number(qe, "E_Red_vs_SCE_exp / V")))
+        # Either bound becomes a lower bound on the driving force: the quencher was not
+        # oxidized (or reduced) within the window, so SET is at least this endergonic.
+        bound_column = {"ox": "E_Ox_bound", "red": "E_Red_bound"}.get(channel)
+        set_calc, _ = _better_channel(*set_forces(_number(qc, "E_Ox_vs_SCE_calc / V"),
+                                                  _number(qc, "E_Red_vs_SCE_calc / V")))
+
+        rows.append({
+            PC_E_T: _sig(pc_e_t),
+            PC_LAMBDA_S0_TO_T1: _sig(_number(pcc, "lambda_S0_to_T1 / kcal mol-1")),
+            PC_LAMBDA_T1_TO_S0: _sig(_number(pcc, "lambda_T1_to_S0 / kcal mol-1")),
+            Q_LAMBDA_S_T: _sig(_number(qc, "lambda_S_T / kcal mol-1")),
+            Q_LAMBDA_T_S: _sig(_number(qc, "lambda_T_S / kcal mol-1")),
+            Q_DVTE_MU: _sig(_number(qc, "dvte_mu / kcal mol-1")),
+            Q_DVTE_STD: _sig(_number(qc, "dvte_std / kcal mol-1")),
+            DG_ENT: _sig(q_e_t - pc_e_t) if None not in (q_e_t, pc_e_t) else None,
+            exp_cols["combined"]: _sig(set_exp),
+            exp_cols["bound"]: "lower" if bound_column and (qe or {}).get(bound_column) else "",
+            calc_cols["combined"]: _sig(set_calc),
+        })
+    return pd.DataFrame(rows, index=df.index)
+
+
 class MissingColumns(KeyError):
-    """A required column is not in exp_dataset.csv.
+    """A required column is not in the pair table.
 
     Raised instead of scoring on whatever subset happens to be available. The message
     names the columns, who wanted them, and where their definition lives.
@@ -178,13 +299,15 @@ class MissingColumns(KeyError):
 
 
 def load_pairs(path: Path = PAIRS_CSV, verbose: bool = True) -> pd.DataFrame:
-    """Read the pair table, minus EXCLUDED_PHOTOCATALYSTS. No imputation, no derived
-    columns, and no other filtering."""
+    """Read the experimental pair table, join the calculated columns and the driving
+    forces onto it, and drop EXCLUDED_PHOTOCATALYSTS. No imputation and no other
+    filtering."""
     if not path.exists():
         raise FileNotFoundError(
             f"{path} not found. Build it first:  uv run data/build_exp_dataset.py"
         )
     df = pd.read_csv(path)
+    df = pd.concat([df, _computed(df)], axis=1)
     dropped = df[PC_NAME].isin(EXCLUDED_PHOTOCATALYSTS)
     if verbose:
         for name, reason in EXCLUDED_PHOTOCATALYSTS.items():
@@ -204,13 +327,14 @@ def require(df: pd.DataFrame, columns, wanted_by: str) -> None:
     if not missing:
         return
     raise MissingColumns("\n".join([
-        f"{wanted_by} needs {len(missing)} column(s) that exp_dataset.csv does not have:",
+        f"{wanted_by} needs {len(missing)} column(s) that the pair table does not have:",
         *(f"    {c!r}" for c in missing),
         "",
         "Every column name this benchmark expects is defined at the top of",
         "benchmark/pairs.py, with the sign and surface conventions each one follows.",
-        "If the dataset renamed something, change it there and nowhere else.",
-        "See data/build_exp_dataset.py for what the table carries and why.",
+        "If something upstream was renamed, change it there and nowhere else.",
+        "The measured columns come from data/exp_dataset.csv; the calculated ones are",
+        "joined on from the property workbooks by load_pairs().",
     ]))
 
 
@@ -242,22 +366,22 @@ def label_regimes(df: pd.DataFrame) -> dict:
     the label is set on the observable -- and they differ only in how permissive the
     criterion is:
 
-      'inclusive'  y = `quenches`. K_SV > 10, or K_SV <= 10 with a slope significant
-                   across the points the fit used. 790 positives.
+      'inclusive'  y = `quenches`. A ladder of (K_SV, r2) rungs, weaker quenching
+                   needing a straighter line. 735 positives.
 
       'strict'     y = `quenches_strict`. The published criterion, K_SV >= 25 and
-                   r2 >= 0.90. 634 positives.
+                   r2 >= 0.90. 637 positives.
 
-    The 156 pairs that separate them are weak but real quenchers. Nothing here chooses
+    The 98 pairs that separate them are weak but real quenchers. Nothing here chooses
     between the two; the gap between them is a headline the benchmark has to show, not a
     detail to settle before reporting.
     """
     require(df, [QUENCHES, QUENCHES_STRICT], "the ground truth")
     inclusive = df[QUENCHES].astype(int).astype(bool)
     strict = df[QUENCHES_STRICT].astype(int).astype(bool)
-    # Strict is a subset of inclusive by construction: K_SV >= 25 implies K_SV > 10. If
-    # that ever stops holding, one of the two has been redefined upstream and the
-    # benchmark cannot tell which is now the ground truth.
+    # Strict is a subset of inclusive by construction: K_SV >= 25 and r2 >= 0.90 clears
+    # the ladder's `K_SV > 20 and r2 > 0.80` rung. If that ever stops holding, one of the
+    # two has been redefined upstream and the benchmark cannot tell which is now truth.
     if (strict & ~inclusive).any():
         raise ValueError(
             f"{int((strict & ~inclusive).sum())} pairs quench under the strict criterion "
@@ -274,8 +398,7 @@ def describe(df: pd.DataFrame) -> str:
     lines = [
         f"{len(df)} pairs  ({df[PC_NAME].nunique()} photocatalysts x "
         f"{df[Q_NAME].nunique()} quenchers)",
-        f"  quenches            {int(df[QUENCHES].sum()):5d}   K_SV > 10, or a "
-        f"significant slope below it",
+        f"  quenches            {int(df[QUENCHES].sum()):5d}   the (K_SV, r2) ladder",
         f"  quenches_strict     {int(df[QUENCHES_STRICT].sum()):5d}   published: "
         f"K_SV >= 25 and r2 >= 0.90",
         f"  censored            {int(df[CENSORED].sum()):5d}   below the K_SV floor; "

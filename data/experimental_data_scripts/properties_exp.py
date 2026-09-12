@@ -19,7 +19,10 @@ only selects from them and lays the result out in blocks (see ../properties_work
 No value is computed here.
 
 Downstream, `../build_exp_dataset.py` reads these two workbooks and the Stern-Volmer fits,
-and nothing else from the experimental side.
+and nothing else from the experimental side. The quencher workbook is read a second time,
+by `../../benchmark/pairs.py`, for the measured redox potentials and their bound flags:
+the SET driving force is half a measured potential and half a calculated one, so it is
+built where the two are compared rather than carried in the pair table.
 """
 
 import csv

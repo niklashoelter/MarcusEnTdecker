@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas"]
+# dependencies = ["numpy", "openpyxl>=3.1", "pandas"]
 # ///
 """
 Marcus theory: the crossing of two harmonic parabolas, as a barrier and as a rate.
@@ -177,9 +177,9 @@ def prepare(df: pd.DataFrame, k_diff=theory.K_DIFF_ACETONITRILE, mean_type="geom
     dG = df[pairs.DG_ENT].to_numpy(dtype=float)
     lam_f, lam_r = pair_lambdas(df, legacy_pairing=legacy_pairing)
     prep = {"dG": dG, "exergonic": dG < 0, "barrier": {}, "log_k": {}, "k": {}}
-    # The per-pair rate cutoff the K_SV label implies: K_SV > 10 is k_q > 10 / tau_0,
+    # The per-pair rate cutoff the detection floor implies: K_SV = 10 is k_q = 10 / tau_0,
     # and that is k_q_floor. Carried here so `classify` can compare a predicted rate
-    # against the cutoff the ground truth is actually set at.
+    # against the smallest rate the experiment could have seen.
     with np.errstate(divide="ignore", invalid="ignore"):
         prep["log_k_q_floor"] = np.log10(df[pairs.K_Q_FLOOR].to_numpy(dtype=float))
     for alpha in theory.LAMBDA_SCALES:
@@ -217,9 +217,9 @@ def grid():
                 n_free=1 + tuned_lambda,
                 params={"kind": "rate", "lam_scale": alpha, "threshold": thr},
             ))
-        # The same rate compared against the cutoff that defines the label itself
-        # rather than against a threshold chosen by maximizing MCC. The label is
-        # K_SV > 10, so that cutoff is per-pair -- 10 / tau_0, which is k_q_floor. At
+        # The same rate compared against the experiment's own detection floor rather
+        # than against a threshold chosen by maximizing MCC. That floor is per-pair --
+        # K_SV = 10, so 10 / tau_0, which is k_q_floor. At
         # alpha = 1 this carries no free parameters at all, which makes it the only
         # entry in the folder besides the adiabatic rule that can be set beside that
         # rule without a tuning asterisk.
@@ -241,8 +241,8 @@ def classify(prep, cfg: Config) -> np.ndarray:
             return prep["exergonic"] & (barrier < p["threshold"])
     with np.errstate(invalid="ignore"):
         # A scalar threshold is one chosen by maximizing MCC. "floor" instead means the
-        # cutoff the label itself is set at, which is per-pair: the label is K_SV > 10,
-        # and K_SV = k_q * tau_0, so the matching rate cutoff is 10 / tau_0 = k_q_floor.
+        # experiment's own detection floor, which is per-pair: K_SV = 10 and
+        # K_SV = k_q * tau_0, so the matching rate cutoff is 10 / tau_0 = k_q_floor.
         cut = prep["log_k_q_floor"] if p["threshold"] == "floor" else p["threshold"]
         return prep["log_k"][p["lam_scale"]] >= cut
 

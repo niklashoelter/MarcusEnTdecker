@@ -9,35 +9,25 @@ Reads   ../computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gap
 Writes  ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
         ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
 
-At every sampled step of every Milo trajectory, ORCA was run twice on the same geometry:
-`output_1.out` as the singlet and `output_3.out` as the triplet. The vertical gap is the
-difference of their final single point energies. Collected over all steps of all
-trajectories, those gaps are the DvTE distribution.
+At every sampled step ORCA was run twice on the same geometry, `output_1.out` as the
+singlet and `output_3.out` as the triplet; the vertical gap is the difference of their
+final single point energies, and all steps of all trajectories make the DvTE distribution.
 
 WHY THE ARCHIVE
-    The unpacked `Milo_MD/` tree holds only the trajectory jobs themselves -- `job.in`,
-    `job.out`, `job.xyz`, `milo.in` and the scheduler log. The per-step `step_<n>/`
-    folders containing the two ORCA outputs exist ONLY inside
-    `quenchers_vertical_gaps.tar.xz`. That archive is not a redundant copy of `Milo_MD/`
-    and must not be deleted; it is the only surviving record of the per-step energies.
-
-    It is read as a stream rather than unpacked, so no part of its ~1.95 million entries
-    is ever written to disk. One pass decompresses the whole 3.4 GB, so expect this to
-    take a while. The per-step gaps are written out alongside the summary so that nothing
-    downstream has to read the archive again.
+    The per-step `step_<n>/` folders exist ONLY inside the tar.xz -- the unpacked `Milo_MD/`
+    tree holds the trajectory jobs alone. It is not a redundant copy and must not be
+    deleted. It is read as a stream, so none of its ~1.95 million entries touches disk;
+    one pass decompresses the whole 3.4 GB, so this takes a while. The per-step gaps are
+    written out too, so nothing downstream reads the archive again.
 
 DEFINITIONS
-    dvte_mu, dvte_std are the mean and standard deviation of the sampled gaps.
-
-    dvte_<p> is the p-quantile of a normal distribution with that mean and standard
-    deviation, dvte_<p> = mu + Phi^-1(p) * std. This reproduces the published values in
-    Quencher/DvTE/milo_summary_detailed.csv to within 0.02 kcal/mol across all 48
-    quenchers and all four thresholds, which is that file's own rounding.
-
-    dvte_<p>_kde is the same quantile taken from a Gaussian kernel density estimate of
-    the samples instead of from the normal fit. The original's bandwidth is not recorded
-    anywhere; Scott's rule reproduces the published `_kde` values to within 0.07 kcal/mol
-    across all 48 quenchers, so it is evidently what was used.
+    dvte_mu, dvte_std   mean and standard deviation of the sampled gaps.
+    dvte_<p>            the p-quantile of a normal fit, mu + Phi^-1(p) * std. Reproduces
+                        Quencher/DvTE/milo_summary_detailed.csv to 0.02 kcal/mol, which is
+                        that file's own rounding.
+    dvte_<p>_kde        the same quantile from a Gaussian KDE of the samples instead. The
+                        original's bandwidth is unrecorded; Scott's rule reproduces the
+                        published values to 0.07 kcal/mol, so it is evidently what was used.
 """
 
 import csv

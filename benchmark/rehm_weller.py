@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas"]
+# dependencies = ["numpy", "openpyxl>=3.1", "pandas"]
 # ///
 """
 Rehm-Weller: the empirical barrier, and the Balzani rate built on it.
@@ -97,9 +97,9 @@ def prepare(df: pd.DataFrame, k_diff=theory.K_DIFF_ACETONITRILE, mean_type="geom
     dG = df[pairs.DG_ENT].to_numpy(dtype=float)
     lam_f, lam_r = marcus.pair_lambdas(df, legacy_pairing=legacy_pairing)
     prep = {"dG": dG, "exergonic": dG < 0, "barrier": {}, "log_k": {}, "k": {}}
-    # The per-pair rate cutoff the K_SV label implies: K_SV > 10 is k_q > 10 / tau_0,
+    # The per-pair rate cutoff the detection floor implies: K_SV = 10 is k_q = 10 / tau_0,
     # and that is k_q_floor. Carried here so `classify` can compare a predicted rate
-    # against the cutoff the ground truth is actually set at.
+    # against the smallest rate the experiment could have seen.
     with np.errstate(divide="ignore", invalid="ignore"):
         prep["log_k_q_floor"] = np.log10(df[pairs.K_Q_FLOOR].to_numpy(dtype=float))
     for alpha in theory.LAMBDA_SCALES:
@@ -152,8 +152,8 @@ def classify(prep, cfg: Config) -> np.ndarray:
             return prep["exergonic"] & (prep["barrier"][p["lam_scale"]] < p["threshold"])
     with np.errstate(invalid="ignore"):
         # A scalar threshold is one chosen by maximizing MCC. "floor" instead means the
-        # cutoff the label itself is set at, which is per-pair: the label is K_SV > 10,
-        # and K_SV = k_q * tau_0, so the matching rate cutoff is 10 / tau_0 = k_q_floor.
+        # experiment's own detection floor, which is per-pair: K_SV = 10 and
+        # K_SV = k_q * tau_0, so the matching rate cutoff is 10 / tau_0 = k_q_floor.
         cut = prep["log_k_q_floor"] if p["threshold"] == "floor" else p["threshold"]
         return prep["log_k"][p["lam_scale"]] >= cut
 

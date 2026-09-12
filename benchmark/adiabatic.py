@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas"]
+# dependencies = ["numpy", "openpyxl>=3.1", "pandas"]
 # ///
 """
 The adiabatic rule: a pair quenches if triplet energy transfer is downhill.

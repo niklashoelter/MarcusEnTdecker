@@ -8,68 +8,42 @@ QC'd well intensities -> one Stern-Volmer fit per photocatalyst/quencher pair.
 Reads   ../experimental_data_processed/stern_volmer_intensities.csv
 Writes  ../experimental_data_processed/stern_volmer_fits.csv
 
-Fits I0/I against [Q]. 27 photocatalysts x 48 quenchers = 1296 pairs.
+I0/I against [Q], 27 x 48 = 1296 pairs. The replicate QC behind those intensities lives
+once, in stern_volmer_intensities.py.
 
-    uv run data/experimental_data_scripts/stern_volmer_fits.py
-    uv run data/experimental_data_scripts/stern_volmer_fits.py --fix-intercept
+    uv run data/experimental_data_scripts/stern_volmer_fits.py [--fix-intercept]
 
-THE INTERCEPT FLOATS BY DEFAULT
-    I0/I = 1 + K_SV*[Q] has no free intercept -- the [Q] = 0 well is in every series and
-    fixes it at 1 -- but the reported fit lets it float anyway, because that is what the
-    acquisition-time code did and what the published K_SV values are. 327 of the 1296
-    pairs land more than 0.05 away from 1 and twelve more than 0.5, so on those pairs the
-    intercept is absorbing curvature that belongs in the slope.
-
-    `--fix-intercept` anchors the line at (0, 1) instead, a genuine one-parameter fit
-    (ols_anchored). It changes K_SV on every pair, so it is off by default and the tables
-    in the repository are the free-intercept ones. Turn it on to see how much of a given
-    K_SV rests on the floating intercept.
-
-This is the one script that reads a generated file rather than raw instrument output.
-The replicate QC that produces those intensities is implemented once, in
-stern_volmer_intensities.py, rather than duplicated here where two copies could drift.
+THE INTERCEPT FLOATS
+    I0/I = 1 + K_SV [Q] has no free intercept, but the reported fit lets it float because
+    the published K_SV values do. 327 pairs land more than 0.05 from 1 and twelve more
+    than 0.5; there the intercept is absorbing curvature that belongs in the slope.
+    `--fix-intercept` anchors at (0, 1) instead. It moves every K_SV, so it is off.
 
 PROVENANCE
-    Faithful port of SternVolmerAnalysis in
-    Auto_Quenching_Backup/auto_quenching/analysis/stern_volmer.py (+ regression_utils.py),
-    the acquisition-time code that produced the published K_SV values. Verified against
-    the 1296 per-pair workbooks that code wrote: every point-selection mask matches, and
-    K_SV agrees to ~1e-13 relative.
+    Port of SternVolmerAnalysis in Auto_Quenching_Backup (stern_volmer.py +
+    regression_utils.py), the acquisition-time code behind the published values, with the
+    one change below. Otherwise verified against the 1296 workbooks that code wrote: same
+    point masks, K_SV to ~1e-13. Its scikit-learn estimators are reimplemented in numpy,
+    since the version behind the published numbers was never recorded. Two of its
+    behaviours look like defects and are reproduced anyway, marked QUIRK.
 
-    The original imported scikit-learn for LinearRegression and TheilSenRegressor but
-    never declared it as a dependency, so the exact version behind the published numbers
-    is unrecorded. Both estimators are reimplemented here in numpy -- ordinary least
-    squares, and Theil-Sen as the spatial median of the pairwise-exact lines, which is
-    what TheilSenRegressor computes when n_subsamples = n_features + 1 = 2. That removes
-    scikit-learn and scipy from the pipeline and makes the result version-independent.
+THE ONE CHANGE: THE RANGE SCAN RUNS FOR EVERY PAIR
+    The original returns before the scan when the all-points r2 is below 0.5 and fits all
+    points, so a pair that is linear and then saturates took its K_SV from the whole
+    series: old PC23/Q39 gave K_SV 2254 on an intercept of 6.3, where its linear first
+    three points give 21774 at r2 0.97, intercept 1.38. That exit is gone. 58 pairs choose
+    different points and say so in `note`; the other 1238 are unchanged.
 
-    Two behaviours of the original look like defects. Both are reproduced deliberately
-    and marked QUIRK below; changing either would silently move published numbers.
+TWO LABELS
+    `quenching_observed`, the published criterion K_SV >= 25 and r2 >= 0.90, unchanged.
+    It reaches the dataset as `quenches_strict`.
 
-TWO LABELS COME OUT OF THIS FILE
-    `quenching_observed` is the published criterion, K_SV >= 25 and r2 >= 0.90, kept
-    byte-for-byte so the published table stays reproducible. It reaches the dataset as
-    `quenches_strict` and is scored as the stricter reading.
-
-    `quenches` is the label this project classifies on: K_SV > 10, or K_SV <= 10 with a
-    slope that is significant across the points the fit used, Bonferroni-corrected when
-    the range scan dropped one. The two differences from the published rule are
-    deliberate.
-
-    The threshold moved to 10 because a weak quencher is still a quencher, and because
-    K_SV 5-10 is real signal here rather than noise: 19 such pairs clear r2 > 0.95 where
-    a selection-aware null (best 5 of 6 points, no true slope) expects 1.1, and their
-    traces are monotone 3-4 % drops well above the read noise.
-
-    The rescue is a slope test rather than an r2 cut because the fitted r2 is not
-    comparable across pairs. R2_NO_QUENCHING gates the outlier scan, so a pair whose
-    all-points r2 is 0.45 can never be cleaned while one at 0.55 can be cleaned to 0.99.
-    Of the low-K_SV pairs, 19 of the 50 that had a point dropped reach r2 > 0.95 and
-    0 of the 103 that did not -- an artifact of that gate, not a property of the sample.
-    The slope test reads the points each fit used and pays for the dropped-point search
-    with the Bonferroni factor, so it judges both alike. It does not put a dropped point
-    back: the scan exists to cut a collapsed well loose, and restoring it would let one
-    bad reading carry the label.
+    `quenches`, what this project classifies on: a ladder where weaker quenching demands a
+    straighter line -- K_SV > 50 at r2 > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
+    Any one rung is enough and `rung` says which. So no fit worse than r2 0.75 is ever
+    called quenching however large its K_SV, and a K_SV of a few M-1 needs an almost
+    perfect line. The floor stops a collapsed well from carrying the label; the sliding
+    threshold keeps the genuine weak quenchers, monotone 3-4 % drops well above read noise.
 """
 
 import csv
@@ -89,8 +63,10 @@ R2_GOOD_CORRELATION = 0.995   # all-points r2 above this: nothing to gain from s
 OUTLIER_IMPROVEMENT = 0.20    # an outlier must cut the MAE by this fraction to qualify
 K_SV_QUENCHING = 25.0         # published: a pair counts as quenching when K_SV >= this
 R2_QUENCHING = 0.90           # published: ... and r2 >= this
-K_SV_LABEL = 10.0             # this project: K_SV above this quenches outright ...
-P_SLOPE_LABEL = 0.01          # ... at or below it, only with a slope this significant
+
+# This project's label: (K_SV above, r2 above) -- any one rung is enough. Highest K_SV
+# first, so the rung a pair is reported under is the most permissive one it clears.
+LABEL_RUNGS = [(50.0, 0.75), (20.0, 0.80), (10.0, 0.90), (0.0, 0.99)]
 
 # Anchor the reported fit at (0, 1) instead of letting the intercept float. OFF by
 # default: the published K_SV values are free-intercept fits, and turning this on moves
@@ -102,8 +78,8 @@ EPS = np.finfo(np.double).eps
 
 COLUMNS = [
     "pc_old_id", "quencher_id", "K_SV", "intercept", "r2", "num_points", "n_measured",
-    "K_SV_all_points", "r2_all_points", "p_slope",
-    "quenches", "quenching_observed", "fit_method", "confidence", "note",
+    "K_SV_all_points", "r2_all_points",
+    "quenches", "rung", "quenching_observed", "fit_method", "confidence", "note",
 ]
 
 
@@ -127,14 +103,9 @@ def score_fn(residuals, n_points):
 def ols_anchored(x, y):
     """Least squares through (0, 1): I0/I = 1 + K_SV [Q]. Returns slope, 1.0, pred, r2.
 
-    The genuine one-parameter Stern-Volmer fit, which `linear_fit(force_intercept=True)`
-    is not -- that one reproduces the original's shift-and-relabel and still lets the
-    estimator find its own intercept. Off by default; see FIX_INTERCEPT.
-
-    r2 is reported against the mean of y, the same reference the free-intercept fit uses,
-    so the two are comparable. It can go negative when the anchored line is a worse
-    description than a horizontal line, which is the honest answer for a pair whose
-    free-intercept fit only looked good because the intercept absorbed the curvature.
+    The real one-parameter fit, which `linear_fit(force_intercept=True)` is not. r2 is
+    against the mean of y, as in the free-intercept fit, so the two compare; it goes
+    negative where the anchored line is worse than a flat one. Off by default.
     """
     x = np.asarray(x, float)
     y = np.asarray(y, float)
@@ -254,74 +225,17 @@ def exclude_outlier_theil_sen(x, y, min_datapoints, improvement_threshold):
     return x[mask], y[mask], qualified
 
 
-def student_t_sf(t_stat, dof):
-    """P(T > t_stat) for Student's t. Exact closed forms, dof 1..4.
+def rung(k_sv, r2):
+    """The most permissive rung of LABEL_RUNGS this fit clears, or "" for none.
 
-    A Stern-Volmer series here is 3 to 6 points, so dof = n - 2 never exceeds 4 and the
-    closed forms cover every case. They agree with scipy.stats.t to 2e-16, which is why
-    this file still needs nothing but numpy.
+    Written to the table, so a row says on what evidence it quenches.
     """
-    if dof == 1:                                   # Cauchy
-        cdf = 0.5 + np.arctan(t_stat) / np.pi
-    elif dof == 2:
-        cdf = 0.5 + t_stat / (2.0 * np.sqrt(2.0 + t_stat * t_stat))
-    elif dof == 3:
-        u = t_stat / np.sqrt(3.0)
-        cdf = 0.5 + (u / (1.0 + u * u) + np.arctan(u)) / np.pi
-    elif dof == 4:
-        x = t_stat / np.sqrt(4.0 + t_stat * t_stat)
-        cdf = 0.5 + 0.25 * x * (3.0 - x * x)
-    else:
-        return float("nan")
-    return 1.0 - cdf
-
-
-def slope_p_value(x, y):
-    """One-sided p for a positive slope of y on x. NaN if there are too few points.
-
-    One-sided because quenching can only raise I0/I. A negative slope is evidence
-    against quenching, not weak evidence for it, and comes back with p near 1.
-    """
-    n = x.size
-    if n < 3:
-        return float("nan")
-    slope, _, _, r2 = ols(x, y)
-    if not np.isfinite(r2):
-        return float("nan")
-    if r2 >= 1.0:                       # no residual scatter left to test against
-        return 0.0 if slope > 0 else 1.0
-    dof = n - 2
-    t_stat = np.sign(slope) * np.sqrt(max(r2, 0.0) * dof / (1.0 - r2))
-    return student_t_sf(t_stat, dof)
-
-
-def slope_significance(chosen, conc, ratio):
-    """One-sided p for the trend, on the points the fit actually used.
-
-    WHY NOT ON ALL MEASURED POINTS
-        That was the first attempt and it is wrong. The range scan exists to cut a
-        collapsed well loose, and putting it back lets one bad reading carry the label:
-        PC11/Q44 fits at K_SV = 0.67 on its own points and 7276 across all six, because
-        the last well reads near zero. Testing what the fit used keeps the label and the
-        reported K_SV describing the same data.
-
-    WHY THE PENALTY
-        Testing the used points alone would reward the grooming instead. A pair that had
-        its worst point dropped was chosen as the best of n_measured candidates, so its
-        p is optimistic by roughly that factor -- simulation puts P(r2 > 0.95) under pure
-        noise at 0.023 for the best 5 of 6 against 0.0046 for a clean 5, a ratio of 5.0
-        against the 6 assumed here. Bonferroni over the candidates is the conservative
-        correction, and it is what makes a trimmed and an untrimmed pair comparable.
-
-        This is the whole reason the label cannot just read the fitted r2: r2 carries no
-        record of how many fits were tried to reach it.
-    """
-    x, y = conc[chosen], ratio[chosen]
-    p_raw = slope_p_value(x, y)
-    if not np.isfinite(p_raw):
-        return float("nan")
-    penalty = conc.size if x.size < conc.size else 1
-    return min(1.0, p_raw * penalty)
+    if not (np.isfinite(k_sv) and np.isfinite(r2)):
+        return ""
+    for k_min, r2_min in LABEL_RUNGS:
+        if k_sv > k_min and r2 > r2_min:
+            return f"K_SV > {k_min:g} and r2 > {r2_min:g}"
+    return ""
 
 
 def analyse(conc, intensity):
@@ -333,16 +247,18 @@ def analyse(conc, intensity):
     conc, intensity = conc[keep], intensity[keep]
     ratio = intensity[0] / intensity
     indices = np.arange(conc.size)
+    note = "range scanned"
 
     if conc.size >= MIN_POINTS_FOR_FIT:
         slope, _, _, r2 = ols(conc, ratio)
         r = np.sign(slope) * np.sqrt(max(r2, 0.0))
         if slope < 0:
             return indices, "negative initial slope", conc, ratio
-        if round(r, 4) ** 2 < R2_NO_QUENCHING:
-            return indices, "initial r2 below no-quenching threshold", conc, ratio
         if round(r ** 2, 4) > R2_GOOD_CORRELATION:
             return indices, "perfect measurement, no range scan", conc, ratio
+        if round(r, 4) ** 2 < R2_NO_QUENCHING:
+            # The original returns here with every point kept. See THE ONE CHANGE.
+            note = "scanned despite a low all-points r2"
 
     best_score = 0.0
     chosen = indices
@@ -362,7 +278,7 @@ def analyse(conc, intensity):
             if outlier:
                 chosen = np.delete(chosen, outlier)
 
-    return chosen, "range scanned", conc, ratio
+    return chosen, note, conc, ratio
 
 
 def finalise(chosen, conc, ratio, fix_intercept=FIX_INTERCEPT):
@@ -429,11 +345,7 @@ def main(fix_intercept=FIX_INTERCEPT):
         # the all-points fit is a diagnostic, not the label: where it disagrees sharply
         # with K_SV, a well the range scan dropped is the reason.
         slope_all, _, _, r2_all = ols(conc, ratio)
-        p_slope = slope_significance(chosen, conc, ratio)
-        quenches = bool(
-            slope > K_SV_LABEL
-            or (slope > 0 and np.isfinite(p_slope) and p_slope < P_SLOPE_LABEL)
-        )
+        carried = rung(slope, r2)
         rows.append({
             "pc_old_id": pc_id,
             "quencher_id": q_id,
@@ -444,8 +356,8 @@ def main(fix_intercept=FIX_INTERCEPT):
             "n_measured": int(conc.size),
             "K_SV_all_points": sig(slope_all),
             "r2_all_points": sig(r2_all),
-            "p_slope": sig(p_slope),
-            "quenches": int(quenches),
+            "quenches": int(bool(carried)),
+            "rung": carried,
             "quenching_observed": quenching,
             "fit_method": method,
             "confidence": confidence(slope, r2, intercept, len(chosen), int(conc.size), quenching),
@@ -460,11 +372,15 @@ def main(fix_intercept=FIX_INTERCEPT):
 
     quench = sum(1 for r in rows if r["quenching_observed"])
     label = sum(1 for r in rows if r["quenches"])
-    rescued = sum(1 for r in rows if r["quenches"] and not (r["K_SV"] or 0) > K_SV_LABEL)
     print(f"{len(rows)} pairs -> {OUT.name}")
-    print(f"  quenches (K_SV > {K_SV_LABEL:g}, or p_slope < {P_SLOPE_LABEL}): "
-          f"{label} yes, {len(rows) - label} no")
-    print(f"    of which carried by the slope test alone: {rescued}")
+    print(f"  quenches: {label} yes, {len(rows) - label} no")
+    rungs = defaultdict(int)
+    for r in rows:
+        if r["rung"]:
+            rungs[r["rung"]] += 1
+    for k_min, r2_min in LABEL_RUNGS:
+        name = f"K_SV > {k_min:g} and r2 > {r2_min:g}"
+        print(f"    {rungs[name]:5d}  {name}")
     print(f"  quenching_observed (published, K_SV >= {K_SV_QUENCHING:g} and r2 >= {R2_QUENCHING}): "
           f"{quench} yes, {len(rows) - quench} no")
     counts = defaultdict(int)

@@ -10,9 +10,8 @@ Writes  ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
 
     uv run data/computational_data_scripts/photocatalyst_dft.py
 
-Every number is parsed out of an ORCA output in the deposit; no spreadsheet is read. The
-arithmetic is Leon Schlosser's, as it stands in the photocatalyst property file he
-delivered, so that this table reproduces it:
+Every number is parsed from an ORCA output in the deposit; no spreadsheet is read. The
+arithmetic is Leon Schlosser's, as in the property file he delivered, so this reproduces it:
 
     E_T                ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.503
     lambda_X_to_Y      (E_Y at the X geometry - E_Y) * 627.509     electronic only
@@ -21,31 +20,24 @@ delivered, so that this table reproduces it:
     E_PCstar_PCminus   -dG_red_ES / 23.061 - 4.42
     E_PCplus_PCstar     dG_ox_ES / 23.061 - 4.42
 
-The two Hartree conversions differ (627.503 for E_T, 627.509 for everything else) because
-they do in the source. They are kept rather than unified: the point of this table is to
-reproduce the published values, and unifying them moves E_T by 6e-4 kcal/mol.
+The two Hartree conversions differ because they do in the source; unifying them would move
+E_T by 6e-4 kcal/mol, so they stay.
 
 AGREEMENT WITH THE DELIVERED FILE
-    The six lambdas agree to 1e-13 kcal/mol, the two dG to 6e-8 (the source computed them
-    in Excel from energies pasted to 15 significant digits), E_T to 5e-8 -- for every
-    photocatalyst the file has, except four E_T values. PC10, PC13, PC25 and PC28 differ
-    by +2.23, -0.70, +0.61 and -0.55 kcal/mol: the delivered file took E_T from a
-    spreadsheet column that was not updated for those four, and no job in the delivery
-    reproduces its numbers. The values here come from the jobs. PC19 is blank in the
-    delivered file; here it has what its six jobs allow (four single points were never
-    run).
+    Lambdas to 1e-13 kcal/mol, the two dG to 6e-8 (the source did them in Excel), E_T to
+    5e-8 -- everywhere except four E_T values. Old PC10, PC13, PC25 and PC28 differ by
+    +2.23, -0.70, +0.61 and -0.55 kcal/mol, because that file took E_T from a spreadsheet
+    column never updated for those four and no delivered job reproduces it. The values
+    here come from the jobs. PC19 is blank there; here it has what its six jobs allow.
 
 NAMING
-    `lambda_S0_to_T1` is the relaxation on the *triplet* surface starting from the singlet
-    geometry (the delivered file's `lamba_T-S`); `lambda_T1_to_S0` is the relaxation on
-    the *singlet* surface starting from the triplet geometry (its `lambda_S-T`). The
-    ox/red pairs follow the same pattern. Potentials are named by their couple:
-    E(PC*/PC-) is how strong an oxidant the triplet is. The delivered file labels it
-    `E_ox_ES`, and E(PC+/PC*) `E_red_ES`.
+    `lambda_S0_to_T1` is relaxation on the *triplet* surface from the singlet geometry
+    (the delivered file's `lamba_T-S`), `lambda_T1_to_S0` the reverse (its `lambda_S-T`);
+    ox/red follow the same pattern. Potentials are named by their couple: E(PC*/PC-) is
+    how strong an oxidant the triplet is, labelled `E_ox_ES` in the delivered file.
 
-Photocatalysts are numbered by old id here. Old PC7, PC26, PC30 and PC31 were computed but
-are crossed out in the photocatalyst sheet and are not part of the data
-(../compound_identification.py).
+Numbered by old id. Old PC7, PC26, PC30 and PC31 were computed but are crossed out in the
+photocatalyst sheet and are not part of the data (../compound_identification.py).
 """
 
 from __future__ import annotations

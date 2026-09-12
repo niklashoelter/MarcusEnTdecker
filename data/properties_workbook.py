@@ -1,10 +1,11 @@
 """
-The layout shared by the four property workbooks, and the one way to read them back.
+The layout shared by the five property workbooks, and the one way to read them back.
 
     experimental_data_processed/photocatalyst_properties_exp.xlsx
     experimental_data_processed/quencher_properties_exp.xlsx
     computational_data_processed/photocatalyst_properties_calc.xlsx
     computational_data_processed/quencher_properties_calc.xlsx
+    computational_data_processed/quencher_properties_ml.xlsx
 
 One row per compound. Columns come in blocks -- identity first, then one block per
 measured or computed property -- separated by an empty column and named in a band above
@@ -14,13 +15,16 @@ key`, gives every column its unit, a one-line description and the intermediate t
 
 Nothing in a workbook is computed here. Every value is copied from the per-measurement
 table an extraction script wrote into the raw folder beside its instrument files, so a
-number can always be followed back one step to where it was derived.
+number can always be followed back one step to where it was derived. The ml workbook is
+the one with no such table behind it -- a model has no job directory, only a forward pass
+-- and its `Taken from` column names the checkpoint and the field of it instead.
 
 The files are written byte-for-byte reproducibly: the zip timestamps and the document
 properties are pinned, so rerunning the pipeline on unchanged data changes nothing that
 git can see.
 
-Not a pipeline stage; imported by `properties_exp.py` and `properties_calc.py`.
+Not a pipeline stage; imported by `properties_exp.py`, `properties_calc.py` and
+`quencher_ml.py`.
 """
 
 from __future__ import annotations
@@ -193,7 +197,9 @@ def _write_pinned(buf: io.BytesIO, path: Path) -> None:
 def read_workbook(path: Path, key: str) -> dict[int, dict[str, object]]:
     """A property workbook as {id: {header: value}}, blanks as "".
 
-    Separator columns are skipped. This is the reader `build_exp_dataset.py` mirrors.
+    Separator columns are skipped. This is the reader `build_exp_dataset.py` mirrors, as
+    do `../benchmark/pairs.py` and `../ml/predict.py`, which read workbooks from outside
+    `data/` and so cannot import this module.
     """
     ws = load_workbook(path, read_only=True, data_only=True).worksheets[0]
     rows = ws.iter_rows(min_row=HEADER_ROW, values_only=True)

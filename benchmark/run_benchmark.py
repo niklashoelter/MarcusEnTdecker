@@ -1,12 +1,13 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas"]
+# dependencies = ["numpy", "openpyxl>=3.1", "pandas"]
 # ///
 """
 Score every theory in this folder against the measured rate constants, on one footing.
 
-Reads   ../data/exp_dataset.csv
-Writes  results/benchmark_full.csv     every method at every setting, both label regimes
+Reads   ../data/exp_dataset.csv, and the property workbooks pairs.py joins onto it
+Writes  results/benchmark_pairs.csv    the joined table every number below was scored on
+        results/benchmark_full.csv     every method at every setting, both label regimes
         results/benchmark_best.csv     the best setting per method family, plus its
                                        leave-one-photocatalyst-out score
         results/label_regimes.csv      each method under both readings of the ground truth
@@ -26,16 +27,16 @@ ON ONE FOOTING MEANS
     its tuned one.
 
 THE TWO NUMBERS THAT ARE NOT THE SAME NUMBER
-    inclusive    all 1248 scored pairs, y = `quenches`: K_SV > 10, or K_SV <= 10 with a
-                 slope significant across the points the fit used. 458 negatives.
+    inclusive    all 1248 scored pairs, y = `quenches`: a ladder of (K_SV, r2) rungs,
+                 weaker quenching needing a straighter line. 513 negatives.
     strict       all 1248 scored pairs, y = `quenches_strict`: the published K_SV >= 25
-                 and r2 >= 0.90. 614 negatives.
+                 and r2 >= 0.90. 611 negatives.
 
     The 1248 are the 1296 pairs of exp_dataset.csv less PC22's 48, which no theory is
     scored on (pairs.EXCLUDED_PHOTOCATALYSTS).
 
     Which regime the paper should report is a scientific question about what counts
-    as quenching, not a data-processing one. The 156 pairs between the two are weak
+    as quenching, not a data-processing one. The 98 pairs between the two are weak
     but real: monotone 3-4 % signal, well above read noise, at rate constants the
     published criterion never counted. Both regimes are always scored and both are
     always reported; this harness takes no position.
@@ -412,6 +413,9 @@ def main(argv=None):
     modules = [m for m in THEORIES if m.NAME in args.theories]
 
     df = pairs.load_pairs()
+    # The table as loaded, before --exclude-pc, written out below so the calculated
+    # columns the scores came from can be read off a file rather than recomputed.
+    pair_table = df
     print(pairs.describe(df))
 
     present = sorted(set(df[pairs.PC_NAME]) & set(pairs.FLAGGED_PHOTOCATALYSTS))
@@ -454,7 +458,8 @@ def main(argv=None):
     if not args.no_write:
         args.results_dir.mkdir(parents=True, exist_ok=True)
         print()
-        for name, frame in (("benchmark_full", full), ("benchmark_best", best),
+        for name, frame in (("benchmark_pairs", pair_table),
+                            ("benchmark_full", full), ("benchmark_best", best),
                             ("label_regimes", regimes_df), ("rate_agreement", rates)):
             path = args.results_dir / f"{name}.csv"
             frame.to_csv(path, index=False)

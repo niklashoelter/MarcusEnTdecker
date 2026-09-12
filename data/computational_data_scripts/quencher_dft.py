@@ -6,41 +6,31 @@
 Quencher ORCA outputs -> adiabatic triplet energy, redox potentials, reorganization energies.
 
 Reads   ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/
-Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv   one row per quencher
+Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
 
-48 quenchers, four states each: S0, T1, ox, red. One geometry optimisation and one set of
-single points per state, in the same layout as the photocatalysts.
+48 quenchers, four states each -- S0, T1, ox, red -- one optimisation and one set of
+single points per state, in the photocatalysts' layout.
 
 WHAT IS IN THE DEPOSIT
-    Only the calculation each published number actually came from. The delivery held
-    several conformers per state and, for a few quenchers, the same conformer computed
-    more than once in parallel pipelines; the conformer that won on energy and the run
-    that supplied each quantity are the ones kept, and the file names carry neither a
-    conformer number nor a pipeline number. Nothing chooses between candidates at read
-    time any more, because there are no candidates left -- this script reads the one
-    file per role and does the arithmetic.
+    Only the calculation each published number came from. The delivery held several
+    conformers per state, and a few states twice from parallel pipelines; what is kept is
+    the conformer that won on energy, with no conformer or pipeline number in the names.
+    So nothing chooses between candidates at read time -- there are none left.
 
-    Two states draw one file from a second run of the same conformer, because that is
-    where the published value comes from: Q17's S0 takes its thermal correction from the
-    later run and everything else from the first, and Q18's S0 takes the reduced-state
-    vertical single point from the later run and everything else from the first. In both
-    the deposited folder is therefore a composite, and `opt_output.out` is not necessarily
-    the run that `sp_output.out` was computed from.
+    Two folders are composites, because that is where the published value comes from:
+    Q17's S0 takes its thermal correction and Q18's S0 its reduced-state vertical single
+    point from a second run of the same conformer. In those two, `opt_output.out` is not
+    the run `sp_output.out` came from.
 
 PROVENANCE
-    The per-quencher arithmetic is a port of
-    Quencher/Adiabatic DFT Pipeline 5/extract_parameters_T1.py, which produced the
-    published values.
+    Port of Quencher/Adiabatic DFT Pipeline 5/extract_parameters_T1.py, which produced the
+    published values. Its roundings are kept deliberately -- 1 decimal in kcal/mol, 2 in V
+    -- since they define those numbers; this is the one script that does not follow the
+    six-significant-figure rule.
 
-    The original's roundings are preserved deliberately, because they define the published
-    numbers: 1 decimal in kcal/mol, 2 decimals in V. This is the one place in the data
-    package that does not follow the six-significant-figure rule.
-
-    The original also produced `_sim` variants of every reorganization energy, using the
-    conformer geometrically closest to the lowest-energy S0 structure rather than the
-    lowest-energy one. Those columns are not computed here: nothing in the project reads
-    them, neither assembled dataset carries them, and their published values could not be
-    reproduced from the geometries.
+    Its `_sim` reorganization energies, taken from the conformer closest in geometry to
+    the lowest-energy S0 rather than the lowest in energy, are not computed: nothing reads
+    them, and their published values could not be reproduced from the geometries.
 """
 
 import csv

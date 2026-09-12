@@ -7,90 +7,58 @@ Cyclic voltammograms, and the literature where there are none -> one redox table
 
 Reads   ../experimental_data_raw/quencher_cyclic_voltammetry/   (21 traces + 19 blanks)
         ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_literature_data.csv
-Writes  ../experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_redox.csv   (19 samples)
-        ../experimental_data_raw/quencher_cyclic_voltammetry/cyclic_voltammetry_traces.csv  (25821 points)
-        ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv  (48 quenchers)
+Writes  cyclic_voltammetry_redox.csv    (19 samples)
+        cyclic_voltammetry_traces.csv   (25821 points)
+        quencher_redox_potentials.csv   (48 quenchers)
 
 WHICH NUMBER IS USED
-    A quencher's potential comes from its voltammogram whenever one is deposited (19
-    quenchers), and from quencher_literature_data.csv only where there is none: a DOI for
-    a published value, "CV" for one measured in this lab whose trace is not in the data,
-    "estimated" where neither exists. The literature file may not hold a value the
-    voltammogram already gives; the one fallback is Q22's oxidation, whose two repeats
-    disagree (below). quencher_redox_potentials.csv records, per quencher, which it was.
+    The voltammogram wherever one is deposited (19 quenchers); the literature file only
+    where there is none, with `source` saying which it was -- a DOI, `CV` for a value
+    measured in this lab whose trace is not deposited, or `estimated`. The literature file
+    may not give a value the voltammogram already gives; the one exception is Q22's
+    oxidation, below.
 
 THE SAMPLE NUMBER IS THE QUENCHER ID
-    The file names carry a three-digit sample number and nothing else -- the one text
-    line at the top of each export, `i400sN1_1#034`, is the instrument's own run counter
-    and does NOT track the sample (`009.csv` is run #034). The lab record says the sample
-    number is the quencher id. That was checked against the potentials the lab had read
-    off these traces by eye (2026-09-11, before those readings were dropped from the
-    package): the extraction reproduced 29 of 32 plain values within 0.15 V, median
-    deviation 0.050 V, and all five recorded bounds. Where it did not, the extracted value
-    is the one used: Q17 reduction (recorded -0.2 V, a few-uA shoulder on a sloping
-    background; extracted -1.57 V), Q46 reduction (-2.0 V; -2.29 V), Q23 oxidation (1.84 V;
-    1.69 V).
+    The file names carry a three-digit sample number; the `i400sN1_1#034` line inside is
+    the instrument's run counter and does not track the sample. The lab record says the
+    sample number is the quencher id, and that was checked against the potentials the lab
+    read off these traces by eye: 29 of 32 plain values within 0.15 V (median 0.050 V) and
+    all five bounds. Where they differ the extracted value is used -- Q17 reduction
+    (recorded -0.2 V, a few-uA shoulder on a sloping background; extracted -1.57 V), Q46
+    reduction (-2.0 V; -2.29 V), Q23 oxidation (1.84 V; 1.69 V).
 
 WHAT IS IN A FILE
-    Semicolon-separated, three header lines (run label, blank, column names), then
-    potential in V against current in uA. Decimal points, not commas. Every trace is one
-    full cycle on the same schedule: 0 V -> +2.5 V -> -2.5 V -> 0 V, at either 0.05 V
-    (201 points) or 0.005 V (2001 points) per exported point. Each `<nnn>.csv` has a
-    `<nnn>_blank.csv` measured on the same potential axis, point for point.
+    Semicolon-separated, three header lines, then potential in V against current in uA.
+    One full cycle each, 0 -> +2.5 -> -2.5 -> 0 V, at 0.05 V (201 points) or 0.005 V
+    (2001 points) per point, with a blank on the same axis point for point -- so the
+    background comes off by plain subtraction. The axis is already on the reported scale:
+    no anodic branch has a reversible couple, so there is no ferrocene wave to correct
+    against, and the extracted values matched the lab's vs.-SCE readings to +0.046 V mean,
+    a tenth of what a missed correction would cost. No correction is applied. There is no
+    time column or scan rate anywhere, so `scan_rate_V_s` stays empty.
 
-    The potential axis is ALREADY on the scale the values are reported on. There is no
-    reversible couple anywhere on any anodic branch, so no ferrocene wave near +0.4 V to
-    correct against, and the extracted potentials matched the lab's vs.-SCE readings with
-    a mean signed offset of +0.046 V -- a tenth of the ~0.4 V a missed ferrocene
-    correction would put on every potential. No correction is applied.
+WHICH NUMBER IS REPORTED
+    35 of 38 branches are irreversible -- the wave runs into the solvent limit with no
+    return peak -- so there is no E_1/2 and the onset is all there is. Four descriptors
+    are written per branch and `E_ox_basis` / `E_red_basis` says which one was taken:
+    onset (tangent at steepest rise, back to baseline), peak, half-peak, half-wave.
+    The onset is reported on an irreversible wave because it is what the experimenters
+    read, the peak sitting some 0.2 V beyond it; the half-wave wherever a return peak was
+    found within REVERSIBLE_WINDOW_V (Q28, Q39, Q42, all reductions).
 
-    There is no time column and no scan rate anywhere in the export, so `scan_rate_V_s`
-    is left empty rather than guessed.
-
-THE BLANK IS SUBTRACTED POINT FOR POINT
-    Sample and blank share the same potential grid exactly, so the background is removed
-    by plain subtraction, no interpolation and no scaling.
-
-WHAT IS EXTRACTED, AND WHICH NUMBER IS REPORTED
-    35 of the 38 branches are irreversible -- a wave that runs into the solvent limit with
-    no return peak -- so there is no E_1/2 and the onset is all there is. Four descriptors
-    are written per branch, and `E_ox_basis` / `E_red_basis` says which of them `E_ox_V` /
-    `E_red_V` is:
-
-      E_ox_onset_V / E_red_onset_V   tangent at the point of steepest rise, extrapolated
-                                     back to the local baseline
-      E_ox_peak_V  / E_red_peak_V    the peak potential, empty when the wave runs into
-                                     the vertex without turning over
-      E_ox_half_peak_V / ...         the potential at half the peak current
-      E_ox_half_wave_V / ...         (forward peak + return peak) / 2, only where a
-                                     return peak was found
-
-    The ONSET is reported on an irreversible wave, because it is what the experimenters
-    read; the peak sits systematically 0.2 V beyond it. The HALF-WAVE is reported wherever
-    a return peak was found within REVERSIBLE_WINDOW_V of the forward one: Q28, Q39 and Q42,
-    all reductions. An irreversible onset is a kinetic quantity, not a redox equilibrium.
-
-FINDING THE WAVE
-    The FIRST resolvable wave on each branch, not the largest: a compound's own oxidation
-    comes before the electrolyte's breakdown, which is usually the bigger feature.
-
-    A wave is resolvable when the blank-corrected current rises MIN_WAVE_UA (or NOISE_K
-    robust standard deviations, whichever is larger) above its own trailing minimum, at
-    least EDGE_MARGIN_V inside the vertex.
-
-NO WAVE IS A BOUND
-    A branch with no resolvable wave says the compound was not oxidized (reduced) inside
-    the window. That is reported as a limit, `>` or `<`, at EDGE_MARGIN_V inside the
-    vertex, the last potential at which a wave could still have been resolved: +2.4 V and
-    -2.4 V. The number and the bound sit in separate columns so neither travels alone.
+FINDING THE WAVE, AND WHEN THERE IS NONE
+    The FIRST resolvable wave on a branch, not the largest -- the compound's own wave
+    comes before the electrolyte's breakdown. Resolvable means the blank-corrected current
+    rises MIN_WAVE_UA, or NOISE_K robust standard deviations if that is more, above its
+    trailing minimum, at least EDGE_MARGIN_V inside the vertex. No wave means the compound
+    was not oxidized or reduced inside the window, reported as a limit at that margin,
+    +2.4 or -2.4 V, with the bound in its own column so it never travels alone.
 
 REPEATS
     Averaged only when they agree to REPEAT_TOLERANCE_V. 021 and 022 are the only samples
     measured twice. 021's second run shows no oxidation wave, so its oxidation rests on
-    the first. 022's two runs disagree on the oxidation by more than a volt -- the second
-    shows a small feature near +0.3 V absent from the first -- so the voltammograms give
-    no value; the lab's reading of +1.9 V is taken from the literature file instead, with
-    that said in its comment.
+    the first. 022's runs disagree by more than a volt, so the traces give no oxidation
+    value and the lab's +1.9 V comes from the literature file, with that in its comment.
 """
 
 import csv
