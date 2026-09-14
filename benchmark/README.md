@@ -1,416 +1,112 @@
-# benchmark — physical-organic theory as a predictor
+# benchmark
 
-How well do adiabatic thermodynamics, Marcus theory, Rehm–Weller/Balzani, Sandros and
-the DvTE distribution predict whether a pair quenches, and how fast? Each is scored
-against the same ground truth on the same pairs, with the same sweep discipline, and
-each carries the number of free parameters it needed to get there.
+Physical-organic criteria for triplet energy transfer, scored against the Stern–Volmer
+screen: can they tell which photocatalyst–quencher pairs quench, and how well do they
+predict the quenching rate constant?
 
 ```
-uv run benchmark/run_benchmark.py
+uv run reproduce.py benchmark        all three scripts, in order
+uv run benchmark/pairs.py            the pair table
+uv run benchmark/classification.py   quenches or not
+uv run benchmark/rates.py            rate constants
 ```
 
-Reads `../data/exp_dataset.csv` and the three property workbooks `pairs.py` joins onto
-it, all of them under `../data/`. Writes four tables into `results/`.
+Inputs are read from `../data/` and nothing there is changed.
 
 ## Layout
 
-| file | what it is |
+```
+benchmark/
+├── pairs.py            the pair table: measurement, calculated and predicted
+│                       properties, driving forces, and which pairs are scored
+├── theory.py           barrier and rate expressions (SI Section 4.1)
+├── scoring.py          metrics, leave-one-photocatalyst-out, rate residuals
+├── classification.py   the classification criteria
+├── rates.py            predicted against measured rate constants, and the fits
+└── results/
+    ├── pairs.csv
+    ├── classification/
+    │   ├── settings.csv    every criterion at every setting
+    │   └── best.csv        best setting per criterion, with its held-out score
+    └── rates/
+        ├── agreement.csv   Marcus and Rehm–Weller rates against k_q
+        └── fits.csv        Sandros and Rehm–Weller fits of k_q against ΔG_EnT
+```
+
+## The pairs
+
+`pairs.py` starts from `exp_dataset.csv` (1296 pairs) and joins on:
+
+| from | columns |
 |---|---|
-| `pairs.py` | the only place a column name appears; also where the calculated columns are joined on and what each one means |
-| `theory.py` | the shared interface, the Balzani rate equation, and the λ-scaling grid |
-| `adiabatic.py` | ΔG_EnT < 0, the zero-parameter baseline |
-| `marcus.py` | the two-parabola barrier and the rate built on it |
-| `rehm_weller.py` | the empirical barrier and the rate built on it |
-| `sandros.py` | the barrierless pre-equilibrium null model |
-| `dvte.py` | the quencher's triplet energy as a sampled distribution |
-| `scoring.py` | metrics, leave-one-photocatalyst-out, censoring-aware rate agreement |
-| `run_benchmark.py` | the harness |
-
-Each theory is a module with the same five entry points — `required_columns`,
-`prepare`, `grid`, `classify`, `rate_grid`/`predicted_rate` — so adding one means adding
-a file and one import. Each runs on its own (`uv run benchmark/marcus.py`), and each
-declares its dependencies in a PEP 723 header like everything else in the repository.
-Nothing manipulates `sys.path`; the modules sit beside each other in one directory,
-which is all a plain `import` needs.
-
-## Where this came from
-
-Ported from `phys_org_theories/`, which produced the group's earlier version of these
-numbers. The physics is carried over as it stood. What changed is everything around it:
-
-- **The data layer is gone.** The original's `constants` module copied four XLSX files
-  in from a sibling directory as a side effect of being imported, which made its results
-  depend on a path outside the project and on whatever state that path happened to be
-  in. This reads `data/exp_dataset.csv` and three workbooks beside it, once, with no
-  side effect.
-- **Driving forces are derived once**, in `pairs.py`, rather than recomputed from
-  triplet energies at every call site.
-- **The per-row scalar branches are masks**, so the whole table evaluates at once. The
-  arithmetic is unchanged.
-- **The reorganization-energy pairing was corrected.** See below; this is the one place
-  the port is not faithful, deliberately.
-
-The original's own audit directory recorded several things as unsound, and three of them
-are not here: the `ΔG_EnT < −5` labelling rule and the adiabatic threshold sweep that was
-fitted to it, the `k_diff = 5×10⁸` "calibrated" pre-factor, and single-electron transfer
-as a classification target. Each is listed under
-[What is deliberately not ported](#what-is-deliberately-not-ported). The fourth, the
-`K_SV`-based label, is back. The audit's objection to it stands — `K_SV = k_q·τ₀`, and τ₀
-spans 86× here, so a fixed K_SV cutoff is a different rate constant for each
-photocatalyst — but a k_q cutoff that 19 of 26 photocatalysts could not resolve is worse;
-see [The ground truth is set on K_SV](#the-ground-truth-is-set-on-k_sv).
-
-## The theories
-
-All energies kcal/mol, rate constants M⁻¹ s⁻¹, potentials V vs SCE.
-
-### adiabatic — ΔG_EnT < 0
-
-Inputs: `dG_EnT`. Free parameters: none.
-
-Transfer happens if it is downhill. Nothing else. This is the baseline, and the point of
-it is that it cannot be fitted, so whatever the barrier theories gain, they gain over
-something that had no opportunity to be tuned.
-
-The dataset optimum is not at zero — the original found roughly ΔG < −3 kcal/mol, worth
-about +5 MCC, and put it down to a systematic bias in the DFT triplet energies. Sweeping
-it is not done here. "Is transfer downhill" is a statement of thermodynamics; "is
-transfer downhill by more than 3 kcal/mol" is a one-parameter model calibrated against
-this screen. Both are defensible and only the first is a baseline. The consequence is
-that the margin every other method shows over this rule is a margin over an intentionally
-untuned rule, and anywhere that margin is quoted it has to say so.
-
-### marcus — the crossing of two parabolas
-
-Inputs: `dG_EnT`, `pc_lambda_S0_T1_dft`, `pc_lambda_T1_S0_dft`,
-`q_lambda_S0_T1_dft`, `q_lambda_T1_S0_dft`. Free parameters: the barrier threshold, plus the
-λ scale when it is not 1.
-
-Asymmetric (the exact intersection of two parabolas of different curvature) and
-symmetric (one effective λ, the geometric mean), with automatic fallback to the
-symmetric form where the parabolas do not cross. The rate constant is the Balzani form,
-
-```
-k_EnT = k_diff / (1 + exp(ΔG/kT) + 0.25 exp(ΔG‡/kT))
-```
-
-with `k_diff = 2×10¹⁰ M⁻¹ s⁻¹`, the acetonitrile Smoluchowski limit. That is a solvent
-property, not a theory parameter, so it is not swept.
-
-Classification is a two-part gate: exergonic **and** barrier below a threshold. The
-ΔG < 0 half is fixed at the adiabatic rule, because the question is whether the barrier
-adds anything to thermodynamics and that only means something if thermodynamics is
-inside it unchanged.
-
-### rehm_weller — the empirical interpolation
-
-Same inputs, same grid.
-
-```
-ΔG‡ = sqrt((ΔG/2)² + (λ_rxn/4)²) + ΔG/2
-```
-
-Not a parabola crossing: a hyperbolic interpolation that goes to λ_rxn/4 at ΔG = 0, to
-ΔG when strongly endergonic, and to zero when strongly exergonic — it does not turn back
-up in the inverted region the way Marcus does. That is why the two are worth running side
-by side rather than treating one as a refinement of the other, and it is why its optimal
-λ scale comes out lower: with the intrinsic barrier at λ_rxn/4, a smaller λ reproduces
-the same effective barrier.
-
-### sandros — the null model
-
-Inputs: `dG_EnT`, `k_q`, `censored`. Free parameters: `k_max`.
-
-```
-k_EnT = k_max / (1 + exp(ΔG/kT))
-```
-
-No barrier at all: exergonic pairs go at the diffusion plateau, endergonic pairs are
-slowed by the Boltzmann factor alone. If a Marcus barrier adds nothing over this, then
-reorganization energy is not doing any work on this dataset.
-
-`k_max` is fitted in log₁₀ space, which for a single multiplicative constant has a closed
-form and needs no optimizer. **It is fitted on detected pairs only.** For the 513
-censored pairs `k_q` is an upper bound, and least squares on a bound treats it as an
-observation and drags `k_max` down towards the detection floor. The original fitted every
-point.
-
-There is only one classification setting, and the module explains why: as a classifier
-Sandros is algebraically a driving-force cutoff, with `k_max` and the threshold perfectly
-degenerate. Sweeping either would be sweeping the adiabatic rule's threshold under
-another name. So it is scored at the ground truth's own cutoff instead — which, since
-the label is K_SV > 10, is per-pair: `10/τ₀`, the `k_q_floor` column.
-
-### dvte — a distribution instead of a number
-
-Inputs: `pc_E_T_dft`, `q_dvte_mu_md`, `q_dvte_std_md`. Free parameters: none.
-
-An adiabatic triplet energy is one number for one optimized geometry, and a molecule in
-solution is not at that geometry. DvTE samples the vertical singlet–triplet gap along a
-Milo trajectory and keeps the distribution. The classifier asks whether the quencher
-spends any appreciable fraction of its time in a geometry whose triplet is accessible:
-
-```
-DvTE(p) = mu + Phi⁻¹(p) · sigma      quenches  ⟺  E_T(PC) ≥ DvTE(p)
-```
-
-for p ∈ {0.005, 0.008, 0.01, 0.015}. The original swept p and reported the best, which is
-an in-sample choice its own audit found worth less than 0.02 MCC. All four are reported
-here as separate methods, so the reader sees the spread rather than its maximum.
-
-The `_kde` variant is not ported. Its four quantiles are already computed in
-`data/computational_data_processed/quencher_properties_calc.xlsx`, the workbook
-`pairs.py` joins on, so carrying them would cost four column names — but they tracked
-the normal form to within 0.07 kcal/mol, and a second threshold that close is a second
-method only on paper.
-
-## The λ pairing, which the port changed on purpose
-
-The join carries the four per-partner reorganization energies and no combined one. How
-the two partners' terms add is a modelling decision, and it belongs here, where it can be
-stated and varied, not frozen into the table. Stated, then.
-
-The forward reaction is PC(T₁) + Q(S₀) → PC(S₀) + Q(T₁). For R → P the reorganization
-energy is the product state at the reactant geometry minus the product state at its own
-geometry, so per partner:
-
-| partner | ends on | starting from | column |
-|---|---|---|---|
-| photocatalyst | the singlet surface | the T₁ geometry | `pc_lambda_S0_T1_dft` |
-| quencher | the triplet surface | the S₀ geometry | `q_lambda_T1_S0_dft` |
-
-```
-λ_forward = pc_lambda_S0_T1 + q_lambda_T1_S0
-λ_reverse = pc_lambda_T1_S0 + q_lambda_S0_T1
-```
-
-Every reorganization energy in `data/` and here is named `lambda_<surface>_<geometry>`:
-`lambda_S0_T1` is `E_S0(T₁ geom) − E_S0(S₀ geom)`, the singlet surface, and `lambda_T1_S0`
-is `E_T1(S₀ geom) − E_T1(T₁ geom)`, the triplet surface.
-
-**This is the opposite pairing to the original**, whose λ_forward was, in these names,
-`pc_lambda_T1_S0 + q_lambda_S0_T1` — the reverse reaction's reorganization energy. Its two
-input tables named their λ in schemes whose letters read in opposite orders, and the
-swap went unnoticed.
-
-It matters in one place only, the asymmetric Marcus barrier — and so also the Marcus
-rate, which is built on it. The symmetric Marcus form and all of Rehm–Weller use a
-symmetric mean of the two, so the swap is invisible there — `marcus_barrier_sym` scores
-identically either way, which is a useful check that the flag does what it claims.
-
-**And the correction does not reliably improve the score.** With raw DFT λ the original's
-pairing scores higher: by 0.01 MCC on the asymmetric barrier, 0.04 on the rate, and 0.07
-on the rate read at the label cutoff. With λ scaled the physically correct pairing is
-ahead on the asymmetric barrier and the rate, by about 0.01, and still behind at the label
-cutoff. `--legacy-lambda-pairing`
-restores the original so the difference can be measured rather than argued about, and
-this should be settled on the physics rather than on the MCC.
-
-## What the scoring means
-
-### The ground truth is set on K_SV
-
-The ground truth is set on K_SV, the observable, and not on k_q. That is not a
-presentational choice: `k_q = K_SV / τ₀`, so a fixed k_q cutoff compares every pair
-against a detection floor that moves with the photocatalyst. At the old 10⁷ M⁻¹ s⁻¹
-cutoff the Stern–Volmer floor `25/τ₀` sat *above* the cutoff for 19 of the 26
-photocatalysts, covering 912 of the 1248 pairs, and 465 pairs could not be labelled at
-all. On K_SV the floor is one number for everything and every pair is labelled by the
-same criterion, so the indeterminate class — and the old `resolvable` regime — is gone.
-
-The label is `quenches`, a ladder in which the weaker the quenching the straighter the line
-has to be: K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99, any one rung
-enough. It covers all 1248 scored pairs and drops nothing: 735 quench and 513 do not. It
-is made in `data/experimental_data_scripts/stern_volmer_fits.py`, which records the rung
-that carried each pair, and `data/build_exp_dataset.py` copies it into the table
-unchanged.
-
-### Free parameters are counted, and tuned scores get a held-out counterpart
-
-Every method's row carries `n_free`, the number of parameters chosen by maximizing MCC on
-the data the MCC is then reported for. A barrier threshold is one; a barrier threshold
-plus a λ scale is two; the adiabatic rule and DvTE have none.
-
-For anything with a free parameter, `benchmark_best.csv` also carries
-`MCC_leave_one_pc_out`: for each photocatalyst the setting is chosen on the other 25 and
-applied to the held-out one, and the held-out predictions are pooled into a single
-confusion matrix. Photocatalyst is the right grouping unit because every photocatalyst-side
-quantity is constant across that photocatalyst's 48 pairs — a random split leaves the same
-fingerprint on both sides. The original's audit measured that directly for its
-machine-learning baselines: a random 5-fold random forest scored 0.805 and the same model
-grouped by photocatalyst scored 0.640.
-
-Pooling rather than averaging per-fold MCC matters. The original's leave-one-out study
-averaged per fold and got 0.438 against an in-sample 0.617, then attributed the gap to the
-variable positive fraction of small folds. Pooling removes that artifact, so what remains
-is the real cost of choosing a threshold.
-
-### Rate predictions are scored with the censoring respected
-
-A single RMSE over all 1248 pairs would be wrong, and wrong in a flattering direction for
-a theory that under-predicts: for the 513 censored pairs `k_q` is an upper bound and a
-residual against a bound means nothing. So `results/rate_agreement.csv` reports two things
-and does not combine them — RMSE and median bias in log₁₀ units on detected pairs, and on
-censored pairs the fraction whose predicted rate falls at or below that pair's own
-detection floor, which is the fraction of non-detections the theory is consistent with.
-
-This is descriptive. It is not a censored-likelihood fit and it takes no position on
-whether the benchmark should become a censored regression.
-
-## Where it stands
-
-Default run: all 26 scored photocatalysts, no mechanism filter, `k_diff = 2×10¹⁰`, geometric
-mean λ. MCC.
-
-| method | free | α | MCC | held-out |
-|---|---:|---:|---:|---:|
-| adiabatic | 0 | — | 0.396 | 0.396 |
-| dvte, p = 0.015 | 0 | — | 0.472 | 0.472 |
-| dvte, p = 0.005 | 0 | — | 0.417 | 0.417 |
-| sandros at the label cutoff | 1 | — | 0.372 | 0.372 |
-| marcus barrier, symmetric | 1 | 1.00 | 0.470 | 0.455 |
-| **marcus barrier, symmetric, λ-scaled** | 2 | 0.45 | **0.521** | 0.521 |
-| marcus barrier, asymmetric, λ-scaled | 2 | 0.40 | 0.495 | 0.480 |
-| marcus rate, λ-scaled | 2 | 0.45 | 0.507 | 0.492 |
-| marcus rate at the label cutoff | 0 | 1.00 | 0.332 | 0.332 |
-| rehm–weller barrier | 1 | 1.00 | 0.454 | 0.454 |
-| rehm–weller barrier, λ-scaled | 2 | 0.25 | 0.490 | 0.490 |
-| rehm–weller rate, λ-scaled | 2 | 0.25 | 0.499 | 0.499 |
-
-Reading it:
-
-- **λ scaling reproduces.** The optimum lands at α ≈ 0.40–0.45 for Marcus and α = 0.25
-  for Rehm–Weller, which is what the original found (0.35–0.45 and 0.25–0.30) on a
-  different version of the dataset. It is worth +0.03 to +0.05 MCC over raw DFT λ on the
-  barrier forms, not the +0.15 to +0.20 the original reported against its own baseline.
-  The rate forms gain more, +0.13 to +0.14, from a raw-λ starting point well below the
-  barrier forms.
-- **It survives being held out.** Leave-one-photocatalyst-out costs the scaled methods
-  0.00 to 0.02 MCC, and that selection includes α, not just the threshold. It is not an
-  artifact of choosing 16 values and keeping the best.
-- **The margin over the baseline is +0.13 MCC** — over a baseline that was deliberately
-  not tuned, and with two free parameters against zero. The like-for-like zero-parameter
-  comparison is the Marcus rate read at the label's own cutoff instead of at a fitted
-  threshold, and it is *worse* than the adiabatic rule — 0.332 against 0.396.
-- **DvTE is not beaten by very much,** and it has no free parameter. The best λ-scaled
-  Marcus is 0.521 against DvTE's 0.472, on two fitted parameters against none.
-- **Everything scored lower when the label moved to K_SV.** The old numbers were measured
-  against a k_q cutoff that 19 of 26 photocatalysts could not resolve, which inflated
-  specificity on pairs that carried no information. The ordering of the methods is
-  unchanged; the absolute values are not comparable to the earlier table and should not
-  be quoted against it.
-
-The rate side is less flattering than the classification side, and worth stating plainly:
-
-| | RMSE / dex | median bias / dex | consistent with the floor |
-|---|---:|---:|---:|
-| sandros, `k_max` = 1.06×10⁹ | 2.11 | +0.26 | 0.36 |
-| marcus, α = 1.0 | 3.32 | −1.93 | 0.86 |
-| marcus, α = 0.65 | 2.01 | +0.12 | 0.56 |
-| marcus, α = 0.45 | 2.27 | +0.94 | 0.37 |
-| rehm–weller, α = 1.0 | 3.65 | −2.44 | 0.86 |
-| rehm–weller, α = 0.55 | 1.93 | +0.21 | 0.45 |
-
-With raw DFT λ both theories under-predict the measured rate constants by roughly two
-orders of magnitude. Scaling λ down fixes the bias, but the α that minimizes the residual
-on detected pairs (≈ 0.55–0.65) is not the α that maximizes MCC (0.25–0.45), and the α
-that best respects the non-detections is 1.0 — because a theory that under-predicts
-everything is trivially consistent with every upper bound. No single λ scale satisfies all
-three at once, and even at its best α neither barrier theory gets the residual below
-1.9 dex, or more than 0.2 dex below the one-parameter Sandros model, which has no barrier
-at all. That is a symptom worth chasing before the rate numbers are used for anything,
-and it is not something the λ-scaling argument accounts for.
-
-None of the above is a conclusion about the chemistry. It is what the code produces today
-on the table as it stands.
-
-## Options
-
-```
---theories adiabatic dvte sandros marcus rehm_weller
---mechanism-rules none strict relaxed dominant_ddG_5
---set-source exp calc
---bounds face|respect
---exclude-pc PC17 PC18
---k-diff 2e10
---mean-type geometric|arithmetic
---legacy-lambda-pairing
-```
-
-**Mechanism rules** admit a quenching pair as an energy-transfer positive only if the
-competing single-electron-transfer channel can be ruled out: `strict` (ΔG_SET > +5),
-`relaxed` (ΔG_SET > 0), `dominant_ddG_5` (ΔG_EnT < ΔG_SET − 5). Non-quenchers are never
-dropped by any rule — they carry no mechanistic label, so they are legitimate negatives
-either way. The default is `none`: every quenching pair is admitted, because deciding
-which pairs are mechanistically clean is a scientific choice and not one this harness
-should make silently. The original always filtered.
-
-**Bounds.** 165 pairs have a `dG_SET_exp` that is a lower bound — the quencher was not
-oxidized or reduced anywhere in the accessible window, so the true driving force can only
-be *more* endergonic. All three rules ask whether electron transfer is sufficiently
-uphill, so a lower bound always points towards "ruled out", and reading it at face value
-understates how inaccessible the channel is — in the direction that wrongly drops pairs
-out of the energy-transfer set. `--bounds face` reproduces the original; `--bounds
-respect` admits those pairs. Neither is obviously right, so the default is `face` and
-every run using a rule prints how many pairs the two policies disagree about (26 under
-`strict/exp`, 18 under `relaxed/exp`).
-
-Photocatalysts are named by their new id, PC1–PC27, the paper numbering; `pc_old_id` in
-`exp_dataset.csv` gives the number the raw files use (`data/compound_identification.xlsx`).
-
-**PC22 is not scored.** It is old PC24, [Ir(d(OMe)ppy)₂(dtbbpy)]PF₆, whose emission was
-too weak for its Stern–Volmer intensities to be trusted, as the SI states. It stays in
-`exp_dataset.csv`; `pairs.py` drops its 48 pairs when it loads the table and says so, which
-is why every number here is over 26 photocatalysts and 1248 pairs — the row count of
-`results/benchmark_pairs.csv`.
-
-**`--exclude-pc`** drops nothing further by default. Two photocatalysts are flagged in
-`pairs.py` and named in every run's header:
-
-- **PC17** (old PC19) has imaginary frequencies in both the S₀ and the reduced optimization and no
-  triplet-surface reorganization energy (`pc_lambda_T1_S0_dft` is blank). Its 48 pairs
-  fall out of every barrier and rate method automatically — the run reports this as 48
-  non-finite inputs — but they stay in the adiabatic and DvTE numbers, which need only
-  E_T. So the barrier methods have a prediction for only 1200 of the 1248 pairs they are
-  scored on, and every one of PC17's pairs is handed to them as a predicted non-quencher.
-  Excluding PC17 and PC18 raises every barrier and rate method by 0.02 to 0.03 MCC and
-  moves the baselines by 0.01 or less. The headline moves by +0.03 and stays on top, but
-  the middle of the table reorders: both unscaled Marcus barriers move past DvTE, and the
-  Rehm–Weller barrier draws level with it.
-- **PC18** (old PC20) has λ = 33.67 on the triplet surface against 12.70 on the singlet, a 2.7×
-  asymmetry no other non-pmb complex shows, never verified. It is exactly the pair of
-  numbers the asymmetric Marcus form is most sensitive to.
-
-## What is deliberately not ported
-
-| | why |
-|---|---|
-| the `ΔG_EnT < −5` feasibility rule, and the adiabatic threshold sweep fitted to it | the labels at the time were themselves generated by that rule, so matching the classifier to it was leakage. It was reported as "+17 MCC from one line of code" and it was not real. |
-| `k_diff = 5×10⁸` as a second scenario | a pre-factor fitted to the data. The original's own audit put the `k_diff` sweep on its do-not-retest list: the rate methods absorb it into their own tuned threshold, so it buys nothing that is not already being counted. |
-| single-electron transfer as a classification target | 9 to 55 unambiguously SET-only positives once the mechanism filters are applied — too few to carry a benchmark number. ΔG_SET is still used, as a filter. |
-| the `_kde` DvTE variant | tracks the normal form to within 0.07 kcal/mol; a second threshold that close is a second method only on paper. |
-| machine-learning baselines | not this folder's job; `ml/` has the models. If one is ever added here it has to use `GroupKFold` by photocatalyst — a random split scored 0.805 against 0.640 grouped, which is memorization of the photocatalyst fingerprint. |
-| parity and series plots | not yet. Figures are made from this folder's output, and belong beside it. |
-
-## Open
-
-- **How the pair table is assembled.** `data/exp_dataset.csv` is now the experimental
-  table alone, and `pairs.py` joins the calculated workbooks onto it and derives the
-  driving forces. That arithmetic was moved out of `data/build_exp_dataset.py`
-  unchanged — same constants, same rules, identical numbers — and nothing about the
-  design was revisited. Whether the join and the driving forces belong in `pairs.py`,
-  and what `results/benchmark_pairs.csv` should carry, is still to be settled.
-- **The bound policy on ΔG_SET.** Not this folder's decision. Both are available, the
-  disagreement is counted.
-- **The λ pairing.** The physically correct assignment scores worse than the original's
-  with raw λ and about 0.01 better once λ is scaled. Someone should check the derivation
-  in `marcus.py` against the raw job files before either number goes in a paper.
-- **The rate residuals.** Three different α optima for three different questions, a best
-  residual near 2 dex, and a one-parameter Sandros fit with no barrier that comes within
-  0.2 dex of both barrier theories. Unexplained.
-- **Tuning and reporting on the same data.** Every `_scaled` row is a best-of-16-α, and
-  the held-out column is the honest counterpart. If a single method is to be quoted in
-  the paper, it should be quoted with its held-out number.
-- **PC17's 48 pairs** are silently predicted "does not quench" by the barrier methods,
-  which is a free pass on every true negative among them. The run warns; nothing corrects
-  for it.
+| `photocatalyst_properties_calc.xlsx` | E_T, λ_S0_T1, λ_T1_S0, excited-state potentials |
+| `quencher_properties_calc.xlsx` | E_T, λ_S0_T1, λ_T1_S0 (`_dft`), DvTE mean and standard deviation |
+| `quencher_properties_ml.xlsx` | E_T, λ_S0_T1, λ_T1_S0 (`_ml`) |
+| `quencher_properties_exp.xlsx` | measured oxidation and reduction potentials |
+
+The ML model covers organic molecules only, so photocatalyst values are always DFT.
+ΔG_EnT = E_T(Q) − E_T(PC) is derived for both quencher sources.
+
+A pair is scored unless its `excluded` column gives the reason:
+
+- **PC22.** Its emission was too weak for the Stern–Volmer intensities to be trusted.
+- **SET not ruled out.** Only for pairs that quench. Electron transfer is ruled out when
+  every channel with a measured quencher potential is more than **0.217 V** uphill:
+  ΔE_ox = E_ox(Q) − E(PC\*/PC⁻) and ΔE_red = E(PC⁺/PC\*) − E_red(Q). A measured limit
+  (E_ox > x, E_red < x) is read as its value, which rules the channel out only if the
+  limit itself is past 0.217 V.
+- **Missing input.** A property one of the criteria needs is blank. Every criterion is
+  scored on the same pairs.
+
+Pairs that do not quench are never dropped by the SET rule.
+
+## Classification
+
+The ground truth is `quenches` from `exp_dataset`.
+
+| criterion | predicts quenching when | tuned on the data |
+|---|---|---|
+| `adiabatic` | ΔG_EnT < 0 | nothing |
+| `dvte` | E_T(PC) ≥ μ + Φ⁻¹(p)·σ, reported for p = 0.005, 0.008, 0.01, 0.015 | nothing |
+| `marcus_barrier` | ΔG_EnT < 0 and ΔG‡ < threshold (0.5–15 kcal/mol) | threshold |
+| `marcus_rate` | k·τ₀ > K_SV,crit = 10 M⁻¹ | nothing |
+| `rehm_weller_rate` | k·τ₀ > K_SV,crit = 10 M⁻¹ | nothing |
+
+- **Parameters.** `adiabatic` and the three kinetic criteria are scored twice, with the
+  quencher's E_T and λ from DFT (`dft`) and from the ML model (`ml`).
+- **λ scaling.** The kinetic criteria are scored with λ as calculated (`lambda raw`) and
+  with λ multiplied by α = 0.25–0.95 (`lambda scaled`), where α is chosen on the data.
+- **n_free** counts the parameters chosen by maximizing MCC.
+- **Held-out score.** For each photocatalyst, the setting is chosen on the other
+  photocatalysts and applied to the held-out one. The held-out predictions are pooled
+  into one confusion matrix (`MCC_held_out`). For a criterion without free parameters it
+  equals the in-sample score.
+
+Metrics: accuracy, precision, recall (sensitivity), specificity, F1 and MCC, with the
+confusion counts.
+
+## Rates
+
+Rate constants are compared only for scored pairs that quench. For the others, k_q is
+an upper bound.
+
+- **`agreement.csv`**: Marcus and Rehm–Weller rates, each with DFT and ML λ, at every α.
+  Gives RMSE and median bias of log₁₀(k_predicted / k_q).
+- **`fits.csv`**: one-parameter fits of log₁₀ k_q against the DFT driving force, over all
+  pairs, per photocatalyst and per quencher (at least three pairs).
+  - Sandros, k = k_max / (1 + exp(ΔG/RT)), fits k_max.
+  - Rehm–Weller, the Balzani rate with the Rehm–Weller barrier, fits one effective λ.
+
+## Physics
+
+Energies in kcal/mol, T = 298.15 K, k_diff = 2 × 10¹⁰ M⁻¹ s⁻¹ (acetonitrile).
+
+- **Pair reorganization energy.** Each partner contributes the surface it ends on, at the
+  geometry it starts from:
+  λ_forward = λ_S0_T1(PC) + λ_T1_S0(Q) and λ_reverse = λ_T1_S0(PC) + λ_S0_T1(Q).
+- **Marcus barrier.** The crossing of the two parabolas. Where they do not cross, the
+  symmetric form (ΔG + λ)² / 4λ with λ = √(λ_forward·λ_reverse).
+- **Rehm–Weller barrier.** √((ΔG/2)² + (λ/4)²) + ΔG/2, with the same λ.
+- **Rate.** k = k_diff / (1 + exp(ΔG/RT) + 0.25·exp(ΔG‡/RT)).
+
+Reorganization energies are named `lambda_<surface>_<geometry>`, as in `../data/`.
