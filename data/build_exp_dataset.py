@@ -3,42 +3,29 @@
 # dependencies = ["openpyxl>=3.1"]
 # ///
 """
-The processed experimental data -> one row per photocatalyst-quencher pair: what was
-measured, the labels read off it, and nothing else.
+Build the pair-level experimental dataset: one row per photocatalyst-quencher pair.
 
 Reads   experimental_data_processed/stern_volmer_fits.csv
         experimental_data_processed/photocatalyst_properties_exp.xlsx
         experimental_data_processed/quencher_properties_exp.xlsx
-Writes  exp_dataset.csv     the table ../benchmark/ starts from
+Writes  exp_dataset.csv     input to ../benchmark/
         exp_dataset.xlsx    the same table in the property-workbook layout
 
     uv run data/build_exp_dataset.py
 
-THE LABEL IS SET ON K_SV, NOT ON k_q
-    k_q = K_SV / tau_0, both measured here. Both labels come from stern_volmer_fits.py
-    unchanged: `quenches`, a ladder of (K_SV, r2) rungs where weaker quenching demands a
-    straighter line, and `quenches_strict`, the published K_SV >= 25 and r2 >= 0.90.
-    K_SV is the observable, and dividing it by a photocatalyst-specific tau_0 would move
-    the detection floor with the photocatalyst, so no cutoff is set on k_q.
+Labels
+    `quenches` is taken from stern_volmer_fits.csv. It is set on K_SV, since a cutoff on
+    k_q would shift with tau0. k_q = K_SV / tau0.
+    A pair that does not quench is left-censored: `censored = 1`, and its fitted K_SV is
+    kept.
 
-    A pair that does not quench is left-censored, not missing: `censored = 1`, its fitted
-    K_SV kept, and `k_q_floor = 10 / tau_0` the smallest rate it could have shown.
+Only measured values are included. Driving forces combine calculated and measured
+properties and are built by ../benchmark/pairs.py.
 
-NO CALCULATED COLUMN, AND NO DRIVING FORCE
-    A computed property is a property of a compound and stays one row per compound in
-    computational_data_processed/. dG_EnT and dG_SET are differences across a pair, so
-    they are built by whoever compares the two -- ../benchmark/pairs.py joins the
-    calculated workbooks onto this table and derives them there. dG_SET shows why the rule
-    is worth stating: half of it is a measured quencher potential and half a calculated
-    photocatalyst one, so a column of it would sit among the measurements without being
-    one. The measured potentials stay in quencher_properties_exp.xlsx with their bound
-    flags.
-
-PHOTOCATALYST NUMBERING
-    Each row carries `pc_new_id` (1-27, used downstream and in the paper), `pc_old_id`
-    (what the raw files use) and `pc_name` = PC<new_id>; the mapping is
-    compound_identification.py. All 27 are here, PC22 (old PC24) included -- its emission
-    was too weak and the theory benchmark drops it, this table does not.
+Photocatalysts
+    `pc_new_id` (1-27) is used downstream, `pc_old_id` is the id in the raw files, and
+    `pc_name` is PC<new_id>. All 27 are included. PC22 (old PC24) had too weak an emission
+    and is dropped by the theory benchmark, but kept here.
 """
 
 import csv
@@ -57,41 +44,32 @@ EXPERIMENTAL = DATA / "experimental_data_processed"
 OUT_CSV = DATA / "exp_dataset.csv"
 OUT_XLSX = DATA / "exp_dataset.xlsx"
 
-# Row 1 of every property workbook names the column blocks; the headers are on row 2.
+# Row 1 of a property workbook names the blocks; headers are on row 2.
 WORKBOOK_HEADER_ROW = 2
-
-# The K_SV a pair has to clear to count as detected, and so the censoring limit. The
-# label's lowest rung admits smaller K_SV on a near-perfect line, but 10 is the slope
-# below which this plate reader cannot see a drop at all.
-K_SV_FLOOR = 10.0
 
 SIGFIGS = 6
 
-# (block, [(column, description, source)]). The order is the order of the table.
+# (block, [(column, description, source)]) in table order.
 LAYOUT = [
     ("Identity", [
-        ("pc_new_id", "Photocatalyst number used downstream and in the paper, 1-27.",
+        ("pc_new_id", "Photocatalyst id used in the paper, 1-27.",
          "photocatalyst_properties_exp.xlsx: new_id"),
-        ("pc_old_id", "Photocatalyst number during the screen, used by the raw files.",
+        ("pc_old_id", "Photocatalyst id in the raw files.",
          "photocatalyst_properties_exp.xlsx: old_id"),
         ("pc_name", "PC<pc_new_id>.", "computed here"),
         ("quencher_id", "Quencher number.", "quencher_properties_exp.xlsx"),
         ("quencher_name", "Q<n>.", "quencher_properties_exp.xlsx"),
     ]),
     ("Measurement", [
-        ("K_SV / M-1", "Stern-Volmer constant, the fitted slope.", "stern_volmer_fits.csv: K_SV"),
+        ("K_SV / M-1", "Stern-Volmer constant (fitted slope).", "stern_volmer_fits.csv: K_SV"),
         ("tau0 / ns", "Unquenched lifetime of the photocatalyst.",
          "photocatalyst_properties_exp.xlsx"),
         ("k_q / M-1 s-1", "Quenching rate constant, K_SV / tau0.", "computed here"),
-        ("k_q_floor / M-1 s-1", "Smallest k_q the pair could have shown, 10 / tau0.",
-         "computed here"),
     ]),
     ("Ground truth", [
-        ("quenches", "1: the fit clears one rung of the (K_SV, r2) ladder. The label.",
+        ("quenches", "1 if the fit meets one of the (K_SV, r2) thresholds.",
          "stern_volmer_fits.csv: quenches"),
-        ("quenches_strict", "1: K_SV >= 25 and r2 >= 0.90, the published criterion.",
-         "stern_volmer_fits.csv: quenching_observed"),
-        ("censored", "1 where quenches = 0: K_SV lies somewhere below the floor.",
+        ("censored", "1 where quenches = 0: the true K_SV is below what was detectable.",
          "computed here"),
     ]),
 ]
@@ -105,7 +83,7 @@ def sig(x, n=SIGFIGS):
 
 
 def load(path, key):
-    """A property workbook as {key: row}, blanks as "". A missing file is fatal."""
+    """A property workbook as {key: row}, blanks as "". Exits if the file is missing."""
     if not path.exists():
         sys.exit(f"missing input: {path}\nrun the data stage first: uv run reproduce.py data")
     sheet = load_workbook(path, read_only=True, data_only=True).worksheets[0]
@@ -147,7 +125,6 @@ def main():
             k_sv = number(fit, "K_SV")
             # tau0 is in ns; k_q comes out in M-1 s-1.
             k_q = k_sv / (tau0 * 1e-9) if (k_sv is not None and tau0) else None
-            floor = K_SV_FLOOR / (tau0 * 1e-9) if tau0 else None
             quenches = fit["quenches"] == "1"
 
             rows.append({
@@ -159,9 +136,7 @@ def main():
                 "K_SV / M-1": sig(k_sv),
                 "tau0 / ns": sig(tau0),
                 "k_q / M-1 s-1": sig(k_q),
-                "k_q_floor / M-1 s-1": sig(floor),
                 "quenches": int(quenches),
-                "quenches_strict": int(fit["quenching_observed"] == "True"),
                 "censored": int(not quenches),
             })
 
@@ -176,11 +151,11 @@ def main():
                             for name, description, source in columns])
               for title, columns in LAYOUT]
     write_workbook(OUT_XLSX, "Pairs", list(range(len(rows))), blocks, """
-        One row per photocatalyst-quencher pair, sorted by pc_new_id then quencher_id. Built
-        by data/build_exp_dataset.py; exp_dataset.csv is the same table. Measured values and
-        the labels only: nothing calculated is here, and the driving forces are derived by
-        ../benchmark/pairs.py. PC numbers are new ids (pc_old_id: the raw files'). PC22 (old
-        PC24) is included; its emission was too weak, and the theory benchmark drops it.
+        One row per photocatalyst-quencher pair, sorted by pc_new_id then quencher_id.
+        Built by data/build_exp_dataset.py; exp_dataset.csv holds the same table.
+        Measured values and labels only. Driving forces are built by ../benchmark/pairs.py.
+        PC numbers are new ids; pc_old_id is the id in the raw files.
+        PC22 (old PC24) is included although its emission was too weak.
     """)
 
     n_pc = len({r["pc_new_id"] for r in rows})
@@ -188,7 +163,6 @@ def main():
     print(f"{len(rows)} pairs ({n_pc} photocatalysts x {n_q} quenchers) -> "
           f"{OUT_CSV.name}, {OUT_XLSX.name}")
     print(f"  quenches {sum(r['quenches'] for r in rows)}, "
-          f"quenches_strict {sum(r['quenches_strict'] for r in rows)}, "
           f"censored {sum(r['censored'] for r in rows)}")
     for name in COLUMNS:
         missing = sum(1 for r in rows if r[name] == "")

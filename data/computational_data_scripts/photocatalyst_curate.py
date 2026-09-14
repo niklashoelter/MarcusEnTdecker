@@ -7,31 +7,24 @@ Curate the photocatalyst ORCA jobs into the raw-data layout.
 
     uv run data/computational_data_scripts/photocatalyst_curate.py <source_dir>
 
-`source_dir` is the delivered job tree: PC_<n>/<job>/output.out, 31 photocatalysts,
-587 outputs, 895 MB, not in this repository. This script is the record of how the deposit
-under `../computational_data_raw/photocatalysts/` was made from it, and writes that tree.
+`source_dir` is the job tree as run, PC_<n>/<job>/output.out (31 photocatalysts, not in
+this repository). The script builds the deposit under
+`../computational_data_raw/photocatalysts/` from it as PC_<n>/<state>/<stem>_output.out.
 
-WHAT IS KEPT
-    Eleven jobs per photocatalyst, not the other nine. The delivery carries parallel
-    attempts at the same quantity, and choosing by name would be a guess. It is not one:
-    every energy in `Photocatalysts/computed_PCs.xlsx` was matched against every candidate,
-    and all 31 photocatalysts x 10 quantities resolved to the plain job to better than
-    1e-6 Eh. No published number came from the suffixed runs: `_uks` (unrestricted repeat),
-    `_m06` (M06-2X/def2-TZVP), `_lanl` (no ZORA), `_tddft` (TD-DFT triplet), `_slightlyold`
-    and `_depr` (superseded).
+Jobs kept
+    Eleven jobs per photocatalyst, mapped by LAYOUT below. Every energy used downstream
+    comes from these plain jobs. The suffixed runs are other attempts at the same quantity
+    and are left out: `_uks` (unrestricted repeat), `_m06` (M06-2X/def2-TZVP), `_lanl`
+    (no ZORA), `_tddft` (TD-DFT triplet), `_slightlyold` and `_depr` (superseded).
+    `conf` holds no energy but is kept: it is the GOAT/XTB2 conformer search that gave the
+    starting geometry.
 
-    `conf` is kept although no energy comes from it: it is the GOAT/XTB2 conformer search
-    that produced the starting geometry.
+Files added
+    ORCA echoes its input and prints the geometry at every step. From each output the
+    script writes `<stem>_input.inp` (the echoed input) and `<stem>_geometry.xyz` (the last
+    CARTESIAN COORDINATES block) beside `<stem>_output.out`.
 
-WHAT IS ADDED
-    The delivered files are outputs only, but ORCA echoes its input verbatim and the last
-    CARTESIAN COORDINATES block of an optimisation is the optimised geometry. So every job
-    ends up complete -- `_input.inp`, `_geometry.xyz`, `_output.out` -- and readable on its
-    own without parsing a 3 MB output. The two extracted files sit beside the output they
-    came from, so nothing here is authored.
-
-Old PC7, PC26, PC30 and PC31 are in the delivery but crossed out in the photocatalyst
-sheet, and are not deposited (../compound_identification.py).
+Photocatalysts excluded from the data are not deposited (../compound_identification.py).
 """
 
 from __future__ import annotations
@@ -44,10 +37,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts"
 
-# The directories this script owns and may therefore delete on a re-run.
+# Output directories written by this script and cleared on a re-run.
 RE_PC = re.compile(r"PC_\d+")
 
-# Delivered, but crossed out in the photocatalyst sheet and so not part of the data.
+# Photocatalysts excluded from the data.
 sys.path.insert(0, str(ROOT))
 from compound_identification import CROSSED_OUT  # noqa: E402
 
@@ -55,11 +48,9 @@ EXCLUDED = set(CROSSED_OUT)
 
 # source job directory -> (state directory, file stem)
 #
-# The naming is the quencher tree's: a state directory holds its own optimisation and
-# the single points taken *at that geometry*. The delivered `S_geometry_T_energy` is
-# "the T1 energy at the S0 geometry", which is `S0/sp_vert_T1`; `ox_geometry_S_energy`
-# is the S0 energy at the oxidised geometry, `ox/sp_vert_S0`. The same quantity is then
-# said the same way in both halves of the dataset.
+# As for the quenchers, a state directory holds its own optimisation and the single
+# points taken at that geometry: `S_geometry_T_energy` (T1 energy at the S0 geometry)
+# becomes `S0/sp_vert_T1`, `ox_geometry_S_energy` becomes `ox/sp_vert_S0`.
 LAYOUT = {
     "conf": ("conf", "goat"),
     "singlet_opt": ("S0", "opt"),
@@ -146,12 +137,8 @@ def main():
     if not pc_dirs:
         sys.exit(f"no PC_<n> directories under {source}")
 
-    # Clear only the PC_<n> trees this script owns.
-    #
-    # NOT the whole directory. `computational_data_raw/photocatalysts/` also holds
-    # files that predate this script and that nothing else has a copy of -- the
-    # directory is outside git, so anything removed here is gone. An earlier version
-    # rmtree'd the lot, which would have destroyed them on the next run.
+    # Remove only the PC_<n> trees. Other files in the output folder are not written
+    # here and are left in place.
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     for existing in OUT_ROOT.iterdir():
         if existing.is_dir() and RE_PC.fullmatch(existing.name):
@@ -193,14 +180,13 @@ def main():
                     "\n".join(inp) + "\n", encoding="utf-8", newline="\n")
             if coords:
                 write_xyz(dest / f"{stem}_geometry.xyz", coords, f"{pc} {state} {stem}")
-            # Scratch outputs beside the real one (`output_tmp.out`, the
-            # `input_atom<n>.out` basis-fitting runs) are not part of the job.
+            # Scratch outputs such as `output_tmp.out` and `input_atom<n>.out` are not copied.
             kept += 1
 
     size = sum(f.stat().st_size for f in OUT_ROOT.rglob("*") if f.is_file())
     print(f"\n{len(pc_dirs)} photocatalysts")
     print(f"  kept     {kept} jobs -> computational_data_raw/photocatalysts  ({size / 1e6:.0f} MB)")
-    print(f"  omitted  {omitted} jobs, the suffixed runs listed under WHAT IS KEPT")
+    print(f"  omitted  {omitted} jobs not in LAYOUT (suffixed runs)")
     if failed:
         print(f"  WARNING  {failed} kept jobs did not terminate normally")
 

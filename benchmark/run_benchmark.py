@@ -7,10 +7,9 @@ Score every theory in this folder against the measured rate constants, on one fo
 
 Reads   ../data/exp_dataset.csv, and the property workbooks pairs.py joins onto it
 Writes  results/benchmark_pairs.csv    the joined table every number below was scored on
-        results/benchmark_full.csv     every method at every setting, both label regimes
+        results/benchmark_full.csv     every method at every setting
         results/benchmark_best.csv     the best setting per method family, plus its
                                        leave-one-photocatalyst-out score
-        results/label_regimes.csv      each method under both readings of the ground truth
         results/rate_agreement.csv     predicted rate constants against measured ones
 
     uv run benchmark/run_benchmark.py
@@ -20,26 +19,16 @@ Writes  results/benchmark_pairs.csv    the joined table every number below was s
     uv run benchmark/run_benchmark.py --legacy-lambda-pairing
 
 ON ONE FOOTING MEANS
-    Same pairs, same ground truth, same metric, same sweep discipline. Every method is
-    evaluated under both readings of the ground truth, both are written out, and neither
-    is presented as the answer. Every method carries its free-parameter count, and every
-    method with a free parameter also carries a leave-one-photocatalyst-out score beside
-    its tuned one.
+    Same pairs, same ground truth, same metric, same sweep discipline. Every method
+    carries its free-parameter count, and every method with a free parameter also carries
+    a leave-one-photocatalyst-out score beside its tuned one.
 
-THE TWO NUMBERS THAT ARE NOT THE SAME NUMBER
-    inclusive    all 1248 scored pairs, y = `quenches`: a ladder of (K_SV, r2) rungs,
-                 weaker quenching needing a straighter line. 513 negatives.
-    strict       all 1248 scored pairs, y = `quenches_strict`: the published K_SV >= 25
-                 and r2 >= 0.90. 611 negatives.
+THE GROUND TRUTH
+    All 1248 scored pairs, y = `quenches`: a ladder of (K_SV, r2) rungs, weaker quenching
+    needing a straighter line. 735 positives, 513 negatives.
 
     The 1248 are the 1296 pairs of exp_dataset.csv less PC22's 48, which no theory is
     scored on (pairs.EXCLUDED_PHOTOCATALYSTS).
-
-    Which regime the paper should report is a scientific question about what counts
-    as quenching, not a data-processing one. The 98 pairs between the two are weak
-    but real: monotone 3-4 % signal, well above read noise, at rate constants the
-    published criterion never counted. Both regimes are always scored and both are
-    always reported; this harness takes no position.
 
 WHAT IS NOT SCORED HERE
     Single-electron transfer as a classification target. The original project removed it
@@ -197,8 +186,8 @@ def undefined_rows(df, mod):
 
 
 def run(df, modules, rules, set_sources, bounds, k_diff, mean_type, legacy_pairing):
-    """Everything, for every (mechanism rule x SET source x label regime x setting)."""
-    full_rows, best_rows, regime_rows, rate_rows = [], [], [], []
+    """Everything, for every (mechanism rule x SET source x setting)."""
+    full_rows, best_rows, rate_rows = [], [], []
 
     for rule in rules:
         sources = ["-"] if rule == "none" else list(set_sources)
@@ -209,9 +198,8 @@ def run(df, modules, rules, set_sources, bounds, k_diff, mean_type, legacy_pairi
             print(f"\n--- mechanism rule: {tag}   ({len(subset)} pairs)")
             print(f"    {note}")
 
-            regimes = pairs.label_regimes(subset)
-            positions = {name: np.flatnonzero(subset.index.isin(rows.index))
-                         for name, (rows, _) in regimes.items()}
+            y = np.asarray(pairs.ground_truth(subset), dtype=bool)
+            groups = subset[pairs.PC_NAME].to_numpy()
             context = {"mechanism_rule": rule, "set_source": source,
                        "bounds_policy": bounds if rule != "none" else "-"}
 
@@ -235,9 +223,8 @@ def run(df, modules, rules, set_sources, bounds, k_diff, mean_type, legacy_pairi
                 if configs:
                     predictions = np.vstack([np.asarray(mod.classify(prep, c), dtype=bool)
                                              for c in configs])
-                    _score_configs(mod, configs, predictions, regimes, positions,
-                                   context, n_undefined, full_rows, best_rows,
-                                   regime_rows)
+                    _score_configs(mod, configs, predictions, y, groups, context,
+                                   n_undefined, full_rows, best_rows)
 
                 for cfg in mod.rate_grid():
                     k_pred = mod.predicted_rate(prep, cfg)
@@ -253,113 +240,68 @@ def run(df, modules, rules, set_sources, bounds, k_diff, mean_type, legacy_pairi
                     })
 
     return (scoring.as_frame(full_rows), scoring.as_frame(best_rows),
-            scoring.as_frame(regime_rows), scoring.as_frame(rate_rows))
+            scoring.as_frame(rate_rows))
 
 
-def _score_configs(mod, configs, predictions, regimes, positions, context, n_undefined,
-                   full_rows, best_rows, regime_rows):
+def _score_configs(mod, configs, predictions, y, groups, context, n_undefined,
+                   full_rows, best_rows):
     index_of = {c.name: i for i, c in enumerate(configs)}
     by_type = {}
     for cfg in configs:
         by_type.setdefault(method_type(cfg.family), []).append(cfg)
-    best_index = {}
 
-    for regime, (rows, y) in regimes.items():
-        pos = positions[regime]
-        y_arr = np.asarray(y, dtype=bool)
-        groups = rows[pairs.PC_NAME].to_numpy()
+    for cfg in configs:
+        full_rows.append({
+            **context, "theory": mod.NAME,
+            "method_type": method_type(cfg.family), "family": cfg.family,
+            "method": cfg.name, "n_free": cfg.n_free,
+            "n_undefined_inputs": n_undefined,
+            **scoring.metrics(y, predictions[index_of[cfg.name]]),
+            **{f"param_{k}": v for k, v in cfg.params.items() if k != "kind"},
+        })
 
-        for cfg in configs:
-            full_rows.append({
-                **context, "label_regime": regime, "theory": mod.NAME,
-                "method_type": method_type(cfg.family), "family": cfg.family,
-                "method": cfg.name, "n_free": cfg.n_free,
-                "n_undefined_inputs": n_undefined,
-                **scoring.metrics(y_arr, predictions[index_of[cfg.name]][pos]),
-                **{f"param_{k}": v for k, v in cfg.params.items() if k != "kind"},
-            })
-
-        for mtype, members in by_type.items():
-            matrix = np.vstack([predictions[index_of[c.name]][pos] for c in members])
-            pick = scoring.best_by_mcc(y_arr, matrix)
-            chosen = members[pick]
-            best_index[(regime, mtype)] = index_of[chosen.name]
-            lopo = scoring.leave_one_photocatalyst_out(y_arr, matrix, groups)
-            best_rows.append({
-                **context, "label_regime": regime, "theory": mod.NAME,
-                "method_type": mtype, "family": chosen.family, "method": chosen.name,
-                "n_free": chosen.n_free, "n_settings_swept": len(members),
-                "n_undefined_inputs": n_undefined,
-                **scoring.metrics(y_arr, matrix[pick]),
-                "MCC_leave_one_pc_out": lopo["MCC"],
-                "Accuracy_leave_one_pc_out": lopo["Accuracy"],
-                "settings_chosen_across_folds": lopo["n_settings_chosen"],
-                **{f"param_{k}": v for k, v in chosen.params.items() if k != "kind"},
-            })
-
-    # The comparison the reader has to see: the same method under both readings of the
-    # ground truth, including what the operating point chosen on the full table does on
-    # the subset the experiment can actually adjudicate.
     for mtype, members in by_type.items():
-        row = {**context, "theory": mod.NAME, "method_type": mtype,
-               "n_free": max(c.n_free for c in members)}
-        for regime, (_rows, y) in regimes.items():
-            pos = positions[regime]
-            m = scoring.metrics(np.asarray(y, dtype=bool),
-                                predictions[best_index[(regime, mtype)]][pos])
-            row[f"n_{regime}"] = m["n"]
-            row[f"n_positive_{regime}"] = m["n_positive"]
-            row[f"MCC_{regime}"] = m["MCC"]
-            row[f"Accuracy_{regime}"] = m["Accuracy"]
-            row[f"Sensitivity_{regime}"] = m["Sensitivity"]
-            row[f"Specificity_{regime}"] = m["Specificity"]
-        if "inclusive" in regimes and "strict" in regimes:
-            carried = predictions[best_index[("inclusive", mtype)]]
-            y_strict = np.asarray(regimes["strict"][1], dtype=bool)
-            row["MCC_strict_at_inclusive_operating_point"] = scoring.metrics(
-                y_strict, carried[positions["strict"]])["MCC"]
-            row["dMCC_inclusive_minus_strict"] = row["MCC_inclusive"] - row["MCC_strict"]
-        regime_rows.append(row)
+        matrix = np.vstack([predictions[index_of[c.name]] for c in members])
+        pick = scoring.best_by_mcc(y, matrix)
+        chosen = members[pick]
+        lopo = scoring.leave_one_photocatalyst_out(y, matrix, groups)
+        best_rows.append({
+            **context, "theory": mod.NAME,
+            "method_type": mtype, "family": chosen.family, "method": chosen.name,
+            "n_free": chosen.n_free, "n_settings_swept": len(members),
+            "n_undefined_inputs": n_undefined,
+            **scoring.metrics(y, matrix[pick]),
+            "MCC_leave_one_pc_out": lopo["MCC"],
+            "Accuracy_leave_one_pc_out": lopo["Accuracy"],
+            "settings_chosen_across_folds": lopo["n_settings_chosen"],
+            **{f"param_{k}": v for k, v in chosen.params.items() if k != "kind"},
+        })
 
 
-def print_regime_comparison(regimes_df, best_df):
-    """The headline table: every method under both readings of the ground truth."""
-    if regimes_df.empty:
+def print_best(best_df):
+    """The headline table: the best setting of every method beside its held-out score."""
+    if best_df.empty:
         return
     print("\n" + "=" * 108)
-    print("THE SAME METHODS UNDER BOTH READINGS OF THE GROUND TRUTH")
+    print("THE BEST SETTING OF EVERY METHOD")
     print("=" * 108)
-    print("inclusive   every pair, y = quenches: K_SV > 10, or a significant slope below it.")
-    print("strict      every pair, y = quenches_strict: the published K_SV >= 25 and r2 >= 0.90.")
-    print("carried     the setting chosen on 'inclusive', scored on 'strict'.")
-    print("lopo        leave-one-photocatalyst-out on 'inclusive': the setting is chosen on the")
-    print("            other photocatalysts and applied to the held-out one. For a method")
-    print("            with no free parameter it equals the tuned score by construction.")
+    print("MCC         every scored pair, y = quenches: the (K_SV, r2) ladder.")
+    print("lopo        leave-one-photocatalyst-out: the setting is chosen on the other")
+    print("            photocatalysts and applied to the held-out one. For a method with")
+    print("            no free parameter it equals the tuned score by construction.")
     print("free        free parameters selected by maximizing MCC on the scored data.")
     print()
-    print("Neither MCC column is the answer. The scientific choice between them is open --")
-    print("see the README beside this script.")
-    print()
 
-    best_inclusive = best_df[best_df["label_regime"] == "inclusive"].set_index(
-        ["mechanism_rule", "set_source", "method_type"])
-    view = regimes_df.copy()
-    keys = list(zip(view["mechanism_rule"], view["set_source"], view["method_type"]))
-    view["lopo"] = [best_inclusive["MCC_leave_one_pc_out"].get(k, float("nan")) for k in keys]
-    view["alpha"] = [best_inclusive["param_lam_scale"].get(k, float("nan")) for k in keys] \
-        if "param_lam_scale" in best_inclusive.columns else float("nan")
-
+    view = best_df.copy()
     rank = {mod.NAME: i for i, mod in enumerate(THEORIES)}
     view["_rank"] = view["theory"].map(rank).fillna(99)
-    view = view.sort_values(["mechanism_rule", "set_source", "_rank", "MCC_inclusive"],
+    view = view.sort_values(["mechanism_rule", "set_source", "_rank", "MCC"],
                             ascending=[True, True, True, False])
-    cols = ["mechanism_rule", "set_source", "method_type", "n_free", "alpha",
-            "n_inclusive", "MCC_inclusive", "lopo", "n_strict", "MCC_strict",
-            "MCC_strict_at_inclusive_operating_point", "dMCC_inclusive_minus_strict"]
+    cols = ["mechanism_rule", "set_source", "method_type", "n_free", "param_lam_scale",
+            "n", "MCC", "MCC_leave_one_pc_out"]
     view = view[[c for c in cols if c in view.columns]].rename(columns={
         "mechanism_rule": "rule", "set_source": "SET", "method_type": "method",
-        "n_free": "free", "MCC_strict_at_inclusive_operating_point": "carried",
-        "dMCC_inclusive_minus_strict": "dMCC"})
+        "n_free": "free", "param_lam_scale": "alpha", "MCC_leave_one_pc_out": "lopo"})
     print(view.round(3).to_string(index=False))
     print("\nEvery setting of every method is in results/benchmark_full.csv; the chosen")
     print("setting and its parameters are in results/benchmark_best.csv.")
@@ -437,11 +379,11 @@ def main(argv=None):
 
     preflight(df, modules, args.mechanism_rules, args.set_source)
 
-    full, best, regimes_df, rates = run(
+    full, best, rates = run(
         df, modules, args.mechanism_rules, args.set_source, args.bounds,
         args.k_diff, args.mean_type, args.legacy_lambda_pairing)
 
-    print_regime_comparison(regimes_df, best)
+    print_best(best)
 
     if not rates.empty:
         print("\n" + "=" * 108)
@@ -460,12 +402,12 @@ def main(argv=None):
         print()
         for name, frame in (("benchmark_pairs", pair_table),
                             ("benchmark_full", full), ("benchmark_best", best),
-                            ("label_regimes", regimes_df), ("rate_agreement", rates)):
+                            ("rate_agreement", rates)):
             path = args.results_dir / f"{name}.csv"
             frame.to_csv(path, index=False)
             print(f"{len(frame):7d} rows -> {path.relative_to(args.results_dir.parent)}")
 
-    return full, best, regimes_df, rates
+    return full, best, rates
 
 
 if __name__ == "__main__":

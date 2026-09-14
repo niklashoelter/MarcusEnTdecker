@@ -5,34 +5,17 @@ Reads   ../compound_identification.xlsx                (ids, names, SMILES)
         ../../ml/data/model.pt                         (the trained checkpoint)
 Writes  ../computational_data_processed/quencher_properties_ml.xlsx
 
-One row per quencher, in the same layout and headers as `quencher_properties_calc.xlsx`,
-so the model's E_T, lambda_S0_T1 and lambda_T1_S0 sit beside the DFT ones column for
-column. The model calls them `lamda_S_T` and `lamda_T_S`; those are its field names only.
-Each value carries the network's own uncertainty, which a DFT number has not.
+    uv sync --extra ml
+    uv run --extra ml python data/computational_data_scripts/quencher_ml.py
 
-IT NEEDS THE MODEL ENVIRONMENT, SO IT IS NOT A reproduce.py STAGE
-    Everything else under data/ runs standalone under `uv run`. This needs the `ml`
-    package, which pins torch, torch-geometric and rdkit -- gigabytes the rest of the
-    pipeline has no use for -- so it is run with the ml extra:
+One row per quencher, with the same layout and headers as `quencher_properties_calc.xlsx`.
+Each predicted value comes with the network's uncertainty. The model's own field names
+for lambda_S0_T1 and lambda_T1_S0 are `lamda_S_T` and `lamda_T_S`.
 
-        uv sync --extra ml
-        uv run --extra ml python data/computational_data_scripts/quencher_ml.py
-
-    `uv run reproduce.py data` rebuilds everything else here without installing torch, and
-    the workbook is in git, so a clone has the predictions without loading the model. The
-    checkpoint is the one thing this reaches outside data/ for: a model is not an
-    instrument and its weights are not a measurement.
-
-WHY NOT properties_calc.py
-    That script only copies from tables the extraction scripts left in
-    ../computational_data_raw/, and must stay runnable with `uv run` alone. A model has no
-    such table -- no job directory, only a forward pass -- so prediction and workbook are
-    one step here, and the `Column key` sheet names the checkpoint and field instead.
-
-WHAT IS NOT CARRIED
-    The per-atom spin densities and the mixture parameters behind each prediction: neither
-    is a per-compound scalar. Re-run the model for them --
-    `ml.prediction.predict` returns both.
+The script needs the `ml` package (torch, torch-geometric, rdkit) and the checkpoint
+ml/data/model.pt, so it is not a stage of `uv run reproduce.py data`. The workbook is in
+git. Per-atom spin densities and mixture parameters are not written; `ml.prediction.predict`
+returns both.
 """
 
 import sys
@@ -60,19 +43,17 @@ PREDICTED = [
     ("E_T", "triplet_energy_adiabatic",
      "Adiabatic triplet energy, predicted from the structure alone."),
     ("lambda_S0_T1", "lamda_S_T",
-     "S0 surface: E_S0 at the T1 geometry minus E_S0 at its own. The model's counterpart "
-     "to the DFT lambda_S0_T1."),
+     "S0 surface: E_S0 at the T1 geometry minus E_S0 at its own."),
     ("lambda_T1_S0", "lamda_T_S",
-     "T1 surface: E_T1 at the S0 geometry minus E_T1 at its own. The model's counterpart "
-     "to the DFT lambda_T1_S0."),
+     "T1 surface: E_T1 at the S0 geometry minus E_T1 at its own."),
 ]
 
-UNCERTAINTY = ("Spread of the mixture density network's own distribution for that value. "
-               "The model's estimate of its own confidence, not a DFT or measured error.")
+UNCERTAINTY = ("Spread of the mixture density network's predicted distribution for that "
+               "value, the model's own uncertainty estimate.")
 
 
 def sig(x, n=SIGFIGS):
-    """Six significant figures, the rounding used everywhere except quencher_dft.py."""
+    """Round to six significant figures."""
     if x is None or x == "":
         return None
     return 0.0 if float(x) == 0 else float(f"{float(x):.{n}g}")
@@ -134,19 +115,15 @@ def quenchers():
                    f"{IDENTIFICATION}: Quenchers/quencher_id", lambda i: f"Q{i}"),
             Column("compound", "Name derived from the SMILES, as in the other workbooks.",
                    f"{IDENTIFICATION}: Quenchers/name", lambda i: QUENCHERS[i]["name"]),
-            Column("smiles", "The structure the prediction was made from, and its only "
-                             "input.",
+            Column("smiles", "Structure; the only input to the prediction.",
                    f"{IDENTIFICATION}: Quenchers/smiles", lambda i: QUENCHERS[i]["smiles"]),
         ]),
         Block(f"Graph MDN prediction / {KCAL}", predicted_columns),
     ]
     note = """
         One row per quencher, predicted from the SMILES alone by the graph mixture density
-        network in ml/data/model.pt. Nothing measured and nothing calculated
-        enters a value here: the same three quantities from DFT are in
-        quencher_properties_calc.xlsx, column for column, and the two files are meant to be
-        read side by side rather than merged. The per-atom spin densities and the mixture
-        parameters the model also returns are not carried.
+        network in ml/data/model.pt. The same three quantities from DFT are in
+        quencher_properties_calc.xlsx under the same headers.
         Written by computational_data_scripts/quencher_ml.py, which needs the ml extra and
         is not a stage of reproduce.py.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
@@ -155,7 +132,7 @@ def quenchers():
 
 
 def report(table):
-    """The model against the DFT triplet energies. A check on the run, not an output."""
+    """Print how the predicted E_T compares with the DFT values."""
     if not Q_DFT.exists():
         return
     dft = read_table(Q_DFT, "quencher_id")

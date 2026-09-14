@@ -3,21 +3,20 @@
 # dependencies = ["openpyxl"]
 # ///
 """
-Quencher absorption scan -> molar extinction coefficient per quencher per wavelength.
+Molar extinction coefficients of the quenchers from a plate-reader absorption scan.
 
 Reads   ../experimental_data_raw/quencher_absorption/
         2025-12-22 10-53-28 Absorption_Scan_360_650_56well_published.csv
-        quenchers_deepwell.xlsx     deep-well plate map: quencher, well, stock concentration
+        quenchers_deepwell.xlsx     plate map: quencher, well, stock concentration
 Writes  ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
+        (48 quenchers, 18 wavelengths)
 
-48 quenchers, 18 wavelengths.
+Usage: uv run absorption_extinction.py
 
-These are the epsilon values the inner-filter correction needs. The manuscript reports
-UNCORRECTED Stern-Volmer constants, so nothing in the published analysis currently depends
-on this table -- it is here so the correction can be evaluated if it is ever wanted.
-
-Ported from Quencher/Absorption/evaluate.py and combine.py, which produced the epsilon
-columns in properties_quenchers.xlsx.
+Absorbances are scaled from the 5.846 mm well depth to a 10 mm path, blanked against the
+mean of the solvent wells in column 7, and divided by the stock concentration. The values
+are what an inner-filter correction would need; the reported Stern-Volmer constants are
+not corrected.
 """
 
 import csv
@@ -34,8 +33,7 @@ OUT = RAW / "absorption_extinction.csv"
 SCAN = "2025-12-22 10-53-28 Absorption_Scan_360_650_56well_published.csv"
 PLATE_MAP = "quenchers_deepwell.xlsx"
 
-# The deep-well plate is 5.846 mm deep; the instrument reports absorbance as if the path
-# were 10 mm, so every reading is scaled to a 10 mm equivalent path.
+# Path length through the deep-well plate; readings are scaled to a 10 mm path.
 PATH_LENGTH_MM = 5.846
 REFERENCE_PATH_MM = 10.0
 
@@ -61,16 +59,12 @@ def normalise_well(value):
 
 
 def read_scan(path):
-    """well -> {wavelength_nm: mean absorbance}, plus the same for relative spread.
+    """Return well -> {wavelength_nm: mean absorbance} and the relative spread (%).
 
-    The plate reader exports this scan in two shapes and both appear in the raw folder:
-    a comma-delimited form with a `Content` column naming each sample, and a
-    semicolon-delimited form with German decimal commas and no `Content` column. Rather
-    than assume either, the delimiter is taken from the header row and the data columns
-    are located by finding where the numeric wavelength labels begin.
-
-    Each wavelength is repeated once per read, so columns are grouped by wavelength and
-    averaged.
+    Reads both plate-reader export formats: comma-delimited with a `Content` column, or
+    semicolon-delimited with decimal commas. The delimiter is taken from the header row,
+    and data start at the first numeric wavelength label. Repeat reads of a wavelength
+    are averaged.
     """
     try:
         lines = path.read_text(encoding="utf-8").splitlines()

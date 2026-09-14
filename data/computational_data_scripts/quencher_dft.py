@@ -3,39 +3,33 @@
 # dependencies = []
 # ///
 """
-Quencher ORCA outputs -> adiabatic triplet energy, redox potentials, reorganization energies.
+Adiabatic triplet energies, redox potentials and reorganization energies of the quenchers.
 
 Reads   ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/
 Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
 
-48 quenchers, four states each -- S0, T1, ox, red -- one optimisation and one set of
-single points per state, in the photocatalysts' layout.
+    uv run data/computational_data_scripts/quencher_dft.py
 
-Reorganization energies are named lambda_<surface>_<geometry>, as everywhere in data/ and
-benchmark/: lambda_S0_T1 is E_S0 at the T1 geometry minus E_S0 at its own, lambda_Dminus_S0
-is E_D- at the S0 geometry minus E_D- at its own. Dplus and Dminus are the one-electron
-oxidized and reduced states, the `ox` and `red` folders.
+Each of the 48 quenchers has four states, S0, T1, ox and red. A state folder holds the
+optimisation with frequencies (`opt_output.out`, thermal correction G-E(el)), the single
+point at that geometry (`sp_output.out`) and the vertical single points of the other
+states at that geometry (`sp_vert_<kind>_output.out`). Each state is the lowest-energy
+conformer. In Q17/S0 and Q18/S0, `opt_output.out` and `sp_output.out` come from two runs
+of the same conformer.
 
-WHAT IS IN THE DEPOSIT
-    Only the calculation each published number came from. The delivery held several
-    conformers per state, and a few states twice from parallel pipelines; what is kept is
-    the conformer that won on energy, with no conformer or pipeline number in the names.
-    So nothing chooses between candidates at read time -- there are none left.
+    E_combined   E(sp) + G-E(el)(opt)
+    E_T          E_combined(T1) - E_combined(S0)
+    dG_Ox        E_combined(ox) - E_combined(S0)
+    dG_Red       -(E_combined(red) - E_combined(S0))
+    E vs SCE     dG / 23.061 - 4.42
+    Hartree to kcal/mol: x 627.509
 
-    Two folders are composites, because that is where the published value comes from:
-    Q17's S0 takes its thermal correction and Q18's S0 its reduced-state vertical single
-    point from a second run of the same conformer. In those two, `opt_output.out` is not
-    the run `sp_output.out` came from.
+Reorganization energies are named lambda_<surface>_<geometry>: lambda_S0_T1 is E_S0 at the
+T1 geometry minus E_S0 at its own. Dplus and Dminus are the one-electron oxidized and
+reduced states, the `ox` and `red` folders.
 
-PROVENANCE
-    Port of Quencher/Adiabatic DFT Pipeline 5/extract_parameters_T1.py, which produced the
-    published values. Its roundings are kept deliberately -- 1 decimal in kcal/mol, 2 in V
-    -- since they define those numbers; this is the one script that does not follow the
-    six-significant-figure rule.
-
-    Its `_sim` reorganization energies, taken from the conformer closest in geometry to
-    the lowest-energy S0 rather than the lowest in energy, are not computed: nothing reads
-    them, and their published values could not be reproduced from the geometries.
+Values are rounded to 1 decimal in kcal/mol and 2 in V, unlike the six significant
+figures used elsewhere in data/.
 """
 
 import csv
@@ -48,10 +42,8 @@ OUT_DIR = RAW
 OUT = OUT_DIR / "quencher_dft.csv"
 
 H_TO_KCAL = 627.509          # Hartree -> kcal/mol
-F_KCAL_PER_V = 23.061        # kcal mol-1 V-1, as used by the original conversion
-# V offset in E = dG/F - 4.42, the absolute SCE potential. The original used 4.442 here but
-# 4.42 for the photocatalysts (photocatalyst_dft.py); harmonized to 4.42 so that both sides
-# of a SET driving force are on the same reference.
+F_KCAL_PER_V = 23.061        # Faraday constant, kcal mol-1 V-1
+# Absolute SCE potential in V, E = dG/F - 4.42. Same value as in photocatalyst_dft.py.
 SHE_TO_SCE = 4.42
 
 STATES = ("S0", "T1", "ox", "red")
@@ -78,12 +70,12 @@ def sub(a, b):
 
 
 def to_kcal(hartree):
-    """Hartree difference -> kcal/mol, rounded as the original did."""
+    """Hartree difference -> kcal/mol, rounded to 0.1."""
     return None if hartree is None else round(hartree * H_TO_KCAL, 1)
 
 
 def to_volt(kcal):
-    """kcal/mol -> V vs SCE, rounded as the original did."""
+    """kcal/mol -> V vs SCE, rounded to 0.01."""
     return None if kcal is None else round((kcal / F_KCAL_PER_V) - SHE_TO_SCE, 2)
 
 

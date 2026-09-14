@@ -101,7 +101,7 @@ re-derive the extracted tables from scratch.
 | `data/` experimental  | **complete and verified** — every table rebuilds byte-identically from the instrument files                                                |
 | `data/` computational | **complete and verified** — 48 quenchers and 27 photocatalysts; reproduces the published tables except four stale photocatalyst E_T values |
 | `data/exp_dataset`    | **1296 pairs**, PC1–PC27 by new id; twelve experimental columns, nothing calculated; the ground truth is settled on K_SV, both readings carried |
-| `benchmark/`          | **ported and running** — five theories scored under both label regimes on 1248 pairs (PC22 not scored); open items in its README           |
+| `benchmark/`          | **ported and running** — five theories scored on 1248 pairs (PC22 not scored); open items in its README           |
 | `ml/`                 | **models in place**, checkpoint included; `predict.py` runs end to end, but its λ sweep predates the label change                          |
 | `webapp/`             | **deployable** — serves `webapp.app:app`, built from this repository rather than a cloned branch; `deploy/` is untracked                |
 

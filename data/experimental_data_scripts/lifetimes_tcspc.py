@@ -3,23 +3,22 @@
 # dependencies = ["numpy"]
 # ///
 """
-TCSPC decay traces -> the excited-state lifetime tau0 of each photocatalyst.
+TCSPC decay traces -> excited-state lifetime tau0 of each photocatalyst.
 
 Reads   ../experimental_data_raw/pc_tcspc/PC<n>.txt   tab-separated, header block then
                                                     time (ns) vs counts, 2048 channels
 Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
 
-One trace per photocatalyst (MeCN, Ar, 10 uM, 3 mL), fitted with a single exponential,
-1/y weights and a background taken from the trace tail. tau0 and its error are that fit's
-value and standard error. The instrument's own export, `PC<n>.FL`, sits beside each trace.
+    uv run data/experimental_data_scripts/lifetimes_tcspc.py
 
-Ported from Photocatalysts/plot_lifetimes.py, which produced the published numbers.
+One trace per photocatalyst (MeCN, Ar, 10 uM, 3 mL). The background is the median of
+the trace tail. The decay is fitted with a single exponential with 1/y weights; tau0
+and its error are the fitted value and standard error. The instrument export `PC<n>.FL`
+is stored beside each trace.
 
-The fit window opens at the first post-pulse channel at or below 1000 counts, except for
-PC4. Its decay has a fast early component ahead of the triplet, and that start (about
-500 ns) puts both in one exponential. Its published lifetime came from the same fit with
-the window opened at a fixed 1500 ns on the instrument's time axis; FIT_START_NS does
-that (1494.54 +/- 19.32 ns).
+The fit starts at the first channel after the pulse at or below 1000 counts. For PC4 it
+starts at 1500 ns on the instrument time axis instead (FIT_START_NS), so that its fast
+early component is excluded and only the long-lived decay is fitted.
 """
 
 import csv
@@ -38,8 +37,7 @@ PULSE_END_FRACTION = 0.5              # fallback: pulse is over below this fract
 STABILIZATION_POINTS = 4              # ... and once this many consecutive channels are non-rising
 MIN_FIT_POINTS = 15                   # fewer usable channels than this and the trace is not fitted
 MIN_SPAN_IN_LIFETIMES = 5             # the fit window must span this many lifetimes
-# pc_id -> fit from the first channel at or after this time (ns, instrument axis, not from
-# the pulse) instead of the count threshold. PC4 only: skips its fast early component.
+# pc_id -> fit start time (ns, instrument axis) used instead of the count threshold
 FIT_START_NS = {4: 1500.0}
 TAU_GRID_POINTS = 320
 TAU_REFINE_POINTS = 200
@@ -87,7 +85,11 @@ def estimate_background(counts):
 
 
 def detect_decay_start(signal, pulse_index):
-    """First post-peak channel at or below the count threshold; else the non-rising rule."""
+    """First channel after the peak at or below FIT_START_COUNT_THRESHOLD.
+
+    If none is found, the first channel where STABILIZATION_POINTS consecutive channels
+    are below PULSE_END_FRACTION of the peak and not rising.
+    """
     n = signal.size
     if n == 0:
         return 0
@@ -190,7 +192,7 @@ def analyse(time_ns, counts, fit_start_ns=None):
         cand = np.where((np.arange(signal.size) >= start) & finite_positive & (signal <= peak))[0]
         if cand.size:
             mask[int(cand[0]):] = True
-    mask &= signal >= 1.0          # never fit the noise tail within one count of background
+    mask &= signal >= 1.0          # skip channels within one count of background
     mask &= finite_positive
     if np.count_nonzero(mask) < MIN_FIT_POINTS:
         mask = np.zeros_like(signal, dtype=bool)

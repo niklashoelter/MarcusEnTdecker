@@ -3,7 +3,7 @@
 # dependencies = []
 # ///
 """
-Stern-Volmer plate exports -> one QC'd emission intensity per well.
+Stern-Volmer plate reader exports -> one emission intensity per well.
 
 Reads   ../experimental_data_raw/stern_volmer/
         <batch>.csv               BMG plate export, repeat reads per well
@@ -11,22 +11,16 @@ Reads   ../experimental_data_raw/stern_volmer/
 Writes  ../experimental_data_processed/stern_volmer_intensities.csv
         ../experimental_data_raw/stern_volmer/plate_reader_filters.csv   one row per batch
 
-81 batches x 96 wells = 7776 rows. Photocatalysts are old ids (`pc_old_id`); see
-../compound_identification.py.
+    uv run data/experimental_data_scripts/stern_volmer_intensities.py
 
-THE WAVELENGTHS COME FROM THE EXPORT, NOT FROM THE MAP
-    The plate reader writes the filter pair it used into the export header, e.g.
-    `Mode name; FI: Ex: 425-8 Em: 620-50` (centre-bandwidth, nm). That is the record of
-    what was measured. The pipetting maps also carry excitation and emission wavelengths,
-    but those are planning placeholders that disagree with the export for most batches;
-    they are not read.
+81 batches x 96 wells = 7776 rows. The raw files use old photocatalyst ids
+(`pc_old_id`); see ../compound_identification.py.
 
-    Two photocatalysts were measured with a saved protocol whose name, not its filters,
-    is all the export carries: old PC1 ("FI: Ir-F") and old PC3 ("FI: Ir(ppy)3"). Their
-    settings live in PROTOCOL_WAVELENGTHS below, which is their source of record -- no
-    file in this package carries them. The centre wavelengths were read off the screen's
-    photocatalyst sheet; the bandwidths were never recorded and are the instrument's
-    standing values. Both are marked as such in the `source` column of the filter table.
+Excitation and emission wavelengths are taken from the export header, e.g.
+`Mode name; FI: Ex: 425-8 Em: 620-50` (centre-bandwidth, nm). The wavelengths in the
+pipetting maps are planning values and are not read. Old PC1 ("FI: Ir-F") and old PC3
+("FI: Ir(ppy)3") were read with saved protocols whose export names no filters; their
+settings are in PROTOCOL_WAVELENGTHS.
 """
 
 import csv
@@ -39,29 +33,21 @@ from pathlib import Path
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "stern_volmer"
 OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "stern_volmer_intensities.csv"
 
-# The detector rails at exactly 260000: 75 reads across the 81 plates sit on that
-# value and nothing else in the screen exceeds 250000. A railed read is not a
-# measurement of anything, so it is discarded before the well is averaged.
+# The detector saturates at 260000 counts. Reads at or above this value are dropped
+# before the well is averaged.
 DETECTOR_CEILING = 260000
-MAX_RSD = 0.05        # a well whose reads spread less than this keeps all of them
-CONC_SIGFIGS = 6      # pipetting is good to ~1%; six figures is already generous
-INTENSITY_DP = 1      # a mean of integer counts; the fraction below 0.1 is meaningless
+MAX_RSD = 0.05        # above this relative standard deviation, the worst read is dropped
+CONC_SIGFIGS = 6
+INTENSITY_DP = 1
 
 FILTERS_OUT = RAW / "plate_reader_filters.csv"
 # "FI: Ex: 425-8 Em: 620-50" -> centre and bandwidth of each filter, nm
 MODE = re.compile(r"Ex:\s*(\d+)-(\d+)\s*Em:\s*(\d+)-(\d+)")
-# Saved protocols whose export names no filters. This table is the source of record for
-# these two photocatalysts -- no file in the package carries their settings.
-#
-#   centre wavelengths: read off the screen's photocatalyst sheet at acquisition time.
-#   bandwidths: NOT recorded anywhere, and set here to the instrument's standing values.
-#     Excitation 8 nm is what all 25 exports that do name their filters used, without
-#     exception. Emission 20 nm is what 20 of those 25 used, and it is what every
-#     photocatalyst read at 475 nm (old PC9) or at 520 nm (old PC15, 16, 21, 25, 27)
-#     used -- the exceptions are the 415 nm carbenes at 10 nm and old PC10 and PC24 at
-#     50 and 25 nm. So these two numbers are inferred, not measured; the `source` column
-#     of plate_reader_filters.csv says so for every row that comes from here. Nothing in
-#     the pipeline reads a bandwidth -- they are carried for the methods section.
+# Filter settings for the two saved protocols whose export names no filters. Centre
+# wavelengths are from the photocatalyst sheet of the screen. Bandwidths were not
+# recorded and are set to the instrument's usual values (excitation 8 nm, emission
+# 20 nm); the `source` column of plate_reader_filters.csv marks these rows. Bandwidths
+# are reported for the methods only and are not used in the analysis.
 PROTOCOL_WAVELENGTHS = {
     # mode name: (excitation, excitation bandwidth, emission, emission bandwidth) / nm
     "FI: Ir-F": (425, 8, 475, 20),        # old PC1
@@ -81,7 +67,7 @@ FILTER_COLUMNS = [
 
 
 def sig(x, n=CONC_SIGFIGS):
-    """Round to n significant figures. Returns a float so the CSV carries no trailing zeros."""
+    """Round to n significant figures."""
     if x is None:
         return ""
     if x == 0:
@@ -105,12 +91,11 @@ def batch_number(plate_name):
 
 
 def build_batch_layouts(maps):
-    """well -> (quencher_id, quencher_name) per QBatch, taken from the QID-carrying plates.
+    """well -> (quencher_id, quencher_name) for each QBatch.
 
-    Quencher identity is a property of the well position within a batch, not of the
-    label written on the plate: ten plates label their quenchers with bare names and
-    two of those names are misleading. Every plate that does carry _QID_ labels agrees
-    on the layout, so position is the unambiguous key.
+    All plates of a batch share one quencher layout, so the quencher is identified by
+    well position. The layout is taken from the plates whose labels carry `_QID_<id>`;
+    some plates use bare quencher names only.
     """
     layouts = {}
     for plate, wells in maps.items():
@@ -129,7 +114,7 @@ def build_batch_layouts(maps):
 
 
 def check_bare_plates(maps, layouts):
-    """Every bare-name plate must match its batch layout name-for-name, or we stop."""
+    """Stop if a plate with bare quencher names does not match its batch layout."""
     for plate, wells in maps.items():
         labels = {w: v["quencher"]["compound"] for w, v in wells.items()}
         if all("_QID_" in q for q in labels.values()):
@@ -145,8 +130,7 @@ def check_bare_plates(maps, layouts):
 
 
 def read_plate(path):
-    """(well -> [repeat reads], filter record). The export is semicolon-separated with a
-    metadata header, which carries the filter pair the plate was read with."""
+    """Returns (well -> [repeat reads], filter record) from a semicolon-separated export."""
     try:
         text = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
@@ -166,8 +150,7 @@ def read_plate(path):
 
 
 def filters_from_mode(mode, name):
-    """The filter record of one export: from its Mode name, or from the photocatalyst
-    sheet for the two saved protocols that name no filters."""
+    """Filter settings from the Mode name, or from PROTOCOL_WAVELENGTHS."""
     m = MODE.search(mode or "")
     if m:
         ex, ex_bw, em, em_bw = (int(g) for g in m.groups())
@@ -183,7 +166,8 @@ def filters_from_mode(mode, name):
 
 
 def qc(reads):
-    """Drop rail reads, then one outlier if the well is too noisy. Returns (mean, kept, sat, dev)."""
+    """Drop saturated reads, then the read furthest from the median if the RSD exceeds
+    MAX_RSD (needs at least 3 reads). Returns (mean, n_kept, n_saturated, n_deviant)."""
     kept = [r for r in reads if r < DETECTOR_CEILING]
     n_saturated = len(reads) - len(kept)
     n_deviant = 0
@@ -227,10 +211,9 @@ def main():
         for well in sorted(wells, key=well_sort_key):
             entry = wells[well]
             pc, q = entry["photocatalyst"], entry["quencher"]
-            quencher_id, _ = layout[well]   # the map's own label is not carried; see records
+            quencher_id, _ = layout[well]
 
-            # Concentration comes from the pipetted volume and the stock, never from the
-            # rounded concentration_mM the map also carries.
+            # From pipetted volume and stock concentration, not the rounded concentration_mM.
             conc_M = q["volume_uL"] * q["stock"]["concentration"] / entry["total_volume_uL"] / 1000
 
             reads = reads_by_well[well]
@@ -270,7 +253,7 @@ def main():
 
     print(f"{len(map_paths)} batches -> {len(rows)} wells -> {OUT.name}")
     print(f"  filters from the export for {sum(f['source'] == 'export' for f in filter_rows)} "
-          f"batches, from the photocatalyst sheet for the rest -> {FILTERS_OUT.name}")
+          f"batches, from PROTOCOL_WAVELENGTHS for the rest -> {FILTERS_OUT.name}")
     print(f"  saturated reads dropped:        {sum(r['n_saturated'] for r in rows)}")
     print(f"  wells with an outlier dropped:  {sum(r['n_deviant'] for r in rows)}")
     print(f"  wells with no usable read:      {sum(1 for r in rows if r['intensity_au'] == '')}")

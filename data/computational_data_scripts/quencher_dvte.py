@@ -3,31 +3,27 @@
 # dependencies = []
 # ///
 """
-Milo trajectories -> the distribution of vertical singlet-triplet gaps per quencher.
+Distribution of vertical singlet-triplet gaps (DvTE) per quencher from Milo trajectories.
 
 Reads   ../computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz
 Writes  ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
         ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
 
-At every sampled step ORCA was run twice on the same geometry, `output_1.out` as the
-singlet and `output_3.out` as the triplet; the vertical gap is the difference of their
-final single point energies, and all steps of all trajectories make the DvTE distribution.
+    uv run data/computational_data_scripts/quencher_dvte.py
 
-WHY THE ARCHIVE
-    The per-step `step_<n>/` folders exist ONLY inside the tar.xz -- the unpacked `Milo_MD/`
-    tree holds the trajectory jobs alone. It is not a redundant copy and must not be
-    deleted. It is read as a stream, so none of its ~1.95 million entries touches disk;
-    one pass decompresses the whole 3.4 GB, so this takes a while. The per-step gaps are
-    written out too, so nothing downstream reads the archive again.
+At every sampled step, ORCA was run on the same geometry as singlet (`output_1.out`) and
+triplet (`output_3.out`). The vertical gap is the difference of their final single point
+energies, x 627.509 kcal/mol per Hartree. All steps of all trajectories of a quencher form
+its distribution.
 
-DEFINITIONS
-    dvte_mu, dvte_std   mean and standard deviation of the sampled gaps.
-    dvte_<p>            the p-quantile of a normal fit, mu + Phi^-1(p) * std. Reproduces
-                        Quencher/DvTE/milo_summary_detailed.csv to 0.02 kcal/mol, which is
-                        that file's own rounding.
-    dvte_<p>_kde        the same quantile from a Gaussian KDE of the samples instead. The
-                        original's bandwidth is unrecorded; Scott's rule reproduces the
-                        published values to 0.07 kcal/mol, so it is evidently what was used.
+The per-step folders `milo_q<n>/md_<n>/step_<n>/` exist only inside the tar.xz; the
+unpacked `Milo_MD/` tree holds the trajectory jobs. The archive is read as a stream
+without unpacking, which takes a while for 3.4 GB. The per-step gaps are written to
+quencher_dvte_samples.csv.gz.
+
+    dvte_mu, dvte_std   mean and standard deviation of the gaps
+    dvte_<p>            p-quantile of a normal distribution, mu + Phi^-1(p) * std
+    dvte_<p>_kde        p-quantile of a Gaussian KDE of the gaps, bandwidth by Scott's rule
 """
 
 import csv
@@ -114,7 +110,7 @@ def kde_quantile(samples, p, bandwidth):
 
 
 def collect_gaps():
-    """quencher_id -> {(md, step): {multiplicity: energy}} read straight from the archive."""
+    """quencher_id -> {(md, step): {multiplicity: energy}}, read from the archive."""
     energies = defaultdict(dict)
     seen = 0
     started = time.time()
@@ -178,9 +174,7 @@ def main():
         writer = csv.DictWriter(fh, fieldnames=COLUMNS)
         writer.writeheader()
         writer.writerows(rows)
-    # mtime=0 and an empty filename keep the gzip header out of the output. Without
-    # them gzip stamps the current time into bytes 4-7, so two runs over identical
-    # data produce different files and the round-trip check reports a false change.
+    # mtime=0 and an empty filename make the gzip file identical between runs.
     with open(OUT_SAMPLES, "wb") as raw, \
             gzip.GzipFile(fileobj=raw, mode="wb", mtime=0, filename="") as gz, \
             io.TextIOWrapper(gz, encoding="utf-8", newline="") as fh:

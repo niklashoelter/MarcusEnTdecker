@@ -3,47 +3,27 @@
 # dependencies = ["numpy"]
 # ///
 """
-QC'd well intensities -> one Stern-Volmer fit per photocatalyst/quencher pair.
+Well intensities -> one Stern-Volmer fit per photocatalyst/quencher pair.
 
 Reads   ../experimental_data_processed/stern_volmer_intensities.csv
 Writes  ../experimental_data_processed/stern_volmer_fits.csv
 
-I0/I against [Q], 27 x 48 = 1296 pairs. The replicate QC behind those intensities lives
-once, in stern_volmer_intensities.py.
-
     uv run data/experimental_data_scripts/stern_volmer_fits.py [--fix-intercept]
 
-THE INTERCEPT FLOATS
-    I0/I = 1 + K_SV [Q] has no free intercept, but the reported fit lets it float because
-    the published K_SV values do. 327 pairs land more than 0.05 from 1 and twelve more
-    than 0.5; there the intercept is absorbing curvature that belongs in the slope.
-    `--fix-intercept` anchors at (0, 1) instead. It moves every K_SV, so it is off.
+I0/I is fitted against [Q] for 27 x 48 = 1296 pairs. Photocatalysts carry old ids.
 
-PROVENANCE
-    Port of SternVolmerAnalysis in Auto_Quenching_Backup (stern_volmer.py +
-    regression_utils.py), the acquisition-time code behind the published values, with the
-    one change below. Otherwise verified against the 1296 workbooks that code wrote: same
-    point masks, K_SV to ~1e-13. Its scikit-learn estimators are reimplemented in numpy,
-    since the version behind the published numbers was never recorded. Two of its
-    behaviours look like defects and are reproduced anyway, marked QUIRK.
+Point selection. If the all-points fit has a negative slope or r2 > 0.995, all points
+are used. Otherwise the script scans the first n points (n >= 3), scores each range as
+sqrt(n) / (1 + MAE)^4, and may drop one outlier per range, found by Theil-Sen
+residuals. The [Q] = 0 point is always kept. The chosen points are refitted by ordinary
+least squares and by Theil-Sen, and the fit with the lower MAE is reported.
 
-THE ONE CHANGE: THE RANGE SCAN RUNS FOR EVERY PAIR
-    The original returns before the scan when the all-points r2 is below 0.5 and fits all
-    points, so a pair that is linear and then saturates took its K_SV from the whole
-    series: old PC23/Q39 gave K_SV 2254 on an intercept of 6.3, where its linear first
-    three points give 21774 at r2 0.97, intercept 1.38. That exit is gone. 58 pairs choose
-    different points and say so in `note`; the other 1238 are unchanged.
+Intercept. The fit has a free intercept. `--fix-intercept` fits I0/I = 1 + K_SV [Q]
+through (0, 1) instead, which changes every K_SV.
 
-TWO LABELS
-    `quenching_observed`, the published criterion K_SV >= 25 and r2 >= 0.90, unchanged.
-    It reaches the dataset as `quenches_strict`.
-
-    `quenches`, what this project classifies on: a ladder where weaker quenching demands a
-    straighter line -- K_SV > 50 at r2 > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
-    Any one rung is enough and `rung` says which. So no fit worse than r2 0.75 is ever
-    called quenching however large its K_SV, and a K_SV of a few M-1 needs an almost
-    perfect line. The floor stops a collapsed well from carrying the label; the sliding
-    threshold keeps the genuine weak quenchers, monotone 3-4 % drops well above read noise.
+Label. `quenches` is 1 if the fit clears any rung of a ladder in which weaker quenching
+needs a straighter line: K_SV > 50 at r2 > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
+`rung` gives the rung. No fit with r2 <= 0.75 is labelled quenching.
 """
 
 import csv
@@ -61,16 +41,11 @@ MIN_POINTS_FOR_FIT = 3
 R2_NO_QUENCHING = 0.50        # all-points r2 below this: no quenching trend
 R2_GOOD_CORRELATION = 0.995   # all-points r2 above this: nothing to gain from scanning
 OUTLIER_IMPROVEMENT = 0.20    # an outlier must cut the MAE by this fraction to qualify
-K_SV_QUENCHING = 25.0         # published: a pair counts as quenching when K_SV >= this
-R2_QUENCHING = 0.90           # published: ... and r2 >= this
 
-# This project's label: (K_SV above, r2 above) -- any one rung is enough. Highest K_SV
-# first, so the rung a pair is reported under is the most permissive one it clears.
+# (K_SV above, r2 above); any one rung is enough. Checked from the highest K_SV down.
 LABEL_RUNGS = [(50.0, 0.75), (20.0, 0.80), (10.0, 0.90), (0.0, 0.99)]
 
-# Anchor the reported fit at (0, 1) instead of letting the intercept float. OFF by
-# default: the published K_SV values are free-intercept fits, and turning this on moves
-# every number in the table. `--fix-intercept` sets it for one run. See ols_anchored.
+# Fit through (0, 1) instead of with a free intercept. Set for one run with --fix-intercept.
 FIX_INTERCEPT = False
 SIGFIGS = 6
 
@@ -79,7 +54,7 @@ EPS = np.finfo(np.double).eps
 COLUMNS = [
     "pc_old_id", "quencher_id", "K_SV", "intercept", "r2", "num_points", "n_measured",
     "K_SV_all_points", "r2_all_points",
-    "quenches", "rung", "quenching_observed", "fit_method", "confidence", "note",
+    "quenches", "rung", "fit_method", "confidence", "note",
 ]
 
 
@@ -94,7 +69,7 @@ def mae(residuals):
 
 
 def score_fn(residuals, n_points):
-    """The original's range score: rewards long intervals, punishes residuals steeply."""
+    """Range score: favours longer ranges and penalises residuals steeply."""
     return n_points ** 0.5 / (1.0 + mae(residuals)) ** 4
 
 
@@ -103,9 +78,7 @@ def score_fn(residuals, n_points):
 def ols_anchored(x, y):
     """Least squares through (0, 1): I0/I = 1 + K_SV [Q]. Returns slope, 1.0, pred, r2.
 
-    The real one-parameter fit, which `linear_fit(force_intercept=True)` is not. r2 is
-    against the mean of y, as in the free-intercept fit, so the two compare; it goes
-    negative where the anchored line is worse than a flat one. Off by default.
+    r2 is taken against the mean of y, as in the free-intercept fit, and can be negative.
     """
     x = np.asarray(x, float)
     y = np.asarray(y, float)
@@ -177,9 +150,9 @@ def theil_sen(x, y):
 def linear_fit(x, y, method="linear", force_intercept=False):
     """Returns slope, intercept, residuals, r2.
 
-    force_intercept shifts y down by 1 before fitting and then reports the intercept as
-    1.0. It does NOT constrain the line through (0, 1) -- the estimator still fits its
-    own intercept. Reproduced as-is from the original.
+    force_intercept shifts y down by 1 before fitting and reports the intercept as 1.0.
+    The estimator still fits its own intercept, so the line is not constrained through
+    (0, 1); use ols_anchored for that.
     """
     x = np.asarray(x, float)
     y = np.asarray(y, float)
@@ -187,7 +160,7 @@ def linear_fit(x, y, method="linear", force_intercept=False):
 
     if method == "theil-sen":
         slope, intercept = theil_sen(x, y_adj)
-        pred = slope * x                       # note: the original drops the intercept here
+        pred = slope * x                       # residuals from the slope only, without intercept
         full = slope * x + intercept
         ss_res = float(((y_adj - full) ** 2).sum())
         ss_tot = float(((y_adj - y_adj.mean()) ** 2).sum())
@@ -204,11 +177,11 @@ def linear_fit(x, y, method="linear", force_intercept=False):
 # --- the analysis -----------------------------------------------------------
 
 def exclude_outlier_theil_sen(x, y, min_datapoints, improvement_threshold):
-    """Rank points by Theil-Sen residual and flag the worst if dropping it pays.
+    """Find the point with the largest Theil-Sen residual.
 
-    QUIRK 1: the trimmed arrays are returned whether or not the point qualified. The
-    caller therefore always scores an interval using a fit on that interval minus its
-    worst point, while only recording an exclusion when the point qualified.
+    Returns the arrays without that point, and its index if dropping it lowers the MAE
+    by at least improvement_threshold (else None). The trimmed arrays are returned in
+    both cases, so a range is always scored without its worst point.
     """
     x = np.asarray(x, float)
     y = np.asarray(y, float)
@@ -226,10 +199,7 @@ def exclude_outlier_theil_sen(x, y, min_datapoints, improvement_threshold):
 
 
 def rung(k_sv, r2):
-    """The most permissive rung of LABEL_RUNGS this fit clears, or "" for none.
-
-    Written to the table, so a row says on what evidence it quenches.
-    """
+    """The first rung of LABEL_RUNGS this fit clears, or "" for none."""
     if not (np.isfinite(k_sv) and np.isfinite(r2)):
         return ""
     for k_min, r2_min in LABEL_RUNGS:
@@ -257,7 +227,6 @@ def analyse(conc, intensity):
         if round(r ** 2, 4) > R2_GOOD_CORRELATION:
             return indices, "perfect measurement, no range scan", conc, ratio
         if round(r, 4) ** 2 < R2_NO_QUENCHING:
-            # The original returns here with every point kept. See THE ONE CHANGE.
             note = "scanned despite a low all-points r2"
 
     best_score = 0.0
@@ -268,13 +237,12 @@ def analyse(conc, intensity):
             x, y, MIN_POINTS_FOR_FIT, OUTLIER_IMPROVEMENT)
         *_, residuals, _ = linear_fit(x_used, y_used, method="linear", force_intercept=True)
 
-        # scored with the FULL interval length, but residuals from the trimmed fit
+        # full range length, residuals from the trimmed fit
         score = score_fn(residuals, len(x))
         if score > best_score:
             best_score = score
             chosen = indices[:end]
-            # QUIRK 2: a plain truthiness test, so an outlier at position 0 is never
-            # removed. That is why every fit keeps the [Q] = 0 anchor point.
+            # index 0 is falsy, so the [Q] = 0 point is always kept
             if outlier:
                 chosen = np.delete(chosen, outlier)
 
@@ -282,10 +250,9 @@ def analyse(conc, intensity):
 
 
 def finalise(chosen, conc, ratio, fix_intercept=FIX_INTERCEPT):
-    """Refit the chosen points; keep whichever method has lower MAE.
+    """Refit the chosen points by OLS and Theil-Sen and keep the lower MAE.
 
-    With fix_intercept the line is anchored at (0, 1) instead and there is nothing to
-    choose between -- a one-parameter fit has no robust counterpart here.
+    With fix_intercept, only the fit through (0, 1) is done.
     """
     x, y = conc[chosen], ratio[chosen]
     if fix_intercept:
@@ -303,7 +270,7 @@ def finalise(chosen, conc, ratio, fix_intercept=FIX_INTERCEPT):
 
 
 def confidence(k_sv, r2, intercept, n_used, n_total, quenching):
-    """The original's four-level qualitative flag, kept so the tables stay comparable."""
+    """Qualitative fit confidence from intercept, r2, and the fraction of points used."""
     if not all(np.isfinite(v) for v in (k_sv, r2, intercept)):
         return "unknown"
     if intercept < 0.5 or intercept > 1.5:
@@ -324,9 +291,9 @@ def confidence(k_sv, r2, intercept, n_used, n_total, quenching):
 
 def main(fix_intercept=FIX_INTERCEPT):
     if not IN.exists():
-        sys.exit(f"{IN.name} not found -- run stern_volmer_intensities.py first")
+        sys.exit(f"{IN.name} not found; run stern_volmer_intensities.py first")
     if fix_intercept:
-        print("fitting through (0, 1): K_SV will not match the published table")
+        print("fitting through (0, 1) instead of with a free intercept")
 
     pairs = defaultdict(list)
     for row in csv.DictReader(IN.open(encoding="utf-8")):
@@ -340,12 +307,11 @@ def main(fix_intercept=FIX_INTERCEPT):
         points = sorted(pairs[(pc_id, q_id)])
         chosen, note, conc, ratio = analyse([c for c, _ in points], [i for _, i in points])
         slope, intercept, r2, method = finalise(chosen, conc, ratio, fix_intercept)
-        quenching = bool(slope >= K_SV_QUENCHING and r2 >= R2_QUENCHING)
 
-        # the all-points fit is a diagnostic, not the label: where it disagrees sharply
-        # with K_SV, a well the range scan dropped is the reason.
+        # all-points fit, reported for comparison only
         slope_all, _, _, r2_all = ols(conc, ratio)
         carried = rung(slope, r2)
+        quenching = bool(carried)
         rows.append({
             "pc_old_id": pc_id,
             "quencher_id": q_id,
@@ -358,7 +324,6 @@ def main(fix_intercept=FIX_INTERCEPT):
             "r2_all_points": sig(r2_all),
             "quenches": int(bool(carried)),
             "rung": carried,
-            "quenching_observed": quenching,
             "fit_method": method,
             "confidence": confidence(slope, r2, intercept, len(chosen), int(conc.size), quenching),
             "note": note,
@@ -370,7 +335,6 @@ def main(fix_intercept=FIX_INTERCEPT):
         writer.writeheader()
         writer.writerows(rows)
 
-    quench = sum(1 for r in rows if r["quenching_observed"])
     label = sum(1 for r in rows if r["quenches"])
     print(f"{len(rows)} pairs -> {OUT.name}")
     print(f"  quenches: {label} yes, {len(rows) - label} no")
@@ -381,8 +345,6 @@ def main(fix_intercept=FIX_INTERCEPT):
     for k_min, r2_min in LABEL_RUNGS:
         name = f"K_SV > {k_min:g} and r2 > {r2_min:g}"
         print(f"    {rungs[name]:5d}  {name}")
-    print(f"  quenching_observed (published, K_SV >= {K_SV_QUENCHING:g} and r2 >= {R2_QUENCHING}): "
-          f"{quench} yes, {len(rows) - quench} no")
     counts = defaultdict(int)
     for r in rows:
         counts[r["note"]] += 1

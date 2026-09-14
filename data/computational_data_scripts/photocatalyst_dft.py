@@ -10,8 +10,9 @@ Writes  ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
 
     uv run data/computational_data_scripts/photocatalyst_dft.py
 
-Every number is parsed from an ORCA output in the deposit; no spreadsheet is read. The
-arithmetic is Leon Schlosser's, as in the property file he delivered, so this reproduces it:
+Each state folder holds the optimisation with frequencies (`opt_output.out`) and the
+vertical single points of the other states at that geometry (`sp_vert_<state>_output.out`).
+E is the electronic energy, G the Gibbs correction G-E(el):
 
     E_T                ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.503
     lambda_X_Y         (E_X at the Y geometry - E_X) * 627.509     electronic only
@@ -20,25 +21,14 @@ arithmetic is Leon Schlosser's, as in the property file he delivered, so this re
     E_PCstar_PCminus   -dG_red_ES / 23.061 - 4.42
     E_PCplus_PCstar     dG_ox_ES / 23.061 - 4.42
 
-The two Hartree conversions differ because they do in the source; unifying them would move
-E_T by 6e-4 kcal/mol, so they stay.
+Reorganization energies are named lambda_<surface>_<geometry>: `lambda_S0_T1` is the
+singlet surface at the T1 geometry, `lambda_T1_S0` the triplet surface at the S0 geometry.
+Dplus and Dminus are the one-electron oxidized and reduced states, the `ox` and `red`
+folders. Potentials are named by their couple: E(PC*/PC-) measures how strong an oxidant
+the triplet is.
 
-AGREEMENT WITH THE DELIVERED FILE
-    Lambdas to 1e-13 kcal/mol, the two dG to 6e-8 (the source did them in Excel), E_T to
-    5e-8 -- everywhere except four E_T values. Old PC10, PC13, PC25 and PC28 differ by
-    +2.23, -0.70, +0.61 and -0.55 kcal/mol, because that file took E_T from a spreadsheet
-    column never updated for those four and no delivered job reproduces it. The values
-    here come from the jobs. PC19 is blank there; here it has what its six jobs allow.
-
-NAMING
-    Reorganization energies are lambda_<surface>_<geometry>, as everywhere in data/ and
-    benchmark/: `lambda_S0_T1` is the singlet surface at the T1 geometry, `lambda_T1_S0`
-    the triplet surface at the S0 geometry. Dplus and Dminus are the one-electron oxidized
-    and reduced states, the `ox` and `red` folders. Potentials are named by their couple:
-    E(PC*/PC-) is how strong an oxidant the triplet is, `E_ox_ES` in the delivered file.
-
-Numbered by old id. Old PC7, PC26, PC30 and PC31 were computed but are crossed out in the
-photocatalyst sheet and are not part of the data (../compound_identification.py).
+Photocatalysts are numbered by old id. Those excluded from the data are skipped
+(../compound_identification.py).
 """
 
 from __future__ import annotations
@@ -51,12 +41,12 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "computational_data_raw" / "photocatalysts"
 OUT = RAW / "photocatalyst_dft.csv"
 
-HARTREE_KCAL_E_T = 627.503      # as used for E_T in the source
-HARTREE_KCAL = 627.509          # as used for every other energy difference
+HARTREE_KCAL_E_T = 627.503      # for E_T
+HARTREE_KCAL = 627.509          # for every other energy difference
 FARADAY_KCAL_V = 23.061
 SCE_ABSOLUTE_V = 4.42
 
-# Only the photocatalysts in the data; the crossed-out ones are skipped. Old ids.
+# Old ids of the photocatalysts in the data.
 sys.path.insert(0, str(ROOT))
 from compound_identification import IN_DATA  # noqa: E402
 
@@ -95,15 +85,11 @@ COLUMNS = [
 
 
 def scan(path):
-    """Electronic energy (as printed), Gibbs correction, imaginary modes, charge.
+    """Electronic energy (string as printed), Gibbs correction, imaginary modes, charge.
 
-    The last FINAL SINGLE POINT ENERGY is taken, not the first: the optimizations are
-    compound jobs that re-run a single point in the larger TZVPP basis on the converged
-    geometry, and that larger-basis energy is the one every difference below is built
-    from. The Gibbs correction comes from the freq step in the smaller basis, which is
-    where the frequencies were computed -- mixing the two is intentional, and it is what
-    the published numbers did. The energy is kept as ORCA printed it, so the table
-    carries it at full precision.
+    The optimizations are compound jobs that end with a single point in the larger TZVPP
+    basis on the converged geometry, so the last FINAL SINGLE POINT ENERGY is used. The
+    Gibbs correction comes from the frequency step in the smaller basis.
     """
     energy = gibbs = None
     n_imag = 0

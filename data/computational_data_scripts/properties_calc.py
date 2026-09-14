@@ -12,14 +12,13 @@ Reads   ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
 Writes  ../computational_data_processed/photocatalyst_properties_calc.xlsx
         ../computational_data_processed/quencher_properties_calc.xlsx
 
-Everything per compound that was computed, in one place. The extraction scripts write
-their full tables -- total energies, Gibbs corrections, per-conformer and per-sample
-detail -- into the raw folders beside the jobs they read. Those tables are in git even
-though the jobs are not, so this runs without the deposit. It only selects from them and
-lays the result out in blocks (see ../properties_workbook.py). No value is computed here.
+    uv run data/computational_data_scripts/properties_calc.py
 
-The compound names come from compound_identification.xlsx, so a row reads the same in the
-computed and the measured workbook.
+Collects the computed properties of each compound. The extraction scripts write their
+full tables into the raw folders beside the jobs. These tables are in git, so this script
+runs without the job deposit. It selects columns and lays them out in blocks
+(../properties_workbook.py); no value is computed here. Compound names come from
+compound_identification.xlsx, as in the experimental workbooks.
 """
 
 import sys
@@ -83,8 +82,7 @@ def photocatalysts():
         ]),
         Block(f"Triplet energy / {KCAL}", [
             col(f"E_T / {KCAL}", f"E_T / {KCAL}",
-                "Adiabatic, Gibbs-corrected: ((E_T1 + G_T1) - (E_S0 + G_S0)) x 627.503. "
-                "E_T_calc in the delivered file."),
+                "Adiabatic, Gibbs-corrected: ((E_T1 + G_T1) - (E_S0 + G_S0)) x 627.503."),
         ]),
         Block(f"Reorganization energies / {KCAL}", [
             col(f"lambda_{s}_{g} / {KCAL}", f"lambda_{s}_{g} / {KCAL}",
@@ -98,21 +96,16 @@ def photocatalysts():
             col(f"dG_red_ES / {KCAL}", f"dG_red_ES / {KCAL}",
                 "PC* -> PC-: ((E_red + G_red) - (E_T1 + G_T1)) x 627.509."),
             col("E_PCstar_PCminus / V", "E_PCstar_PCminus / V",
-                "PC*/PC-, how strong an oxidant the triplet is: -dG_red_ES / 23.061 - 4.42. "
-                "E_ox_ES in the delivered file."),
+                "PC*/PC-, how strong an oxidant the triplet is: -dG_red_ES / 23.061 - 4.42."),
             col("E_PCplus_PCstar / V", "E_PCplus_PCstar / V",
-                "PC+/PC*, how strong a reductant the triplet is: dG_ox_ES / 23.061 - 4.42. "
-                "E_red_ES in the delivered file."),
+                "PC+/PC*, how strong a reductant the triplet is: dG_ox_ES / 23.061 - 4.42."),
         ]),
     ]
     note = """
         One row per photocatalyst in the screen, sorted by new_id; the raw files use old_id.
-        Every value is computed from the
-        ORCA outputs with the arithmetic of Leon's delivered photocatalyst property file and
-        reproduces it to 5e-8, except E_T for old PC10, PC13, PC25 and PC28 (new 8, 11, 23,
-        26), where that file carries values no delivered job reproduces. Old PC19 (new 17)
-        lacks four single points, so four of its lambdas are blank. Total energies, Gibbs corrections and frequency checks are
-        in computational_data_raw/photocatalysts/photocatalyst_dft.csv.
+        Every value is computed from the ORCA outputs. Old PC19 (new 17) lacks four single
+        points, so four of its lambdas are blank. Total energies, Gibbs corrections and
+        frequency checks are in computational_data_raw/photocatalysts/photocatalyst_dft.csv.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(dft, key=NEW_ID.get), blocks, note
@@ -175,8 +168,8 @@ def quenchers():
         ]),
     ]
     note = """
-        One row per quencher. Roundings are the original pipeline's: 1 decimal in kcal/mol,
-        2 in V. The energies behind each value are in the deposited ORCA outputs under
+        One row per quencher. DFT values are rounded to 1 decimal in kcal/mol and 2 in V.
+        The energies behind each value are in the deposited ORCA outputs under
         computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/, and every sampled gap in
         computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.

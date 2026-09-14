@@ -17,20 +17,15 @@ script by hand gives the same result.
 A stage whose inputs are not present is reported as skipped rather than failed, so a
 partial checkout (no computational_data_raw, say) still gets as far as it can.
 
-NOT EVERY SCRIPT IN THE TREE IS A STAGE
-    `photocatalyst_curate.py` is deliberately absent. It takes the delivered job tree as
-    an argument, which this runner cannot supply, and it is a record of how the deposit
-    was made rather than a step that remakes it.
+Not every script is a stage:
+    `photocatalyst_curate.py` builds the photocatalyst deposit from a job tree given as an
+    argument, so it is run by hand.
 
-    `quencher_ml.py` is absent for a different reason: it runs the model, so it needs the
-    ml extra -- torch, torch-geometric, rdkit -- which every stage below deliberately does
-    without. Run it by hand when the predictions have to be remade:
+    `quencher_ml.py` needs the ml extra (torch, torch-geometric, rdkit). Run it by hand:
     `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`. The workbook
-    it writes is in git, so nothing downstream has to.
+    it writes is in git.
 
-    `compound_identification.py` and `properties_workbook.py` are modules, not stages:
-    the first is the one source of what each compound is, the second the shared workbook
-    layout. Both are imported, never run.
+    `compound_identification.py` and `properties_workbook.py` are imported modules.
 """
 
 import argparse
@@ -51,8 +46,6 @@ PIPELINE = [
      "data/experimental_data_raw/pc_tcspc"),
     ("data", "data/experimental_data_scripts/absorption_extinction.py",
      "data/experimental_data_raw/quencher_absorption"),
-    ("data", "data/experimental_data_scripts/emission_spectra.py",
-     "data/experimental_data_raw/pc_emission"),
     ("data", "data/experimental_data_scripts/cyclic_voltammetry_redox.py",
      "data/experimental_data_raw/quencher_cyclic_voltammetry"),
     ("data", "data/experimental_data_scripts/properties_exp.py",

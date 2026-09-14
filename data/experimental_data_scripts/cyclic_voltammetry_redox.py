@@ -3,62 +3,42 @@
 # dependencies = ["numpy"]
 # ///
 """
-Cyclic voltammograms, and the literature where there are none -> one redox table.
+Quencher redox potentials from cyclic voltammograms, with literature values where no
+voltammogram exists.
 
-Reads   ../experimental_data_raw/quencher_cyclic_voltammetry/   (21 traces + 19 blanks)
+Reads   ../experimental_data_raw/quencher_cyclic_voltammetry/   (sample traces and blanks)
         ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_literature_data.csv
-Writes  cyclic_voltammetry_redox.csv    (19 samples)
-        cyclic_voltammetry_traces.csv   (25821 points)
-        quencher_redox_potentials.csv   (48 quenchers)
+Writes  cyclic_voltammetry_redox.csv    one row per measured sample
+        cyclic_voltammetry_traces.csv   blank-corrected traces
+        quencher_redox_potentials.csv   one row per quencher (48)
 
-WHICH NUMBER IS USED
-    The voltammogram wherever one is deposited (19 quenchers); the literature file only
-    where there is none, with `source` saying which it was -- a DOI, `CV` for a value
-    measured in this lab whose trace is not deposited, or `estimated`. The literature file
-    may not give a value the voltammogram already gives; the one exception is Q22's
-    oxidation, below.
+Usage: uv run cyclic_voltammetry_redox.py
 
-THE SAMPLE NUMBER IS THE QUENCHER ID
-    The file names carry a three-digit sample number; the `i400sN1_1#034` line inside is
-    the instrument's run counter and does not track the sample. The lab record says the
-    sample number is the quencher id, and that was checked against the potentials the lab
-    read off these traces by eye: 29 of 32 plain values within 0.15 V (median 0.050 V) and
-    all five bounds. Where they differ the extracted value is used -- Q17 reduction
-    (recorded -0.2 V, a few-uA shoulder on a sloping background; extracted -1.57 V), Q46
-    reduction (-2.0 V; -2.29 V), Q23 oxidation (1.84 V; 1.69 V).
+Sources. A potential comes from the voltammogram wherever one exists. The literature file
+fills in the rest, and its `source` column gives a DOI, `CV` for a value measured in this
+lab without a deposited trace, or `estimated`. The literature file must not repeat a value
+the voltammogram already gives.
 
-WHAT IS IN A FILE
-    Semicolon-separated, three header lines, then potential in V against current in uA.
-    One full cycle each, 0 -> +2.5 -> -2.5 -> 0 V, at 0.05 V (201 points) or 0.005 V
-    (2001 points) per point, with a blank on the same axis point for point -- so the
-    background comes off by plain subtraction. The axis is already on the reported scale:
-    no anodic branch has a reversible couple, so there is no ferrocene wave to correct
-    against, and the extracted values matched the lab's vs.-SCE readings to +0.046 V mean,
-    a tenth of what a missed correction would cost. No correction is applied. There is no
-    time column or scan rate anywhere, so `scan_rate_V_s` stays empty.
+Files. The three-digit sample number in the file name is the quencher id (`021_2.csv` is
+the second run of Q21); the `i400sN1_1#...` line inside is the instrument's run counter,
+not the sample. Each file is semicolon-separated with three header lines, then
+potential in V and current in uA, for one cycle 0 -> +2.5 -> -2.5 -> 0 V at 0.05 V or
+0.005 V steps. Each sample has a blank `<sample>_blank.csv` on the same potential axis,
+which is subtracted point by point. Potentials are used as recorded, vs SCE, without
+ferrocene correction. The export has no scan rate, so `scan_rate_V_s` is empty.
 
-WHICH NUMBER IS REPORTED
-    35 of 38 branches are irreversible -- the wave runs into the solvent limit with no
-    return peak -- so there is no E_1/2 and the onset is all there is. Four descriptors
-    are written per branch and `E_ox_basis` / `E_red_basis` says which one was taken:
-    onset (tangent at steepest rise, back to baseline), peak, half-peak, half-wave.
-    The onset is reported on an irreversible wave because it is what the experimenters
-    read, the peak sitting some 0.2 V beyond it; the half-wave wherever a return peak was
-    found within REVERSIBLE_WINDOW_V (Q28, Q39, Q42, all reductions).
+Reported value. On each branch the first resolvable wave is taken, which comes before
+electrolyte breakdown. A wave is resolvable when the blank-corrected current rises by
+MIN_WAVE_UA, or NOISE_K robust standard deviations if larger, above its trailing minimum,
+at least EDGE_MARGIN_V inside the vertex. Onset (tangent at the steepest rise, extended
+back to the baseline), peak, half-peak and half-wave potentials are written for each
+branch. The reported value is the half-wave potential when a return peak lies within
+REVERSIBLE_WINDOW_V of the forward peak, and the onset otherwise; `E_ox_basis` and
+`E_red_basis` say which. A branch without a wave is reported as a bound at EDGE_MARGIN_V
+inside the vertex (> +2.4 V or < -2.4 V), with the bound sign in its own column.
 
-FINDING THE WAVE, AND WHEN THERE IS NONE
-    The FIRST resolvable wave on a branch, not the largest -- the compound's own wave
-    comes before the electrolyte's breakdown. Resolvable means the blank-corrected current
-    rises MIN_WAVE_UA, or NOISE_K robust standard deviations if that is more, above its
-    trailing minimum, at least EDGE_MARGIN_V inside the vertex. No wave means the compound
-    was not oxidized or reduced inside the window, reported as a limit at that margin,
-    +2.4 or -2.4 V, with the bound in its own column so it never travels alone.
-
-REPEATS
-    Averaged only when they agree to REPEAT_TOLERANCE_V. 021 and 022 are the only samples
-    measured twice. 021's second run shows no oxidation wave, so its oxidation rests on
-    the first. 022's runs disagree by more than a volt, so the traces give no oxidation
-    value and the lab's +1.9 V comes from the literature file, with that in its comment.
+Repeats are averaged only when they agree to REPEAT_TOLERANCE_V; otherwise that value is
+left empty and the note says why.
 """
 
 import csv
@@ -74,7 +54,7 @@ from compound_identification import QUENCHERS  # noqa: E402
 
 RAW = HERE.parent / "experimental_data_raw" / "quencher_cyclic_voltammetry"
 LITERATURE = RAW / "quencher_literature_data.csv"
-# Written next to the traces they come from, so the sample scan below has to step over them.
+# Outputs sit next to the traces, so the sample scan in main() skips them.
 OUT = RAW / "cyclic_voltammetry_redox.csv"
 TRACES_OUT = RAW / "cyclic_voltammetry_traces.csv"
 REDOX_OUT = RAW / "quencher_redox_potentials.csv"
@@ -82,34 +62,31 @@ WRITTEN = {OUT, TRACES_OUT, REDOX_OUT, LITERATURE}
 
 SIGFIGS = 6
 
-# Smoothing window, in volts, applied before differentiating. Short enough to leave a
-# 0.1 V wave alone, long enough that the derivative of the 0.005 V export is not noise.
+# Moving-average window (V) applied before differentiating.
 SMOOTH_V = 0.02
 
-# A wave is detected when the corrected current rises this far above the minimum of the
-# preceding TRAIL_V of sweep. MIN_WAVE_UA is the floor; the noise term takes over on the
-# traces where the background itself is rough.
+# A wave starts where the smoothed current rises by max(MIN_WAVE_UA, NOISE_K * noise)
+# above its minimum over the preceding TRAIL_V.
 TRAIL_V = 0.50
 MIN_WAVE_UA = 4.0
 NOISE_K = 6.0
 
-# A rise beginning within this distance of the vertex is the edge of the window, not a
-# wave inside it. A branch without a wave is a bound at this distance from the vertex.
+# A rise starting this close to the vertex is not counted as a wave. A branch without a
+# wave is reported as a bound at this distance from the vertex.
 EDGE_MARGIN_V = 0.10
 
-# The local baseline is the median over BASE_WINDOW_V of sweep ending BASE_GAP_V before
-# the wave's foot -- far enough back not to sit on the rising edge itself.
+# Baseline: median over BASE_WINDOW_V of sweep, ending BASE_GAP_V before the wave foot.
 BASE_GAP_V = 0.05
 BASE_WINDOW_V = 0.40
 
-# The peak is the first maximum after the foot that the current then falls this far
-# below, as a fraction of the wave height. Without a fall there is no peak.
+# The peak is the first maximum after which the current falls by this fraction of the
+# wave height.
 PEAK_DROP = 0.10
 
-# A return peak this close to the forward peak makes the couple reversible.
+# A return peak within this distance of the forward peak marks a reversible couple.
 REVERSIBLE_WINDOW_V = 0.30
 
-# Repeats are averaged when they agree to this; otherwise the value is withheld.
+# Repeats are averaged when they agree to this; otherwise the value is left empty.
 REPEAT_TOLERANCE_V = 0.15
 
 SAMPLE = re.compile(r"^(?P<sample>\d{3})(?:_(?P<repeat>\d+))?$")
@@ -131,7 +108,7 @@ TRACE_COLUMNS = [
     "potential_V", "current_uA", "blank_uA", "corrected_uA",
 ]
 
-# The redox table has the literature file's columns, so the two read the same way.
+# Same columns as the literature file.
 REDOX_COLUMNS = [
     "quencher_id", "E_Ox_vs_SCE_V", "E_Ox_bound", "E_Red_vs_SCE_V", "E_Red_bound",
     "source", "comment",
@@ -171,10 +148,9 @@ def smooth(y, width):
 def find_wave(u, y, step):
     """First resolvable wave on one branch.
 
-    `u` increases along the sweep and `y` is the corrected current with the wave
-    pointing up, so the caller flips the sign for the cathodic branch and this function
-    needs to know nothing about direction. Returns a dict; `detected` is False when
-    there is no wave inside the window.
+    `u` increases along the sweep and `y` is the corrected current with the wave pointing
+    up; the caller flips signs for the cathodic branch. Returns a dict with `detected`
+    False when there is no wave inside the window.
     """
     n = len(u)
     if n < 5:
@@ -193,10 +169,10 @@ def find_wave(u, y, step):
             break
 
     if foot is None:
-        return {"detected": False, "noise": noise, "threshold": threshold,
+        return {"detected": False,
                 "reason": f"no rise of {threshold:.1f} uA anywhere in the window"}
     if u[foot] > u[-1] - EDGE_MARGIN_V:
-        return {"detected": False, "noise": noise, "threshold": threshold,
+        return {"detected": False,
                 "reason": f"the only rise begins {EDGE_MARGIN_V} V or less from the vertex"}
 
     gap = round(BASE_GAP_V / step)
@@ -232,21 +208,19 @@ def find_wave(u, y, step):
                 break
 
     return {
-        "detected": True, "noise": noise, "threshold": threshold,
+        "detected": True,
         "onset": onset,
         "peak": float(u[peak]) if peak is not None else None,
         "peak_current": float(ys[peak] - base) if peak is not None else None,
-        "half": half, "height": height, "base": base,
+        "half": half,
         "reason": "" if peak is not None else "wave runs into the vertex, no peak",
     }
 
 
 def return_peak(u, y, step, forward_peak):
-    """Potential of a counter-peak on the return sweep, or None.
+    """Potential of the return peak within REVERSIBLE_WINDOW_V of the forward peak, or None.
 
-    `u` and `y` are again oriented so the counter-peak points up. Only a peak within
-    REVERSIBLE_WINDOW_V of the forward one counts; anything further away is a different
-    process, not the reverse of this one.
+    `u` and `y` are oriented so the return peak points up.
     """
     if forward_peak is None or len(u) < 5:
         return None
@@ -257,19 +231,17 @@ def return_peak(u, y, step, forward_peak):
     idx = np.flatnonzero(near)
     k = int(idx[int(np.argmax(ys[idx]))])
     if k in (idx[0], idx[-1]):
-        return None                      # a shoulder on a ramp, not a peak
-    # It has to rise AND then fall. After a large irreversible wave the return sweep
-    # climbs steeply back toward zero and flattens out; that climb alone would make
-    # every wave look reversible, so the falling side is what decides. The fall is
-    # measured over the whole rest of the sweep, not just the comparison window, because
-    # a return peak decays slowly.
+        return None                      # maximum at the window edge: a shoulder
+    # The current must rise into the peak and fall after it. The fall is measured over
+    # the rest of the sweep, since a return peak decays slowly. Requiring the fall stops
+    # the steep return climb after an irreversible wave from counting as a peak.
     if ys[k] - ys[idx[0]] < MIN_WAVE_UA or ys[k] - np.min(ys[k:]) < MIN_WAVE_UA:
         return None
     return float(u[k])
 
 
 def analyze(path, blank_path):
-    """One trace -> its two branches, plus the metadata the file actually carries."""
+    """Analyse one trace: oxidation and reduction branches, metadata and corrected trace."""
     potential, current = read_export(path)
     blank_potential, blank_current = read_export(blank_path)
     if len(potential) != len(blank_potential) or not np.allclose(potential, blank_potential):
@@ -285,8 +257,8 @@ def analyze(path, blank_path):
     # Anodic sweep, 0 -> +max. Oxidation shows here.
     ox = find_wave(potential[:top + 1], corrected[:top + 1], step)
 
-    # Cathodic sweep, +max -> -max, negative half only. Reduction shows here. Flip both
-    # axes so the sweep runs forward and the wave points up.
+    # Cathodic sweep, +max -> -max, negative half only. Reduction shows here. Both axes
+    # are flipped so the sweep runs forward and the wave points up.
     cath_e, cath_i = potential[top:bottom + 1], corrected[top:bottom + 1]
     negative = cath_e <= 0.0
     red = find_wave(-cath_e[negative], -cath_i[negative], step)
@@ -374,7 +346,7 @@ def extract(samples):
                "n_repeats": len(per_repeat),
                "traces": " | ".join(name for _, name, _, _ in per_repeat)}
         row.update(meta)
-        row["scan_rate_V_s"] = ""      # not recorded anywhere in the export
+        row["scan_rate_V_s"] = ""      # not in the export
 
         for side, key, edge in (("ox", 2, meta["window_max_V"] - EDGE_MARGIN_V),
                                 ("red", 3, meta["window_min_V"] + EDGE_MARGIN_V)):
@@ -403,9 +375,8 @@ def extract(samples):
             row[f"{side}_reversible"] = int(reversible)
             row[f"E_{side}_half_wave_V"] = sig(half_wave)
 
-            # A reversible couple has a thermodynamic E_1/2 and that is the number to
-            # report; an irreversible wave has only its onset; no wave at all is a bound.
-            # Which one it is is written out beside it rather than left to be inferred.
+            # Reported value: half-wave for a reversible couple, onset for an
+            # irreversible wave, a bound when there is no wave.
             if not found:
                 reported, bound, basis = edge, (">" if side == "ox" else "<"), "no wave"
             else:
@@ -455,10 +426,9 @@ def redox_table(cv_rows, literature):
             value, bound = "", ""
             if qid in cv and cv[qid][f"E_{cv_side}_V"] != "":
                 if lit.get(f"E_{side}_vs_SCE_V"):
-                    sys.exit(f"Q{qid}: the literature file gives E_{side}, but the "
-                             f"voltammogram already does; it is only for what the "
-                             f"voltammograms cannot give")
-                # To the millivolt: the traces are exported every 5 or 50 mV.
+                    sys.exit(f"Q{qid}: E_{side} is given by both the voltammogram and "
+                             f"the literature file; remove it from the literature file")
+                # Rounded to 1 mV; the traces have 5 or 50 mV steps.
                 value = round(float(cv[qid][f"E_{cv_side}_V"]), 3)
                 bound = cv[qid][f"E_{cv_side}_bound"]
                 sources.append("CV")

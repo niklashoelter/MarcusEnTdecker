@@ -10,7 +10,7 @@ uv run benchmark/run_benchmark.py
 ```
 
 Reads `../data/exp_dataset.csv` and the three property workbooks `pairs.py` joins onto
-it, all of them under `../data/`. Writes five tables into `results/`.
+it, all of them under `../data/`. Writes four tables into `results/`.
 
 ## Layout
 
@@ -58,7 +58,7 @@ as a classification target. Each is listed under
 `K_SV`-based label, is back. The audit's objection to it stands — `K_SV = k_q·τ₀`, and τ₀
 spans 86× here, so a fixed K_SV cutoff is a different rate constant for each
 photocatalyst — but a k_q cutoff that 19 of 26 photocatalysts could not resolve is worse;
-see [Two label regimes](#two-label-regimes-both-reported-neither-chosen).
+see [The ground truth is set on K_SV](#the-ground-truth-is-set-on-k_sv).
 
 ## The theories
 
@@ -130,7 +130,7 @@ slowed by the Boltzmann factor alone. If a Marcus barrier adds nothing over this
 reorganization energy is not doing any work on this dataset.
 
 `k_max` is fitted in log₁₀ space, which for a single multiplicative constant has a closed
-form and needs no optimizer. **It is fitted on detected pairs only.** For the 458
+form and needs no optimizer. **It is fitted on detected pairs only.** For the 513
 censored pairs `k_q` is an upper bound, and least squares on a bound treats it as an
 observation and drags `k_max` down towards the detection floor. The original fitted every
 point.
@@ -199,16 +199,16 @@ symmetric mean of the two, so the swap is invisible there — `marcus_barrier_sy
 identically either way, which is a useful check that the flag does what it claims.
 
 **And the correction does not reliably improve the score.** With raw DFT λ the original's
-pairing scores higher under both label regimes: by 0.00 and 0.02 MCC on the asymmetric
-barrier, 0.03 and 0.05 on the rate, and 0.06 and 0.08 on the rate read at the label
-cutoff. With λ scaled the physically correct pairing is ahead on the asymmetric barrier
-and the rate, by about 0.01, and still behind at the label cutoff. `--legacy-lambda-pairing`
+pairing scores higher: by 0.01 MCC on the asymmetric barrier, 0.04 on the rate, and 0.07
+on the rate read at the label cutoff. With λ scaled the physically correct pairing is
+ahead on the asymmetric barrier and the rate, by about 0.01, and still behind at the label
+cutoff. `--legacy-lambda-pairing`
 restores the original so the difference can be measured rather than argued about, and
 this should be settled on the physics rather than on the MCC.
 
 ## What the scoring means
 
-### Two label regimes, both reported, neither chosen
+### The ground truth is set on K_SV
 
 The ground truth is set on K_SV, the observable, and not on k_q. That is not a
 presentational choice: `k_q = K_SV / τ₀`, so a fixed k_q cutoff compares every pair
@@ -218,28 +218,12 @@ photocatalysts, covering 912 of the 1248 pairs, and 465 pairs could not be label
 all. On K_SV the floor is one number for everything and every pair is labelled by the
 same criterion, so the indeterminate class — and the old `resolvable` regime — is gone.
 
-What is left is how permissive the criterion is, and both readings are scored:
-
-| regime | positives | negatives | criterion |
-|---|---:|---:|---|
-| `inclusive` | 790 | 458 | K_SV > 10, or K_SV ≤ 10 with a slope significant across the points the fit used |
-| `strict` | 634 | 614 | the published criterion, K_SV ≥ 25 and r² ≥ 0.90 |
-
-Both cover all 1248 scored pairs; the labels drop nothing. `strict` is a subset of `inclusive` by
-construction, and `pairs.py` raises if that ever stops holding.
-
-The 156 pairs between them are weak but real quenchers — monotone 3–4 % intensity drops
-well above the read noise, at rate constants the published criterion never counted.
-Both labels are made in `data/experimental_data_scripts/stern_volmer_fits.py`, which sets
-out how the weak quenchers were established and why the rescue is a slope test rather
-than an r² cut, and `data/build_exp_dataset.py` copies them into the table unchanged.
-
-Note what the gap between the regimes is *not*: every method scores **higher** on `strict`
-than on `inclusive`, by 0.01 to 0.14 MCC. That is not evidence that the strict label is
-the right one. It says the 156 weak quenchers are the hard cases — which is what a
-marginal quencher should be — and a criterion that scores well by leaving them out has
-not predicted them. Which regime the paper reports is a scientific question about what
-counts as quenching; this folder takes no position and scores both every time.
+The label is `quenches`, a ladder in which the weaker the quenching the straighter the line
+has to be: K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99, any one rung
+enough. It covers all 1248 scored pairs and drops nothing: 735 quench and 513 do not. It
+is made in `data/experimental_data_scripts/stern_volmer_fits.py`, which records the rung
+that carried each pair, and `data/build_exp_dataset.py` copies it into the table
+unchanged.
 
 ### Free parameters are counted, and tuned scores get a held-out counterpart
 
@@ -264,7 +248,7 @@ is the real cost of choosing a threshold.
 ### Rate predictions are scored with the censoring respected
 
 A single RMSE over all 1248 pairs would be wrong, and wrong in a flattering direction for
-a theory that under-predicts: for the 458 censored pairs `k_q` is an upper bound and a
+a theory that under-predicts: for the 513 censored pairs `k_q` is an upper bound and a
 residual against a bound means nothing. So `results/rate_agreement.csv` reports two things
 and does not combine them — RMSE and median bias in log₁₀ units on detected pairs, and on
 censored pairs the fraction whose predicted rate falls at or below that pair's own
@@ -278,41 +262,38 @@ whether the benchmark should become a censored regression.
 Default run: all 26 scored photocatalysts, no mechanism filter, `k_diff = 2×10¹⁰`, geometric
 mean λ. MCC.
 
-| method | free | α | `inclusive` | held-out | `strict` |
-|---|---:|---:|---:|---:|---:|
-| adiabatic | 0 | — | 0.373 | 0.373 | 0.462 |
-| dvte, p = 0.015 | 0 | — | 0.425 | 0.425 | 0.557 |
-| dvte, p = 0.005 | 0 | — | 0.377 | 0.377 | 0.478 |
-| sandros at the label cutoff | 1 | — | 0.370 | 0.370 | 0.384 |
-| marcus barrier, symmetric | 1 | 1.00 | 0.427 | 0.427 | 0.547 |
-| **marcus barrier, symmetric, λ-scaled** | 2 | 0.45 | **0.474** | 0.474 | **0.604** |
-| marcus barrier, asymmetric, λ-scaled | 2 | 0.40 | 0.447 | 0.433 | 0.583 |
-| marcus rate, λ-scaled | 2 | 0.40 | 0.459 | 0.445 | 0.590 |
-| marcus rate at the label cutoff | 0 | 1.00 | 0.305 | 0.305 | 0.395 |
-| rehm–weller barrier | 1 | 1.00 | 0.412 | 0.412 | 0.520 |
-| rehm–weller barrier, λ-scaled | 2 | 0.30 | 0.442 | 0.442 | 0.574 |
-| rehm–weller rate, λ-scaled | 2 | 0.25 | 0.448 | 0.448 | 0.581 |
+| method | free | α | MCC | held-out |
+|---|---:|---:|---:|---:|
+| adiabatic | 0 | — | 0.396 | 0.396 |
+| dvte, p = 0.015 | 0 | — | 0.472 | 0.472 |
+| dvte, p = 0.005 | 0 | — | 0.417 | 0.417 |
+| sandros at the label cutoff | 1 | — | 0.372 | 0.372 |
+| marcus barrier, symmetric | 1 | 1.00 | 0.470 | 0.455 |
+| **marcus barrier, symmetric, λ-scaled** | 2 | 0.45 | **0.521** | 0.521 |
+| marcus barrier, asymmetric, λ-scaled | 2 | 0.40 | 0.495 | 0.480 |
+| marcus rate, λ-scaled | 2 | 0.45 | 0.507 | 0.492 |
+| marcus rate at the label cutoff | 0 | 1.00 | 0.332 | 0.332 |
+| rehm–weller barrier | 1 | 1.00 | 0.454 | 0.454 |
+| rehm–weller barrier, λ-scaled | 2 | 0.25 | 0.490 | 0.490 |
+| rehm–weller rate, λ-scaled | 2 | 0.25 | 0.499 | 0.499 |
 
 Reading it:
 
-- **λ scaling reproduces.** The optimum lands at α ≈ 0.40–0.45 for Marcus and α = 0.25–0.30
+- **λ scaling reproduces.** The optimum lands at α ≈ 0.40–0.45 for Marcus and α = 0.25
   for Rehm–Weller, which is what the original found (0.35–0.45 and 0.25–0.30) on a
-  different version of the dataset. It is worth about +0.05 MCC over raw DFT λ on the
+  different version of the dataset. It is worth +0.03 to +0.05 MCC over raw DFT λ on the
   barrier forms, not the +0.15 to +0.20 the original reported against its own baseline.
-  The rate forms gain more — +0.12 on `inclusive`, +0.18 to +0.20 on `strict` — from a
-  raw-λ starting point well below the barrier forms.
+  The rate forms gain more, +0.13 to +0.14, from a raw-λ starting point well below the
+  barrier forms.
 - **It survives being held out.** Leave-one-photocatalyst-out costs the scaled methods
-  0.00 to 0.01 MCC on `inclusive` and 0.00 to 0.05 on `strict`, and that selection
-  includes α, not just the threshold. It is not an artifact of choosing 16 values and
-  keeping the best.
-- **The margin over the baseline is +0.10 MCC on `inclusive`, +0.14 on `strict`** — over a
-  baseline that was deliberately not tuned, and with two free parameters against zero.
-  The like-for-like zero-parameter comparison is the Marcus rate read at the label's own
-  cutoff instead of at a fitted threshold, and it is *worse* than the adiabatic rule —
-  0.305 against 0.373.
-- **DvTE is not beaten by very much,** and it has no free parameter. On `inclusive` the
-  best λ-scaled Marcus is 0.474 against DvTE's 0.425, on two fitted parameters against
-  none; on `strict` it is 0.604 against 0.557, and held out the two are level at 0.557.
+  0.00 to 0.02 MCC, and that selection includes α, not just the threshold. It is not an
+  artifact of choosing 16 values and keeping the best.
+- **The margin over the baseline is +0.13 MCC** — over a baseline that was deliberately
+  not tuned, and with two free parameters against zero. The like-for-like zero-parameter
+  comparison is the Marcus rate read at the label's own cutoff instead of at a fitted
+  threshold, and it is *worse* than the adiabatic rule — 0.332 against 0.396.
+- **DvTE is not beaten by very much,** and it has no free parameter. The best λ-scaled
+  Marcus is 0.521 against DvTE's 0.472, on two fitted parameters against none.
 - **Everything scored lower when the label moved to K_SV.** The old numbers were measured
   against a k_q cutoff that 19 of 26 photocatalysts could not resolve, which inflated
   specificity on pairs that carried no information. The ordering of the methods is
@@ -392,10 +373,10 @@ is why every number here is over 26 photocatalysts and 1248 pairs — the row co
   non-finite inputs — but they stay in the adiabatic and DvTE numbers, which need only
   E_T. So the barrier methods have a prediction for only 1200 of the 1248 pairs they are
   scored on, and every one of PC17's pairs is handed to them as a predicted non-quencher.
-  Excluding PC17 and PC18 raises every barrier and rate method by 0.02 to 0.04 MCC and
-  the baselines by about 0.01 or less. The headline moves by about +0.03 and stays on top
-  under both regimes, but the middle of the table reorders — on `inclusive`, for
-  instance, the unscaled asymmetric Marcus and Rehm–Weller barriers move past DvTE.
+  Excluding PC17 and PC18 raises every barrier and rate method by 0.02 to 0.03 MCC and
+  moves the baselines by 0.01 or less. The headline moves by +0.03 and stays on top, but
+  the middle of the table reorders: both unscaled Marcus barriers move past DvTE, and the
+  Rehm–Weller barrier draws level with it.
 - **PC18** (old PC20) has λ = 33.67 on the triplet surface against 12.70 on the singlet, a 2.7×
   asymmetry no other non-pmb complex shows, never verified. It is exactly the pair of
   numbers the asymmetric Marcus form is most sensitive to.
@@ -419,8 +400,8 @@ is why every number here is over 26 photocatalysts and 1248 pairs — the row co
   unchanged — same constants, same rules, identical numbers — and nothing about the
   design was revisited. Whether the join and the driving forces belong in `pairs.py`,
   and what `results/benchmark_pairs.csv` should carry, is still to be settled.
-- **The label regime.** Not this folder's decision. Both are reported.
-- **The bound policy on ΔG_SET.** Same. Both are available, the disagreement is counted.
+- **The bound policy on ΔG_SET.** Not this folder's decision. Both are available, the
+  disagreement is counted.
 - **The λ pairing.** The physically correct assignment scores worse than the original's
   with raw λ and about 0.01 better once λ is scaled. Someone should check the derivation
   in `marcus.py` against the raw job files before either number goes in a paper.

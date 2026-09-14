@@ -1,13 +1,10 @@
 # Raw computational job files (~11 GB) — archived to Zenodo, fetched on demand.
 data/computational_data_raw/*
 
-# The exceptions are small and have to stay readable without the deposit: the tables the
-# extraction scripts write next to the jobs they read, which the property workbooks in
-# computational_data_processed/ are assembled from, and the photocatalyst manifest --
-# 446 rows saying which delivered job was kept, which was dropped and why.
+# Except the tables the extraction scripts write next to the jobs they read, which the
+# property workbooks in computational_data_processed/ are assembled from.
 !data/computational_data_raw/photocatalysts/
 data/computational_data_raw/photocatalysts/*
-!data/computational_data_raw/photocatalysts/manifest.csv
 !data/computational_data_raw/photocatalysts/photocatalyst_dft.csv
 !data/computational_data_raw/quencher_adiabatic_DFT/
 data/computational_data_raw/quencher_adiabatic_DFT/*

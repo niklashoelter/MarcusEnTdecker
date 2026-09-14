@@ -3,7 +3,7 @@
 # dependencies = ["openpyxl>=3.1"]
 # ///
 """
-Experimental tables -> one property workbook per compound class.
+Measured properties of the photocatalysts and quenchers, one workbook per compound class.
 
 Reads   ../compound_identification.xlsx   (ids, names, SMILES)
         ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
@@ -13,16 +13,12 @@ Reads   ../compound_identification.xlsx   (ids, names, SMILES)
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
 
-Everything per compound that was measured or recorded, in one place. The per-measurement
-tables stay in the raw folders beside the instrument files they were derived from; this
-only selects from them and lays the result out in blocks (see ../properties_workbook.py).
-No value is computed here.
+Usage: uv run properties_exp.py
 
-Downstream, `../build_exp_dataset.py` reads these two workbooks and the Stern-Volmer fits,
-and nothing else from the experimental side. The quencher workbook is read a second time,
-by `../../benchmark/pairs.py`, for the measured redox potentials and their bound flags:
-the SET driving force is half a measured potential and half a calculated one, so it is
-built where the two are compared rather than carried in the pair table.
+Collects the measured properties of each compound from the per-measurement tables in
+the raw folders and writes them in blocks (see ../properties_workbook.py). No values are
+computed here. The workbooks are read by ../build_exp_dataset.py, and the quencher
+workbook also by ../../benchmark/pairs.py for the redox potentials and bound flags.
 """
 
 import csv
@@ -48,11 +44,7 @@ REDOX = RAW / "quencher_cyclic_voltammetry" / "quencher_redox_potentials.csv"
 
 
 def epsilon_wavelengths(path):
-    """The wavelengths absorption_extinction.py actually wrote, read off its header.
-
-    Restating the list here would make a second source for it, and the two would drift
-    the first time a filter changes. The extraction script owns the grid; this reads it.
-    """
+    """Wavelengths of the epsilon columns in absorption_extinction.csv."""
     with path.open(encoding="utf-8", newline="") as fh:
         header = next(csv.reader(fh))
     return [int(h.split("_")[1]) for h in header if h.startswith("epsilon_")]
@@ -70,8 +62,8 @@ def identity(header, table, sheet, name, description):
 
 def photocatalysts():
     tau0 = read_table(TAU0, "pc_id")
-    # One row per batch; all batches of a photocatalyst share one filter pair, which
-    # stern_volmer_intensities.py checks, so the last row read for an id stands for all.
+    # One row per batch. All batches of a photocatalyst use the same filter pair
+    # (checked in stern_volmer_intensities.py), so the last row per id is used.
     filters = read_table(FILTERS, "pc_old_id")
 
     for name, table in (("lifetimes", tau0), ("filters", filters)):
@@ -142,26 +134,26 @@ def quenchers():
             Column("quencher_name", "Label used throughout, Q<n>.",
                    f"{IDENTIFICATION}: Quenchers/quencher_id", lambda i: f"Q{i}"),
             identity("compound", QUENCHERS, "Quenchers", "name",
-                     "Name derived from the SMILES (checked by name-to-structure conversion)."),
+                     "Name derived from the SMILES."),
             identity("smiles", QUENCHERS, "Quenchers", "smiles", "Structure."),
         ]),
         Block("Redox potentials / V vs SCE", [
             col("E_Ox_vs_SCE_exp / V", redox, REDOX, "E_Ox_vs_SCE_V",
-                "Oxidation potential. Where E_Ox_bound is set, a limit, not a value."),
+                "Oxidation potential, or a limit where E_Ox_bound is set."),
             col("E_Ox_bound", redox, REDOX, "E_Ox_bound",
-                "'>': not oxidized within the window; the true value lies above the one "
-                "given. Blank: a value."),
+                "'>': no oxidation within the window, the potential lies above the value "
+                "given. Blank: a measured value."),
             col("E_Red_vs_SCE_exp / V", redox, REDOX, "E_Red_vs_SCE_V",
-                "Reduction potential. Where E_Red_bound is set, a limit, not a value."),
+                "Reduction potential, or a limit where E_Red_bound is set."),
             col("E_Red_bound", redox, REDOX, "E_Red_bound",
-                "'<': not reduced within the window; the true value lies below the one "
-                "given. Blank: a value."),
+                "'<': no reduction within the window, the potential lies below the value "
+                "given. Blank: a measured value."),
             col("source", redox, REDOX, "source",
-                "CV: measured in this lab. Otherwise the DOI of the paper the potentials "
-                "were taken from, or 'estimated' where neither exists."),
+                "CV: measured in this lab. Otherwise the DOI of the literature source, "
+                "or 'estimated'."),
             col("comment", redox, REDOX, "comment",
-                "For a deposited voltammogram, which descriptor was read (onset, half-wave, "
-                "or no wave inside the window); otherwise from the literature record."),
+                "For a measured voltammogram, the value read (onset, half-wave, or no wave "
+                "inside the window); otherwise the note from the literature file."),
         ]),
         Block("Molar extinction coefficients in MeCN / mM-1 cm-1", epsilon),
         Block("Sample", [

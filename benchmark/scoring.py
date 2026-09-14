@@ -9,11 +9,10 @@ Reads   nothing
 Writes  nothing
 
 WHY THESE METRICS
-    MCC is the headline. Accuracy is not usable on its own here: the class balance moves
-    between the two label regimes (695/601 on the full table, 627/156 on the resolvable
-    subset), so an accuracy that improves may only mean the prior moved. MCC uses all
-    four cells of the confusion matrix and is the one number that survives that change,
-    which is why the original benchmark selected on it and why this one reports it first.
+    MCC is the headline. Accuracy is not usable on its own here: 735 of the 1248 scored
+    pairs quench, so answering "quenches" for every pair already scores 0.59. MCC uses
+    all four cells of the confusion matrix and does not reward that, which is why the
+    original benchmark selected on it and why this one reports it first.
     The four cells are written out beside it anyway, because a method with sensitivity
     0.99 and specificity 0.05 should not be able to hide inside a summary statistic.
 
@@ -43,8 +42,8 @@ THE FIRST THING THAT MAKES THEM MEAN LESS: TUNED THRESHOLDS
     0.640.
 
 THE SECOND: HALF THE NEGATIVES CARRY NO INFORMATION
-    Handled in pairs.label_regimes and reported by run_benchmark.py, not here. This
-    module scores whatever y it is given.
+    Handled in pairs.ground_truth, which sets the label on K_SV rather than on k_q, not
+    here. This module scores whatever y it is given.
 """
 
 import numpy as np
@@ -195,7 +194,7 @@ def rate_agreement(k_q, k_q_floor, censored, k_pred) -> dict:
 def as_frame(rows) -> pd.DataFrame:
     """Rows of dicts to a DataFrame, MCC first, so the CSVs read left to right."""
     df = pd.DataFrame(rows)
-    lead = [c for c in ("mechanism_rule", "set_source", "bounds_policy", "label_regime",
+    lead = [c for c in ("mechanism_rule", "set_source", "bounds_policy",
                         "theory", "method_type", "family", "method", "n_free",
                         "n", "n_positive", "MCC") if c in df.columns]
     return df[lead + [c for c in df.columns if c not in lead]]

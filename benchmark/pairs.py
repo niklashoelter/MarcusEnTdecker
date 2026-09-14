@@ -32,7 +32,7 @@ WHERE THE CALCULATED COLUMNS COME FROM
     forces belong in this module at all rather than beside the theories that use them, is
     an open question and deliberately not answered here.
 
-THE TWO LABEL REGIMES
+THE GROUND TRUTH
     The ground truth is set on K_SV, the observable, and not on k_q. A cutoff on k_q was
     incoherent: k_q = K_SV / tau_0, so the Stern-Volmer detection floor moves with the
     photocatalyst, and at a 1e7 cutoff that floor sat ABOVE the cutoff for 19 of the 26
@@ -40,17 +40,8 @@ THE TWO LABEL REGIMES
     number for every photocatalyst and every pair is labelled by the same criterion, so
     the indeterminate class is gone and with it the 'resolvable' regime.
 
-    What remains is a choice of how permissive the criterion is, and `exp_dataset.csv` carries
-    both readings:
-
-      `quenches`         a ladder of (K_SV, r2) rungs, weaker quenching needing a
-                         straighter line. 735 of 1248.
-      `quenches_strict`  the published criterion, K_SV >= 25 and r2 >= 0.90. 637 of 1248.
-
-    The 98 pairs between them are weak quenchers: real monotone 3-4 % signal, well above
-    read noise, at rate constants the strict criterion never counted. Whether the paper
-    claims them is a scientific question about what "quenching" means, not a data
-    question, so `label_regimes()` returns both and this module takes no position.
+    The label is `quenches`, a ladder of (K_SV, r2) rungs in which weaker quenching needs
+    a straighter line: 735 of the 1248 scored pairs. `ground_truth()` reads it.
 
 HOW THE LAMBDAS ARE NAMED
     lambda_<surface>_<geometry>, for photocatalysts and quenchers alike, as in both
@@ -91,7 +82,6 @@ TAU0_NS = "tau0 / ns"
 K_Q = "k_q / M-1 s-1"
 K_Q_FLOOR = "k_q_floor / M-1 s-1"
 QUENCHES = "quenches"
-QUENCHES_STRICT = "quenches_strict"
 CENSORED = "censored"
 
 # --- quencher, computed --------------------------------------------------------------
@@ -288,6 +278,8 @@ def load_pairs(path: Path = PAIRS_CSV, verbose: bool = True) -> pd.DataFrame:
             f"{path} not found. Build it first:  uv run data/build_exp_dataset.py"
         )
     df = pd.read_csv(path)
+    # The smallest k_q a pair could have shown: K_SV = 10 at the photocatalyst's tau0.
+    df[K_Q_FLOOR] = 10.0 / (df[TAU0_NS] * 1e-9)
     df = pd.concat([df, _computed(df)], axis=1)
     dropped = df[PC_NAME].isin(EXCLUDED_PHOTOCATALYSTS)
     if verbose:
@@ -340,37 +332,11 @@ def dG_set(df: pd.DataFrame, source: str = "exp"):
     return values, is_bound
 
 
-def label_regimes(df: pd.DataFrame) -> dict:
-    """The two ways of reading the ground truth, both of them, always.
-
-    Returns {name: (subset, y)}. Both cover all 1248 scored pairs -- nothing is dropped now that
-    the label is set on the observable -- and they differ only in how permissive the
-    criterion is:
-
-      'inclusive'  y = `quenches`. A ladder of (K_SV, r2) rungs, weaker quenching
-                   needing a straighter line. 735 positives.
-
-      'strict'     y = `quenches_strict`. The published criterion, K_SV >= 25 and
-                   r2 >= 0.90. 637 positives.
-
-    The 98 pairs that separate them are weak but real quenchers. Nothing here chooses
-    between the two; the gap between them is a headline the benchmark has to show, not a
-    detail to settle before reporting.
-    """
-    require(df, [QUENCHES, QUENCHES_STRICT], "the ground truth")
-    inclusive = df[QUENCHES].astype(int).astype(bool)
-    strict = df[QUENCHES_STRICT].astype(int).astype(bool)
-    # Strict is a subset of inclusive by construction: K_SV >= 25 and r2 >= 0.90 clears
-    # the ladder's `K_SV > 20 and r2 > 0.80` rung. If that ever stops holding, one of the
-    # two has been redefined upstream and the benchmark cannot tell which is now truth.
-    if (strict & ~inclusive).any():
-        raise ValueError(
-            f"{int((strict & ~inclusive).sum())} pairs quench under the strict criterion "
-            "but not the inclusive one, which cannot happen while the strict K_SV cutoff "
-            "is the higher of the two. One of the two has been redefined in "
-            "data/experimental_data_scripts/stern_volmer_fits.py."
-        )
-    return {"inclusive": (df, inclusive), "strict": (df, strict)}
+def ground_truth(df: pd.DataFrame) -> pd.Series:
+    """y = `quenches`, the (K_SV, r2) ladder, for every row. Nothing is dropped: the label
+    is set on the observable, so every pair has one."""
+    require(df, [QUENCHES], "the ground truth")
+    return df[QUENCHES].astype(int).astype(bool)
 
 
 def describe(df: pd.DataFrame) -> str:
@@ -380,8 +346,6 @@ def describe(df: pd.DataFrame) -> str:
         f"{len(df)} pairs  ({df[PC_NAME].nunique()} photocatalysts x "
         f"{df[Q_NAME].nunique()} quenchers)",
         f"  quenches            {int(df[QUENCHES].sum()):5d}   the (K_SV, r2) ladder",
-        f"  quenches_strict     {int(df[QUENCHES_STRICT].sum()):5d}   published: "
-        f"K_SV >= 25 and r2 >= 0.90",
         f"  censored            {int(df[CENSORED].sum()):5d}   below the K_SV floor; "
         f"K_SV is an upper bound for these",
     ]

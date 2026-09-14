@@ -1,5 +1,5 @@
 """
-The layout shared by the five property workbooks, and the one way to read them back.
+The layout shared by the five property workbooks.
 
     experimental_data_processed/photocatalyst_properties_exp.xlsx
     experimental_data_processed/quencher_properties_exp.xlsx
@@ -7,21 +7,15 @@ The layout shared by the five property workbooks, and the one way to read them b
     computational_data_processed/quencher_properties_calc.xlsx
     computational_data_processed/quencher_properties_ml.xlsx
 
-One row per compound. Columns come in blocks -- identity first, then one block per
-measured or computed property -- separated by an empty column and named in a band above
-the header row. Headers carry their unit as `quantity / unit`. A second sheet, `Column
-key`, gives every column its unit, a one-line description and the intermediate table in
-`*_raw/` it was taken from.
+One row per compound. Columns are grouped in blocks (identity first, then one block per
+property), separated by an empty column. Row 1 names the blocks, row 2 holds the headers
+as `quantity / unit`. The `Column key` sheet gives each column's unit, description and
+the table it was taken from.
 
-Nothing in a workbook is computed here. Every value is copied from the per-measurement
-table an extraction script wrote into the raw folder beside its instrument files, so a
-number can always be followed back one step to where it was derived. The ml workbook is
-the one with no such table behind it -- a model has no job directory, only a forward pass
--- and its `Taken from` column names the checkpoint and the field of it instead.
+Values are copied from the intermediate tables in the raw folders; nothing is computed
+here. For the ml workbook, `Taken from` names the model checkpoint and output field.
 
-The files are written byte-for-byte reproducibly: the zip timestamps and the document
-properties are pinned, so rerunning the pipeline on unchanged data changes nothing that
-git can see.
+Timestamps are fixed, so rebuilding from unchanged data gives identical files.
 
 Not a pipeline stage; imported by `properties_exp.py`, `properties_calc.py` and
 `quencher_ml.py`.
@@ -39,7 +33,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
-from openpyxl import Workbook, load_workbook
+from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
@@ -54,7 +48,7 @@ ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 
 @dataclass(frozen=True)
 class Column:
-    header: str                         # "tau0 / ns" -- the unit follows " / "
+    header: str                         # "tau0 / ns", unit after " / "
     description: str
     source: str                         # "pc_tcspc/lifetimes_tcspc.csv: tau0_ns"
     value: Callable[[int], object]      # compound id -> cell value
@@ -67,7 +61,7 @@ class Block:
 
 
 def read_table(path: Path, key: str) -> dict[int, dict[str, str]]:
-    """An intermediate CSV as {id: row}. A missing file is fatal, not skipped."""
+    """An intermediate CSV as {id: row}. Exits if the file is missing."""
     if not path.exists():
         sys.exit(f"missing input: {path}\nrun the script that writes it first")
     with path.open(encoding="utf-8", newline="") as fh:
@@ -75,9 +69,9 @@ def read_table(path: Path, key: str) -> dict[int, dict[str, str]]:
 
 
 def typed(text):
-    """A CSV field as the cell value it stands for: int, float, str, or None when blank.
+    """A CSV field as int, float, str, or None when blank.
 
-    Leading zeros are kept as text, so a sample label like `009` is not turned into 9.
+    Numbers with leading zeros, such as the sample label `009`, stay text.
     """
     if text is None:
         return None
@@ -93,7 +87,7 @@ def typed(text):
 
 
 def field(table: dict[int, dict[str, str]], name: str) -> Callable[[int], object]:
-    """A column getter: `name` from the row for that id, blank where there is none."""
+    """A column getter: field `name` of the row for an id, None if absent."""
     return lambda i: typed((table.get(i) or {}).get(name))
 
 
@@ -104,7 +98,7 @@ def _split_unit(header: str) -> tuple[str, str]:
 
 def write_workbook(path: Path, sheet: str, ids: list[int], blocks: list[Block],
                    note: str) -> None:
-    """Write the property sheet and its column key, reproducibly."""
+    """Write the property sheet and its column key."""
     wb = Workbook()
     ws = wb.active
     ws.title = sheet
@@ -156,7 +150,7 @@ def write_workbook(path: Path, sheet: str, ids: list[int], blocks: list[Block],
         c.font, c.border = bold, rule
     for block in blocks:
         for column in block.columns:
-            name, unit = _split_unit(column.header)
+            _, unit = _split_unit(column.header)
             key.append([block.title, column.header, unit, column.description, column.source])
     key.append([])
     for line in note.strip().splitlines():
@@ -177,7 +171,7 @@ def write_workbook(path: Path, sheet: str, ids: list[int], blocks: list[Block],
 
 
 def _write_pinned(buf: io.BytesIO, path: Path) -> None:
-    """Re-zip with fixed timestamps, so identical content gives an identical file."""
+    """Re-zip with fixed timestamps."""
     stamp = PINNED_TIME.strftime("%Y-%m-%dT%H:%M:%SZ").encode()
     path.parent.mkdir(parents=True, exist_ok=True)
     buf.seek(0)
@@ -192,21 +186,3 @@ def _write_pinned(buf: io.BytesIO, path: Path) -> None:
             out.compress_type = zipfile.ZIP_DEFLATED
             out.external_attr = info.external_attr
             zout.writestr(out, data)
-
-
-def read_workbook(path: Path, key: str) -> dict[int, dict[str, object]]:
-    """A property workbook as {id: {header: value}}, blanks as "".
-
-    Separator columns are skipped. This is the reader `build_exp_dataset.py` mirrors, as
-    do `../benchmark/pairs.py` and `../ml/predict.py`, which read workbooks from outside
-    `data/` and so cannot import this module.
-    """
-    ws = load_workbook(path, read_only=True, data_only=True).worksheets[0]
-    rows = ws.iter_rows(min_row=HEADER_ROW, values_only=True)
-    header = next(rows)
-    out = {}
-    for row in rows:
-        record = {h: ("" if v is None else v) for h, v in zip(header, row) if h}
-        if record.get(key) not in ("", None):
-            out[int(record[key])] = record
-    return out
