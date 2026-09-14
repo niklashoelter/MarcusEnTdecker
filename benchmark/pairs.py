@@ -243,6 +243,6 @@ def summary(df) -> str:
 if __name__ == "__main__":
     table = load()
     RESULTS.mkdir(exist_ok=True)
-    table.to_csv(RESULTS / "pairs.csv", index=False)
+    table.to_csv(RESULTS / "pairs.csv", index=False, lineterminator="\n")
     print(summary(table))
     print(f"-> {(RESULTS / 'pairs.csv').relative_to(HERE.parent)}")

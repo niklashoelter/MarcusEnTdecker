@@ -106,8 +106,8 @@ def main():
     fit_table = fits(detected)
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    agreement_table.to_csv(RESULTS / "agreement.csv", index=False)
-    fit_table.to_csv(RESULTS / "fits.csv", index=False)
+    agreement_table.to_csv(RESULTS / "agreement.csv", index=False, lineterminator="\n")
+    fit_table.to_csv(RESULTS / "fits.csv", index=False, lineterminator="\n")
 
     print("\nLowest RMSE per model and lambda source:")
     best = agreement_table.loc[agreement_table.groupby(["model", "parameters"])["rmse / dex"].idxmin()]

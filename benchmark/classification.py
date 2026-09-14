@@ -130,8 +130,8 @@ def main():
     all_settings, best = score(pairs.scored(table))
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    all_settings.to_csv(RESULTS / "settings.csv", index=False)
-    best.to_csv(RESULTS / "best.csv", index=False)
+    all_settings.to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
+    best.to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
 
     shown = CRITERION + ["n_free", "alpha", "barrier_threshold / kcal mol-1",
                          "accuracy", "recall", "specificity", "MCC", "MCC_held_out"]
