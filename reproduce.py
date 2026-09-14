@@ -46,8 +46,8 @@ PIPELINE = [
      "data/experimental_data_raw/pc_tcspc"),
     ("data", "data/experimental_data_scripts/absorption_extinction.py",
      "data/experimental_data_raw/quencher_absorption"),
-    ("data", "data/experimental_data_scripts/cyclic_voltammetry_redox.py",
-     "data/experimental_data_raw/quencher_cyclic_voltammetry"),
+    ("data", "data/experimental_data_scripts/quencher_redox_potentials.py",
+     "data/experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_literature.csv"),
     ("data", "data/experimental_data_scripts/properties_exp.py",
      "data/experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv"),
     # The computational extraction needs the deposit, which is not in git. Each stage

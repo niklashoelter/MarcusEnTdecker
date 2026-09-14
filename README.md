@@ -71,7 +71,7 @@ data/                                exp_dataset_ent.csv, exp_dataset_ent.xlsx  
 
 Each workbook has one row per compound and its columns in blocks, with a `Column key`
 sheet naming the table each column was copied from. Those tables — fitted lifetimes,
-extracted spectra, CV traces, conformer energies — are intermediates, and sit in the raw
+extracted spectra, redox potentials, conformer energies — are intermediates, and sit in the raw
 folder beside the instrument files or jobs they were derived from.
 
 ## Reproducing

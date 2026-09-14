@@ -18,7 +18,9 @@ Usage: uv run properties_exp.py
 Collects the measured properties of each compound from the per-measurement tables in
 the raw folders and writes them in blocks (see ../properties_workbook.py). No values are
 computed here. The workbooks are read by ../build_exp_dataset.py, and the quencher
-workbook also by ../../benchmark/pairs.py for the redox potentials and bound flags.
+workbook also by ../build_exp_dataset_ent.py for the redox potentials and bound flags.
+The redox table is joined from the hand-edited literature and measured tables by
+quencher_redox_potentials.py.
 """
 
 import csv
@@ -152,8 +154,8 @@ def quenchers():
                 "CV: measured in this lab. Otherwise the DOI of the literature source, "
                 "or 'estimated'."),
             col("comment", redox, REDOX, "comment",
-                "For a measured voltammogram, the value read (onset, half-wave, or no wave "
-                "inside the window); otherwise the note from the literature file."),
+                "Free-text note from quencher_redox_measured.csv or "
+                "quencher_redox_literature.csv."),
         ]),
         Block("Molar extinction coefficients in MeCN / mM-1 cm-1", epsilon),
         Block("Sample", [
@@ -162,9 +164,9 @@ def quenchers():
         ]),
     ]
     note = """
-        One row per quencher. The potentials are read from the voltammogram for the 19
-        quenchers that have one, and taken from the literature for the others; both are in
-        experimental_data_raw/quencher_cyclic_voltammetry/.
+        One row per quencher. The potentials are read by hand from the voltammograms or
+        taken from the literature, and entered in quencher_redox_measured.csv or
+        quencher_redox_literature.csv in experimental_data_raw/quencher_cyclic_voltammetry/.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(QUENCHERS), blocks, note

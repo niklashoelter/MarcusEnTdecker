@@ -12,7 +12,7 @@ data/
 │   ├── pc_emission/                 emission scans
 │   ├── pc_tcspc/                    PC<n>.txt/.FL, one trace each -> lifetimes_tcspc.csv
 │   ├── quencher_absorption/         absorption scans -> absorption_extinction.csv
-│   ├── quencher_cyclic_voltammetry/ CV traces -> cyclic_voltammetry_redox.csv, _traces.csv
+│   ├── quencher_cyclic_voltammetry/ voltammograms, redox potentials in three tables
 │   └── stern_volmer/                plate reads, pipetting maps -> plate_reader_filters.csv
 ├── experimental_data_processed/
 │   ├── photocatalyst_properties_exp.xlsx
@@ -126,9 +126,12 @@ collected with their bandwidths in `stern_volmer/plate_reader_filters.csv`. Old 
 PC3 were read with saved protocols that name no filters; their wavelengths come from the
 screen's photocatalyst sheet.
 
-**Quencher redox potentials** have a bound column (`>` or `<` where the value is a limit),
-a `source` (`CV`, a DOI, or `estimated`) and a free-text `comment`. Only Q32 and Q33 are
-estimated.
+**Quencher redox potentials** are read by hand from the voltammograms, or taken from the
+literature. Each quencher is entered in one of two files, `quencher_redox_measured.csv`
+(source `CV`) or `quencher_redox_literature.csv` (a DOI, or `estimated`), and
+`quencher_redox_potentials.py` joins them into `quencher_redox_potentials.csv`. Each row
+has a bound column (`>` or `<` where the value is a limit) and a free-text `comment`.
+Only Q32 and Q33 are estimated.
 
 **Photocatalyst lifetimes** come from one TCSPC trace per photocatalyst. τ0 and its error
 are the value and standard error of a single-exponential fit, started after the pulse.
