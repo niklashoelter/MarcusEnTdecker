@@ -12,7 +12,7 @@ data/
 │   ├── pc_emission/                 emission scans
 │   ├── pc_tcspc/                    PC<n>.txt/.FL, one trace each -> lifetimes_tcspc.csv
 │   ├── quencher_absorption/         absorption scans -> absorption_extinction.csv
-│   ├── quencher_cyclic_voltammetry/ voltammograms, redox potentials in three tables
+│   ├── quencher_cyclic_voltammetry/ measured data/ (voltammograms), redox potentials in three tables
 │   └── stern_volmer/                plate reads, pipetting maps -> plate_reader_filters.csv
 ├── experimental_data_processed/
 │   ├── photocatalyst_properties_exp.xlsx
