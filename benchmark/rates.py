@@ -1,11 +1,11 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "openpyxl>=3.1", "pandas", "scipy"]
+# dependencies = ["numpy", "pandas", "scipy"]
 # ///
 """
 Compares predicted and measured quenching rate constants.
 
-Reads   the pair table (pairs.py)
+Reads   ../data/exp_dataset_ent.csv (through pairs.py)
 Writes  results/rates/agreement.csv   Marcus and Rehm-Weller rates against k_q, per
                                       lambda source and scale factor alpha
         results/rates/fits.csv        Sandros and Rehm-Weller fitted to k_q against

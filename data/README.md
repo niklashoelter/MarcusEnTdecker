@@ -1,9 +1,10 @@
 # data
 
 Measurements and calculations for the photocatalysts and quenchers. Raw instrument files
-and ORCA jobs are turned into one property workbook per compound class, and the
-experimental workbooks into the pair-level dataset `exp_dataset.csv`, which is the input
-to `../benchmark/`.
+and ORCA jobs are turned into one property workbook per compound class. The experimental
+workbooks become the pair-level dataset `exp_dataset.csv`. Its energy-transfer subset,
+with the calculated properties joined on, is `exp_dataset_ent.csv`, the input to
+`../benchmark/`.
 
 ```
 data/
@@ -32,7 +33,9 @@ data/
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
 ├── build_exp_dataset.py             experimental processed data -> one row per pair
-└── exp_dataset.csv, .xlsx           the pair-level experimental dataset
+├── exp_dataset.csv, .xlsx           the pair-level experimental dataset
+├── build_exp_dataset_ent.py         exp_dataset -> energy-transfer subset + properties
+└── exp_dataset_ent.csv, .xlsx       the input to ../benchmark/
 ```
 
 ## Pipeline
@@ -42,6 +45,8 @@ data/
 2. `properties_exp.py` and `properties_calc.py` copy the per-compound values into the
    workbooks.
 3. `build_exp_dataset.py` builds `exp_dataset` from the experimental processed folder.
+4. `build_exp_dataset_ent.py` builds `exp_dataset_ent` from `exp_dataset` and the
+   property workbooks.
 
 `uv run reproduce.py data` runs all of this in order. Two scripts are not part of it:
 
@@ -90,8 +95,29 @@ K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
 Pairs that do not quench have `censored = 1`: their true K_SV is below what was
 detectable, so their k_q is an upper bound.
 
-Calculated properties stay in `computational_data_processed/`, one row per compound.
-Driving forces (ΔG_EnT, ΔG_SET) are built by `../benchmark/pairs.py`.
+## exp_dataset_ent
+
+The pairs of `exp_dataset` on which quenching can be attributed to energy transfer.
+
+- **Non-quenching pairs:** all kept, whatever the potentials.
+- **Quenching pairs:** kept only if single-electron transfer is ruled out, meaning every
+  channel with a measured quencher potential is more than **0.25 V** uphill:
+  - ΔE_SET,ox = E_ox(Q) − E(PC\*/PC⁻), oxidation of the quencher
+  - ΔE_SET,red = E(PC⁺/PC\*) − E_red(Q), reduction of the quencher
+- **Potentials:** quencher potentials are measured, photocatalyst excited-state
+  potentials are calculated.
+- **Limits:** a measured limit (E_ox > x, E_red < x) makes ΔE a lower bound, marked in
+  `dE_SET_ox_bound` / `dE_SET_red_bound`. It rules a channel out only if the limit itself
+  is past 0.25 V.
+
+Besides the ten `exp_dataset` columns and the two ΔE_SET columns, each row carries:
+- **Photocatalyst (DFT):** E_T and both λ.
+- **Quencher (DFT):** E_T, both λ, and the DvTE mean and standard deviation.
+- **Quencher (ML):** E_T and both λ. The model covers organic molecules only, so there are
+  no predicted photocatalyst values.
+- **Driving force:** ΔG_EnT = E_T(Q) − E_T(PC), from both quencher sources.
+
+Blanks stay blank.
 
 ## Methods notes
 

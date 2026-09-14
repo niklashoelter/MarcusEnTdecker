@@ -52,8 +52,9 @@ Figures and generated tables will be made inside `benchmark/`, from its output.
 
 Inside `data/`, the processed folders hold one workbook per compound class and side, and
 the Stern–Volmer tables; `build_exp_dataset.py` turns the experimental ones into one row
-per pair. The calculated workbooks stay one row per compound and are joined on by whoever
-compares them — `benchmark/pairs.py` does, and derives the driving forces there:
+per pair. `build_exp_dataset_ent.py` keeps the pairs on which quenching can be attributed
+to energy transfer and joins the calculated properties and driving forces onto them;
+that table is what `benchmark/` reads:
 
 ```
 data/experimental_data_processed/    photocatalyst_properties_exp.xlsx
@@ -63,6 +64,9 @@ data/computational_data_processed/   photocatalyst_properties_calc.xlsx
                                      quencher_properties_calc.xlsx
 data/                                exp_dataset.csv, exp_dataset.xlsx   (1296 pairs,
                                      measured values and labels only)
+data/                                exp_dataset_ent.csv, exp_dataset_ent.xlsx   (all
+                                     non-quenching pairs, and the quenching pairs with
+                                     electron transfer ruled out; input to benchmark/)
 ```
 
 Each workbook has one row per compound and its columns in blocks, with a `Column key`

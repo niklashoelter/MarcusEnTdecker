@@ -5,26 +5,23 @@ screen: can they tell which photocatalyst–quencher pairs quench, and how well 
 predict the quenching rate constant?
 
 ```
-uv run reproduce.py benchmark        all three scripts, in order
-uv run benchmark/pairs.py            the pair table
+uv run reproduce.py benchmark        both scripts, in order
 uv run benchmark/classification.py   quenches or not
 uv run benchmark/rates.py            rate constants
 ```
 
-Inputs are read from `../data/` and nothing there is changed.
+The only input is `../data/exp_dataset_ent.csv`.
 
 ## Layout
 
 ```
 benchmark/
-├── pairs.py            the pair table: measurement, calculated and predicted
-│                       properties, driving forces, and which pairs are scored
+├── pairs.py            loads the dataset and names its columns; which pairs are scored
 ├── theory.py           barrier and rate expressions (SI Section 4.1)
 ├── scoring.py          metrics, leave-one-photocatalyst-out, rate residuals
 ├── classification.py   the classification criteria
 ├── rates.py            predicted against measured rate constants, and the fits
 └── results/
-    ├── pairs.csv
     ├── classification/
     │   ├── settings.csv    every criterion at every setting
     │   └── best.csv        best setting per criterion, with its held-out score
@@ -35,34 +32,22 @@ benchmark/
 
 ## The pairs
 
-`pairs.py` starts from `exp_dataset.csv` (1296 pairs) and joins on:
+`exp_dataset_ent` is built in `../data/` by `build_exp_dataset_ent.py`.
+- **Non-quenching pairs:** all kept.
+- **Quenching pairs:** kept only if every single-electron-transfer channel with a
+  measured quencher potential is more than 0.25 V uphill.
+- **Columns:** the measurement, DFT properties of both partners, ML-predicted quencher
+  properties, DvTE, and ΔG_EnT from both sources.
 
-| from | columns |
-|---|---|
-| `photocatalyst_properties_calc.xlsx` | E_T, λ_S0_T1, λ_T1_S0, excited-state potentials |
-| `quencher_properties_calc.xlsx` | E_T, λ_S0_T1, λ_T1_S0 (`_dft`), DvTE mean and standard deviation |
-| `quencher_properties_ml.xlsx` | E_T, λ_S0_T1, λ_T1_S0 (`_ml`) |
-| `quencher_properties_exp.xlsx` | measured oxidation and reduction potentials |
-
-The ML model covers organic molecules only, so photocatalyst values are always DFT.
-ΔG_EnT = E_T(Q) − E_T(PC) is derived for both quencher sources.
-
-A pair is scored unless its `excluded` column gives the reason:
+`pairs.py` scores every pair in it except:
 
 - **PC22.** Its emission was too weak for the Stern–Volmer intensities to be trusted.
-- **SET not ruled out.** Only for pairs that quench. Electron transfer is ruled out when
-  every channel with a measured quencher potential is more than **0.217 V** uphill:
-  ΔE_ox = E_ox(Q) − E(PC\*/PC⁻) and ΔE_red = E(PC⁺/PC\*) − E_red(Q). A measured limit
-  (E_ox > x, E_red < x) is read as its value, which rules the channel out only if the
-  limit itself is past 0.217 V.
 - **Missing input.** A property one of the criteria needs is blank. Every criterion is
   scored on the same pairs.
 
-Pairs that do not quench are never dropped by the SET rule.
-
 ## Classification
 
-The ground truth is `quenches` from `exp_dataset`.
+The ground truth is `quenches`.
 
 | criterion | predicts quenching when | tuned on the data |
 |---|---|---|
@@ -73,7 +58,8 @@ The ground truth is `quenches` from `exp_dataset`.
 | `rehm_weller_rate` | k·τ₀ > K_SV,crit = 10 M⁻¹ | nothing |
 
 - **Parameters.** `adiabatic` and the three kinetic criteria are scored twice, with the
-  quencher's E_T and λ from DFT (`dft`) and from the ML model (`ml`).
+  quencher's E_T and λ from DFT (`dft`) and from the ML model (`ml`). Photocatalyst
+  values are always DFT.
 - **λ scaling.** The kinetic criteria are scored with λ as calculated (`lambda raw`) and
   with λ multiplied by α = 0.25–0.95 (`lambda scaled`), where α is chosen on the data.
 - **n_free** counts the parameters chosen by maximizing MCC.

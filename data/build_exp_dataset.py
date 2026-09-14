@@ -8,7 +8,7 @@ Build the pair-level experimental dataset: one row per photocatalyst-quencher pa
 Reads   experimental_data_processed/stern_volmer_fits.csv
         experimental_data_processed/photocatalyst_properties_exp.xlsx
         experimental_data_processed/quencher_properties_exp.xlsx
-Writes  exp_dataset.csv     input to ../benchmark/
+Writes  exp_dataset.csv     input to build_exp_dataset_ent.py
         exp_dataset.xlsx    the same table in the property-workbook layout
 
     uv run data/build_exp_dataset.py
@@ -19,8 +19,8 @@ Labels
     A pair that does not quench is left-censored: `censored = 1`, and its fitted K_SV is
     kept.
 
-Only measured values are included. Driving forces combine calculated and measured
-properties and are built by ../benchmark/pairs.py.
+Only measured values are included. The energy-transfer subset, with calculated
+properties and driving forces, is built by build_exp_dataset_ent.py.
 
 Photocatalysts
     `pc_new_id` (1-27) is used downstream, `pc_old_id` is the id in the raw files, and
@@ -153,7 +153,7 @@ def main():
     write_workbook(OUT_XLSX, "Pairs", list(range(len(rows))), blocks, """
         One row per photocatalyst-quencher pair, sorted by pc_new_id then quencher_id.
         Built by data/build_exp_dataset.py; exp_dataset.csv holds the same table.
-        Measured values and labels only. Driving forces are built by ../benchmark/pairs.py.
+        Measured values and labels only. exp_dataset_ent adds calculated properties.
         PC numbers are new ids; pc_old_id is the id in the raw files.
         PC22 (old PC24) is included although its emission was too weak.
     """)

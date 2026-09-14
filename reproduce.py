@@ -64,9 +64,9 @@ PIPELINE = [
      "data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv"),
     ("data", "data/build_exp_dataset.py",
      "data/experimental_data_processed/stern_volmer_fits.csv"),
-    ("benchmark", "benchmark/pairs.py", "data/exp_dataset.csv"),
-    ("benchmark", "benchmark/classification.py", "data/exp_dataset.csv"),
-    ("benchmark", "benchmark/rates.py", "data/exp_dataset.csv"),
+    ("data", "data/build_exp_dataset_ent.py", "data/exp_dataset.csv"),
+    ("benchmark", "benchmark/classification.py", "data/exp_dataset_ent.csv"),
+    ("benchmark", "benchmark/rates.py", "data/exp_dataset_ent.csv"),
 ]
 
 STAGES = ["data", "benchmark", "ml"]

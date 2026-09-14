@@ -1,11 +1,11 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "openpyxl>=3.1", "pandas"]
+# dependencies = ["numpy", "pandas"]
 # ///
 """
 Scores the criteria for predicting whether a pair quenches.
 
-Reads   the pair table (pairs.py)
+Reads   ../data/exp_dataset_ent.csv (through pairs.py)
 Writes  results/classification/settings.csv   every criterion at every setting
         results/classification/best.csv       the best setting of each criterion, with
                                               its leave-one-photocatalyst-out score
