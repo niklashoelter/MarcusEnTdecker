@@ -20,24 +20,21 @@ HOW THE PAIR'S REORGANIZATION ENERGY IS ASSEMBLED
     the product state at its own geometry. Applied to each partner separately:
 
         photocatalyst   ends on the SINGLET surface, starting from the T1 geometry
-                        -> E_S0(T1 geom) - E_S0(S0 geom)  =  pc_lambda_T1_to_S0
+                        -> E_S0(T1 geom) - E_S0(S0 geom)  =  pc_lambda_S0_T1
         quencher        ends on the TRIPLET surface, starting from the S0 geometry
-                        -> E_T1(S0 geom) - E_T1(T1 geom)  =  q_lambda_T_S
+                        -> E_T1(S0 geom) - E_T1(T1 geom)  =  q_lambda_T1_S0
 
-        lambda_forward = pc_lambda_T1_to_S0 + q_lambda_T_S      (singlet-PC + triplet-Q)
-        lambda_reverse = pc_lambda_S0_to_T1 + q_lambda_S_T      (triplet-PC + singlet-Q)
+        lambda_forward = pc_lambda_S0_T1 + q_lambda_T1_S0
+        lambda_reverse = pc_lambda_T1_S0 + q_lambda_S0_T1
 
     Both partners contribute additively because the two molecules relax independently;
     there is no cross term in the classical two-parabola picture.
 
-    THIS IS THE OPPOSITE PAIRING TO THE CODE THIS WAS PORTED FROM. The original built
-    `lambda_forward = pc_lambda_T_S + quencher_lambda_S_T`, which in that project's own
-    column definitions is the photocatalyst's TRIPLET-surface term plus the quencher's
-    SINGLET-surface term -- the reverse reaction's reorganization energy. The two naming
-    schemes read their subscripts in opposite orders, which is exactly the trap the
-    photocatalyst script warned about when it chose geometry-explicit names, and the
-    original carried a whole section in its own notes about call sites having to swap the
-    photocatalyst tuple by hand.
+    THIS IS THE OPPOSITE PAIRING TO THE CODE THIS WAS PORTED FROM. The original's
+    lambda_forward was, in these names, pc_lambda_T1_S0 + q_lambda_S0_T1: the
+    photocatalyst's triplet-surface term plus the quencher's singlet-surface term, which is
+    the reverse reaction's reorganization energy. Its two input tables named their lambdas
+    in schemes whose letters read in opposite orders, and the swap went unnoticed.
 
     It matters in one place only. The symmetric form and the whole of Rehm-Weller combine
     the two into a symmetric mean, so swapping them changes nothing there. The asymmetric
@@ -92,8 +89,8 @@ DESCRIPTION = "Marcus barrier from two harmonic parabolas, and the Balzani rate 
 
 def required_columns():
     return [pairs.DG_ENT,
-            pairs.PC_LAMBDA_S0_TO_T1, pairs.PC_LAMBDA_T1_TO_S0,
-            pairs.Q_LAMBDA_S_T, pairs.Q_LAMBDA_T_S]
+            pairs.PC_LAMBDA_S0_T1, pairs.PC_LAMBDA_T1_S0,
+            pairs.Q_LAMBDA_S0_T1, pairs.Q_LAMBDA_T1_S0]
 
 
 def pair_lambdas(df: pd.DataFrame, legacy_pairing: bool = False):
@@ -102,12 +99,12 @@ def pair_lambdas(df: pd.DataFrame, legacy_pairing: bool = False):
     See the module docstring for the derivation and for what `legacy_pairing` restores.
     """
     pairs.require(df, required_columns(), "Marcus theory")
-    pc_singlet = df[pairs.PC_LAMBDA_T1_TO_S0].to_numpy(dtype=float)
-    pc_triplet = df[pairs.PC_LAMBDA_S0_TO_T1].to_numpy(dtype=float)
-    q_singlet = df[pairs.Q_LAMBDA_S_T].to_numpy(dtype=float)
-    q_triplet = df[pairs.Q_LAMBDA_T_S].to_numpy(dtype=float)
-    forward = pc_singlet + q_triplet
-    reverse = pc_triplet + q_singlet
+    pc_s0_t1 = df[pairs.PC_LAMBDA_S0_T1].to_numpy(dtype=float)
+    pc_t1_s0 = df[pairs.PC_LAMBDA_T1_S0].to_numpy(dtype=float)
+    q_s0_t1 = df[pairs.Q_LAMBDA_S0_T1].to_numpy(dtype=float)
+    q_t1_s0 = df[pairs.Q_LAMBDA_T1_S0].to_numpy(dtype=float)
+    forward = pc_s0_t1 + q_t1_s0
+    reverse = pc_t1_s0 + q_s0_t1
     return (reverse, forward) if legacy_pairing else (forward, reverse)
 
 

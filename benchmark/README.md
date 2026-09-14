@@ -82,8 +82,8 @@ untuned rule, and anywhere that margin is quoted it has to say so.
 
 ### marcus — the crossing of two parabolas
 
-Inputs: `dG_EnT`, `pc_lambda_S0_to_T1_dft`, `pc_lambda_T1_to_S0_dft`,
-`q_lambda_S_T_dft`, `q_lambda_T_S_dft`. Free parameters: the barrier threshold, plus the
+Inputs: `dG_EnT`, `pc_lambda_S0_T1_dft`, `pc_lambda_T1_S0_dft`,
+`q_lambda_S0_T1_dft`, `q_lambda_T1_S0_dft`. Free parameters: the barrier threshold, plus the
 λ scale when it is not 1.
 
 Asymmetric (the exact intersection of two parabolas of different curvature) and
@@ -176,23 +176,22 @@ geometry, so per partner:
 
 | partner | ends on | starting from | column |
 |---|---|---|---|
-| photocatalyst | the singlet surface | the T₁ geometry | `pc_lambda_T1_to_S0_dft` |
-| quencher | the triplet surface | the S₀ geometry | `q_lambda_T_S_dft` |
+| photocatalyst | the singlet surface | the T₁ geometry | `pc_lambda_S0_T1_dft` |
+| quencher | the triplet surface | the S₀ geometry | `q_lambda_T1_S0_dft` |
 
 ```
-λ_forward = pc_lambda_T1_to_S0 + q_lambda_T_S
-λ_reverse = pc_lambda_S0_to_T1 + q_lambda_S_T
+λ_forward = pc_lambda_S0_T1 + q_lambda_T1_S0
+λ_reverse = pc_lambda_T1_S0 + q_lambda_S0_T1
 ```
 
-**This is the opposite pairing to the original**, which built `λ_forward = pc_lambda_T_S
-+ q_lambda_S_T`. The two source tables read their subscripts in opposite orders: the
-quencher's `lambda_S_T` is `E_singlet(T₁ geom) − E_singlet(S₀ geom)`, a difference on the
-*singlet* surface, while the photocatalyst's `lambda_S0_to_T1` is a difference on the
-*triplet* surface. Written out on one surface at a time they line up crosswise, and the
-original's combination is the reverse reaction's reorganization energy. This is exactly
-the trap `photocatalyst_dft.py` chose its geometry-explicit names to avoid, and the
-original carried a whole section in its notes about call sites having to swap the
-photocatalyst tuple by hand.
+Every reorganization energy in `data/` and here is named `lambda_<surface>_<geometry>`:
+`lambda_S0_T1` is `E_S0(T₁ geom) − E_S0(S₀ geom)`, the singlet surface, and `lambda_T1_S0`
+is `E_T1(S₀ geom) − E_T1(T₁ geom)`, the triplet surface.
+
+**This is the opposite pairing to the original**, whose λ_forward was, in these names,
+`pc_lambda_T1_S0 + q_lambda_S0_T1` — the reverse reaction's reorganization energy. Its two
+input tables named their λ in schemes whose letters read in opposite orders, and the
+swap went unnoticed.
 
 It matters in one place only, the asymmetric Marcus barrier — and so also the Marcus
 rate, which is built on it. The symmetric Marcus form and all of Rehm–Weller use a
@@ -388,7 +387,7 @@ is why every number here is over 26 photocatalysts and 1248 pairs — the row co
 `pairs.py` and named in every run's header:
 
 - **PC17** (old PC19) has imaginary frequencies in both the S₀ and the reduced optimization and no
-  triplet-surface reorganization energy (`pc_lambda_S0_to_T1_dft` is blank). Its 48 pairs
+  triplet-surface reorganization energy (`pc_lambda_T1_S0_dft` is blank). Its 48 pairs
   fall out of every barrier and rate method automatically — the run reports this as 48
   non-finite inputs — but they stay in the adiabatic and DvTE numbers, which need only
   E_T. So the barrier methods have a prediction for only 1200 of the 1248 pairs they are

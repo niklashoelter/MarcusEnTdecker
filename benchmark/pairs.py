@@ -20,8 +20,7 @@ WHY THIS MODULE EXISTS
     every path is inside ../data/, and importing this module has no side effect beyond
     reading one CSV and three property workbooks.
 
-    It also carries what the column names mean, which for the reorganization energies is
-    not optional. See "WHICH SURFACE EACH LAMBDA LIVES ON" below.
+    It also carries what the column names mean. See "HOW THE LAMBDAS ARE NAMED" below.
 
 WHERE THE CALCULATED COLUMNS COME FROM
     `exp_dataset.csv` is the experimental table -- ids, K_SV, tau_0, the rate constants
@@ -53,30 +52,17 @@ THE TWO LABEL REGIMES
     claims them is a scientific question about what "quenching" means, not a data
     question, so `label_regimes()` returns both and this module takes no position.
 
-WHICH SURFACE EACH LAMBDA LIVES ON
-    The quencher and photocatalyst reorganization energies reach the pair table from two
-    workbooks under two different naming schemes, and they do not line up the way the
-    letters suggest. Both are differences on ONE potential energy surface between TWO
-    geometries:
+HOW THE LAMBDAS ARE NAMED
+    lambda_<surface>_<geometry>, for photocatalysts and quenchers alike, as in both
+    workbooks: the energy of one state at another state's optimized geometry, minus that
+    state at its own.
 
-        q_lambda_S_T_dft   = E_singlet(T1 geometry) - E_singlet(S0 geometry)
-                             the SINGLET surface, distorted to the triplet geometry
-        q_lambda_T_S_dft   = E_triplet(S0 geometry) - E_triplet(T1 geometry)
-                             the TRIPLET surface, distorted to the singlet geometry
+        lambda_S0_T1 = E_S0(T1 geometry) - E_S0(S0 geometry)     the singlet surface
+        lambda_T1_S0 = E_T1(S0 geometry) - E_T1(T1 geometry)     the triplet surface
 
-        pc_lambda_S0_to_T1 = E_triplet(S0 geometry) - E_triplet(T1 geometry)
-                             the TRIPLET surface -- the same quantity as q_lambda_T_S
-        pc_lambda_T1_to_S0 = E_singlet(T1 geometry) - E_singlet(S0 geometry)
-                             the SINGLET surface -- the same quantity as q_lambda_S_T
-
-    So `q_lambda_S_T` pairs with `pc_lambda_T1_to_S0`, and `q_lambda_T_S` pairs with
-    `pc_lambda_S0_to_T1`. The letters read in opposite orders. The photocatalyst script's
-    own docstring says why it chose the explicit form: "a name that does not say which
-    surface it lives on is a name that will be misread." It was, in the code this
-    benchmark is ported from -- see marcus.py.
-
-    The four aliases below exist so that no module downstream has to hold both schemes in
-    its head. They are named for the surface, which is the thing that matters.
+    The pair table prefixes the partner: `pc_lambda_S0_T1_dft`, `q_lambda_T1_S0_dft`.
+    The code this benchmark is ported from used two schemes whose letters read in
+    opposite orders, and paired them wrongly -- see marcus.py.
 """
 
 from pathlib import Path
@@ -109,20 +95,15 @@ QUENCHES_STRICT = "quenches_strict"
 CENSORED = "censored"
 
 # --- quencher, computed --------------------------------------------------------------
-Q_LAMBDA_S_T = "q_lambda_S_T_dft / kcal mol-1"
-Q_LAMBDA_T_S = "q_lambda_T_S_dft / kcal mol-1"
+Q_LAMBDA_S0_T1 = "q_lambda_S0_T1_dft / kcal mol-1"
+Q_LAMBDA_T1_S0 = "q_lambda_T1_S0_dft / kcal mol-1"
 Q_DVTE_MU = "q_dvte_mu_md / kcal mol-1"
 Q_DVTE_STD = "q_dvte_std_md / kcal mol-1"
 
 # --- photocatalyst, computed ---------------------------------------------------------
 PC_E_T = "pc_E_T_dft / kcal mol-1"
-PC_LAMBDA_S0_TO_T1 = "pc_lambda_S0_to_T1_dft / kcal mol-1"
-PC_LAMBDA_T1_TO_S0 = "pc_lambda_T1_to_S0_dft / kcal mol-1"
-
-# The same four columns, named for the surface they are a difference on, so that a call
-# site cannot pair them up wrongly. This is the only naming the theory modules use.
-LAMBDA_SINGLET_SURFACE = {"pc": PC_LAMBDA_T1_TO_S0, "q": Q_LAMBDA_S_T}
-LAMBDA_TRIPLET_SURFACE = {"pc": PC_LAMBDA_S0_TO_T1, "q": Q_LAMBDA_T_S}
+PC_LAMBDA_S0_T1 = "pc_lambda_S0_T1_dft / kcal mol-1"
+PC_LAMBDA_T1_S0 = "pc_lambda_T1_S0_dft / kcal mol-1"
 
 # --- driving forces ------------------------------------------------------------------
 # Quencher-centric, negative = exergonic, F = 23.0605 kcal mol-1 V-1:
@@ -176,7 +157,7 @@ EXCLUDED_PHOTOCATALYSTS = {
 FLAGGED_PHOTOCATALYSTS = {
     "PC17": "old PC19. Imaginary frequencies in both the S0 and the reduced optimization. "
             "It has "
-            "a triplet energy but no triplet-surface reorganization energy, so its 48 "
+            "a triplet energy but no triplet-surface lambda_T1_S0, so its 48 "
             "pairs drop out of every barrier and rate method. They stay in the "
             "adiabatic and DvTE numbers, which need only E_T.",
     "PC18": "old PC20. Lambda on the triplet surface is 33.67 kcal/mol against 12.70 on the "
@@ -273,10 +254,10 @@ def _computed(df: pd.DataFrame) -> pd.DataFrame:
 
         rows.append({
             PC_E_T: _sig(pc_e_t),
-            PC_LAMBDA_S0_TO_T1: _sig(_number(pcc, "lambda_S0_to_T1 / kcal mol-1")),
-            PC_LAMBDA_T1_TO_S0: _sig(_number(pcc, "lambda_T1_to_S0 / kcal mol-1")),
-            Q_LAMBDA_S_T: _sig(_number(qc, "lambda_S_T / kcal mol-1")),
-            Q_LAMBDA_T_S: _sig(_number(qc, "lambda_T_S / kcal mol-1")),
+            PC_LAMBDA_S0_T1: _sig(_number(pcc, "lambda_S0_T1 / kcal mol-1")),
+            PC_LAMBDA_T1_S0: _sig(_number(pcc, "lambda_T1_S0 / kcal mol-1")),
+            Q_LAMBDA_S0_T1: _sig(_number(qc, "lambda_S0_T1 / kcal mol-1")),
+            Q_LAMBDA_T1_S0: _sig(_number(qc, "lambda_T1_S0 / kcal mol-1")),
             Q_DVTE_MU: _sig(_number(qc, "dvte_mu / kcal mol-1")),
             Q_DVTE_STD: _sig(_number(qc, "dvte_std / kcal mol-1")),
             DG_ENT: _sig(q_e_t - pc_e_t) if None not in (q_e_t, pc_e_t) else None,

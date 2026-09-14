@@ -46,6 +46,9 @@ DVTE_CUTOFFS = ["0.005", "0.008", "0.01", "0.015"]
 
 IDENTIFICATION = "compound_identification.xlsx"
 
+# Reorganization energies are lambda_<surface>_<geometry> in both workbooks.
+LAMBDA_STATES = "Dplus and Dminus are the one-electron oxidized and reduced states."
+
 
 def src(path, column):
     return f"{path.relative_to(DATA).as_posix()}: {column}"
@@ -66,12 +69,9 @@ def photocatalysts():
     def col(header, name, description, table=dft, path=PC_DFT):
         return Column(header, description, src(path, name), field(table, name))
 
-    # (header, surface, name in Leon's delivered file)
-    lambdas = [
-        ("S0", "T1", "triplet", "lamba_T-S"), ("T1", "S0", "singlet", "lambda_S-T"),
-        ("S0", "ox", "cation", "lambda_D+_S0"), ("ox", "S0", "neutral", "lambda_S0_D+"),
-        ("S0", "red", "anion", "lambda_D-_S0"), ("red", "S0", "neutral", "lambda_S0_D-"),
-    ]
+    # lambda_<surface>_<geometry>, the same six names as the quencher workbook.
+    lambdas = [("S0", "T1"), ("T1", "S0"), ("S0", "Dplus"), ("Dplus", "S0"),
+               ("S0", "Dminus"), ("Dminus", "S0")]
     blocks = [
         Block("Identity", [
             Column("new_id", "PC number used downstream and in the paper, 1-27.",
@@ -87,10 +87,10 @@ def photocatalysts():
                 "E_T_calc in the delivered file."),
         ]),
         Block(f"Reorganization energies / {KCAL}", [
-            col(f"lambda_{a}_to_{b} / {KCAL}", f"lambda_{a}_to_{b} / {KCAL}",
-                f"Relaxation from the {a} geometry to the {b} geometry on the {surface} "
-                f"surface, electronic energies x 627.509. {leon} in the delivered file.")
-            for a, b, surface, leon in lambdas
+            col(f"lambda_{s}_{g} / {KCAL}", f"lambda_{s}_{g} / {KCAL}",
+                f"{s} surface: E_{s} at the {g} geometry minus E_{s} at its own, electronic "
+                f"energies x 627.509. {LAMBDA_STATES}")
+            for s, g in lambdas
         ]),
         Block(f"Excited-state redox / {KCAL} and V vs SCE", [
             col(f"dG_ox_ES / {KCAL}", f"dG_ox_ES / {KCAL}",
@@ -140,26 +140,26 @@ def quenchers():
         Block(f"Triplet state, adiabatic DFT / {KCAL}", [
             col(f"E_T / {KCAL}", "E_T",
                 "Adiabatic triplet energy, Gibbs-corrected, lowest conformer of each state."),
-            col(f"lambda_S_T / {KCAL}", "lambda_S_T",
-                "Singlet surface: E_S0 at the T1 geometry minus E_S0 at the S0 geometry."),
-            col(f"lambda_T_S / {KCAL}", "lambda_T_S",
-                "Triplet surface: E_T1 at the S0 geometry minus E_T1 at the T1 geometry."),
+            col(f"lambda_S0_T1 / {KCAL}", "lambda_S0_T1",
+                "S0 surface: E_S0 at the T1 geometry minus E_S0 at its own."),
+            col(f"lambda_T1_S0 / {KCAL}", "lambda_T1_S0",
+                "T1 surface: E_T1 at the S0 geometry minus E_T1 at its own."),
         ]),
         Block("Oxidation, adiabatic DFT", [
             col(f"dG_Ox / {KCAL}", "dG_Ox", "Free energy of Q -> Q+."),
             col("E_Ox_vs_SCE_calc / V", "E_Ox_vs_SCE_calc", "dG_Ox / F - 4.42 V."),
-            col(f"lambda_S0_D+ / {KCAL}", "lambda_S0_D+",
-                "Neutral surface: E_S0 at the cation geometry minus E_S0."),
-            col(f"lambda_D+_S0 / {KCAL}", "lambda_D+_S0",
-                "Cation surface: E_cation at the S0 geometry minus E_cation."),
+            col(f"lambda_S0_Dplus / {KCAL}", "lambda_S0_Dplus",
+                "S0 surface: E_S0 at the Dplus (radical cation) geometry minus E_S0 at its own."),
+            col(f"lambda_Dplus_S0 / {KCAL}", "lambda_Dplus_S0",
+                "Dplus surface: E_Dplus at the S0 geometry minus E_Dplus at its own."),
         ]),
         Block("Reduction, adiabatic DFT", [
             col(f"dG_Red / {KCAL}", "dG_Red", "Free energy released by Q -> Q-."),
             col("E_Red_vs_SCE_calc / V", "E_Red_vs_SCE_calc", "dG_Red / F - 4.42 V."),
-            col(f"lambda_S0_D- / {KCAL}", "lambda_S0_D-",
-                "Neutral surface: E_S0 at the anion geometry minus E_S0."),
-            col(f"lambda_D-_S0 / {KCAL}", "lambda_D-_S0",
-                "Anion surface: E_anion at the S0 geometry minus E_anion."),
+            col(f"lambda_S0_Dminus / {KCAL}", "lambda_S0_Dminus",
+                "S0 surface: E_S0 at the Dminus (radical anion) geometry minus E_S0 at its own."),
+            col(f"lambda_Dminus_S0 / {KCAL}", "lambda_Dminus_S0",
+                "Dminus surface: E_Dminus at the S0 geometry minus E_Dminus at its own."),
         ]),
         Block(f"Vertical triplet energy distribution, DvTE / {KCAL}", [
             dv("n_samples", "n_samples", "Sampled geometries with both single points."),

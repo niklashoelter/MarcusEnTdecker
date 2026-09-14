@@ -9,16 +9,16 @@ Curate the photocatalyst ORCA jobs into the raw-data layout.
 
 `source_dir` is the delivered job tree: PC_<n>/<job>/output.out, 31 photocatalysts,
 587 outputs, 895 MB, not in this repository. This script is the record of how the deposit
-under `../computational_data_raw/photocatalysts/` was made from it, and writes that tree
-plus a `manifest.csv` naming every source directory, kept or omitted, and how it ended.
+under `../computational_data_raw/photocatalysts/` was made from it, and writes that tree.
 
 WHAT IS KEPT
     Eleven jobs per photocatalyst, not the other nine. The delivery carries parallel
-    attempts at the same quantity -- `_uks`, `_m06`, `_lanl`, `_slightlyold`, `_depr`,
-    `_tddft` -- and choosing by name would be a guess. It is not one: every energy in
-    `Photocatalysts/computed_PCs.xlsx` was matched against every candidate, and all 31
-    photocatalysts x 10 quantities resolved to the plain job to better than 1e-6 Eh. The
-    suffixed runs are other levels of theory that no published number came from.
+    attempts at the same quantity, and choosing by name would be a guess. It is not one:
+    every energy in `Photocatalysts/computed_PCs.xlsx` was matched against every candidate,
+    and all 31 photocatalysts x 10 quantities resolved to the plain job to better than
+    1e-6 Eh. No published number came from the suffixed runs: `_uks` (unrestricted repeat),
+    `_m06` (M06-2X/def2-TZVP), `_lanl` (no ZORA), `_tddft` (TD-DFT triplet), `_slightlyold`
+    and `_depr` (superseded).
 
     `conf` is kept although no energy comes from it: it is the GOAT/XTB2 conformer search
     that produced the starting geometry.
@@ -36,7 +36,6 @@ sheet, and are not deposited (../compound_identification.py).
 
 from __future__ import annotations
 
-import csv
 import re
 import shutil
 import sys
@@ -75,21 +74,10 @@ LAYOUT = {
     "red_geometry_S_energy": ("red", "sp_vert_S0"),
 }
 
-# Why each omitted family is omitted, recorded per row rather than left to inference.
-OMIT_REASON = {
-    "_uks": "unrestricted repeat of the same level; no published number came from it",
-    "_m06": "M06-2X/def2-TZVP, a different and non-relativistic level of theory",
-    "_lanl": "wB97X-D4/def2-TZVP without ZORA, a different level of theory",
-    "_slightlyold": "superseded earlier run",
-    "_depr": "deprecated attempt",
-    "_tddft": "TD-DFT triplet, not the adiabatic triplet the analysis uses",
-}
-
 INPUT_HEADER = re.compile(r"^\s*INPUT FILE\s*$")
 INPUT_LINE = re.compile(r"^\|\s*\d+>\s?(.*)$")
 COORD_HEADER = "CARTESIAN COORDINATES (ANGSTROEM)"
 COORD_LINE = re.compile(r"^\s*([A-Za-z]{1,2})\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s*$")
-CHARGE_MULT = re.compile(r"\*\s*xyz(?:file)?\s+(-?\d+)\s+(\d+)")
 
 
 def read_output(path):
@@ -133,14 +121,7 @@ def read_output(path):
     if collecting and current:
         coords = current
 
-    charge = mult = ""
-    for line in inp:
-        match = CHARGE_MULT.search(line)
-        if match:
-            charge, mult = match.groups()
-            break
-
-    return inp, coords, terminated, charge, mult
+    return inp, coords, terminated
 
 
 def write_xyz(path, coords, comment):
@@ -165,7 +146,7 @@ def main():
     if not pc_dirs:
         sys.exit(f"no PC_<n> directories under {source}")
 
-    # Clear only the PC_<n> trees this script owns, and the manifest it writes.
+    # Clear only the PC_<n> trees this script owns.
     #
     # NOT the whole directory. `computational_data_raw/photocatalysts/` also holds
     # files that predate this script and that nothing else has a copy of -- the
@@ -175,13 +156,11 @@ def main():
     for existing in OUT_ROOT.iterdir():
         if existing.is_dir() and RE_PC.fullmatch(existing.name):
             shutil.rmtree(existing)
-    (OUT_ROOT / "manifest.csv").unlink(missing_ok=True)
 
     kept_out = sorted(p.name for p in OUT_ROOT.iterdir() if p.is_file())
     if kept_out:
         print(f"  leaving in place, not written by this script: {', '.join(kept_out)}")
 
-    manifest = []
     kept = omitted = failed = 0
 
     for pc_dir in pc_dirs:
@@ -191,30 +170,18 @@ def main():
             if not job_dir.is_dir():
                 continue
             job = job_dir.name
-            outputs = sorted(job_dir.glob("*.out"))
 
             if job not in LAYOUT:
-                reason = next((r for s, r in OMIT_REASON.items() if s in job),
-                              "not used by the analysis")
                 omitted += 1
-                manifest.append({
-                    "pc_id": pc, "source_job": job, "kept": 0, "destination": "",
-                    "terminated_normally": "", "n_atoms": "", "charge": "", "mult": "",
-                    "note": reason,
-                })
                 continue
 
             state, stem = LAYOUT[job]
             primary = job_dir / "output.out"
             if not primary.exists():
-                manifest.append({
-                    "pc_id": pc, "source_job": job, "kept": 0, "destination": "",
-                    "terminated_normally": "", "n_atoms": "", "charge": "", "mult": "",
-                    "note": "no output.out in the source",
-                })
+                print(f"  {pc}/{job}: no output.out in the source")
                 continue
 
-            inp, coords, terminated, charge, mult = read_output(primary)
+            inp, coords, terminated = read_output(primary)
             if not terminated:
                 failed += 1
 
@@ -226,30 +193,14 @@ def main():
                     "\n".join(inp) + "\n", encoding="utf-8", newline="\n")
             if coords:
                 write_xyz(dest / f"{stem}_geometry.xyz", coords, f"{pc} {state} {stem}")
-
-            # Scratch outputs that sit beside the real one (`output_tmp.out`, the
+            # Scratch outputs beside the real one (`output_tmp.out`, the
             # `input_atom<n>.out` basis-fitting runs) are not part of the job.
-            extras = [p.name for p in outputs if p.name != "output.out"]
-
             kept += 1
-            manifest.append({
-                "pc_id": pc, "source_job": job, "kept": 1,
-                "destination": f"{pc}/{state}/{stem}_output.out",
-                "terminated_normally": terminated, "n_atoms": len(coords),
-                "charge": charge, "mult": mult,
-                "note": ("also in the source, not copied: " + ", ".join(extras)) if extras else "",
-            })
-
-    manifest_path = OUT_ROOT / "manifest.csv"
-    with manifest_path.open("w", encoding="utf-8", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(manifest[0]))
-        writer.writeheader()
-        writer.writerows(manifest)
 
     size = sum(f.stat().st_size for f in OUT_ROOT.rglob("*") if f.is_file())
     print(f"\n{len(pc_dirs)} photocatalysts")
     print(f"  kept     {kept} jobs -> computational_data_raw/photocatalysts  ({size / 1e6:.0f} MB)")
-    print(f"  omitted  {omitted} jobs, each with a reason in manifest.csv")
+    print(f"  omitted  {omitted} jobs, the suffixed runs listed under WHAT IS KEPT")
     if failed:
         print(f"  WARNING  {failed} kept jobs did not terminate normally")
 

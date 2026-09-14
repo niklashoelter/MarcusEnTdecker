@@ -11,6 +11,11 @@ Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
 48 quenchers, four states each -- S0, T1, ox, red -- one optimisation and one set of
 single points per state, in the photocatalysts' layout.
 
+Reorganization energies are named lambda_<surface>_<geometry>, as everywhere in data/ and
+benchmark/: lambda_S0_T1 is E_S0 at the T1 geometry minus E_S0 at its own, lambda_Dminus_S0
+is E_D- at the S0 geometry minus E_D- at its own. Dplus and Dminus are the one-electron
+oxidized and reduced states, the `ox` and `red` folders.
+
 WHAT IS IN THE DEPOSIT
     Only the calculation each published number came from. The delivery held several
     conformers per state, and a few states twice from parallel pipelines; what is kept is
@@ -61,9 +66,9 @@ VERTICALS = {
 
 COLUMNS = [
     "quencher_id",
-    "E_T", "lambda_S_T", "lambda_T_S",
-    "dG_Ox", "E_Ox_vs_SCE_calc", "lambda_S0_D+", "lambda_D+_S0",
-    "dG_Red", "E_Red_vs_SCE_calc", "lambda_S0_D-", "lambda_D-_S0",
+    "E_T", "lambda_S0_T1", "lambda_T1_S0",
+    "dG_Ox", "E_Ox_vs_SCE_calc", "lambda_S0_Dplus", "lambda_Dplus_S0",
+    "dG_Red", "E_Red_vs_SCE_calc", "lambda_S0_Dminus", "lambda_Dminus_S0",
 ]
 
 
@@ -158,21 +163,21 @@ def main():
 
         if s0 and t1:
             row["E_T"] = to_kcal(sub(t1["E_combined"], s0["E_combined"]))
-            row["lambda_S_T"] = to_kcal(sub(t1["E_vert_spin_change"], s0["E_singlepoint"]))
-            row["lambda_T_S"] = to_kcal(sub(s0["E_vert_spin_change"], t1["E_singlepoint"]))
+            row["lambda_S0_T1"] = to_kcal(sub(t1["E_vert_spin_change"], s0["E_singlepoint"]))
+            row["lambda_T1_S0"] = to_kcal(sub(s0["E_vert_spin_change"], t1["E_singlepoint"]))
 
         if s0 and ox:
             row["dG_Ox"] = to_kcal(sub(ox["E_combined"], s0["E_combined"]))
             row["E_Ox_vs_SCE_calc"] = to_volt(row["dG_Ox"])
-            row["lambda_S0_D+"] = to_kcal(sub(ox["E_vert_red"], s0["E_singlepoint"]))
-            row["lambda_D+_S0"] = to_kcal(sub(s0["E_vert_ox"], ox["E_singlepoint"]))
+            row["lambda_S0_Dplus"] = to_kcal(sub(ox["E_vert_red"], s0["E_singlepoint"]))
+            row["lambda_Dplus_S0"] = to_kcal(sub(s0["E_vert_ox"], ox["E_singlepoint"]))
 
         if s0 and red:
             dg = to_kcal(sub(red["E_combined"], s0["E_combined"]))
             row["dG_Red"] = None if dg is None else -1.0 * dg
             row["E_Red_vs_SCE_calc"] = to_volt(row["dG_Red"])
-            row["lambda_S0_D-"] = to_kcal(sub(red["E_vert_ox"], s0["E_singlepoint"]))
-            row["lambda_D-_S0"] = to_kcal(sub(s0["E_vert_red"], red["E_singlepoint"]))
+            row["lambda_S0_Dminus"] = to_kcal(sub(red["E_vert_ox"], s0["E_singlepoint"]))
+            row["lambda_Dminus_S0"] = to_kcal(sub(s0["E_vert_red"], red["E_singlepoint"]))
 
         missing = [c for c in COLUMNS
                    if c.startswith(("E_", "lambda", "dG")) and row.get(c) is None]

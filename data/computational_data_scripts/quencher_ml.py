@@ -6,7 +6,8 @@ Reads   ../compound_identification.xlsx                (ids, names, SMILES)
 Writes  ../computational_data_processed/quencher_properties_ml.xlsx
 
 One row per quencher, in the same layout and headers as `quencher_properties_calc.xlsx`,
-so the model's E_T, lambda_S_T and lambda_T_S sit beside the DFT ones column for column.
+so the model's E_T, lambda_S0_T1 and lambda_T1_S0 sit beside the DFT ones column for
+column. The model calls them `lamda_S_T` and `lamda_T_S`; those are its field names only.
 Each value carries the network's own uncertainty, which a DFT number has not.
 
 IT NEEDS THE MODEL ENVIRONMENT, SO IT IS NOT A reproduce.py STAGE
@@ -58,12 +59,12 @@ SIGFIGS = 6
 PREDICTED = [
     ("E_T", "triplet_energy_adiabatic",
      "Adiabatic triplet energy, predicted from the structure alone."),
-    ("lambda_S_T", "lamda_S_T",
-     "Singlet-surface reorganization energy, the model's counterpart to the DFT "
-     "lambda_S_T."),
-    ("lambda_T_S", "lamda_T_S",
-     "Triplet-surface reorganization energy, the model's counterpart to the DFT "
-     "lambda_T_S."),
+    ("lambda_S0_T1", "lamda_S_T",
+     "S0 surface: E_S0 at the T1 geometry minus E_S0 at its own. The model's counterpart "
+     "to the DFT lambda_S0_T1."),
+    ("lambda_T1_S0", "lamda_T_S",
+     "T1 surface: E_T1 at the S0 geometry minus E_T1 at its own. The model's counterpart "
+     "to the DFT lambda_T1_S0."),
 ]
 
 UNCERTAINTY = ("Spread of the mixture density network's own distribution for that value. "

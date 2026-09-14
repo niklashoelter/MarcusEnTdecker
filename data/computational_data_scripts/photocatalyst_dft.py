@@ -14,7 +14,7 @@ Every number is parsed from an ORCA output in the deposit; no spreadsheet is rea
 arithmetic is Leon Schlosser's, as in the property file he delivered, so this reproduces it:
 
     E_T                ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.503
-    lambda_X_to_Y      (E_Y at the X geometry - E_Y) * 627.509     electronic only
+    lambda_X_Y         (E_X at the Y geometry - E_X) * 627.509     electronic only
     dG_ox_ES           ((E_ox + G_ox) - (E_T1 + G_T1)) * 627.509   PC* -> PC+
     dG_red_ES          ((E_red + G_red) - (E_T1 + G_T1)) * 627.509  PC* -> PC-
     E_PCstar_PCminus   -dG_red_ES / 23.061 - 4.42
@@ -31,10 +31,11 @@ AGREEMENT WITH THE DELIVERED FILE
     here come from the jobs. PC19 is blank there; here it has what its six jobs allow.
 
 NAMING
-    `lambda_S0_to_T1` is relaxation on the *triplet* surface from the singlet geometry
-    (the delivered file's `lamba_T-S`), `lambda_T1_to_S0` the reverse (its `lambda_S-T`);
-    ox/red follow the same pattern. Potentials are named by their couple: E(PC*/PC-) is
-    how strong an oxidant the triplet is, labelled `E_ox_ES` in the delivered file.
+    Reorganization energies are lambda_<surface>_<geometry>, as everywhere in data/ and
+    benchmark/: `lambda_S0_T1` is the singlet surface at the T1 geometry, `lambda_T1_S0`
+    the triplet surface at the S0 geometry. Dplus and Dminus are the one-electron oxidized
+    and reduced states, the `ox` and `red` folders. Potentials are named by their couple:
+    E(PC*/PC-) is how strong an oxidant the triplet is, `E_ox_ES` in the delivered file.
 
 Numbered by old id. Old PC7, PC26, PC30 and PC31 were computed but are crossed out in the
 photocatalyst sheet and are not part of the data (../compound_identification.py).
@@ -78,9 +79,9 @@ OPTIMIZATIONS = ("E_S0", "E_T1", "E_ox", "E_red")
 COLUMNS = [
     "pc_id", "n_atoms", "charge",
     "E_T / kcal mol-1",
-    "lambda_S0_to_T1 / kcal mol-1", "lambda_T1_to_S0 / kcal mol-1",
-    "lambda_S0_to_ox / kcal mol-1", "lambda_ox_to_S0 / kcal mol-1",
-    "lambda_S0_to_red / kcal mol-1", "lambda_red_to_S0 / kcal mol-1",
+    "lambda_S0_T1 / kcal mol-1", "lambda_T1_S0 / kcal mol-1",
+    "lambda_S0_Dplus / kcal mol-1", "lambda_Dplus_S0 / kcal mol-1",
+    "lambda_S0_Dminus / kcal mol-1", "lambda_Dminus_S0 / kcal mol-1",
     "dG_ox_ES / kcal mol-1", "dG_red_ES / kcal mol-1",
     "E_PCstar_PCminus / V", "E_PCplus_PCstar / V",
     "E_S0 / Ha", "E_T1 / Ha", "E_ox / Ha", "E_red / Ha",
@@ -189,12 +190,12 @@ def main():
             "n_atoms": count_atoms(pc_dir / "S0" / "opt_geometry.xyz") or "",
             "charge": blank(charge),
             "E_T / kcal mol-1": blank(e_t),
-            "lambda_S0_to_T1 / kcal mol-1": blank(lam("E_T1_at_S0geom", "E_T1")),
-            "lambda_T1_to_S0 / kcal mol-1": blank(lam("E_S0_at_T1geom", "E_S0")),
-            "lambda_S0_to_ox / kcal mol-1": blank(lam("E_ox_at_S0geom", "E_ox")),
-            "lambda_ox_to_S0 / kcal mol-1": blank(lam("E_S0_at_oxgeom", "E_S0")),
-            "lambda_S0_to_red / kcal mol-1": blank(lam("E_red_at_S0geom", "E_red")),
-            "lambda_red_to_S0 / kcal mol-1": blank(lam("E_S0_at_redgeom", "E_S0")),
+            "lambda_S0_T1 / kcal mol-1": blank(lam("E_S0_at_T1geom", "E_S0")),
+            "lambda_T1_S0 / kcal mol-1": blank(lam("E_T1_at_S0geom", "E_T1")),
+            "lambda_S0_Dplus / kcal mol-1": blank(lam("E_S0_at_oxgeom", "E_S0")),
+            "lambda_Dplus_S0 / kcal mol-1": blank(lam("E_ox_at_S0geom", "E_ox")),
+            "lambda_S0_Dminus / kcal mol-1": blank(lam("E_S0_at_redgeom", "E_S0")),
+            "lambda_Dminus_S0 / kcal mol-1": blank(lam("E_red_at_S0geom", "E_red")),
             "dG_ox_ES / kcal mol-1": blank(dg_ox),
             "dG_red_ES / kcal mol-1": blank(dg_red),
             "E_PCstar_PCminus / V": blank(e_star_minus),

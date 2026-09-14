@@ -109,12 +109,20 @@ the value and standard error of a single-exponential fit. The fit starts automat
 the pulse, except for old PC4, fitted from 1500 ns to skip a fast early component
 (`FIT_START_NS` in `lifetimes_tcspc.py`).
 
+**Reorganization energies** are named `lambda_<surface>_<geometry>` in every table, workbook
+and script, for photocatalysts and quenchers alike: the energy of one state at another
+state's optimized geometry, minus that state at its own. `lambda_S0_T1` is E_S0 at the T1
+geometry minus E_S0, the singlet surface; `lambda_T1_S0` is the triplet surface at the S0
+geometry. `Dplus` and `Dminus` are the one-electron oxidized and reduced states (the `ox`
+and `red` job folders), so `lambda_Dminus_S0` is the reduced state's surface at the S0
+geometry. Energies only, no thermal corrections. The SI defines the same six.
+
 **Photocatalyst DFT** uses Leon's arithmetic and reproduces his delivered file
 except E_T for old PC10, PC13, PC25 and PC28 (new 8, 11, 23, 26), which that file carries
 stale.
 
 **Predicted quencher properties.** `quencher_properties_ml.xlsx` holds the same three
-quantities as the DFT quencher workbook — E_T, λ_S_T, λ_T_S — predicted from the SMILES
+quantities as the DFT quencher workbook — E_T, lambda_S0_T1, lambda_T1_S0 — predicted from the SMILES
 alone by the graph mixture density network in `../ml/data/model.pt`, each
 with the model's own uncertainty, which a DFT number does not have. It is written by
 `computational_data_scripts/quencher_ml.py`, the only script in this folder that needs the
@@ -136,5 +144,4 @@ takes its thermal correction, and Q18's S0 its reduced-state vertical single poi
 second run of the same conformer, so in those two folders `opt_output.out` is not the run
 that `sp_output.out` came from.
 
-**In git from** `computational_data_raw/`**:** only the derived tables and the photocatalyst
-`manifest.csv`, which records which delivered job was kept and which was dropped and why.
+**In git from** `computational_data_raw/`**:** only the derived tables.
