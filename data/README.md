@@ -22,14 +22,18 @@ data/
 ├── computational_data_raw/          ORCA/Milo jobs (Zenodo, not in git), plus derived tables
 │   ├── photocatalysts/              PC_<n>/{S0,T1,ox,red,conf}/ -> photocatalyst_dft.csv
 │   ├── quencher_adiabatic_DFT/      Q<n>/{S0,T1,ox,red}/ -> quencher_dft.csv
-│   └── quencher_adiabatic_DvTE/     MD trajectories -> quencher_dvte.csv, _samples.csv.gz
+│   └── quencher_adiabatic_DvTE/     MD trajectories -> quencher_dvte.csv, _samples.csv.gz,
+│                                    quencher_timings_vertical_sp.csv.gz
 ├── computational_data_processed/
 │   ├── photocatalyst_properties_calc.xlsx
 │   ├── quencher_properties_calc.xlsx
-│   └── quencher_properties_ml.xlsx  the same three quantities, predicted from the SMILES
+│   ├── quencher_properties_ml.xlsx  the same three quantities, predicted from the SMILES
+│   ├── quencher_timings.csv         wall time, cores and CPU hours of every quencher job
+│   └── quencher_timings_ml.csv      the model's inference time per quencher
 ├── experimental_data_scripts/       one script per raw folder, plus properties_exp.py
 ├── computational_data_scripts/      one script per raw folder, plus properties_calc.py,
-│                                    quencher_ml.py and photocatalyst_curate.py
+│                                    quencher_timings.py, quencher_ml.py,
+│                                    quencher_ml_timing.py and photocatalyst_curate.py
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
 ├── build_exp_dataset.py             experimental processed data -> one row per pair
@@ -48,12 +52,18 @@ data/
 4. `build_exp_dataset_ent.py` builds `exp_dataset_ent` from `exp_dataset` and the
    property workbooks.
 
-`uv run reproduce.py data` runs all of this in order. Two scripts are not part of it:
+`uv run reproduce.py data` runs all of this in order, including `quencher_timings.py`,
+which writes the computational cost of the quencher jobs to
+`computational_data_processed/`. Three scripts are not part of it:
 
 - `quencher_ml.py` needs the model environment and is run by hand:
   `uv sync --extra ml`, then
   `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`.
   Its workbook is in git.
+- `quencher_ml_timing.py` measures the model's inference time on the machine it runs on,
+  in the same environment:
+  `uv run --extra ml python data/computational_data_scripts/quencher_ml_timing.py`.
+  Its table is in git.
 - `photocatalyst_curate.py` builds the deposited photocatalyst folders from a job tree.
   It is not a pipeline stage.
 
@@ -112,9 +122,11 @@ The pairs of `exp_dataset` on which quenching can be attributed to energy transf
 
 Besides the ten `exp_dataset` columns and the two ΔE_SET columns, each row carries:
 - **Photocatalyst (DFT):** E_T and both λ.
-- **Quencher (DFT):** E_T, both λ, and the DvTE mean and standard deviation.
-- **Quencher (ML):** E_T and both λ. The model covers organic molecules only, so there are
-  no predicted photocatalyst values.
+- **Quencher (DFT):** E_T and both λ.
+- **Quencher (DvTE):** mean and standard deviation of the vertical gaps, and their
+  p-quantiles for p = 0.005, 0.008, 0.01, 0.015, from a normal distribution and from a KDE.
+- **Quencher (ML):** E_T and both λ, each with the model's uncertainty. The model covers
+  organic molecules only, so there are no predicted photocatalyst values.
 - **Driving force:** ΔG_EnT = E_T(Q) − E_T(PC), from both quencher sources.
 
 Blanks stay blank.
@@ -147,6 +159,18 @@ thermal corrections.
 **Predicted quencher properties.** `quencher_properties_ml.xlsx` holds E_T, lambda_S0_T1
 and lambda_T1_S0 predicted from the SMILES by the graph mixture density network in
 `../ml/data/model.pt`, each with its predicted uncertainty.
+
+**Computational cost.** `quencher_timings.csv` has one row per quencher job: DFT
+(ORCA), the Gaussian optimisation and frequencies, the Milo trajectories, and the
+vertical single points summed per trajectory and multiplicity (one row per single point
+in `quencher_timings_vertical_sp.csv.gz`). Wall times come from the program outputs;
+CPU hours are wall time × cores. The Milo trajectories kept no Gaussian logs and are
+timed by their Slurm reports, as are the vertical single-point steps whose ORCA runs
+failed or hit the time limit (`dvte sp failed`). Where a Slurm report exists next to a
+program output it is recorded as a cross-check and disagreements are flagged.
+`quencher_timings_ml.csv` holds the model's import and load times and the median time of
+one prediction per quencher and of all 48 in one call, on the CPU; the machine and
+versions are in its `#` header lines.
 
 **Calculations.** The computational folders hold one calculation per state:
 `Q<n>/<state>/` and `PC_<n>/<state>/` contain one geometry optimisation and its single

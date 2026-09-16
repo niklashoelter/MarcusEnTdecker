@@ -25,6 +25,10 @@ Not every script is a stage:
     `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`. The workbook
     it writes is in git.
 
+    `quencher_ml_timing.py` measures the model's inference time on the machine it runs on,
+    also with the ml extra: `uv run --extra ml python
+    data/computational_data_scripts/quencher_ml_timing.py`. The table it writes is in git.
+
     `compound_identification.py` and `properties_workbook.py` are imported modules.
 """
 
@@ -58,6 +62,8 @@ PIPELINE = [
      "data/computational_data_raw/quencher_adiabatic_DFT/Q1"),
     ("data", "data/computational_data_scripts/quencher_dvte.py",
      "data/computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz"),
+    ("data", "data/computational_data_scripts/quencher_timings.py",
+     "data/computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz"),
     ("data", "data/computational_data_scripts/photocatalyst_dft.py",
      "data/computational_data_raw/photocatalysts/PC_1"),
     ("data", "data/computational_data_scripts/properties_calc.py",
@@ -66,10 +72,13 @@ PIPELINE = [
      "data/experimental_data_processed/stern_volmer_fits.csv"),
     ("data", "data/build_exp_dataset_ent.py", "data/exp_dataset.csv"),
     ("benchmark", "benchmark/classification.py", "data/exp_dataset_ent.csv"),
-    ("benchmark", "benchmark/rates.py", "data/exp_dataset_ent.csv"),
+    ("benchmark", "benchmark/cost.py", "data/computational_data_processed/quencher_timings.csv"),
+    *[("further_analysis", f"benchmark/further_analysis/{name}.py", "data/exp_dataset_ent.csv")
+      for name in ("influence", "held_out", "within_groups", "adiabatic_variants",
+                   "barrier_variants", "rate_variants", "rate_predictions")],
 ]
 
-STAGES = ["data", "benchmark", "ml"]
+STAGES = ["data", "benchmark", "further_analysis", "ml"]
 
 
 def run(script):

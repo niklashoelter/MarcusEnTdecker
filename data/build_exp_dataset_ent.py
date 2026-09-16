@@ -29,8 +29,10 @@ Which pairs
     uphill, so it rules the channel out only if the limit itself is past 0.25 V.
 
 Properties
-    Photocatalyst E_T and lambda are DFT. Quencher E_T and lambda are given from DFT and
-    as predicted by the ML model; the model covers organic molecules only, so there are
+    Photocatalyst E_T and lambda are DFT. Quencher DvTE is the distribution of vertical
+    singlet-triplet gaps from MD: its mean, standard deviation and p-quantiles, both from a
+    normal distribution and from a KDE. Quencher E_T and lambda are given from DFT and
+    as predicted by the ML model, with the model's uncertainty; the model covers organic molecules only, so there are
     no predicted photocatalyst values. dG_EnT = E_T(Q) - E_T(PC). A value the source does
     not have stays blank.
 """
@@ -54,6 +56,7 @@ OUT_CSV = DATA / "exp_dataset_ent.csv"
 OUT_XLSX = DATA / "exp_dataset_ent.xlsx"
 
 SET_EXCLUSION_V = 0.25
+DVTE_P = ("0.005", "0.008", "0.01", "0.015")   # quantiles of the vertical gaps
 
 # (block, [(column, description, source)]) for the columns added to exp_dataset's.
 ADDED = [
@@ -86,10 +89,16 @@ ADDED = [
          "quencher_properties_calc.xlsx: lambda_S0_T1"),
         ("q_lambda_T1_S0_dft / kcal mol-1", "E_T1 at the S0 geometry minus E_T1.",
          "quencher_properties_calc.xlsx: lambda_T1_S0"),
+    ]),
+    ("Quencher, DvTE", [
         ("q_dvte_mu / kcal mol-1", "Mean of the sampled vertical singlet-triplet gaps.",
          "quencher_properties_calc.xlsx: dvte_mu"),
         ("q_dvte_std / kcal mol-1", "Standard deviation of the sampled vertical gaps.",
          "quencher_properties_calc.xlsx: dvte_std"),
+        *[(f"q_dvte_{p} / kcal mol-1", f"p = {p} quantile of a normal distribution, mu + Phi^-1(p) * std.",
+           f"quencher_properties_calc.xlsx: dvte_{p}") for p in DVTE_P],
+        *[(f"q_dvte_{p}_kde / kcal mol-1", f"p = {p} quantile of a Gaussian KDE of the gaps.",
+           f"quencher_properties_calc.xlsx: dvte_{p}_kde") for p in DVTE_P],
     ]),
     ("Quencher, ML", [
         ("q_E_T_ml / kcal mol-1", "Adiabatic triplet energy, predicted.",
@@ -98,6 +107,12 @@ ADDED = [
          "quencher_properties_ml.xlsx: lambda_S0_T1"),
         ("q_lambda_T1_S0_ml / kcal mol-1", "lambda_T1_S0, predicted.",
          "quencher_properties_ml.xlsx: lambda_T1_S0"),
+        ("q_E_T_ml_uncertainty / kcal mol-1", "The model's uncertainty on E_T.",
+         "quencher_properties_ml.xlsx: E_T_uncertainty"),
+        ("q_lambda_S0_T1_ml_uncertainty / kcal mol-1", "The model's uncertainty on lambda_S0_T1.",
+         "quencher_properties_ml.xlsx: lambda_S0_T1_uncertainty"),
+        ("q_lambda_T1_S0_ml_uncertainty / kcal mol-1", "The model's uncertainty on lambda_T1_S0.",
+         "quencher_properties_ml.xlsx: lambda_T1_S0_uncertainty"),
     ]),
     ("Driving force", [
         ("dG_EnT_dft / kcal mol-1", "q_E_T_dft - pc_E_T_dft.", "computed here"),
@@ -161,9 +176,13 @@ def main():
                 "q_lambda_T1_S0_dft / kcal mol-1": sig(number(qc, "lambda_T1_S0 / kcal mol-1")),
                 "q_dvte_mu / kcal mol-1": sig(number(qc, "dvte_mu / kcal mol-1")),
                 "q_dvte_std / kcal mol-1": sig(number(qc, "dvte_std / kcal mol-1")),
+                **{f"q_dvte_{p}{kind} / kcal mol-1": sig(number(qc, f"dvte_{p}{kind} / kcal mol-1"))
+                   for p in DVTE_P for kind in ("", "_kde")},
                 "q_E_T_ml / kcal mol-1": sig(q_e_t_ml),
                 "q_lambda_S0_T1_ml / kcal mol-1": sig(number(qm, "lambda_S0_T1 / kcal mol-1")),
                 "q_lambda_T1_S0_ml / kcal mol-1": sig(number(qm, "lambda_T1_S0 / kcal mol-1")),
+                **{f"q_{name}_ml_uncertainty / kcal mol-1": sig(number(qm, f"{name}_uncertainty / kcal mol-1"))
+                   for name in ("E_T", "lambda_S0_T1", "lambda_T1_S0")},
                 "dG_EnT_dft / kcal mol-1": sig(difference(q_e_t_dft, pc_e_t)),
                 "dG_EnT_ml / kcal mol-1": sig(difference(q_e_t_ml, pc_e_t)),
             })

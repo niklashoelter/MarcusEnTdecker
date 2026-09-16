@@ -13,6 +13,7 @@ data/computational_data_raw/quencher_adiabatic_DFT/*
 data/computational_data_raw/quencher_adiabatic_DvTE/*
 !data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
 !data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
+!data/computational_data_raw/quencher_adiabatic_DvTE/quencher_timings_vertical_sp.csv.gz
 
 # data/ has one README, data/README.md. None below it.
 data/*/**/README.md
@@ -47,3 +48,6 @@ desktop.ini
 # Local overrides
 paths.local.toml
 
+# Local notes for writing the paper; not part of the repository.
+benchmark/DESIGN.md
+benchmark/review.html

@@ -1,32 +1,36 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas"]
+# dependencies = ["numpy", "pandas", "scipy"]
 # ///
 """
-Scores the criteria for predicting whether a pair quenches.
+Scores the criteria that predict whether a photocatalyst-quencher pair quenches.
 
 Reads   ../data/exp_dataset_ent.csv (through pairs.py)
-Writes  results/classification/settings.csv   every criterion at every setting
-        results/classification/best.csv       the best setting of each criterion, with
-                                              its leave-one-photocatalyst-out score
+Writes  results/classification/settings.csv   every DFT setting of every criterion
+        results/classification/best.csv       the best DFT setting of each criterion and
+                                              the same setting with ML parameters
 
     uv run benchmark/classification.py
 
-Criterion            predicts quenching when
-adiabatic            dG_EnT < 0
-dvte                 E_T(PC) >= DvTE(p), for p = 0.005, 0.008, 0.01, 0.015
-marcus_barrier       dG_EnT < 0 and Marcus barrier < threshold
-marcus_rate          k_Marcus * tau0 > K_SV,crit
-rehm_weller_rate     k_Rehm-Weller * tau0 > K_SV,crit
+Criterion            predicts quenching when                     variants
+adiabatic            dG_EnT <= 0                                 dft, ml
+dvte                 E_T(PC) >= DvTE(p)                          p x (normal, KDE quantile)
+marcus_barrier       Marcus barrier < threshold                  lambda raw, lambda scaled
+marcus_rate          k * tau0 >= K_SV,crit, Marcus barrier       lambda raw, lambda scaled
+rehm_weller_rate     k * tau0 >= K_SV,crit, Rehm-Weller barrier  lambda raw, lambda scaled
 
-Adiabatic and the three kinetic criteria are scored with the quencher's E_T and lambda
-from DFT and from the ML model. The kinetic criteria are scored with DFT lambda as is
-(`lambda raw`) and with lambda scaled by a factor alpha (`lambda scaled`).
+The barrier is symmetric with the geometric-mean lambda; the rate is the full
+encounter-complex scheme of theory.rate. "lambda raw" uses the DFT lambda as is
+(alpha = 1), "lambda scaled" multiplies the pair lambdas by alpha. The barrier threshold
+and alpha are chosen by the highest MCC on the DFT parameters (the middle setting on a
+tie); the ML row applies that same setting to the ML quencher parameters. Photocatalyst
+properties are DFT throughout.
 
-The ground truth is `quenches` from exp_dataset.
+The ground truth is `quenches`. AUC is computed on each criterion's continuous score:
+-dG_EnT, E_T(PC) - DvTE, -barrier, log10(k * tau0).
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 import pandas as pd
@@ -37,108 +41,165 @@ import theory
 
 RESULTS = pairs.RESULTS / "classification"
 
-ALPHAS = tuple(round(a, 2) for a in np.arange(0.25, 1.001, 0.05))
-BARRIER_THRESHOLDS = tuple(round(t, 1) for t in np.arange(0.5, 15.01, 0.5))  # kcal/mol
-K_SV_CRIT = 10.0                                                            # M-1
-DVTE_P = (0.005, 0.008, 0.01, 0.015)
+ALPHAS = tuple(round(a, 2) for a in np.arange(0.05, 1.0001, 0.05))
+BARRIER_THRESHOLDS = tuple(round(t, 1) for t in np.arange(0.1, 20.0001, 0.1))  # kcal/mol
+K_SV_CRIT = 10.0                                                              # M-1
 
-CRITERIA = ["adiabatic", "dvte", "marcus_barrier", "marcus_rate", "rehm_weller_rate"]
+LAMBDA_VARIANTS = ("lambda raw", "lambda scaled")
 
-# The columns that identify one criterion; settings sharing them compete for "best".
-CRITERION = ["criterion", "parameters", "variant"]
+# criterion: (kind, barrier model, variants, sources tuned on, sources given the DFT setting)
+CRITERIA = {
+    "adiabatic": ("adiabatic", None, ("",), pairs.SOURCES, ()),
+    "dvte": ("dvte", None, tuple(f"p = {p}, {kind}" for p in pairs.DVTE_P
+                                 for kind in pairs.DVTE_KINDS), ("dft",), ()),
+    "marcus_barrier": ("barrier", "marcus_symmetric", LAMBDA_VARIANTS, ("dft",), ("ml",)),
+    "marcus_rate": ("rate", "marcus_symmetric", LAMBDA_VARIANTS, ("dft",), ("ml",)),
+    "rehm_weller_rate": ("rate", "rehm_weller", LAMBDA_VARIANTS, ("dft",), ("ml",)),
+}
 
 
-@dataclass
+@dataclass(frozen=True)
 class Setting:
-    criterion: str
-    parameters: str         # "dft" or "ml"
-    variant: str            # "", "lambda raw", "lambda scaled", or the DvTE p
-    n_free: int             # parameters chosen by maximizing MCC
-    predicted: np.ndarray
-    alpha: float = np.nan
-    barrier_threshold: float = np.nan
+    kind: str                           # adiabatic, dvte, barrier, rate
+    p: str | None = None                # DvTE quantile
+    dvte_kind: str | None = None        # normal or kde
+    barrier_model: str = "marcus_symmetric"
+    alpha: float = 1.0
+    barrier_threshold: float = np.nan   # kcal/mol
+    k_sv_crit: float = np.nan           # M-1
+    requires_exergonic: bool = False    # also require dG_EnT <= 0
+    rate_law: str = "full"              # full or irreversible
 
 
-def settings(df):
-    """Every setting of every criterion, as predictions for the rows of df."""
-    tau0 = pairs.tau0_seconds(df)
-    pc_e_t = df[pairs.PC_E_T].to_numpy(float)
+def predict(df, setting: Setting, source):
+    """(predicted quenching, continuous score) for every row of df."""
+    dG = pairs.driving_force(df, source)
+    if setting.kind == "adiabatic":
+        return dG <= 0, -dG
 
-    for source in pairs.SOURCES:
-        yield Setting("adiabatic", source, "", 0, pairs.driving_force(df, source) < 0)
+    if setting.kind == "dvte":
+        gap = df[pairs.PC_E_T].to_numpy(float) - df[pairs.q_dvte(setting.p, setting.dvte_kind)].to_numpy(float)
+        return gap >= 0, gap
 
-    for p in DVTE_P:
-        threshold = theory.dvte(df[pairs.Q_DVTE_MU], df[pairs.Q_DVTE_STD], p)
-        yield Setting("dvte", "dft", f"p = {p}", 0, pc_e_t >= threshold)
+    forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
+    barrier = theory.barrier(setting.barrier_model, dG,
+                             setting.alpha * forward, setting.alpha * reverse)
+    if setting.kind == "barrier":
+        predicted = barrier < setting.barrier_threshold
+        if setting.requires_exergonic:
+            predicted &= dG <= 0
+        return predicted, -barrier
 
-    for source in pairs.SOURCES:
-        dG = pairs.driving_force(df, source)
-        forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
-        for alpha in sorted(ALPHAS, key=lambda a: a != 1.0):     # raw lambda first
-            scaled = alpha != 1.0
-            variant = "lambda scaled" if scaled else "lambda raw"
-            lf, lr = alpha * forward, alpha * reverse
+    if setting.kind == "rate":
+        k = theory.rate(dG, barrier) if setting.rate_law == "full" else theory.rate_irreversible(barrier)
+        log_k_tau0 = np.log10(k * pairs.tau0_seconds(df))
+        return log_k_tau0 >= np.log10(setting.k_sv_crit), log_k_tau0
 
-            barrier = theory.marcus_barrier(dG, lf, lr)
-            for threshold in BARRIER_THRESHOLDS:
-                yield Setting("marcus_barrier", source, variant, 1 + scaled,
-                              (dG < 0) & (barrier < threshold), alpha, threshold)
+    raise ValueError(f"unknown criterion kind {setting.kind!r}")
 
-            rates = {"marcus_rate": theory.marcus_rate(dG, lf, lr),
-                     "rehm_weller_rate": theory.rehm_weller_rate(
-                         dG, theory.effective_lambda(lf, lr))}
-            for name, k in rates.items():
-                yield Setting(name, source, variant, int(scaled), k * tau0 > K_SV_CRIT, alpha)
+
+def candidates(criterion, variant):
+    """Every setting a criterion variant chooses from, in grid order."""
+    kind, model = CRITERIA[criterion][:2]
+    if kind == "adiabatic":
+        return [Setting("adiabatic")]
+    if kind == "dvte":
+        p, dvte_kind = (part.strip() for part in variant.removeprefix("p = ").split(","))
+        return [Setting("dvte", p=p, dvte_kind=dvte_kind)]
+
+    alphas = (1.0,) if variant == "lambda raw" else ALPHAS
+    base = Setting(kind, barrier_model=model)
+    if kind == "barrier":
+        return [replace(base, alpha=a, barrier_threshold=t) for a in alphas for t in BARRIER_THRESHOLDS]
+    return [replace(base, alpha=a, k_sv_crit=K_SV_CRIT) for a in alphas]
+
+
+def n_free(options):
+    """Number of setting fields that vary across the candidates, i.e. chosen on the data."""
+    fields = [tuple(getattr(s, f) for s in options) for f in Setting.__dataclass_fields__]
+    return sum(len(set(map(str, values))) > 1 for values in fields)
+
+
+def choose(df, options, source="dft"):
+    """The candidate with the highest MCC; the middle one on a tie."""
+    y = df[pairs.QUENCHES].to_numpy(bool)
+    matrix = np.vstack([predict(df, s, source)[0] for s in options])
+    return options[scoring.best_setting(y, matrix)]
+
+
+def evaluate(df, label, variant, source, settings, n_free_parameters):
+    """One row per setting: the setting, its metrics and its AUC."""
+    y = df[pairs.QUENCHES].to_numpy(bool)
+    rows = []
+    for s in settings:
+        predicted, score_ = predict(df, s, source)
+        rows.append({"criterion": label, "parameters": source, "variant": variant,
+                     "n_free": n_free_parameters,
+                     "alpha": s.alpha if s.kind in ("barrier", "rate") else np.nan,
+                     "barrier_threshold / kcal mol-1": s.barrier_threshold,
+                     "K_SV_crit / M-1": s.k_sv_crit,
+                     **scoring.metrics(y, predicted), "AUC": scoring.auc(y, score_)})
+    return rows
+
+
+def tune(df, label, variant, options, tuned_on=("dft",), given=("ml",), every_setting=True):
+    """Chooses a setting per source in tuned_on and applies it to the sources in given.
+
+    Returns (rows for every candidate on DFT, best rows, [(source, chosen setting)]).
+    """
+    k = n_free(options)
+    every, best, chosen = [], [], []
+    for source in tuned_on:
+        s = choose(df, options, source)
+        if source == "dft" and every_setting:
+            every += evaluate(df, label, variant, source, options, k)
+        best += [{**row, "n_settings": len(options)}
+                 for row in evaluate(df, label, variant, source, [s], k)]
+        chosen.append((source, s))
+        for other in given:
+            best += [{**row, "n_settings": 0} for row in evaluate(df, label, variant, other, [s], k)]
+            chosen.append((other, s))
+    return every, best, chosen
 
 
 def score(df):
-    """(every setting, best setting per criterion) as DataFrames."""
-    y = df[pairs.QUENCHES].to_numpy(bool)
-    groups = df[pairs.PC_NAME].to_numpy()
-    every = list(settings(df))
-
-    rows = [{**_describe(s), **scoring.metrics(y, s.predicted)} for s in every]
-    all_settings = pd.DataFrame(rows)
-
-    best_rows = []
-    for _, members in all_settings.groupby(CRITERION, sort=False):
-        matrix = np.vstack([every[i].predicted for i in members.index])
-        pick = members.index[scoring.best_setting(y, matrix)]
-        held_out, n_chosen = scoring.leave_one_out(y, matrix, groups)
-        held = scoring.metrics(y, held_out)
-        best_rows.append({**all_settings.loc[pick].to_dict(),
-                          "n_settings": len(members),
-                          "MCC_held_out": held["MCC"],
-                          "accuracy_held_out": held["accuracy"],
-                          "settings_chosen_held_out": n_chosen})
-    best = pd.DataFrame(best_rows)
-    best = best.sort_values(["parameters", "criterion", "variant"],
-                            key=lambda c: c.map(CRITERIA.index) if c.name == "criterion" else c)
-    return all_settings, best.reset_index(drop=True)
+    """(every DFT setting, best setting per criterion and source) as DataFrames."""
+    every, best = [], []
+    for criterion, (_, _, variants, tuned_on, given) in CRITERIA.items():
+        for variant in variants:
+            rows, best_rows, _ = tune(df, criterion, variant, candidates(criterion, variant),
+                                      tuned_on, given)
+            every += rows
+            best += best_rows
+    return pd.DataFrame(every), pd.DataFrame(best)
 
 
-def _describe(s: Setting) -> dict:
-    return {"criterion": s.criterion, "parameters": s.parameters, "variant": s.variant,
-            "n_free": s.n_free, "alpha": s.alpha,
-            "barrier_threshold / kcal mol-1": s.barrier_threshold,
-            "K_SV_crit / M-1": K_SV_CRIT if s.criterion.endswith("_rate") else np.nan}
+def chosen_settings(df):
+    """[(criterion, variant, source, setting)] of the benchmark, without scoring every setting."""
+    out = []
+    for criterion, (_, _, variants, tuned_on, given) in CRITERIA.items():
+        for variant in variants:
+            for source in tuned_on:
+                s = choose(df, candidates(criterion, variant), source)
+                out += [(criterion, variant, source, s)] + [(criterion, variant, g, s) for g in given]
+    return out
 
 
 def main():
     table = pairs.load()
     print(pairs.summary(table))
-    all_settings, best = score(pairs.scored(table))
+    every, best = score(pairs.scored(table))
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    all_settings.to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
+    every.to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
     best.to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
 
-    shown = CRITERION + ["n_free", "alpha", "barrier_threshold / kcal mol-1",
-                         "accuracy", "recall", "specificity", "MCC", "MCC_held_out"]
+    shown = ["criterion", "parameters", "variant", "alpha", "barrier_threshold / kcal mol-1",
+             "recall", "specificity", "MCC", "AUC"]
     print()
-    print(best[shown].rename(columns={"barrier_threshold / kcal mol-1": "barrier"})
+    print(best[shown].rename(columns={"barrier_threshold / kcal mol-1": "threshold"})
           .round(3).to_string(index=False))
-    print(f"\n-> {len(all_settings)} settings, {len(best)} criteria in "
+    print(f"\n-> {len(every)} settings, {len(best)} rows in "
           f"{RESULTS.relative_to(pairs.HERE.parent)}")
 
 

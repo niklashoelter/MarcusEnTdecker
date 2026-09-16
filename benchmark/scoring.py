@@ -1,10 +1,11 @@
 """
-Classification metrics, leave-one-photocatalyst-out selection, and rate residuals.
+Classification metrics and the choice of the best setting in a sweep.
 
-Not a script; imported by classification.py and rates.py.
+Not a script; imported by the benchmark and further_analysis scripts.
 """
 
 import numpy as np
+from scipy.stats import rankdata
 
 
 def metrics(y, predicted) -> dict:
@@ -25,6 +26,42 @@ def metrics(y, predicted) -> dict:
     }
 
 
+def auc(y, score) -> float:
+    """ROC AUC: the probability that a random positive scores above a random negative.
+
+    Ties count one half. Higher score means quenching is more likely.
+    """
+    y = np.asarray(y, bool)
+    ranks = rankdata(np.asarray(score, float))
+    n_pos, n_neg = int(y.sum()), int((~y).sum())
+    if not n_pos or not n_neg:
+        return float("nan")
+    return float((ranks[y].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
+
+
+def mcc_rows(y, matrix):
+    """MCC of every row of a (settings x pairs) prediction matrix."""
+    y, matrix = np.asarray(y, bool), np.asarray(matrix, bool)
+    counts = ((matrix & y).sum(axis=1), (matrix & ~y).sum(axis=1),
+              (~matrix & ~y).sum(axis=1), (~matrix & y).sum(axis=1))
+    return _mcc(*counts)
+
+
+def best_setting(y, matrix) -> int:
+    """Row with the highest MCC; among tied rows, the middle one in row order.
+
+    With an even number of tied rows the lower middle is taken.
+    """
+    return best_setting_from_scores(mcc_rows(y, matrix))
+
+
+def best_setting_from_scores(scores) -> int:
+    """Index of the highest score; among tied indices, the (lower) middle one."""
+    scores = np.asarray(scores, float)
+    tied = np.flatnonzero(np.isclose(scores, scores.max(), rtol=0.0, atol=1e-12))
+    return int(tied[(len(tied) - 1) // 2])
+
+
 def _ratio(a, b):
     return a / b if b else float("nan")
 
@@ -35,45 +72,3 @@ def _mcc(tp, fp, tn, fn):
     denominator = np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
     with np.errstate(invalid="ignore", divide="ignore"):
         return np.where(denominator > 0, (tp * tn - fp * fn) / denominator, 0.0)
-
-
-def _counts(y, matrix):
-    """Confusion counts per row of a (settings x pairs) prediction matrix."""
-    return ((matrix & y).sum(axis=1), (matrix & ~y).sum(axis=1),
-            (~matrix & ~y).sum(axis=1), (~matrix & y).sum(axis=1))
-
-
-def best_setting(y, matrix) -> int:
-    """Row index of the setting with the highest MCC; the first one on a tie."""
-    y, matrix = np.asarray(y, bool), np.asarray(matrix, bool)
-    return int(np.argmax(_mcc(*_counts(y, matrix))))
-
-
-def leave_one_out(y, matrix, groups):
-    """Held-out predictions: each group gets the setting that scores best on the others.
-
-    Returns (predictions, number of distinct settings chosen). The held-out predictions
-    are pooled into one confusion matrix by the caller.
-    """
-    y, matrix, groups = np.asarray(y, bool), np.asarray(matrix, bool), np.asarray(groups)
-    total = np.array(_counts(y, matrix))
-    held_out = np.zeros(len(y), bool)
-    chosen = set()
-    for group in np.unique(groups):
-        inside = groups == group
-        rest = total - np.array(_counts(y[inside], matrix[:, inside]))
-        pick = int(np.argmax(_mcc(*rest)))
-        chosen.add(pick)
-        held_out[inside] = matrix[pick, inside]
-    return held_out, len(chosen)
-
-
-def log_residuals(k_predicted, k_measured) -> dict:
-    """RMSE and median bias of log10(k_predicted / k_measured), in decades."""
-    residual = np.log10(np.asarray(k_predicted, float)) - np.log10(np.asarray(k_measured, float))
-    residual = residual[np.isfinite(residual)]
-    return {
-        "n": int(residual.size),
-        "rmse / dex": float(np.sqrt(np.mean(residual ** 2))) if residual.size else float("nan"),
-        "median_bias / dex": float(np.median(residual)) if residual.size else float("nan"),
-    }
