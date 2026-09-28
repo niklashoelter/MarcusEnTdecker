@@ -28,8 +28,8 @@ Reorganization energies are named lambda_<surface>_<geometry>: lambda_S0_T1 is E
 T1 geometry minus E_S0 at its own. Dplus and Dminus are the one-electron oxidized and
 reduced states, the `ox` and `red` folders.
 
-Values are rounded to 1 decimal in kcal/mol and 2 in V, unlike the six significant
-figures used elsewhere in data/.
+Every value is computed from the full-precision energies, potentials from the unrounded
+free energies, and rounded to 2 decimals in kcal/mol and V when written.
 """
 
 import csv
@@ -45,6 +45,7 @@ H_TO_KCAL = 627.509          # Hartree -> kcal/mol
 F_KCAL_PER_V = 23.061        # Faraday constant, kcal mol-1 V-1
 # Absolute SCE potential in V, E = dG/F - 4.42. Same value as in photocatalyst_dft.py.
 SHE_TO_SCE = 4.42
+DECIMALS = 2                 # for kcal/mol and V
 
 STATES = ("S0", "T1", "ox", "red")
 
@@ -70,13 +71,18 @@ def sub(a, b):
 
 
 def to_kcal(hartree):
-    """Hartree difference -> kcal/mol, rounded to 0.1."""
-    return None if hartree is None else round(hartree * H_TO_KCAL, 1)
+    """Hartree difference -> kcal/mol."""
+    return None if hartree is None else hartree * H_TO_KCAL
 
 
 def to_volt(kcal):
-    """kcal/mol -> V vs SCE, rounded to 0.01."""
-    return None if kcal is None else round((kcal / F_KCAL_PER_V) - SHE_TO_SCE, 2)
+    """kcal/mol -> V vs SCE."""
+    return None if kcal is None else (kcal / F_KCAL_PER_V) - SHE_TO_SCE
+
+
+def rounded(x):
+    """A value in kcal/mol or V, to DECIMALS; blank if absent."""
+    return "" if x is None else round(x, DECIMALS)
 
 
 def final_single_point(path):
@@ -175,7 +181,8 @@ def main():
                    if c.startswith(("E_", "lambda", "dG")) and row.get(c) is None]
         if missing:
             incomplete.append((qid, missing))
-        rows.append({c: ("" if row.get(c) is None else row.get(c)) for c in COLUMNS})
+        rows.append({"quencher_id": qid,
+                     **{c: rounded(row.get(c)) for c in COLUMNS if c != "quencher_id"}})
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="", encoding="utf-8") as fh:

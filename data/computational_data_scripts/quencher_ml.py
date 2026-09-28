@@ -9,7 +9,7 @@ Writes  ../computational_data_processed/quencher_properties_ml.xlsx
     uv run --extra ml python data/computational_data_scripts/quencher_ml.py
 
 One row per quencher, with the same layout and headers as `quencher_properties_calc.xlsx`.
-Each predicted value comes with the network's uncertainty. The model's own field names
+Each predicted value comes with the network's uncertainty. Both are rounded to 2 decimals. The model's own field names
 for lambda_S0_T1 and lambda_T1_S0 are `lamda_S_T` and `lamda_T_S`.
 
 The script needs the `ml` package (torch, torch-geometric, rdkit) and the checkpoint
@@ -36,7 +36,7 @@ IDENTIFICATION = "compound_identification.xlsx"
 MODEL = CHECKPOINT.relative_to(ROOT).as_posix()
 
 KCAL = "kcal mol-1"
-SIGFIGS = 6
+DECIMALS = 2                 # for kcal/mol
 
 # (header stem, the model's field name, what it is)
 PREDICTED = [
@@ -52,11 +52,11 @@ UNCERTAINTY = ("Spread of the mixture density network's predicted distribution f
                "value, the model's own uncertainty estimate.")
 
 
-def sig(x, n=SIGFIGS):
-    """Round to six significant figures."""
+def rounded(x):
+    """A value in kcal/mol, to DECIMALS; None if absent."""
     if x is None or x == "":
         return None
-    return 0.0 if float(x) == 0 else float(f"{float(x):.{n}g}")
+    return round(float(x), DECIMALS)
 
 
 def predict_all(smiles):
@@ -93,8 +93,8 @@ def quenchers():
         row = predictions[QUENCHERS[q]["smiles"]]
         table[q] = {}
         for name, source, _ in PREDICTED:
-            table[q][name] = sig(row[source])
-            table[q][f"{name}_uncertainty"] = sig(row[f"{source}_uncertainty"])
+            table[q][name] = rounded(row[source])
+            table[q][f"{name}_uncertainty"] = rounded(row[f"{source}_uncertainty"])
 
     def col(header, name, source, description):
         return Column(header, description, f"{MODEL}: {source}", field(table, name))

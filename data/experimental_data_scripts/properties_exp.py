@@ -17,7 +17,7 @@ Usage: uv run properties_exp.py
 
 Collects the measured properties of each compound from the per-measurement tables in
 the raw folders and writes them in blocks (see ../properties_workbook.py). No values are
-computed here. The workbooks are read by ../build_exp_dataset.py, and the quencher
+computed here; redox potentials are rounded to 2 decimals. The workbooks are read by ../build_exp_dataset.py, and the quencher
 workbook also by ../build_exp_dataset_ent.py for the redox potentials and bound flags.
 The redox table is joined from the hand-edited literature and measured tables by
 quencher_redox_potentials.py.
@@ -43,6 +43,7 @@ TAU0 = RAW / "pc_tcspc" / "lifetimes_tcspc.csv"
 FILTERS = RAW / "stern_volmer" / "plate_reader_filters.csv"
 ABSORPTION = RAW / "quencher_absorption" / "absorption_extinction.csv"
 REDOX = RAW / "quencher_cyclic_voltammetry" / "quencher_redox_potentials.csv"
+DECIMALS = 2                 # for V
 
 
 def epsilon_wavelengths(path):
@@ -122,7 +123,13 @@ def quenchers():
     def col(header, table, path, name, description):
         return Column(header, description, src(path, name), field(table, name))
 
-    epsilon = [col(f"epsilon_{nm} / mM-1 cm-1", absorption, ABSORPTION,
+    def volts(header, name, description):
+        """A redox-potential column, to DECIMALS."""
+        value = field(redox, name)
+        return Column(header, description, src(REDOX, name),
+                      lambda i: None if value(i) is None else round(value(i), DECIMALS))
+
+    epsilon =[col(f"epsilon_{nm} / mM-1 cm-1", absorption, ABSORPTION,
                    f"epsilon_{nm}_mM-1cm-1", f"Molar extinction coefficient at {nm} nm.")
                for nm in epsilon_wavelengths(ABSORPTION)]
     epsilon.append(col("max_read_rsd / %", absorption, ABSORPTION, "max_read_rsd_percent",
@@ -140,13 +147,13 @@ def quenchers():
             identity("smiles", QUENCHERS, "Quenchers", "smiles", "Structure."),
         ]),
         Block("Redox potentials / V vs SCE", [
-            col("E_Ox_vs_SCE_exp / V", redox, REDOX, "E_Ox_vs_SCE_V",
-                "Oxidation potential, or a limit where E_Ox_bound is set."),
+            volts("E_Ox_vs_SCE_exp / V", "E_Ox_vs_SCE_V",
+                  "Oxidation potential, or a limit where E_Ox_bound is set."),
             col("E_Ox_bound", redox, REDOX, "E_Ox_bound",
                 "'>': no oxidation within the window, the potential lies above the value "
                 "given. Blank: a measured value."),
-            col("E_Red_vs_SCE_exp / V", redox, REDOX, "E_Red_vs_SCE_V",
-                "Reduction potential, or a limit where E_Red_bound is set."),
+            volts("E_Red_vs_SCE_exp / V", "E_Red_vs_SCE_V",
+                  "Reduction potential, or a limit where E_Red_bound is set."),
             col("E_Red_bound", redox, REDOX, "E_Red_bound",
                 "'<': no reduction within the window, the potential lies below the value "
                 "given. Blank: a measured value."),

@@ -29,6 +29,9 @@ the triplet is.
 
 Photocatalysts are numbered by old id. Those excluded from the data are skipped
 (../compound_identification.py).
+
+Values in kcal/mol and V are computed from the full-precision energies and rounded to 2
+decimals when written. Energies in Hartree are copied as ORCA prints them.
 """
 
 from __future__ import annotations
@@ -45,6 +48,7 @@ HARTREE_KCAL_E_T = 627.503      # for E_T
 HARTREE_KCAL = 627.509          # for every other energy difference
 FARADAY_KCAL_V = 23.061
 SCE_ABSOLUTE_V = 4.42
+DECIMALS = 2                    # for kcal/mol and V
 
 # Old ids of the photocatalysts in the data.
 sys.path.insert(0, str(ROOT))
@@ -118,6 +122,11 @@ def blank(x):
     return "" if x is None else x
 
 
+def rounded(x):
+    """A value in kcal/mol or V, to DECIMALS; blank if absent."""
+    return "" if x is None else round(x, DECIMALS)
+
+
 def main():
     if not RAW.is_dir():
         sys.exit(f"missing input: {RAW}\nthe raw job files are not in git; fetch the deposit")
@@ -175,17 +184,17 @@ def main():
             "pc_id": pc_id,
             "n_atoms": count_atoms(pc_dir / "S0" / "opt_geometry.xyz") or "",
             "charge": blank(charge),
-            "E_T / kcal mol-1": blank(e_t),
-            "lambda_S0_T1 / kcal mol-1": blank(lam("E_S0_at_T1geom", "E_S0")),
-            "lambda_T1_S0 / kcal mol-1": blank(lam("E_T1_at_S0geom", "E_T1")),
-            "lambda_S0_Dplus / kcal mol-1": blank(lam("E_S0_at_oxgeom", "E_S0")),
-            "lambda_Dplus_S0 / kcal mol-1": blank(lam("E_ox_at_S0geom", "E_ox")),
-            "lambda_S0_Dminus / kcal mol-1": blank(lam("E_S0_at_redgeom", "E_S0")),
-            "lambda_Dminus_S0 / kcal mol-1": blank(lam("E_red_at_S0geom", "E_red")),
-            "dG_ox_ES / kcal mol-1": blank(dg_ox),
-            "dG_red_ES / kcal mol-1": blank(dg_red),
-            "E_PCstar_PCminus / V": blank(e_star_minus),
-            "E_PCplus_PCstar / V": blank(e_plus_star),
+            "E_T / kcal mol-1": rounded(e_t),
+            "lambda_S0_T1 / kcal mol-1": rounded(lam("E_S0_at_T1geom", "E_S0")),
+            "lambda_T1_S0 / kcal mol-1": rounded(lam("E_T1_at_S0geom", "E_T1")),
+            "lambda_S0_Dplus / kcal mol-1": rounded(lam("E_S0_at_oxgeom", "E_S0")),
+            "lambda_Dplus_S0 / kcal mol-1": rounded(lam("E_ox_at_S0geom", "E_ox")),
+            "lambda_S0_Dminus / kcal mol-1": rounded(lam("E_S0_at_redgeom", "E_S0")),
+            "lambda_Dminus_S0 / kcal mol-1": rounded(lam("E_red_at_S0geom", "E_red")),
+            "dG_ox_ES / kcal mol-1": rounded(dg_ox),
+            "dG_red_ES / kcal mol-1": rounded(dg_red),
+            "E_PCstar_PCminus / V": rounded(e_star_minus),
+            "E_PCplus_PCstar / V": rounded(e_plus_star),
             **{f"{k} / Ha": blank(printed.get(k)) for k in JOBS},
             **{f"G_corr_{k[2:]} / Ha": blank(gibbs.get(k)) for k in OPTIMIZATIONS},
             **{f"n_imag_{k[2:]}": imag.get(k, "") for k in OPTIMIZATIONS},

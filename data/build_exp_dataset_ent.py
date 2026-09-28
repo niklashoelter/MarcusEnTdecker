@@ -35,6 +35,9 @@ Properties
     as predicted by the ML model, with the model's uncertainty; the model covers organic molecules only, so there are
     no predicted photocatalyst values. dG_EnT = E_T(Q) - E_T(PC). A value the source does
     not have stays blank.
+
+Values in kcal/mol and V are written to 2 decimals. The SET differences are rounded the
+same way before they are compared with 0.25 V.
 """
 
 import csv
@@ -44,7 +47,7 @@ from pathlib import Path
 DATA = Path(__file__).resolve().parent
 sys.path.insert(0, str(DATA))
 
-from build_exp_dataset import COLUMNS as EXP_COLUMNS, LAYOUT as EXP_LAYOUT, load, number, sig  # noqa: E402
+from build_exp_dataset import COLUMNS as EXP_COLUMNS, LAYOUT as EXP_LAYOUT, load, number  # noqa: E402
 from properties_workbook import Block, Column, write_workbook  # noqa: E402
 
 EXP_DATASET = DATA / "exp_dataset.csv"
@@ -56,6 +59,7 @@ OUT_CSV = DATA / "exp_dataset_ent.csv"
 OUT_XLSX = DATA / "exp_dataset_ent.xlsx"
 
 SET_EXCLUSION_V = 0.25
+DECIMALS = 2                                    # for kcal/mol and V
 DVTE_P = ("0.005", "0.008", "0.01", "0.015")   # quantiles of the vertical gaps
 
 # (block, [(column, description, source)]) for the columns added to exp_dataset's.
@@ -129,6 +133,17 @@ def difference(a, b):
     return a - b if None not in (a, b) else None
 
 
+def rounded(x):
+    """A value in kcal/mol or V, to DECIMALS; None stays None."""
+    return None if x is None else round(x, DECIMALS)
+
+
+def cell(x):
+    """rounded(x) as a table cell, blank if absent."""
+    x = rounded(x)
+    return "" if x is None else x
+
+
 def set_ruled_out(channels):
     """True if at least one channel is measured and every measured one is past the rule."""
     measured = [value for value in channels if value is not None]
@@ -154,8 +169,10 @@ def main():
             pc, qc = pc_calc.get(int(pair["pc_new_id"])), q_calc.get(int(pair["quencher_id"]))
             qe, qm = q_exp.get(int(pair["quencher_id"])), q_ml.get(int(pair["quencher_id"]))
 
-            de_ox = difference(number(qe, "E_Ox_vs_SCE_exp / V"), number(pc, "E_PCstar_PCminus / V"))
-            de_red = difference(number(pc, "E_PCplus_PCstar / V"), number(qe, "E_Red_vs_SCE_exp / V"))
+            de_ox = rounded(difference(number(qe, "E_Ox_vs_SCE_exp / V"),
+                                       number(pc, "E_PCstar_PCminus / V")))
+            de_red = rounded(difference(number(pc, "E_PCplus_PCstar / V"),
+                                        number(qe, "E_Red_vs_SCE_exp / V")))
             if pair["quenches"] == "1" and not set_ruled_out([de_ox, de_red]):
                 dropped += 1
                 continue
@@ -164,27 +181,27 @@ def main():
             q_e_t_dft, q_e_t_ml = number(qc, "E_T / kcal mol-1"), number(qm, "E_T / kcal mol-1")
             rows.append({
                 **{name: pair[name] for name in EXP_COLUMNS},
-                "dE_SET_ox / V": sig(de_ox),
+                "dE_SET_ox / V": cell(de_ox),
                 "dE_SET_ox_bound": ">" if de_ox is not None and qe.get("E_Ox_bound") else "",
-                "dE_SET_red / V": sig(de_red),
+                "dE_SET_red / V": cell(de_red),
                 "dE_SET_red_bound": ">" if de_red is not None and qe.get("E_Red_bound") else "",
-                "pc_E_T_dft / kcal mol-1": sig(pc_e_t),
-                "pc_lambda_S0_T1_dft / kcal mol-1": sig(number(pc, "lambda_S0_T1 / kcal mol-1")),
-                "pc_lambda_T1_S0_dft / kcal mol-1": sig(number(pc, "lambda_T1_S0 / kcal mol-1")),
-                "q_E_T_dft / kcal mol-1": sig(q_e_t_dft),
-                "q_lambda_S0_T1_dft / kcal mol-1": sig(number(qc, "lambda_S0_T1 / kcal mol-1")),
-                "q_lambda_T1_S0_dft / kcal mol-1": sig(number(qc, "lambda_T1_S0 / kcal mol-1")),
-                "q_dvte_mu / kcal mol-1": sig(number(qc, "dvte_mu / kcal mol-1")),
-                "q_dvte_std / kcal mol-1": sig(number(qc, "dvte_std / kcal mol-1")),
-                **{f"q_dvte_{p}{kind} / kcal mol-1": sig(number(qc, f"dvte_{p}{kind} / kcal mol-1"))
+                "pc_E_T_dft / kcal mol-1": cell(pc_e_t),
+                "pc_lambda_S0_T1_dft / kcal mol-1": cell(number(pc, "lambda_S0_T1 / kcal mol-1")),
+                "pc_lambda_T1_S0_dft / kcal mol-1": cell(number(pc, "lambda_T1_S0 / kcal mol-1")),
+                "q_E_T_dft / kcal mol-1": cell(q_e_t_dft),
+                "q_lambda_S0_T1_dft / kcal mol-1": cell(number(qc, "lambda_S0_T1 / kcal mol-1")),
+                "q_lambda_T1_S0_dft / kcal mol-1": cell(number(qc, "lambda_T1_S0 / kcal mol-1")),
+                "q_dvte_mu / kcal mol-1": cell(number(qc, "dvte_mu / kcal mol-1")),
+                "q_dvte_std / kcal mol-1": cell(number(qc, "dvte_std / kcal mol-1")),
+                **{f"q_dvte_{p}{kind} / kcal mol-1": cell(number(qc, f"dvte_{p}{kind} / kcal mol-1"))
                    for p in DVTE_P for kind in ("", "_kde")},
-                "q_E_T_ml / kcal mol-1": sig(q_e_t_ml),
-                "q_lambda_S0_T1_ml / kcal mol-1": sig(number(qm, "lambda_S0_T1 / kcal mol-1")),
-                "q_lambda_T1_S0_ml / kcal mol-1": sig(number(qm, "lambda_T1_S0 / kcal mol-1")),
-                **{f"q_{name}_ml_uncertainty / kcal mol-1": sig(number(qm, f"{name}_uncertainty / kcal mol-1"))
+                "q_E_T_ml / kcal mol-1": cell(q_e_t_ml),
+                "q_lambda_S0_T1_ml / kcal mol-1": cell(number(qm, "lambda_S0_T1 / kcal mol-1")),
+                "q_lambda_T1_S0_ml / kcal mol-1": cell(number(qm, "lambda_T1_S0 / kcal mol-1")),
+                **{f"q_{name}_ml_uncertainty / kcal mol-1": cell(number(qm, f"{name}_uncertainty / kcal mol-1"))
                    for name in ("E_T", "lambda_S0_T1", "lambda_T1_S0")},
-                "dG_EnT_dft / kcal mol-1": sig(difference(q_e_t_dft, pc_e_t)),
-                "dG_EnT_ml / kcal mol-1": sig(difference(q_e_t_ml, pc_e_t)),
+                "dG_EnT_dft / kcal mol-1": cell(difference(q_e_t_dft, pc_e_t)),
+                "dG_EnT_ml / kcal mol-1": cell(difference(q_e_t_ml, pc_e_t)),
             })
 
     with OUT_CSV.open("w", newline="", encoding="utf-8") as fh:

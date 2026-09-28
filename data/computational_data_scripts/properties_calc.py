@@ -103,8 +103,7 @@ def photocatalysts():
     ]
     note = """
         One row per photocatalyst in the screen, sorted by new_id; the raw files use old_id.
-        Every value is computed from the ORCA outputs. Old PC19 (new 17) lacks four single
-        points, so four of its lambdas are blank. Total energies, Gibbs corrections and
+        Every value is computed from the ORCA outputs. Total energies, Gibbs corrections and
         frequency checks are in computational_data_raw/photocatalysts/photocatalyst_dft.csv.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
@@ -168,7 +167,7 @@ def quenchers():
         ]),
     ]
     note = """
-        One row per quencher. DFT values are rounded to 1 decimal in kcal/mol and 2 in V.
+        One row per quencher. DFT values are rounded to 2 decimals in kcal/mol and V.
         The energies behind each value are in the deposited ORCA outputs under
         computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/, and every sampled gap in
         computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz.

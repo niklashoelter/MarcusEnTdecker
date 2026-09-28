@@ -101,7 +101,7 @@ drops it.
 
 `quenches` is 1 if the Stern–Volmer fit meets any one of these thresholds:
 K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
-`stern_volmer_fits.csv` records which one applied. 735 of 1296 pairs quench.
+`stern_volmer_fits.csv` records which one applied.
 Pairs that do not quench have `censored = 1`: their true K_SV is below what was
 detectable, so their k_q is an upper bound.
 
@@ -143,7 +143,6 @@ literature. Each quencher is entered in one of two files, `quencher_redox_measur
 (source `CV`) or `quencher_redox_literature.csv` (a DOI, or `estimated`), and
 `quencher_redox_potentials.py` joins them into `quencher_redox_potentials.csv`. Each row
 has a bound column (`>` or `<` where the value is a limit) and a free-text `comment`.
-Only Q32 and Q33 are estimated.
 
 **Photocatalyst lifetimes** come from one TCSPC trace per photocatalyst. τ0 and its error
 are the value and standard error of a single-exponential fit, started after the pulse.

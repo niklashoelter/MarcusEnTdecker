@@ -24,6 +24,9 @@ quencher_dvte_samples.csv.gz.
     dvte_mu, dvte_std   mean and standard deviation of the gaps
     dvte_<p>            p-quantile of a normal distribution, mu + Phi^-1(p) * std
     dvte_<p>_kde        p-quantile of a Gaussian KDE of the gaps, bandwidth by Scott's rule
+
+The statistics are computed from the unrounded gaps. Gaps and statistics are written in
+kcal/mol to 2 decimals, the single point energies in Hartree as ORCA prints them.
 """
 
 import csv
@@ -46,7 +49,7 @@ OUT_SAMPLES = OUT_DIR / "quencher_dvte_samples.csv.gz"
 
 H_TO_KCAL = 627.509
 THRESHOLDS = (0.005, 0.008, 0.01, 0.015)
-SIGFIGS = 6
+DECIMALS = 2                 # for kcal/mol
 
 MEMBER = re.compile(r"milo_q(\d+)/md_(\d+)/step_(\d+)/output_([13])\.out$")
 ENERGY = re.compile(rb"FINAL SINGLE POINT ENERGY\s+(-?\d+\.\d+)")
@@ -56,10 +59,9 @@ COLUMNS = (["quencher_id", "n_samples", "n_trajectories", "dvte_mu", "dvte_std"]
            + [f"dvte_{p}_kde" for p in THRESHOLDS])
 
 
-def sig(x, n=SIGFIGS):
-    if x is None:
-        return ""
-    return 0.0 if x == 0 else float(f"{float(x):.{n}g}")
+def rounded(x):
+    """A value in kcal/mol, to DECIMALS; blank if absent."""
+    return "" if x is None else round(x, DECIMALS)
 
 
 def normal_ppf(p):
@@ -153,7 +155,7 @@ def main():
                 trajectories.add(md)
                 sample_rows.append({"quencher_id": qid, "md_run": md, "step": step,
                                     "E_singlet_Eh": pair["1"], "E_triplet_Eh": pair["3"],
-                                    "gap_kcal": sig(gap)})
+                                    "gap_kcal": rounded(gap)})
         if len(gaps) < 2:
             print(f"  Q{qid}: only {len(gaps)} paired steps, skipped")
             continue
@@ -163,10 +165,10 @@ def main():
         bandwidth = sd * len(gaps) ** (-1 / 5)      # Scott's rule
         row = {"quencher_id": qid, "n_samples": len(gaps),
                "n_trajectories": len(trajectories),
-               "dvte_mu": sig(mu), "dvte_std": sig(sd)}
+               "dvte_mu": rounded(mu), "dvte_std": rounded(sd)}
         for p in THRESHOLDS:
-            row[f"dvte_{p}"] = sig(mu + normal_ppf(p) * sd)
-            row[f"dvte_{p}_kde"] = sig(kde_quantile(gaps, p, bandwidth))
+            row[f"dvte_{p}"] = rounded(mu + normal_ppf(p) * sd)
+            row[f"dvte_{p}_kde"] = rounded(kde_quantile(gaps, p, bandwidth))
         rows.append(row)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)

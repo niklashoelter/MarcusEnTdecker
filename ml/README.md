@@ -125,20 +125,20 @@ not what `k_ent` reports.
 
 `RatePredictor(lambda_scale=...)` scales the predicted reorganization energies before
 they reach the barrier. It defaults to 1.0 — raw prediction, nothing silently applied
-— but 1.0 is known to over-estimate the barrier; a scale of roughly 0.3–0.5 follows
-from the classical Marcus barrier's own assumptions. Set it deliberately.
+— but 1.0 is known to over-estimate the barrier. Set it deliberately; the benchmark's
+tuned scale factors are in its result files, not here.
 
 ## Where it is least trustworthy
 
-Over the 48 screened quenchers, which also have independently computed DFT triplet
-energies, the error is concentrated rather than spread (MAE 4.3, RMSE 9.2 kcal/mol).
-Four of the five worst are dichalcogenides — Q10 and Q11 (disulfides), Q17 and Q45
-(selenium compounds) — all predicted 19–33 kcal/mol above DFT. The likely explanation
-is that the DFT is wrong there: an S–S or Se–Se triplet is dissociative, so an
-adiabatic triplet optimisation returns something closer to a homolysis energy. Q45's
-DFT λ_S→T of 105 kcal/mol against a triplet energy of 48 says the same. Selenium is in
-the vocabulary, so these are not silently rejected inputs. Check those four DFT entries
-before trusting either number for them.
+The screened quenchers also have DFT triplet energies (`q_E_T_dft` and `q_E_T_ml` in
+`data/exp_dataset_ent.csv`), and the difference between the two is concentrated rather
+than spread: the largest deviations are dichalcogenides — disulfides and selenium
+compounds — predicted well above DFT. The likely explanation is that the DFT is wrong
+there: an S–S or Se–Se triplet is dissociative, so an adiabatic triplet optimisation
+returns something closer to a homolysis energy, and their DFT reorganization energies
+are implausibly large for the same reason. Selenium is in the vocabulary, so these are
+not silently rejected inputs. Check those DFT entries before trusting either number for
+them.
 
 ## Training
 
