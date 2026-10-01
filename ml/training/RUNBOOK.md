@@ -53,14 +53,14 @@ skips finished steps and refuses to replace a model file.
 
 ```
 git pull
-git sparse-checkout set ml        # leaves only ml/ and the root files on disk
 uv sync --extra ml
 uv run --extra ml python -m ml.training.campaign check
 ```
 
+The whole repository is checked out; the scope rule above keeps the work inside `ml/`.
 `check` prints the torch version, the GPUs torch sees and the last commit, and confirms that
 no file outside `ml/results/` has been changed. Pushing needs git credentials for the
-repository on this machine. `git sparse-checkout disable` brings the other folders back.
+repository on this machine.
 
 ## The loop
 
