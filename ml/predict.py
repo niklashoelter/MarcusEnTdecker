@@ -251,6 +251,9 @@ class RatePredictor:
     The model is loaded once, on the first prediction, and reused. Properties are
     cached per structure, so screening many quenchers against one photocatalyst costs
     one forward pass for the photocatalyst rather than one per pair.
+
+    With `ensemble=True` the properties come from `ml.ensemble`, the five random-split
+    models combined, instead of the single deployed model.
     """
 
     def __init__(
@@ -261,6 +264,7 @@ class RatePredictor:
         k_diff: float = K_DIFF_ACETONITRILE,
         lambda_scale: float = 1.0,
         quenching_threshold: float = K_Q_THRESHOLD,
+        ensemble: bool = False,
     ):
         self.model_path = model_path
         self.device = device
@@ -268,6 +272,7 @@ class RatePredictor:
         self.k_diff = k_diff
         self.lambda_scale = lambda_scale
         self.quenching_threshold = quenching_threshold
+        self.ensemble = ensemble
         self._cache: dict[str, MolecularProperties] = {}
 
     # -- properties -------------------------------------------------------------
@@ -281,7 +286,10 @@ class RatePredictor:
         missing = [s for s in dict.fromkeys(wanted) if s not in self._cache]
 
         if missing:
-            from ml.prediction import predict as _predict
+            if self.ensemble:
+                from ml.ensemble import predict as _predict
+            else:
+                from ml.prediction import predict as _predict
 
             frame = _predict(missing)
             for _, row in frame.iterrows():
@@ -294,7 +302,7 @@ class RatePredictor:
                     lambda_T_S=float(row["lamda_T_S"]),
                     lambda_T_S_uncertainty=float(row["lamda_T_S_uncertainty"]),
                     spin_density=list(row["spin_map"]),
-                    source="model",
+                    source="ensemble" if self.ensemble else "model",
                 )
 
         return [self._cache[s] for s in wanted]

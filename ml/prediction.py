@@ -29,10 +29,13 @@ def predict(smiles_list: Iterable[str]) -> pd.DataFrame:
       - lamda_T_S                        (in kcal/mol)
       - spin_map                         (dict: atom_idx -> spin density) [internal usage, hidden in table]
     """
-    from rdkit import Chem
-
     graph_output, node_output = collect_results(smiles_list)
+    return frame(smiles_list, graph_output, node_output)
 
+
+def frame(smiles_list, graph_output, node_output) -> pd.DataFrame:
+    """The prediction table of `predict`, from the graph and node outputs of a model."""
+    from rdkit import Chem
 
     graph_predictions, graph_uncertainties = graph_output['predictions'], graph_output['uncertainties']
     g_mu, g_sigma, g_pi = graph_output['mdn_params']['mu'], graph_output['mdn_params']['sigma'], graph_output['mdn_params']['pi']

@@ -97,6 +97,50 @@ def predict(model, loader, device, scaler, mode='mixture_mean'):
 
 _global_model_cache = None
 
+def build_model(checkpoint, device, smiles, batch_size=48):
+    '''
+    The GraphMDN a loaded checkpoint describes, with its weights in place.
+
+    :param checkpoint: The dictionary torch.load returns for a checkpoint.
+    :param device: Device to build the model on.
+    :param smiles: List of SMILES whose first batch initialises the lazy layers.
+    :param batch_size: Batch size of that first batch.
+    '''
+    model = GraphMDN(
+        encoder_type=checkpoint['model_config']['encoder_type'],
+        node_hidden_dim=checkpoint['model_config']['node_hidden_dim'],
+        encoder_layers=checkpoint['model_config']['encoder_layers'],
+        encoder_dropout=checkpoint['model_config']['encoder_dropout'],
+        num_graph_tasks=checkpoint['model_config']['num_graph_tasks'],
+        num_node_tasks=checkpoint['model_config']['num_node_tasks'],
+        n_components=checkpoint['model_config']['n_components'],
+        mdn_hidden_dims=checkpoint['model_config']['mdn_hidden_dims'],
+        mdn_dropout=checkpoint['model_config']['mdn_dropout'],
+        mdn_activation=checkpoint['model_config']['mdn_activation'],
+        use_batch_norm=checkpoint['model_config']['use_batch_norm'],
+        epsilon=checkpoint['model_config']['epsilon'],
+        device=device,
+        num_heads=checkpoint['model_config']['num_heads'],
+        pe_dim=checkpoint['model_config']['pe_dim'],
+        walk_length=checkpoint['model_config']['walk_length']
+    )
+
+    if len(smiles) == 1: #Workaround for lazy initialization
+        init_smiles = list(smiles)
+        init_smiles.append(smiles[0]) #Duplicate the single SMILES to create a batch of 2
+    else:
+        init_smiles = smiles
+
+    init_dataset = MoleculeDataset(init_smiles, positional_encoding_kwargs=checkpoint['model_config'])
+    init_loader = DataLoader(init_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn)
+
+    sample_batch = next(iter(init_loader))
+    sample_batch = sample_batch.to(device)
+    model(sample_batch)
+
+    model.load_state_dict(checkpoint['model_state_dict'])
+    return model
+
 def get_predictions(smiles: list,
                     model_path: Path = Path(
                         '/tmp/pyRates/playground/model_setup/save_model_and_inspect/new_data/graph_gps/new_loss/checkpoints/model.pt'),
@@ -122,43 +166,8 @@ def get_predictions(smiles: list,
             checkpoint = torch.load(model_path, map_location='cpu')
         else:
             checkpoint = torch.load(str(model_path))
-        encoder_args = checkpoint['model_config']['encoder_args'] if 'encoder_args' in checkpoint['model_config'] else {}
-
-        model = GraphMDN(
-            encoder_type=checkpoint['model_config']['encoder_type'],
-            node_hidden_dim=checkpoint['model_config']['node_hidden_dim'],
-            encoder_layers=checkpoint['model_config']['encoder_layers'],
-            encoder_dropout=checkpoint['model_config']['encoder_dropout'],
-            num_graph_tasks=checkpoint['model_config']['num_graph_tasks'],
-            num_node_tasks=checkpoint['model_config']['num_node_tasks'],
-            n_components=checkpoint['model_config']['n_components'],
-            mdn_hidden_dims=checkpoint['model_config']['mdn_hidden_dims'],
-            mdn_dropout=checkpoint['model_config']['mdn_dropout'],
-            mdn_activation=checkpoint['model_config']['mdn_activation'],
-            use_batch_norm=checkpoint['model_config']['use_batch_norm'],
-            epsilon=checkpoint['model_config']['epsilon'],
-            device=device,
-            num_heads=checkpoint['model_config']['num_heads'],
-            pe_dim=checkpoint['model_config']['pe_dim'],
-            walk_length=checkpoint['model_config']['walk_length']
-        )
-
         print(f"Loading {len(smiles)} molecules for prediction")
-
-        if len(smiles) == 1: #Workaround for lazy initialization
-            init_smiles = smiles.copy()
-            init_smiles.append(smiles[0]) #Duplicate the single SMILES to create a batch of 2
-        else:
-            init_smiles = smiles
-
-        init_dataset = MoleculeDataset(init_smiles, positional_encoding_kwargs=checkpoint['model_config'])
-        init_loader = DataLoader(init_dataset, batch_size=BATCH_SIZE, shuffle=False, collate_fn=collate_fn)
-
-        sample_batch = next(iter(init_loader))
-        sample_batch = sample_batch.to(device)
-        model(sample_batch)
-
-        model.load_state_dict(checkpoint['model_state_dict'])
+        model = build_model(checkpoint, device, smiles, batch_size=BATCH_SIZE)
         scaler = checkpoint['scaler']
 
         _global_model_cache = (model, scaler, checkpoint)

@@ -4,6 +4,9 @@
     ent-ml rate --quencher ...  driving force, Marcus barrier and k_EnT for one pair
     ent-ml info                 which checkpoint is loaded, and what it can encode
 
+`predict` and `rate` take `--ensemble` to use the five random-split models together
+(ml.ensemble) instead of the single deployed checkpoint.
+
 Reads SMILES from the command line or from a file, and the photocatalyst table from a
 path the caller gives -- this package ships neither. Writes a table, CSV or JSON, to
 stdout or to `--out`. Torch is imported only where it is needed, so `--help` is free.
@@ -75,6 +78,10 @@ def _predict(args) -> None:
     if not smiles:
         raise ValueError("no SMILES given; pass them as arguments or with --file")
 
+    if args.ensemble:
+        _emit(_ensemble_rows(_valid(smiles)), args.format, args.out)
+        return
+
     with _quiet_model():
         predicted = RatePredictor().properties(_valid(smiles))
 
@@ -88,12 +95,32 @@ def _predict(args) -> None:
     _emit(rows, args.format, args.out)
 
 
+def _ensemble_rows(smiles: list[str]) -> list[dict]:
+    """The rows of `predict`, from the ensemble, with the spread between its members."""
+    from ml.ensemble import predict as ensemble_predict
+
+    with _quiet_model():
+        table = ensemble_predict(smiles)
+    names = {"E_T": "triplet_energy_adiabatic", "lambda_S_T": "lamda_S_T",
+             "lambda_T_S": "lamda_T_S"}
+    rows = []
+    for _, r in table.iterrows():
+        row = {"smiles": r["smiles"]}
+        for label, column in names.items():
+            row[label] = float(r[column])
+            row[f"{label}_uncertainty"] = float(r[f"{column}_uncertainty"])
+            row[f"{label}_model_spread"] = float(r[f"{column}_model_spread"])
+        row["n_models"] = int(r["n_models"])
+        rows.append(row)
+    return rows
+
+
 def _rate(args) -> None:
     quencher = _valid([args.quencher])[0]
     photocatalyst = photocatalyst_properties(args.photocatalysts, args.photocatalyst)
     with _quiet_model():
-        result = RatePredictor(lambda_scale=args.lambda_scale).predict(photocatalyst,
-                                                                      quencher)
+        result = RatePredictor(lambda_scale=args.lambda_scale,
+                               ensemble=args.ensemble).predict(photocatalyst, quencher)
     _emit([{"photocatalyst": result.photocatalyst,
             "quencher": result.quencher,
             "dG_kcal": result.dG_kcal,
@@ -136,6 +163,8 @@ def build_parser() -> argparse.ArgumentParser:
     predict.add_argument("smiles", nargs="*")
     predict.add_argument("--file", metavar="PATH",
                          help="read SMILES from this file, one per line")
+    predict.add_argument("--ensemble", action="store_true",
+                         help="use the five random-split models together")
     predict.set_defaults(run=_predict)
 
     rate = commands.add_parser("rate", parents=[shared],
@@ -147,6 +176,8 @@ def build_parser() -> argparse.ArgumentParser:
                       help="new_id of the row to use; omit only if the table has one row")
     rate.add_argument("--lambda-scale", type=float, default=1.0, metavar="X",
                       help="scales the predicted reorganization energies (default 1.0)")
+    rate.add_argument("--ensemble", action="store_true",
+                      help="use the five random-split models together")
     rate.set_defaults(run=_rate)
 
     info = commands.add_parser("info", help="the loaded checkpoint and its vocabulary")
