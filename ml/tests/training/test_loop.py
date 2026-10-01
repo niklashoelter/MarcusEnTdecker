@@ -1,7 +1,7 @@
 import torch
 import pytest
 from unittest.mock import MagicMock
-from ml.model.training import compute_loss
+from ml.training.loop import compute_loss
 
 class MockBatch:
     def __init__(self, batch_size=2, num_nodes=4):

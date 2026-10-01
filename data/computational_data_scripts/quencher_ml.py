@@ -2,7 +2,7 @@
 Quencher SMILES -> the graph MDN's triplet energy and reorganization energies.
 
 Reads   ../compound_identification.xlsx                (ids, names, SMILES)
-        ../../ml/data/model.pt                         (the trained checkpoint)
+        ../../ml/data/model_final.pt                   (the trained checkpoint)
 Writes  ../computational_data_processed/quencher_properties_ml.xlsx
 
     uv sync --extra ml
@@ -13,9 +13,9 @@ Each predicted value comes with the network's uncertainty. Both are rounded to 2
 for lambda_S0_T1 and lambda_T1_S0 are `lamda_S_T` and `lamda_T_S`.
 
 The script needs the `ml` package (torch, torch-geometric, rdkit) and the checkpoint
-ml/data/model.pt, so it is not a stage of `uv run reproduce.py data`. The workbook is in
-git. Per-atom spin densities and mixture parameters are not written; `ml.prediction.predict`
-returns both.
+ml/data/model_final.pt, so it is not a stage of `uv run reproduce.py data`. The workbook
+is in git. Per-atom spin densities and mixture parameters are not written;
+`ml.prediction.predict` returns both.
 """
 
 import sys
@@ -28,7 +28,7 @@ from compound_identification import QUENCHERS  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
 ROOT = DATA.parent
-CHECKPOINT = ROOT / "ml" / "data" / "model.pt"
+CHECKPOINT = ROOT / "ml" / "data" / "model_final.pt"
 OUT = DATA / "computational_data_processed" / "quencher_properties_ml.xlsx"
 Q_DFT = DATA / "computational_data_raw" / "quencher_adiabatic_DFT" / "quencher_dft.csv"
 
@@ -122,7 +122,7 @@ def quenchers():
     ]
     note = """
         One row per quencher, predicted from the SMILES alone by the graph mixture density
-        network in ml/data/model.pt. The same three quantities from DFT are in
+        network in ml/data/model_final.pt. The same three quantities from DFT are in
         quencher_properties_calc.xlsx under the same headers.
         Written by computational_data_scripts/quencher_ml.py, which needs the ml extra and
         is not a stage of reproduce.py.

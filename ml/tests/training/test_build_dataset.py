@@ -5,7 +5,7 @@ import tempfile
 import os
 import ast
 from pathlib import Path
-from ml.utilities.dataset.data_loader import DataLoader
+from ml.training.build_dataset import DataLoader
 
 @pytest.fixture
 def sample_csv():

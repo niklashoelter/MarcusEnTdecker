@@ -1,7 +1,7 @@
 import torch
 import pytest
 from rdkit import Chem
-from ml.utilities.dataset.graph_construction import smiles_to_graph, UnknownAtomError
+from ml.utils.graph_construction import smiles_to_graph, UnknownAtomError
 
 def test_smiles_to_graph_methane():
     smiles = "C"

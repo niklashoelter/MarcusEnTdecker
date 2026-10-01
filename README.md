@@ -46,7 +46,7 @@ left, so any number in the paper can be traced to the instrument file it came fr
 following that chain in one direction. The packages are held to the same rule from the
 other side: neither `ml` nor `webapp` may read anything under `data/` or `benchmark/`,
 and `ml` may not import `webapp`. Each package carries its own resources instead —
-`ml/data/model.pt`, `webapp/data/` — and reads them with `importlib.resources`.
+`ml/data/model_final.pt`, `webapp/data/` — and reads them with `importlib.resources`.
 `webapp/tests/test_no_reverse_dependency.py` is what keeps that from regressing.
 Figures and generated tables will be made inside `benchmark/`, from its output.
 
@@ -131,8 +131,8 @@ result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.quenches
 The models are not this repository's work. They are
 [pyrates](https://github.com/le-schlo/pyrates), by **Leon Schlosser**, MIT licensed,
 and they are carried here as the `ml` package — including the trained checkpoint at
-`ml/data/model.pt` that the web application serves. His licence is kept alongside it as
-`ml/LICENSE-pyrates` and must travel with any redistribution.
+`ml/data/model_final.pt` that the web application serves. His licence is kept alongside
+it as `ml/LICENSE-pyrates` and must travel with any redistribution.
 
 It is carried in this repository rather than pinned as a remote dependency because the
 paper's numbers have to stay reproducible after the library moves on, and because the

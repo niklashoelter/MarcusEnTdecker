@@ -1,12 +1,12 @@
-# Aliases the pre-rename module paths so the pickled DualScaler in model.pt resolves.
-from ml import _checkpoint_compat  # noqa: F401
+# Aliases the pre-rename module paths so the pickled DualScaler in model_final.pt resolves.
+from ml.model import checkpoint as _checkpoint  # noqa: F401
 
 import numpy as np
 import torch
 from pathlib import Path
 from ml.model.graph_mdn import GraphMDN
 from torch.utils.data import DataLoader
-from ml.utilities.dataset.molecule_dataset import MoleculeDataset, collate_fn
+from ml.utils.molecule_dataset import MoleculeDataset, collate_fn
 from ml.model.ffn.mdn_utils import compute_mixture_mean, compute_max_mode
 
 def predict(model, loader, device, scaler, mode='mixture_mean'):

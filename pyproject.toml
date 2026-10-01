@@ -68,10 +68,10 @@ dev = ["pytest==9.0.2"]
 # benchmark/, reproduce.py -- is scripts, and neither package may reach into them.
 [tool.setuptools.packages.find]
 include = ["ml*", "webapp*"]
-exclude = ["ml.tests*", "ml.examples*", "ml.training_data*", "webapp.tests*", "webapp.deploy*"]
+exclude = ["ml.tests*", "ml.training*", "webapp.tests*", "webapp.deploy*"]
 
 [tool.setuptools.package-data]
-"ml.data" = ["model.pt"]
+"ml.data" = ["model_final.pt"]
 "webapp.data" = ["photocatalysts.csv", "pc_structures/*.png"]
 "webapp" = ["templates/*.html", "static/**/*"]
 

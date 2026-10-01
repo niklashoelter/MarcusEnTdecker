@@ -7,8 +7,12 @@ Neither package may read anything under the repository's `data/` or `benchmark/`
 directories either. Those are scripts and measurements, not a library: they are
 regenerated, rearranged and partly kept out of git, and a package that reached into
 them would stop working the moment it was installed anywhere but this checkout. The
-packages carry their own resources instead -- `ml/data/model.pt`, `webapp/data/` --
+packages carry their own resources instead -- `ml/data/model_final.pt`, `webapp/data/` --
 and reach them through `importlib.resources`, not through a path.
+
+Inside `ml`, `ml.training` is offline tooling -- dataset building, splits, the training
+loop, metrics -- and is left out of the wheel. Nothing else in `ml` or `webapp` may
+import it, or the installed package would break.
 
 This is the rule that must never regress, which is why it is a test and not a note in
 a README.
@@ -70,6 +74,8 @@ def _ids(paths):
 
 ML_MODULES = _modules("ml")
 ALL_MODULES = _modules("ml", "webapp")
+RUNTIME_MODULES = [p for p in ALL_MODULES
+                   if p.relative_to(ROOT).parts[:2] != ("ml", "training")]
 
 
 def _tree(path):
@@ -89,7 +95,19 @@ def _imported_roots(tree):
     return roots
 
 
-DATA_SUFFIXES = (".csv", ".tsv", ".xlsx", ".xls", ".gz", ".parquet", ".json", ".txt")
+def _imported_modules(tree):
+    """Dotted name of every absolute import; `from a import b` counts as `a` and `a.b`."""
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            names.add(node.module)
+            names.update(f"{node.module}.{alias.name}" for alias in node.names)
+    return names
+
+
+DATA_SUFFIXES =(".csv", ".tsv", ".xlsx", ".xls", ".gz", ".parquet", ".json", ".txt")
 
 
 def _docstrings(tree):
@@ -124,6 +142,18 @@ def test_ml_never_imports_webapp(path):
     assert "webapp" not in _imported_roots(_tree(path)), (
         f"{path.relative_to(ROOT).as_posix()} imports webapp. ml must not know that "
         f"EnTdecker exists -- move whatever is shared down into ml."
+    )
+
+
+@pytest.mark.parametrize("path", RUNTIME_MODULES, ids=_ids(RUNTIME_MODULES))
+def test_runtime_never_imports_training(path):
+    """ml.training is not installed with the package; nothing that is may need it."""
+    offending = sorted(name for name in _imported_modules(_tree(path))
+                       if name == "ml.training" or name.startswith("ml.training."))
+    assert not offending, (
+        f"{path.relative_to(ROOT).as_posix()} imports {offending}. ml.training is "
+        f"offline tooling left out of the wheel -- move whatever is shared into ml.utils "
+        f"or ml.model."
     )
 
 

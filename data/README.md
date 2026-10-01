@@ -157,7 +157,7 @@ thermal corrections.
 
 **Predicted quencher properties.** `quencher_properties_ml.xlsx` holds E_T, lambda_S0_T1
 and lambda_T1_S0 predicted from the SMILES by the graph mixture density network in
-`../ml/data/model.pt`, each with its predicted uncertainty.
+`../ml/data/model_final.pt`, each with its predicted uncertainty.
 
 **Computational cost.** `quencher_timings.csv` has one row per quencher job: DFT
 (ORCA), the Gaussian optimisation and frequencies, the Milo trajectories, and the

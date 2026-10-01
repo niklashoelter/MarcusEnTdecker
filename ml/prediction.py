@@ -13,7 +13,7 @@ def collect_results(smiles: list):
     """Collect prediction values"""
 
     with _model_lock:
-        output = get_predictions(smiles, model_path=Path(str(ir.files("ml.data").joinpath("model.pt"))), device='cpu', task='all')
+        output = get_predictions(smiles, model_path=Path(str(ir.files("ml.data").joinpath("model_final.pt"))), device='cpu', task='all')
     graph_output = output['graph']
     node_output = output['node']
 

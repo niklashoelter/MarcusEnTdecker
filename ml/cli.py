@@ -108,10 +108,10 @@ def _info(args) -> None:
     import torch
     from rdkit.Chem import GetPeriodicTable
 
-    from ml import _checkpoint_compat  # noqa: F401  aliases the pre-rename module path
-    from ml.utilities.dataset.graph_construction import ATOM_FEATURES
+    from ml.model import checkpoint as _checkpoint  # noqa: F401  aliases the pre-rename module path
+    from ml.utils.graph_construction import ATOM_FEATURES
 
-    path = Path(str(ir.files("ml.data").joinpath("model.pt")))
+    path = Path(str(ir.files("ml.data").joinpath("model_final.pt")))
     checkpoint = torch.load(path, map_location="cpu", weights_only=False)
     elements = GetPeriodicTable()
 

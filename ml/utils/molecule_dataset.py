@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset
-from ml.utilities.dataset.graph_construction import smiles_to_graph
+from ml.utils.graph_construction import smiles_to_graph
 from ml.model.gnn.positional_encoding import *
 from torch_geometric.data import Batch
 from sklearn.preprocessing import StandardScaler

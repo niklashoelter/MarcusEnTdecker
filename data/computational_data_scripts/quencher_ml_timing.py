@@ -2,7 +2,7 @@
 Inference time of the graph MDN for the 48 quenchers, through `ml.prediction.predict`.
 
 Reads   ../compound_identification.xlsx                (ids, SMILES)
-        ../../ml/data/model.pt                         (the trained checkpoint)
+        ../../ml/data/model_final.pt                   (the trained checkpoint)
 Writes  ../computational_data_processed/quencher_timings_ml.csv
 
     uv sync --extra ml
@@ -14,7 +14,7 @@ with `# key: value` lines recording the machine and versions; read it with
 `pd.read_csv(path, comment="#")`.
 
     import            importing ml.prediction and its dependencies (torch, rdkit, ...)
-    checkpoint load   torch.load of model.pt, timed inside the first call
+    checkpoint load   torch.load of model_final.pt, timed inside the first call
     first call        the first predict call, one SMILES (Q1): checkpoint load, model
                       construction, lazy initialisation and the first prediction
     individual        one predict call per quencher with that SMILES alone, REPEATS times
@@ -46,7 +46,7 @@ sys.path.insert(0, str(DATA))
 
 from compound_identification import QUENCHERS  # noqa: E402
 
-CHECKPOINT = ROOT / "ml" / "data" / "model.pt"
+CHECKPOINT = ROOT / "ml" / "data" / "model_final.pt"
 OUT = DATA / "computational_data_processed" / "quencher_timings_ml.csv"
 
 REPEATS = 5
