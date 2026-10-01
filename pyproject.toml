@@ -27,9 +27,10 @@ benchmark = [
     "matplotlib>=3.9",
 ]
 
-# The `ml` package: the graph MDN, its training and inference, and the prediction
-# API and CLI built on them. A multi-gigabyte tree, which is why it is optional --
-# the data pipeline and the benchmark never need it.
+# The `ml` package: the graph MDN, its training, evaluation and hyperparameter
+# optimization (optuna), its inference, and the prediction API and CLI built on them.
+# A multi-gigabyte tree, which is why it is optional -- the data pipeline and the
+# benchmark never need it.
 #
 #   uv sync --extra ml
 ml = [
@@ -43,6 +44,7 @@ ml = [
     "torch==2.5.1",
     "torch-geometric==2.7.0",
     "openpyxl==3.1.5",
+    "optuna==4.7.0",
 ]
 
 # The `webapp` package: EnTdecker. It is a consumer of `ml`, so it takes that extra

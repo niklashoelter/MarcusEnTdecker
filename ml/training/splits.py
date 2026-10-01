@@ -13,39 +13,41 @@ Each split file has one row per molecule, in the order of the dataset, with the 
 row i of the dataset, so `read_split` returns positional indices that can be passed
 straight to `create_dataloaders`.
 
-The out-of-sample split follows Project 1 of Leon Schlosser's thesis: every molecule that
-contains a styryl motif (SMARTS `c1ccc(cc1)C=C`) is held out as the test set, and the
-remaining molecules are split 90:10 into training and validation sets.
+Both procedures are Leon Schlosser's, taken from his training scripts:
+
+- random: `train_test_split` takes 20 % out of the dataset with the seed, and a second
+  `train_test_split` with the same seed halves that into validation and test
+  (playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py).
+- out-of-sample: every molecule that contains a styryl motif (SMARTS `c1ccc(cc1)C=C`) is
+  the test set; the others, in dataset order, are shuffled with Python's `random` seeded
+  with 42, and the first 80 % train, the rest validate
+  (playground/thesis/model/oos/train.py).
 """
 
 import importlib.resources as ir
+import random
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 PACKAGE_DATA = Path(str(ir.files("ml.data")))
 DATASET = PACKAGE_DATA / "training_dataset_full.csv"
 SPLITS = PACKAGE_DATA / "splits"
 
-RANDOM_SEEDS = (42, 67, 69, 404, 1337)
-RANDOM_FRACTIONS = (0.8, 0.1, 0.1)
+RANDOM_SEEDS = (42, 101, 143, 404, 666)
 
 STYRYL_SMARTS = "c1ccc(cc1)C=C"
 OOS_SEED = 42
-OOS_TRAIN_FRACTION = 0.9
+OOS_TRAIN_FRACTION = 0.8
 
 
-def random_split(n, seed, fractions=RANDOM_FRACTIONS):
-    """Label n molecules train/val/test in the given proportions from a seeded permutation."""
-    order = np.random.default_rng(seed).permutation(n)
-    n_train = round(fractions[0] * n)
-    n_val = round(fractions[1] * n)
-    labels = np.empty(n, dtype=object)
-    labels[order[:n_train]] = "train"
-    labels[order[n_train:n_train + n_val]] = "val"
-    labels[order[n_train + n_val:]] = "test"
-    return labels
+def random_split(n, seed):
+    """Train, validation and test indices of n molecules, as Leon's training script draws them."""
+    train_idx, temp_idx = train_test_split(range(n), test_size=0.2, random_state=seed)
+    val_idx, test_idx = train_test_split(temp_idx, test_size=0.5, random_state=seed)
+    return train_idx, val_idx, test_idx
 
 
 def has_styryl(smiles):
@@ -63,35 +65,42 @@ def has_styryl(smiles):
 
 
 def oos_split(smiles, seed=OOS_SEED, train_fraction=OOS_TRAIN_FRACTION):
-    """Styryl molecules -> test; the rest split train/val from a seeded permutation."""
+    """Styryl molecules -> test; the rest shuffled and cut train/val, as in Leon's OOS script."""
     styryl = has_styryl(smiles)
-    rest = np.flatnonzero(~styryl)
-    order = rest[np.random.default_rng(seed).permutation(len(rest))]
-    n_train = round(train_fraction * len(rest))
-    labels = np.full(len(smiles), "test", dtype=object)
-    labels[order[:n_train]] = "train"
-    labels[order[n_train:]] = "val"
-    return labels
+    tmp_idx = np.flatnonzero(~styryl).tolist()
+    test_idx = np.flatnonzero(styryl).tolist()
+    random.Random(seed).shuffle(tmp_idx)
+    n_train = int(train_fraction * len(tmp_idx))
+    return tmp_idx[:n_train], tmp_idx[n_train:], test_idx
+
+
+def labels(n, parts):
+    """One train/val/test label per molecule from the three index lists."""
+    out = np.empty(n, dtype=object)
+    for name, idx in zip(("train", "val", "test"), parts):
+        out[list(idx)] = name
+    return out
 
 
 def read_split(name):
     """Positional train, val and test indices of a split, e.g. `random_42` or `oos_styryl`."""
-    labels = pd.read_csv(SPLITS / f"{name}.csv")["split"].to_numpy()
-    return tuple(np.flatnonzero(labels == part) for part in ("train", "val", "test"))
+    split = pd.read_csv(SPLITS / f"{name}.csv")["split"].to_numpy()
+    return tuple(np.flatnonzero(split == part) for part in ("train", "val", "test"))
 
 
 def main():
     dataset = pd.read_csv(DATASET, usecols=["idx", "smiles"])
     SPLITS.mkdir(exist_ok=True)
 
-    splits = {f"random_{seed}": random_split(len(dataset), seed) for seed in RANDOM_SEEDS}
-    splits["oos_styryl"] = oos_split(dataset["smiles"].tolist())
+    n = len(dataset)
+    splits = {f"random_{seed}": labels(n, random_split(n, seed)) for seed in RANDOM_SEEDS}
+    splits["oos_styryl"] = labels(n, oos_split(dataset["smiles"].tolist()))
 
-    for name, labels in splits.items():
+    for name, split in splits.items():
         out = SPLITS / f"{name}.csv"
-        pd.DataFrame({"idx": dataset["idx"], "split": labels}).to_csv(
+        pd.DataFrame({"idx": dataset["idx"], "split": split}).to_csv(
             out, index=False, lineterminator="\n")
-        counts = pd.Series(labels).value_counts()
+        counts = pd.Series(split).value_counts()
         print(f"{out.name}  "
               + "  ".join(f"{part} {counts.get(part, 0)}" for part in ("train", "val", "test")))
 
