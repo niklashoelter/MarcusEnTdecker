@@ -1,0 +1,6 @@
+
+===== evaluate_trial_55 on ad5767b1ead3 cuda:3 2026-10-02T19:41:13
+trial_55: no test predictions for oos_styryl
+trial_55: wrote metrics.csv (20 rows)
+trial_55: wrote metrics_random_splits.csv (4 rows)
+trial_55: wrote uncertainty_filtering.csv (80 rows)
