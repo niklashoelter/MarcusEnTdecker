@@ -1,0 +1,279 @@
+
+===== train_trial_55_random_666 on ad5767b1ead3 cuda:2 2026-10-02T15:43:21
+Start training trial_55 on random_666 (seed 666)
+Epoch 1/200 | Train Loss: 1.2353 | Val Loss: 0.9928 | Graph Loss: 1.1707 | Node Loss: 0.8148 | LR: 0.000023 | Epoch Time: 56.28 s
+Epoch 2/200 | Train Loss: 0.8806 | Val Loss: 0.5944 | Graph Loss: 0.8810 | Node Loss: 0.3077 | LR: 0.000043 | Epoch Time: 68.42 s
+Epoch 3/200 | Train Loss: 0.5868 | Val Loss: 0.3556 | Graph Loss: 0.6736 | Node Loss: 0.0375 | LR: 0.000063 | Epoch Time: 65.22 s
+Epoch 4/200 | Train Loss: 0.3938 | Val Loss: 0.1580 | Graph Loss: 0.4871 | Node Loss: -0.1712 | LR: 0.000083 | Epoch Time: 56.37 s
+Epoch 5/200 | Train Loss: 0.2626 | Val Loss: 0.0406 | Graph Loss: 0.3986 | Node Loss: -0.3175 | LR: 0.000103 | Epoch Time: 76.01 s
+Epoch 6/200 | Train Loss: 0.1708 | Val Loss: 0.0186 | Graph Loss: 0.4013 | Node Loss: -0.3641 | LR: 0.000123 | Epoch Time: 57.83 s
+Epoch 7/200 | Train Loss: 0.1029 | Val Loss: 0.0099 | Graph Loss: 0.4330 | Node Loss: -0.4132 | LR: 0.000143 | Epoch Time: 59.25 s
+Epoch 8/200 | Train Loss: 0.0480 | Val Loss: -0.0944 | Graph Loss: 0.3339 | Node Loss: -0.5227 | LR: 0.000163 | Epoch Time: 83.01 s
+Epoch 9/200 | Train Loss: -0.0017 | Val Loss: -0.0968 | Graph Loss: 0.3041 | Node Loss: -0.4976 | LR: 0.000183 | Epoch Time: 82.99 s
+Epoch 10/200 | Train Loss: -0.0385 | Val Loss: -0.1940 | Graph Loss: 0.2577 | Node Loss: -0.6457 | LR: 0.000203 | Epoch Time: 92.64 s
+Epoch 11/200 | Train Loss: -0.0594 | Val Loss: -0.2012 | Graph Loss: 0.2444 | Node Loss: -0.6468 | LR: 0.000223 | Epoch Time: 83.14 s
+/home/employee/n_hoel07/machine_learning/MarcusEnTdecker/.venv/lib/python3.12/site-packages/torch/optim/lr_scheduler.py:240: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
+  warnings.warn(EPOCH_DEPRECATION_WARNING, UserWarning)
+Epoch 12/200 | Train Loss: -0.0976 | Val Loss: -0.1682 | Graph Loss: 0.3069 | Node Loss: -0.6434 | LR: 0.000243 | Epoch Time: 79.54 s
+Epoch 13/200 | Train Loss: -0.1234 | Val Loss: -0.2270 | Graph Loss: 0.2205 | Node Loss: -0.6744 | LR: 0.000243 | Epoch Time: 68.13 s
+Epoch 14/200 | Train Loss: -0.1496 | Val Loss: -0.2479 | Graph Loss: 0.2274 | Node Loss: -0.7232 | LR: 0.000243 | Epoch Time: 62.09 s
+Epoch 15/200 | Train Loss: -0.1877 | Val Loss: -0.2678 | Graph Loss: 0.1831 | Node Loss: -0.7187 | LR: 0.000243 | Epoch Time: 73.71 s
+Epoch 16/200 | Train Loss: -0.2165 | Val Loss: -0.3004 | Graph Loss: 0.1725 | Node Loss: -0.7734 | LR: 0.000243 | Epoch Time: 73.83 s
+Epoch 17/200 | Train Loss: -0.2464 | Val Loss: -0.3253 | Graph Loss: 0.1549 | Node Loss: -0.8054 | LR: 0.000243 | Epoch Time: 76.02 s
+Epoch 18/200 | Train Loss: -0.2606 | Val Loss: -0.3187 | Graph Loss: 0.1701 | Node Loss: -0.8075 | LR: 0.000243 | Epoch Time: 59.34 s
+Epoch 19/200 | Train Loss: -0.2919 | Val Loss: -0.3530 | Graph Loss: 0.1625 | Node Loss: -0.8684 | LR: 0.000242 | Epoch Time: 59.42 s
+Epoch 20/200 | Train Loss: -0.3246 | Val Loss: -0.4200 | Graph Loss: 0.0658 | Node Loss: -0.9058 | LR: 0.000242 | Epoch Time: 58.53 s
+Epoch 21/200 | Train Loss: -0.3406 | Val Loss: -0.3037 | Graph Loss: 0.2452 | Node Loss: -0.8526 | LR: 0.000242 | Epoch Time: 59.55 s
+Epoch 22/200 | Train Loss: -0.3390 | Val Loss: -0.4252 | Graph Loss: 0.0717 | Node Loss: -0.9222 | LR: 0.000242 | Epoch Time: 69.32 s
+Epoch 23/200 | Train Loss: -0.3452 | Val Loss: -0.4037 | Graph Loss: 0.1319 | Node Loss: -0.9393 | LR: 0.000241 | Epoch Time: 64.85 s
+Epoch 24/200 | Train Loss: -0.3570 | Val Loss: -0.4081 | Graph Loss: 0.1115 | Node Loss: -0.9278 | LR: 0.000241 | Epoch Time: 57.58 s
+Epoch 25/200 | Train Loss: -0.3536 | Val Loss: -0.4018 | Graph Loss: 0.1116 | Node Loss: -0.9153 | LR: 0.000240 | Epoch Time: 57.81 s
+Epoch 26/200 | Train Loss: -0.3701 | Val Loss: -0.4714 | Graph Loss: 0.0481 | Node Loss: -0.9909 | LR: 0.000240 | Epoch Time: 56.22 s
+Evaluating on test set in epoch 26 on random_666...
+MAE:  [2.4746    5.458622  3.5553856]
+RMSE:  [3.7463262 8.484375  6.017656 ]
+R2:  [0.9242422  0.7976329  0.65680337]
+MAE:  [0.05154294]
+RMSE:  [0.10632636]
+R2:  [0.7852842]
+Epoch 27/200 | Train Loss: -0.3589 | Val Loss: -0.4320 | Graph Loss: 0.0934 | Node Loss: -0.9574 | LR: 0.000239 | Epoch Time: 65.28 s
+Epoch 28/200 | Train Loss: -0.3854 | Val Loss: -0.4282 | Graph Loss: 0.0975 | Node Loss: -0.9539 | LR: 0.000239 | Epoch Time: 70.49 s
+Epoch 29/200 | Train Loss: -0.4044 | Val Loss: -0.4702 | Graph Loss: 0.0598 | Node Loss: -1.0001 | LR: 0.000238 | Epoch Time: 78.40 s
+Epoch 30/200 | Train Loss: -0.4039 | Val Loss: -0.4521 | Graph Loss: 0.0723 | Node Loss: -0.9765 | LR: 0.000238 | Epoch Time: 61.98 s
+Epoch 31/200 | Train Loss: -0.4201 | Val Loss: -0.4725 | Graph Loss: 0.0385 | Node Loss: -0.9835 | LR: 0.000237 | Epoch Time: 65.01 s
+Epoch 32/200 | Train Loss: -0.4063 | Val Loss: -0.4602 | Graph Loss: 0.0655 | Node Loss: -0.9860 | LR: 0.000237 | Epoch Time: 72.72 s
+Epoch 33/200 | Train Loss: -0.4022 | Val Loss: -0.4837 | Graph Loss: 0.0402 | Node Loss: -1.0075 | LR: 0.000236 | Epoch Time: 63.66 s
+Epoch 34/200 | Train Loss: -0.4314 | Val Loss: -0.4848 | Graph Loss: 0.0682 | Node Loss: -1.0378 | LR: 0.000235 | Epoch Time: 59.31 s
+Epoch 35/200 | Train Loss: -0.4335 | Val Loss: -0.5425 | Graph Loss: -0.0141 | Node Loss: -1.0709 | LR: 0.000234 | Epoch Time: 73.27 s
+Epoch 36/200 | Train Loss: -0.4352 | Val Loss: -0.5131 | Graph Loss: 0.0124 | Node Loss: -1.0387 | LR: 0.000234 | Epoch Time: 57.35 s
+Epoch 37/200 | Train Loss: -0.4628 | Val Loss: -0.5494 | Graph Loss: -0.0359 | Node Loss: -1.0629 | LR: 0.000233 | Epoch Time: 59.52 s
+Epoch 38/200 | Train Loss: -0.4615 | Val Loss: -0.4831 | Graph Loss: 0.0385 | Node Loss: -1.0047 | LR: 0.000232 | Epoch Time: 60.08 s
+Epoch 39/200 | Train Loss: -0.4705 | Val Loss: -0.5659 | Graph Loss: -0.0500 | Node Loss: -1.0818 | LR: 0.000231 | Epoch Time: 55.95 s
+Epoch 40/200 | Train Loss: -0.4836 | Val Loss: -0.4387 | Graph Loss: 0.0285 | Node Loss: -0.9060 | LR: 0.000230 | Epoch Time: 68.00 s
+Epoch 41/200 | Train Loss: -0.4787 | Val Loss: -0.4323 | Graph Loss: 0.0552 | Node Loss: -0.9199 | LR: 0.000229 | Epoch Time: 78.93 s
+Epoch 42/200 | Train Loss: -0.4896 | Val Loss: -0.5102 | Graph Loss: 0.0042 | Node Loss: -1.0247 | LR: 0.000228 | Epoch Time: 68.61 s
+Epoch 43/200 | Train Loss: -0.5016 | Val Loss: -0.5462 | Graph Loss: -0.0149 | Node Loss: -1.0776 | LR: 0.000227 | Epoch Time: 67.50 s
+Epoch 44/200 | Train Loss: -0.5079 | Val Loss: -0.5606 | Graph Loss: -0.0554 | Node Loss: -1.0658 | LR: 0.000226 | Epoch Time: 67.06 s
+Epoch 45/200 | Train Loss: -0.5006 | Val Loss: -0.5644 | Graph Loss: -0.0344 | Node Loss: -1.0943 | LR: 0.000225 | Epoch Time: 69.37 s
+Epoch 46/200 | Train Loss: -0.5223 | Val Loss: -0.5342 | Graph Loss: -0.0131 | Node Loss: -1.0553 | LR: 0.000224 | Epoch Time: 73.94 s
+Epoch 47/200 | Train Loss: -0.5216 | Val Loss: -0.5452 | Graph Loss: -0.0544 | Node Loss: -1.0360 | LR: 0.000223 | Epoch Time: 79.48 s
+Epoch 48/200 | Train Loss: -0.5273 | Val Loss: -0.5744 | Graph Loss: -0.0473 | Node Loss: -1.1015 | LR: 0.000222 | Epoch Time: 81.89 s
+New best model saved with val loss: -0.5744 at epoch 48
+Epoch 49/200 | Train Loss: -0.5159 | Val Loss: -0.5864 | Graph Loss: -0.0582 | Node Loss: -1.1146 | LR: 0.000221 | Epoch Time: 80.25 s
+New best model saved with val loss: -0.5864 at epoch 49
+Epoch 50/200 | Train Loss: -0.5304 | Val Loss: -0.5830 | Graph Loss: -0.0503 | Node Loss: -1.1157 | LR: 0.000220 | Epoch Time: 58.78 s
+Epoch 51/200 | Train Loss: -0.5339 | Val Loss: -0.5392 | Graph Loss: -0.0368 | Node Loss: -1.0416 | LR: 0.000218 | Epoch Time: 61.54 s
+Evaluating on test set in epoch 51 on random_666...
+MAE:  [2.308154  5.179713  3.3432546]
+RMSE:  [3.421498 8.536069 5.753528]
+R2:  [0.9368099 0.7951594 0.6862694]
+MAE:  [0.05151843]
+RMSE:  [0.10555367]
+R2:  [0.7883937]
+Epoch 52/200 | Train Loss: -0.5639 | Val Loss: -0.5063 | Graph Loss: 0.0419 | Node Loss: -1.0544 | LR: 0.000217 | Epoch Time: 54.34 s
+Epoch 53/200 | Train Loss: -0.5698 | Val Loss: -0.5700 | Graph Loss: -0.0342 | Node Loss: -1.1057 | LR: 0.000216 | Epoch Time: 64.36 s
+Epoch 54/200 | Train Loss: -0.5611 | Val Loss: -0.5953 | Graph Loss: -0.0718 | Node Loss: -1.1189 | LR: 0.000215 | Epoch Time: 63.47 s
+New best model saved with val loss: -0.5953 at epoch 54
+Epoch 55/200 | Train Loss: -0.5764 | Val Loss: -0.5944 | Graph Loss: -0.0670 | Node Loss: -1.1218 | LR: 0.000213 | Epoch Time: 77.32 s
+Epoch 56/200 | Train Loss: -0.5896 | Val Loss: -0.5983 | Graph Loss: -0.0608 | Node Loss: -1.1358 | LR: 0.000212 | Epoch Time: 65.07 s
+New best model saved with val loss: -0.5983 at epoch 56
+Epoch 57/200 | Train Loss: -0.5783 | Val Loss: -0.5867 | Graph Loss: -0.0861 | Node Loss: -1.0872 | LR: 0.000210 | Epoch Time: 63.93 s
+Epoch 58/200 | Train Loss: -0.5964 | Val Loss: -0.6371 | Graph Loss: -0.1116 | Node Loss: -1.1626 | LR: 0.000209 | Epoch Time: 63.85 s
+New best model saved with val loss: -0.6371 at epoch 58
+Epoch 59/200 | Train Loss: -0.5989 | Val Loss: -0.6621 | Graph Loss: -0.1352 | Node Loss: -1.1890 | LR: 0.000208 | Epoch Time: 63.54 s
+New best model saved with val loss: -0.6621 at epoch 59
+Epoch 60/200 | Train Loss: -0.6065 | Val Loss: -0.6067 | Graph Loss: -0.1043 | Node Loss: -1.1091 | LR: 0.000206 | Epoch Time: 68.14 s
+Epoch 61/200 | Train Loss: -0.6178 | Val Loss: -0.6432 | Graph Loss: -0.1218 | Node Loss: -1.1645 | LR: 0.000205 | Epoch Time: 60.75 s
+Epoch 62/200 | Train Loss: -0.6238 | Val Loss: -0.5911 | Graph Loss: -0.0585 | Node Loss: -1.1237 | LR: 0.000203 | Epoch Time: 61.18 s
+Epoch 63/200 | Train Loss: -0.5945 | Val Loss: -0.6225 | Graph Loss: -0.1011 | Node Loss: -1.1439 | LR: 0.000202 | Epoch Time: 66.14 s
+Epoch 64/200 | Train Loss: -0.6169 | Val Loss: -0.6524 | Graph Loss: -0.1463 | Node Loss: -1.1585 | LR: 0.000200 | Epoch Time: 64.02 s
+Epoch 65/200 | Train Loss: -0.6206 | Val Loss: -0.6495 | Graph Loss: -0.1128 | Node Loss: -1.1862 | LR: 0.000199 | Epoch Time: 65.73 s
+Epoch 66/200 | Train Loss: -0.6176 | Val Loss: -0.6810 | Graph Loss: -0.1538 | Node Loss: -1.2081 | LR: 0.000197 | Epoch Time: 64.40 s
+New best model saved with val loss: -0.6810 at epoch 66
+Epoch 67/200 | Train Loss: -0.6490 | Val Loss: -0.6532 | Graph Loss: -0.1401 | Node Loss: -1.1664 | LR: 0.000195 | Epoch Time: 64.53 s
+Epoch 68/200 | Train Loss: -0.6411 | Val Loss: -0.6779 | Graph Loss: -0.1550 | Node Loss: -1.2007 | LR: 0.000194 | Epoch Time: 72.27 s
+Epoch 69/200 | Train Loss: -0.6605 | Val Loss: -0.6354 | Graph Loss: -0.1300 | Node Loss: -1.1409 | LR: 0.000192 | Epoch Time: 59.44 s
+Epoch 70/200 | Train Loss: -0.6570 | Val Loss: -0.6754 | Graph Loss: -0.1604 | Node Loss: -1.1903 | LR: 0.000190 | Epoch Time: 55.35 s
+Epoch 71/200 | Train Loss: -0.6666 | Val Loss: -0.6364 | Graph Loss: -0.1181 | Node Loss: -1.1547 | LR: 0.000189 | Epoch Time: 56.90 s
+Epoch 72/200 | Train Loss: -0.6761 | Val Loss: -0.6500 | Graph Loss: -0.1110 | Node Loss: -1.1889 | LR: 0.000187 | Epoch Time: 81.24 s
+Epoch 73/200 | Train Loss: -0.6664 | Val Loss: -0.6870 | Graph Loss: -0.1683 | Node Loss: -1.2057 | LR: 0.000185 | Epoch Time: 56.91 s
+New best model saved with val loss: -0.6870 at epoch 73
+Epoch 74/200 | Train Loss: -0.6755 | Val Loss: -0.6763 | Graph Loss: -0.1546 | Node Loss: -1.1980 | LR: 0.000184 | Epoch Time: 95.38 s
+Epoch 75/200 | Train Loss: -0.6911 | Val Loss: -0.6632 | Graph Loss: -0.1370 | Node Loss: -1.1893 | LR: 0.000182 | Epoch Time: 87.57 s
+Epoch 76/200 | Train Loss: -0.6984 | Val Loss: -0.7012 | Graph Loss: -0.1662 | Node Loss: -1.2362 | LR: 0.000180 | Epoch Time: 86.80 s
+Evaluating on test set in epoch 76 on random_666...
+MAE:  [1.8838084 4.603297  3.054794 ]
+RMSE:  [2.965193  7.7914276 5.5958734]
+R2:  [0.9525406  0.82933897 0.7032272 ]
+MAE:  [0.04374847]
+RMSE:  [0.09819818]
+R2:  [0.8168576]
+New best model saved with val loss: -0.7012 at epoch 76
+Epoch 77/200 | Train Loss: -0.6934 | Val Loss: -0.6590 | Graph Loss: -0.1629 | Node Loss: -1.1550 | LR: 0.000178 | Epoch Time: 94.43 s
+Epoch 78/200 | Train Loss: -0.7104 | Val Loss: -0.6994 | Graph Loss: -0.1805 | Node Loss: -1.2182 | LR: 0.000177 | Epoch Time: 75.46 s
+Epoch 79/200 | Train Loss: -0.7083 | Val Loss: -0.6351 | Graph Loss: -0.1559 | Node Loss: -1.1142 | LR: 0.000175 | Epoch Time: 85.40 s
+Epoch 80/200 | Train Loss: -0.7218 | Val Loss: -0.6702 | Graph Loss: -0.1552 | Node Loss: -1.1852 | LR: 0.000173 | Epoch Time: 88.00 s
+Epoch 81/200 | Train Loss: -0.7175 | Val Loss: -0.6829 | Graph Loss: -0.1701 | Node Loss: -1.1958 | LR: 0.000171 | Epoch Time: 87.71 s
+Epoch 82/200 | Train Loss: -0.7271 | Val Loss: -0.6720 | Graph Loss: -0.1747 | Node Loss: -1.1694 | LR: 0.000169 | Epoch Time: 83.23 s
+Epoch 83/200 | Train Loss: -0.7134 | Val Loss: -0.6919 | Graph Loss: -0.1562 | Node Loss: -1.2277 | LR: 0.000167 | Epoch Time: 76.13 s
+Epoch 84/200 | Train Loss: -0.7342 | Val Loss: -0.7103 | Graph Loss: -0.1861 | Node Loss: -1.2344 | LR: 0.000165 | Epoch Time: 85.58 s
+New best model saved with val loss: -0.7103 at epoch 84
+Epoch 85/200 | Train Loss: -0.7461 | Val Loss: -0.7225 | Graph Loss: -0.2007 | Node Loss: -1.2443 | LR: 0.000163 | Epoch Time: 85.98 s
+New best model saved with val loss: -0.7225 at epoch 85
+Epoch 86/200 | Train Loss: -0.7502 | Val Loss: -0.7326 | Graph Loss: -0.2097 | Node Loss: -1.2555 | LR: 0.000162 | Epoch Time: 85.58 s
+New best model saved with val loss: -0.7326 at epoch 86
+Epoch 87/200 | Train Loss: -0.7545 | Val Loss: -0.7235 | Graph Loss: -0.1903 | Node Loss: -1.2566 | LR: 0.000160 | Epoch Time: 74.69 s
+Epoch 88/200 | Train Loss: -0.7654 | Val Loss: -0.7292 | Graph Loss: -0.2052 | Node Loss: -1.2532 | LR: 0.000158 | Epoch Time: 50.45 s
+Epoch 89/200 | Train Loss: -0.7669 | Val Loss: -0.7410 | Graph Loss: -0.2234 | Node Loss: -1.2586 | LR: 0.000156 | Epoch Time: 51.44 s
+New best model saved with val loss: -0.7410 at epoch 89
+Epoch 90/200 | Train Loss: -0.7770 | Val Loss: -0.7338 | Graph Loss: -0.2079 | Node Loss: -1.2596 | LR: 0.000154 | Epoch Time: 84.97 s
+Epoch 91/200 | Train Loss: -0.7701 | Val Loss: -0.7320 | Graph Loss: -0.2051 | Node Loss: -1.2589 | LR: 0.000152 | Epoch Time: 86.18 s
+Epoch 92/200 | Train Loss: -0.7854 | Val Loss: -0.7312 | Graph Loss: -0.1962 | Node Loss: -1.2661 | LR: 0.000150 | Epoch Time: 108.58 s
+Epoch 93/200 | Train Loss: -0.7910 | Val Loss: -0.7373 | Graph Loss: -0.2103 | Node Loss: -1.2642 | LR: 0.000148 | Epoch Time: 85.25 s
+Epoch 94/200 | Train Loss: -0.8025 | Val Loss: -0.7426 | Graph Loss: -0.2126 | Node Loss: -1.2727 | LR: 0.000146 | Epoch Time: 86.06 s
+New best model saved with val loss: -0.7426 at epoch 94
+Epoch 95/200 | Train Loss: -0.7907 | Val Loss: -0.7325 | Graph Loss: -0.1940 | Node Loss: -1.2709 | LR: 0.000144 | Epoch Time: 85.99 s
+Epoch 96/200 | Train Loss: -0.8067 | Val Loss: -0.7071 | Graph Loss: -0.1809 | Node Loss: -1.2334 | LR: 0.000142 | Epoch Time: 86.94 s
+Epoch 97/200 | Train Loss: -0.8103 | Val Loss: -0.7495 | Graph Loss: -0.2183 | Node Loss: -1.2808 | LR: 0.000140 | Epoch Time: 86.08 s
+New best model saved with val loss: -0.7495 at epoch 97
+Epoch 98/200 | Train Loss: -0.8066 | Val Loss: -0.7501 | Graph Loss: -0.2315 | Node Loss: -1.2686 | LR: 0.000138 | Epoch Time: 85.68 s
+New best model saved with val loss: -0.7501 at epoch 98
+Epoch 99/200 | Train Loss: -0.8210 | Val Loss: -0.7485 | Graph Loss: -0.2280 | Node Loss: -1.2690 | LR: 0.000136 | Epoch Time: 67.66 s
+Epoch 100/200 | Train Loss: -0.8247 | Val Loss: -0.7638 | Graph Loss: -0.2384 | Node Loss: -1.2892 | LR: 0.000134 | Epoch Time: 86.48 s
+New best model saved with val loss: -0.7638 at epoch 100
+Epoch 101/200 | Train Loss: -0.8310 | Val Loss: -0.7628 | Graph Loss: -0.2276 | Node Loss: -1.2980 | LR: 0.000132 | Epoch Time: 86.36 s
+Evaluating on test set in epoch 101 on random_666...
+MAE:  [1.8120646 4.3466763 2.923625 ]
+RMSE:  [2.8947396 7.620831  5.457663 ]
+R2:  [0.9547691  0.83673054 0.7177059 ]
+MAE:  [0.04149417]
+RMSE:  [0.09659588]
+R2:  [0.8227855]
+Epoch 102/200 | Train Loss: -0.8427 | Val Loss: -0.7680 | Graph Loss: -0.2366 | Node Loss: -1.2993 | LR: 0.000130 | Epoch Time: 99.00 s
+New best model saved with val loss: -0.7680 at epoch 102
+Epoch 103/200 | Train Loss: -0.8406 | Val Loss: -0.7490 | Graph Loss: -0.2100 | Node Loss: -1.2881 | LR: 0.000128 | Epoch Time: 86.35 s
+Epoch 104/200 | Train Loss: -0.8488 | Val Loss: -0.7602 | Graph Loss: -0.2253 | Node Loss: -1.2951 | LR: 0.000126 | Epoch Time: 84.21 s
+Epoch 105/200 | Train Loss: -0.8485 | Val Loss: -0.7584 | Graph Loss: -0.2249 | Node Loss: -1.2919 | LR: 0.000124 | Epoch Time: 95.86 s
+Epoch 106/200 | Train Loss: -0.8612 | Val Loss: -0.7386 | Graph Loss: -0.1887 | Node Loss: -1.2884 | LR: 0.000122 | Epoch Time: 85.62 s
+Epoch 107/200 | Train Loss: -0.8555 | Val Loss: -0.7695 | Graph Loss: -0.2437 | Node Loss: -1.2954 | LR: 0.000120 | Epoch Time: 85.95 s
+New best model saved with val loss: -0.7695 at epoch 107
+Epoch 108/200 | Train Loss: -0.8683 | Val Loss: -0.7790 | Graph Loss: -0.2420 | Node Loss: -1.3160 | LR: 0.000118 | Epoch Time: 74.17 s
+New best model saved with val loss: -0.7790 at epoch 108
+Epoch 109/200 | Train Loss: -0.8859 | Val Loss: -0.7766 | Graph Loss: -0.2406 | Node Loss: -1.3125 | LR: 0.000116 | Epoch Time: 78.11 s
+Epoch 110/200 | Train Loss: -0.8881 | Val Loss: -0.7866 | Graph Loss: -0.2622 | Node Loss: -1.3111 | LR: 0.000114 | Epoch Time: 84.99 s
+New best model saved with val loss: -0.7866 at epoch 110
+Epoch 111/200 | Train Loss: -0.8833 | Val Loss: -0.7741 | Graph Loss: -0.2399 | Node Loss: -1.3083 | LR: 0.000111 | Epoch Time: 85.01 s
+Epoch 112/200 | Train Loss: -0.8920 | Val Loss: -0.7928 | Graph Loss: -0.2533 | Node Loss: -1.3323 | LR: 0.000109 | Epoch Time: 98.23 s
+New best model saved with val loss: -0.7928 at epoch 112
+Epoch 113/200 | Train Loss: -0.9023 | Val Loss: -0.7916 | Graph Loss: -0.2555 | Node Loss: -1.3276 | LR: 0.000107 | Epoch Time: 85.88 s
+Epoch 114/200 | Train Loss: -0.9058 | Val Loss: -0.7610 | Graph Loss: -0.2479 | Node Loss: -1.2740 | LR: 0.000105 | Epoch Time: 86.06 s
+Epoch 115/200 | Train Loss: -0.9061 | Val Loss: -0.8055 | Graph Loss: -0.2797 | Node Loss: -1.3314 | LR: 0.000103 | Epoch Time: 81.48 s
+New best model saved with val loss: -0.8055 at epoch 115
+Epoch 116/200 | Train Loss: -0.9121 | Val Loss: -0.8028 | Graph Loss: -0.2692 | Node Loss: -1.3364 | LR: 0.000101 | Epoch Time: 85.94 s
+Epoch 117/200 | Train Loss: -0.9270 | Val Loss: -0.7920 | Graph Loss: -0.2558 | Node Loss: -1.3283 | LR: 0.000099 | Epoch Time: 94.91 s
+Epoch 118/200 | Train Loss: -0.9200 | Val Loss: -0.8114 | Graph Loss: -0.2769 | Node Loss: -1.3459 | LR: 0.000097 | Epoch Time: 69.90 s
+New best model saved with val loss: -0.8114 at epoch 118
+Epoch 119/200 | Train Loss: -0.9337 | Val Loss: -0.7898 | Graph Loss: -0.2697 | Node Loss: -1.3099 | LR: 0.000095 | Epoch Time: 86.53 s
+Epoch 120/200 | Train Loss: -0.9376 | Val Loss: -0.7872 | Graph Loss: -0.2546 | Node Loss: -1.3198 | LR: 0.000093 | Epoch Time: 85.96 s
+Epoch 121/200 | Train Loss: -0.9495 | Val Loss: -0.7981 | Graph Loss: -0.2653 | Node Loss: -1.3310 | LR: 0.000091 | Epoch Time: 85.52 s
+Epoch 122/200 | Train Loss: -0.9546 | Val Loss: -0.7608 | Graph Loss: -0.2221 | Node Loss: -1.2996 | LR: 0.000090 | Epoch Time: 96.43 s
+Epoch 123/200 | Train Loss: -0.9535 | Val Loss: -0.8135 | Graph Loss: -0.2839 | Node Loss: -1.3431 | LR: 0.000088 | Epoch Time: 85.10 s
+New best model saved with val loss: -0.8135 at epoch 123
+Epoch 124/200 | Train Loss: -0.9538 | Val Loss: -0.8074 | Graph Loss: -0.2741 | Node Loss: -1.3408 | LR: 0.000086 | Epoch Time: 86.54 s
+Epoch 125/200 | Train Loss: -0.9612 | Val Loss: -0.7864 | Graph Loss: -0.2679 | Node Loss: -1.3048 | LR: 0.000084 | Epoch Time: 85.45 s
+Epoch 126/200 | Train Loss: -0.9670 | Val Loss: -0.8255 | Graph Loss: -0.2960 | Node Loss: -1.3550 | LR: 0.000082 | Epoch Time: 85.59 s
+Evaluating on test set in epoch 126 on random_666...
+MAE:  [1.6357293 4.1388803 2.7748575]
+RMSE:  [2.7181706 7.798833  5.392822 ]
+R2:  [0.96011865 0.8290144  0.7243738 ]
+MAE:  [0.03917949]
+RMSE:  [0.09566052]
+R2:  [0.8262009]
+New best model saved with val loss: -0.8255 at epoch 126
+Epoch 127/200 | Train Loss: -0.9798 | Val Loss: -0.8155 | Graph Loss: -0.2807 | Node Loss: -1.3503 | LR: 0.000080 | Epoch Time: 74.53 s
+Epoch 128/200 | Train Loss: -0.9775 | Val Loss: -0.8113 | Graph Loss: -0.2759 | Node Loss: -1.3466 | LR: 0.000078 | Epoch Time: 77.86 s
+Epoch 129/200 | Train Loss: -0.9870 | Val Loss: -0.8086 | Graph Loss: -0.2687 | Node Loss: -1.3484 | LR: 0.000076 | Epoch Time: 97.58 s
+Epoch 130/200 | Train Loss: -0.9854 | Val Loss: -0.8107 | Graph Loss: -0.2900 | Node Loss: -1.3314 | LR: 0.000074 | Epoch Time: 85.46 s
+Epoch 131/200 | Train Loss: -0.9958 | Val Loss: -0.8185 | Graph Loss: -0.2898 | Node Loss: -1.3471 | LR: 0.000072 | Epoch Time: 98.24 s
+Epoch 132/200 | Train Loss: -1.0021 | Val Loss: -0.8167 | Graph Loss: -0.2791 | Node Loss: -1.3543 | LR: 0.000070 | Epoch Time: 85.94 s
+Epoch 133/200 | Train Loss: -1.0063 | Val Loss: -0.8098 | Graph Loss: -0.2733 | Node Loss: -1.3463 | LR: 0.000069 | Epoch Time: 85.34 s
+Epoch 134/200 | Train Loss: -1.0081 | Val Loss: -0.8245 | Graph Loss: -0.2959 | Node Loss: -1.3532 | LR: 0.000067 | Epoch Time: 85.94 s
+Epoch 135/200 | Train Loss: -1.0173 | Val Loss: -0.8227 | Graph Loss: -0.2844 | Node Loss: -1.3609 | LR: 0.000065 | Epoch Time: 85.61 s
+Epoch 136/200 | Train Loss: -1.0221 | Val Loss: -0.8210 | Graph Loss: -0.2798 | Node Loss: -1.3622 | LR: 0.000063 | Epoch Time: 90.61 s
+Epoch 137/200 | Train Loss: -1.0261 | Val Loss: -0.8223 | Graph Loss: -0.2894 | Node Loss: -1.3552 | LR: 0.000061 | Epoch Time: 73.77 s
+Epoch 138/200 | Train Loss: -1.0334 | Val Loss: -0.8249 | Graph Loss: -0.2977 | Node Loss: -1.3520 | LR: 0.000060 | Epoch Time: 93.16 s
+Epoch 139/200 | Train Loss: -1.0351 | Val Loss: -0.8295 | Graph Loss: -0.2949 | Node Loss: -1.3640 | LR: 0.000058 | Epoch Time: 90.14 s
+New best model saved with val loss: -0.8295 at epoch 139
+Epoch 140/200 | Train Loss: -1.0384 | Val Loss: -0.8314 | Graph Loss: -0.2949 | Node Loss: -1.3678 | LR: 0.000056 | Epoch Time: 85.98 s
+New best model saved with val loss: -0.8314 at epoch 140
+Epoch 141/200 | Train Loss: -1.0428 | Val Loss: -0.8221 | Graph Loss: -0.2908 | Node Loss: -1.3533 | LR: 0.000054 | Epoch Time: 92.31 s
+Epoch 142/200 | Train Loss: -1.0494 | Val Loss: -0.8231 | Graph Loss: -0.2860 | Node Loss: -1.3601 | LR: 0.000053 | Epoch Time: 83.95 s
+Epoch 143/200 | Train Loss: -1.0575 | Val Loss: -0.8206 | Graph Loss: -0.2786 | Node Loss: -1.3626 | LR: 0.000051 | Epoch Time: 85.56 s
+Epoch 144/200 | Train Loss: -1.0580 | Val Loss: -0.8304 | Graph Loss: -0.2899 | Node Loss: -1.3709 | LR: 0.000049 | Epoch Time: 86.19 s
+Epoch 145/200 | Train Loss: -1.0662 | Val Loss: -0.8312 | Graph Loss: -0.2857 | Node Loss: -1.3766 | LR: 0.000048 | Epoch Time: 86.65 s
+Epoch 146/200 | Train Loss: -1.0710 | Val Loss: -0.8269 | Graph Loss: -0.2906 | Node Loss: -1.3633 | LR: 0.000046 | Epoch Time: 101.25 s
+Epoch 147/200 | Train Loss: -1.0702 | Val Loss: -0.8185 | Graph Loss: -0.2800 | Node Loss: -1.3570 | LR: 0.000045 | Epoch Time: 65.85 s
+Epoch 148/200 | Train Loss: -1.0789 | Val Loss: -0.8304 | Graph Loss: -0.2898 | Node Loss: -1.3709 | LR: 0.000043 | Epoch Time: 84.62 s
+Epoch 149/200 | Train Loss: -1.0803 | Val Loss: -0.8380 | Graph Loss: -0.3052 | Node Loss: -1.3708 | LR: 0.000042 | Epoch Time: 85.69 s
+New best model saved with val loss: -0.8380 at epoch 149
+Epoch 150/200 | Train Loss: -1.0827 | Val Loss: -0.8335 | Graph Loss: -0.2915 | Node Loss: -1.3755 | LR: 0.000040 | Epoch Time: 93.55 s
+Epoch 151/200 | Train Loss: -1.0869 | Val Loss: -0.8300 | Graph Loss: -0.2855 | Node Loss: -1.3745 | LR: 0.000039 | Epoch Time: 85.36 s
+Evaluating on test set in epoch 151 on random_666...
+MAE:  [1.5930357 4.0590653 2.7150483]
+RMSE:  [2.6947377 7.7058706 5.3438625]
+R2:  [0.96080333 0.8330664  0.7293557 ]
+MAE:  [0.0379986]
+RMSE:  [0.09495424]
+R2:  [0.8287578]
+Epoch 152/200 | Train Loss: -1.0887 | Val Loss: -0.8174 | Graph Loss: -0.2735 | Node Loss: -1.3614 | LR: 0.000037 | Epoch Time: 86.66 s
+Epoch 153/200 | Train Loss: -1.0974 | Val Loss: -0.8365 | Graph Loss: -0.3016 | Node Loss: -1.3714 | LR: 0.000036 | Epoch Time: 85.47 s
+Epoch 154/200 | Train Loss: -1.0976 | Val Loss: -0.8213 | Graph Loss: -0.2761 | Node Loss: -1.3666 | LR: 0.000034 | Epoch Time: 94.32 s
+Epoch 155/200 | Train Loss: -1.1013 | Val Loss: -0.8365 | Graph Loss: -0.2926 | Node Loss: -1.3804 | LR: 0.000033 | Epoch Time: 85.96 s
+Epoch 156/200 | Train Loss: -1.1053 | Val Loss: -0.8337 | Graph Loss: -0.2868 | Node Loss: -1.3805 | LR: 0.000031 | Epoch Time: 72.13 s
+Epoch 157/200 | Train Loss: -1.1103 | Val Loss: -0.8310 | Graph Loss: -0.2834 | Node Loss: -1.3786 | LR: 0.000030 | Epoch Time: 77.51 s
+Epoch 158/200 | Train Loss: -1.1127 | Val Loss: -0.8321 | Graph Loss: -0.2804 | Node Loss: -1.3838 | LR: 0.000029 | Epoch Time: 94.50 s
+Epoch 159/200 | Train Loss: -1.1189 | Val Loss: -0.8434 | Graph Loss: -0.3008 | Node Loss: -1.3860 | LR: 0.000027 | Epoch Time: 84.14 s
+New best model saved with val loss: -0.8434 at epoch 159
+Epoch 160/200 | Train Loss: -1.1221 | Val Loss: -0.8266 | Graph Loss: -0.2889 | Node Loss: -1.3643 | LR: 0.000026 | Epoch Time: 84.43 s
+Epoch 161/200 | Train Loss: -1.1222 | Val Loss: -0.8245 | Graph Loss: -0.2729 | Node Loss: -1.3762 | LR: 0.000025 | Epoch Time: 85.96 s
+Epoch 162/200 | Train Loss: -1.1269 | Val Loss: -0.8304 | Graph Loss: -0.2871 | Node Loss: -1.3738 | LR: 0.000024 | Epoch Time: 92.37 s
+Epoch 163/200 | Train Loss: -1.1308 | Val Loss: -0.8288 | Graph Loss: -0.2933 | Node Loss: -1.3644 | LR: 0.000023 | Epoch Time: 85.35 s
+Epoch 164/200 | Train Loss: -1.1311 | Val Loss: -0.8331 | Graph Loss: -0.2889 | Node Loss: -1.3773 | LR: 0.000021 | Epoch Time: 85.80 s
+Epoch 165/200 | Train Loss: -1.1341 | Val Loss: -0.8261 | Graph Loss: -0.2795 | Node Loss: -1.3728 | LR: 0.000020 | Epoch Time: 86.45 s
+Epoch 166/200 | Train Loss: -1.1385 | Val Loss: -0.8317 | Graph Loss: -0.2819 | Node Loss: -1.3815 | LR: 0.000019 | Epoch Time: 69.24 s
+Epoch 167/200 | Train Loss: -1.1420 | Val Loss: -0.8342 | Graph Loss: -0.2847 | Node Loss: -1.3837 | LR: 0.000018 | Epoch Time: 93.20 s
+Epoch 168/200 | Train Loss: -1.1408 | Val Loss: -0.8334 | Graph Loss: -0.2817 | Node Loss: -1.3851 | LR: 0.000017 | Epoch Time: 102.80 s
+Epoch 169/200 | Train Loss: -1.1446 | Val Loss: -0.8329 | Graph Loss: -0.2863 | Node Loss: -1.3795 | LR: 0.000016 | Epoch Time: 97.72 s
+Epoch 170/200 | Train Loss: -1.1483 | Val Loss: -0.8257 | Graph Loss: -0.2733 | Node Loss: -1.3782 | LR: 0.000015 | Epoch Time: 122.94 s
+Epoch 171/200 | Train Loss: -1.1515 | Val Loss: -0.8305 | Graph Loss: -0.2811 | Node Loss: -1.3798 | LR: 0.000014 | Epoch Time: 94.99 s
+Epoch 172/200 | Train Loss: -1.1554 | Val Loss: -0.8267 | Graph Loss: -0.2759 | Node Loss: -1.3775 | LR: 0.000013 | Epoch Time: 94.68 s
+Epoch 173/200 | Train Loss: -1.1544 | Val Loss: -0.8375 | Graph Loss: -0.2868 | Node Loss: -1.3882 | LR: 0.000012 | Epoch Time: 102.83 s
+Epoch 174/200 | Train Loss: -1.1581 | Val Loss: -0.8362 | Graph Loss: -0.2876 | Node Loss: -1.3849 | LR: 0.000011 | Epoch Time: 96.14 s
+Epoch 175/200 | Train Loss: -1.1599 | Val Loss: -0.8341 | Graph Loss: -0.2837 | Node Loss: -1.3846 | LR: 0.000010 | Epoch Time: 81.44 s
+Epoch 176/200 | Train Loss: -1.1617 | Val Loss: -0.8370 | Graph Loss: -0.2893 | Node Loss: -1.3848 | LR: 0.000010 | Epoch Time: 103.12 s
+Evaluating on test set in epoch 176 on random_666...
+MAE:  [1.5612592 3.9801154 2.7515872]
+RMSE:  [2.6370585 7.605824  5.419765 ]
+R2:  [0.9624633  0.83737296 0.7216128 ]
+MAE:  [0.0374288]
+RMSE:  [0.09459215]
+R2:  [0.8300613]
+Epoch 177/200 | Train Loss: -1.1623 | Val Loss: -0.8321 | Graph Loss: -0.2818 | Node Loss: -1.3824 | LR: 0.000009 | Epoch Time: 97.45 s
+Epoch 178/200 | Train Loss: -1.1629 | Val Loss: -0.8344 | Graph Loss: -0.2864 | Node Loss: -1.3825 | LR: 0.000008 | Epoch Time: 97.16 s
+Epoch 179/200 | Train Loss: -1.1658 | Val Loss: -0.8424 | Graph Loss: -0.2946 | Node Loss: -1.3901 | LR: 0.000007 | Epoch Time: 97.83 s
+Early stopping triggered. No improvement for 20 epochs.
+
+Final evaluation on test set...
+MAE:  [1.5662081 4.058068  2.7864408]
+RMSE:  [2.6207945 7.731518  5.4459243]
+R2:  [0.9629249 0.8319534 0.718919 ]
+MAE:  [0.03772364]
+RMSE:  [0.0945177]
+R2:  [0.8303287]
+Loading weights into cache from /home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/results/trial_55/random_666/model.pt...
+/home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/model/inference.py:168: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(str(model_path))
+Loading 3571 molecules for prediction
+Getting predictions from  /home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/results/trial_55/random_666/model.pt
+Loaded model from epoch 159 with val_loss -0.8434 and GNN encoder type gps
+Test predictions saved to /home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/results/trial_55/random_666
