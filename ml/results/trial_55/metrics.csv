@@ -19,3 +19,7 @@ random_666,adiabatic_energy,3571,1.57,2.62,0.963,0.137,1.62
 random_666,lambda_acceptor_singlet,3571,4.06,7.73,0.832,0.241,3.07
 random_666,lambda_donor_triplet,3571,2.79,5.45,0.719,0.328,2.26
 random_666,spin_population,56703,0.038,0.095,0.83,0.48,0.019
+oos_styryl,adiabatic_energy,1089,2.67,3.99,0.738,0.049,2.86
+oos_styryl,lambda_acceptor_singlet,1089,8.93,14.08,0.637,0.191,6.02
+oos_styryl,lambda_donor_triplet,1089,3.76,5.5,0.671,0.106,3.21
+oos_styryl,spin_population,18954,0.029,0.064,0.914,0.381,0.017

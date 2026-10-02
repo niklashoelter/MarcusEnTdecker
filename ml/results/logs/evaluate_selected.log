@@ -1,0 +1,5 @@
+
+===== evaluate_selected on ad5767b1ead3 cuda:3 2026-10-02T22:56:02
+trial_55: wrote metrics.csv (24 rows)
+trial_55: wrote metrics_random_splits.csv (4 rows)
+trial_55: wrote uncertainty_filtering.csv (80 rows)
