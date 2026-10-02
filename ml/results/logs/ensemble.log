@@ -1,0 +1,5 @@
+
+===== ensemble on ad5767b1ead3 cpu 2026-10-02T19:42:43
+     smiles  triplet_energy_adiabatic  triplet_energy_adiabatic_uncertainty  triplet_energy_adiabatic_model_spread  n_models
+   c1ccccc1                 72.264519                             10.308589                               9.155642         5
+C=Cc1ccccc1                 52.741669                              1.866941                               0.763242         5

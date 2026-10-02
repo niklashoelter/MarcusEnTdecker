@@ -1,0 +1,6 @@
+hyperparameters,split,checkpoint,md5
+trial_55,random_42,ml/results/trial_55/random_42/model.pt,d1997f2d1241cbef9c78273bffd41429
+trial_55,random_101,ml/results/trial_55/random_101/model.pt,612f58166ba26ead1cf156ec8e56e176
+trial_55,random_143,ml/results/trial_55/random_143/model.pt,ad3d45142cca98c03b8b541d0930043e
+trial_55,random_404,ml/results/trial_55/random_404/model.pt,e99f02cb8d0bac27a7257d806dbb6700
+trial_55,random_666,ml/results/trial_55/random_666/model.pt,02dc68b7996d5219637c73ea192cd065
