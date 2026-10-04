@@ -1,4 +1,4 @@
-# Aliases the pre-rename module paths so the pickled DualScaler in model_final.pt resolves.
+# Aliases the pre-rename module paths so the pickled DualScaler in model_final_old.pt resolves.
 from ml.model import checkpoint as _checkpoint  # noqa: F401
 
 import numpy as np
@@ -142,8 +142,7 @@ def build_model(checkpoint, device, smiles, batch_size=48):
     return model
 
 def get_predictions(smiles: list,
-                    model_path: Path = Path(
-                        '/tmp/pyRates/playground/model_setup/save_model_and_inspect/new_data/graph_gps/new_loss/checkpoints/model.pt'),
+                    model_path: Path,
                     device='cpu',
                     task: str = 'graph', #other options are node or all
                     mode: str = 'mixture_mean' #other option max_mode
@@ -152,7 +151,7 @@ def get_predictions(smiles: list,
     Function to get predictions from a trained model.
 
     :param smiles: List of SMILES strings for which to get predictions.
-    :param model_path: Path to the directory containing the trained model checkpoint (should contain 'checkpoints/model.pt').
+    :param model_path: Path to the trained model checkpoint, e.g. ml/data/model_final.pt.
     :param device: Device to run the model on (e.g., 'cpu' or 'cuda:0').
     :return: Tuple containing predictions, uncertainties, mode weights, and MDN parameters (mu, sigma, pi).
     :param task: Prediction task - 'graph', 'node', or 'all' (default: 'graph').

@@ -22,9 +22,8 @@ data/*/**/README.md
 # the deployed model is pinned by this repository. Its own .gitignore was removed for
 # exactly that reason — see ml/README.md.
 
-# Bookkeeping of ml/training/campaign.py while a step runs: its lock, and the best
-# checkpoint so far, which becomes model.pt when the run ends.
-ml/results/.locks/
+# The best checkpoint so far of a running ml/training/train.py, renamed to model.pt when the
+# run ends.
 ml/results/**/*.pt.partial
 
 # Site-specific deployment: the image build and the university cluster manifests, not published.

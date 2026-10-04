@@ -12,7 +12,7 @@ Epoch 8/200 | Train Loss: 0.0385 | Val Loss: -0.1326 | Graph Loss: 0.2911 | Node
 Epoch 9/200 | Train Loss: -0.0084 | Val Loss: -0.1661 | Graph Loss: 0.2572 | Node Loss: -0.5895 | LR: 0.000183 | Epoch Time: 51.54 s
 Epoch 10/200 | Train Loss: -0.0388 | Val Loss: -0.1955 | Graph Loss: 0.2472 | Node Loss: -0.6381 | LR: 0.000203 | Epoch Time: 55.30 s
 Epoch 11/200 | Train Loss: -0.0801 | Val Loss: -0.2576 | Graph Loss: 0.1982 | Node Loss: -0.7134 | LR: 0.000223 | Epoch Time: 61.42 s
-/home/employee/n_hoel07/machine_learning/MarcusEnTdecker/.venv/lib/python3.12/site-packages/torch/optim/lr_scheduler.py:240: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
+.venv/lib/python3.12/site-packages/torch/optim/lr_scheduler.py:240: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
   warnings.warn(EPOCH_DEPRECATION_WARNING, UserWarning)
 Epoch 12/200 | Train Loss: -0.1023 | Val Loss: -0.2467 | Graph Loss: 0.2314 | Node Loss: -0.7249 | LR: 0.000243 | Epoch Time: 56.45 s
 Epoch 13/200 | Train Loss: -0.1249 | Val Loss: -0.1951 | Graph Loss: 0.2871 | Node Loss: -0.6772 | LR: 0.000243 | Epoch Time: 56.15 s
@@ -283,10 +283,10 @@ R2:  [0.95989245 0.8208216  0.7038554 ]
 MAE:  [0.03856818]
 RMSE:  [0.09673944]
 R2:  [0.8224268]
-Loading weights into cache from /home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/results/trial_55/random_404/model.pt...
-/home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/model/inference.py:168: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+Loading weights into cache from ml/results/trial_55/random_404/model.pt...
+ml/model/inference.py:168: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
   checkpoint = torch.load(str(model_path))
 Loading 3571 molecules for prediction
-Getting predictions from  /home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/results/trial_55/random_404/model.pt
+Getting predictions from  ml/results/trial_55/random_404/model.pt
 Loaded model from epoch 171 with val_loss -0.8645 and GNN encoder type gps
-Test predictions saved to /home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/results/trial_55/random_404
+Test predictions saved to ml/results/trial_55/random_404

@@ -55,6 +55,14 @@ def test_the_default_ensemble_is_the_five_random_split_models():
     assert [len(s) for s in table["spin_map_model_spread"]] == [len(s) for s in table["spin_map"]]
 
 
+def test_a_member_that_does_not_match_its_md5_is_refused(tmp_path, monkeypatch):
+    members = tmp_path / "ensemble_members.csv"
+    members.write_text("split,checkpoint,md5\nrandom_42,ml/results/random_42/model.pt,0\n")
+    monkeypatch.setattr(ensemble, "MEMBERS", members)
+    with pytest.raises(ValueError):
+        ensemble.default_checkpoints()
+
+
 def test_rate_predictor_can_use_the_ensemble():
     props = RatePredictor(ensemble=True).properties(["c1ccccc1"])[0]
     assert props.source == "ensemble" and props.E_T_uncertainty > 0

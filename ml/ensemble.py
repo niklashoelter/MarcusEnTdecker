@@ -11,10 +11,9 @@ The five random-split models as one ensemble.
     ent-ml rate --ensemble --quencher SMILES --photocatalysts TABLE
 
 Written for this repository, not taken from Leon Schlosser's code. The members are the
-checkpoints ml/training/train.py writes for the random splits of one hyperparameter set,
-ml/results/<set>/random_<seed>/model.pt. By default the set is the one
-ml/results/hyperparameter_selection.csv marks as selected, and `trial_0` (whose seed-42
-member is ml/data/model_final.pt) while no selection has been made.
+checkpoints ml/training/train.py writes for the five random splits,
+ml/results/random_<seed>/model.pt, as ml/results/ensemble_members.csv lists them with their
+md5 sums; a member whose file no longer matches its sum is refused.
 
 HOW THE MEMBERS ARE COMBINED
     Each member predicts, per target, a mixture of Gaussians. The ensemble's prediction is
@@ -36,6 +35,7 @@ only model_final.pt; outside a checkout, pass `checkpoints=`.
 
 from __future__ import annotations
 
+import hashlib
 import importlib.resources as ir
 import threading
 from pathlib import Path
@@ -44,32 +44,32 @@ from typing import Iterable
 import numpy as np
 
 RESULTS = Path(str(ir.files("ml"))) / "results"
-SELECTION = RESULTS / "hyperparameter_selection.csv"
-UNSELECTED_DEFAULT = "trial_0"
+MEMBERS = RESULTS / "ensemble_members.csv"
 BATCH_SIZE = 48
 
 #: Column names of the graph targets in the prediction table, in model output order.
 GRAPH_COLUMNS = ("triplet_energy_adiabatic", "lamda_S_T", "lamda_T_S")
 
 
-def default_set() -> str:
-    """The selected hyperparameter set, or trial_0 while none has been selected."""
-    if not SELECTION.exists():
-        return UNSELECTED_DEFAULT
-    import pandas as pd
-
-    table = pd.read_csv(SELECTION)
-    return str(table.loc[table["selected"], "hyperparameters"].item())
+def md5(path: Path) -> str:
+    return hashlib.md5(Path(path).read_bytes()).hexdigest()
 
 
-def default_checkpoints(hyperparameters: str | None = None) -> list[Path]:
-    """The random-split checkpoints of a set (default: `default_set()`), ordered by seed."""
-    name = hyperparameters or default_set()
-    paths = sorted((RESULTS / name).glob("random_*/model.pt"),
-                   key=lambda p: int(p.parent.name.split("_")[1]))
-    if not paths:
-        raise FileNotFoundError(f"no ensemble members: nothing matches "
-                                f"{RESULTS / name / 'random_*' / 'model.pt'}")
+def default_checkpoints() -> list[Path]:
+    """The members ml/results/ensemble_members.csv lists, each checked against its md5 sum."""
+    import csv
+
+    if not MEMBERS.exists():
+        raise FileNotFoundError(f"{MEMBERS} does not exist; ml.training.evaluate writes it")
+    root = RESULTS.parent.parent
+    with open(MEMBERS, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    paths = []
+    for row in rows:
+        path = root / row["checkpoint"]
+        if md5(path) != row["md5"]:
+            raise ValueError(f"{path} is not the ensemble member {MEMBERS.name} records")
+        paths.append(path)
     return paths
 
 

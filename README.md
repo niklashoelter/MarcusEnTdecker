@@ -128,11 +128,12 @@ result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.quenches
 
 ## The models, and who wrote them
 
-The models are not this repository's work. They are
+The model code is not this repository's work. It is
 [pyrates](https://github.com/le-schlo/pyrates), by **Leon Schlosser**, MIT licensed,
-and they are carried here as the `ml` package — including the trained checkpoint at
-`ml/data/model_final.pt` that the web application serves. His licence is kept alongside
-it as `ml/LICENSE-pyrates` and must travel with any redistribution.
+carried here as the `ml` package together with his training scripts. The checkpoint the
+web application serves, `ml/data/model_final.pt`, was trained in this repository with that
+code; `ml/README.md` describes how. His licence is kept alongside it as
+`ml/LICENSE-pyrates` and must travel with any redistribution.
 
 It is carried in this repository rather than pinned as a remote dependency because the
 paper's numbers have to stay reproducible after the library moves on, and because the

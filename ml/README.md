@@ -10,26 +10,27 @@ energy/             Marcus and Eyring — the theory the web application and the
 utils/              graph construction and the molecule dataset
 training/           offline only, left out of the wheel; nothing else may import it
   splits.py         builds the train/validation/test splits in data/splits/
-  hyperparameters.py   the two hyperparameter sets, trial_0 and trial_55
-  train.py          trains a set on a split, or on all data
+  hyperparameters.py   the hyperparameters, Optuna trial 55
+  train.py          trains on a split, or on all data
   test_predictions.py   a checkpoint's predictions for the test set of its split
-  evaluate.py       metrics from the test predictions of one set
-  select_hyperparameters.py   picks the set with the lower validation loss
-  campaign.py       the validation campaign as fixed steps, for the GPU machine
-  RUNBOOK.md        how the campaign is run there
+  evaluate.py       metrics from the test predictions, and the ensemble's member list
   hyperparameter_optimization.py   the Optuna search behind the hyperparameters
   build_dataset.py  training targets from raw DFT energies
   loop.py           one training or validation epoch, and the loss composition
   metrics.py        spin-population metrics
 data/
-  model_final.pt              the trained checkpoint, 69 MB, loaded through importlib.resources
+  model_final.pt              the deployed checkpoint, a copy of results/full/model.pt,
+                              loaded through importlib.resources
+  model_final_old.pt          Leon Schlosser's earlier checkpoint, kept for comparison only;
+                              not in the wheel
   training_dataset_full.csv   the training dataset
   splits/                     random_<seed>.csv and oos_styryl.csv, written by splits.py
-results/            what training/ writes, per hyperparameter set: <set>/<split>/ with
-                    model.pt and the test predictions, <set>/full/model.pt, and the
-                    set's metrics*.csv and uncertainty_filtering.csv; across sets,
-                    hyperparameter_selection*.csv, ensemble_members.csv and logs/;
-                    hyperparameter_optimization/optuna_results.csv
+results/            what training/ writes:
+  random_<seed>/, oos_styryl/   model.pt, test_predictions_graph.csv, test_predictions_node.csv
+  full/model.pt                 the model trained on all data
+  metrics.csv, metrics_random_splits.csv, uncertainty_filtering.csv, ensemble_members.csv
+  hyperparameter_optimization/optuna_results.csv
+  logs/                         the console output of the runs that made these files
 ensemble.py         the random-split models predicting together (not from pyrates)
 tests/              the package's own test suite
 LICENSE-pyrates     MIT, Leon Schlosser
@@ -86,9 +87,10 @@ rather than 96.
 
 ### The ensemble
 
-`ml.ensemble` lets the five random-split models of a hyperparameter set
-(`results/<set>/random_<seed>/model.pt`) predict together: by default those of the set
-`results/hyperparameter_selection.csv` selects, and `trial_0`'s before a selection exists. It was written for this repository; it is not part of pyrates.
+`ml.ensemble` lets the five random-split models (`results/random_<seed>/model.pt`) predict
+together. Its members are listed in `results/ensemble_members.csv` with their md5 sums, and
+a member whose file has changed is refused. It was written for this repository; it is not
+part of pyrates.
 
 ```python
 from ml.ensemble import predict
@@ -103,8 +105,8 @@ mean of the members' predictions and its uncertainty is the standard deviation o
 pooled mixture: the members' own uncertainties plus their disagreement, which is reported
 alone as `_model_spread`. An ensemble of `model_final.pt` alone returns exactly the
 deployed model's prediction. The members are in the repository, not in the installed
-package; outside a checkout, pass `checkpoints=`. The deployed model, and every number
-in `data/`, remains `model_final.pt`.
+package; outside a checkout, pass `checkpoints=`. The deployed model remains
+`model_final.pt`.
 
 ## Command line
 
@@ -188,37 +190,33 @@ them.
 
 ## Training
 
-`data/training_dataset_full.csv` is the training dataset, and `model_final.pt` is the model
-trained on the `random_42` split with hyperparameter set `trial_0`. A model is validated on
-five random splits and one out-of-sample split, each trained with the same settings.
-
-There are two hyperparameter sets (`training/hyperparameters.py`), both from Leon's Optuna
-search: `trial_0`, which he used by mistake and which made `model_final.pt` and the models
-in `results/trial_0/`, and `trial_55`, the trial with the lowest validation loss. Results
-are kept apart by set, in `results/<set>/`, and every script checks that a checkpoint's
-stored configuration belongs to the set whose folder it is in.
+`data/training_dataset_full.csv` is the training dataset. The model is validated by
+cross-validation over five random splits and on one out-of-sample split, each trained with
+the same settings and hyperparameters; `model_final.pt` is then trained on all data.
 
 ```
-uv run --extra ml python -m ml.training.train trial_55 random_101 --device cuda:0
-uv run --extra ml python -m ml.training.train trial_55 full --device cuda:0
-uv run --extra ml python -m ml.training.test_predictions trial_0 random_42   # trained elsewhere
-uv run --extra ml python -m ml.training.evaluate trial_0                     # results/trial_0/
-uv run --extra ml python -m ml.training.select_hyperparameters
+uv run --extra ml python -m ml.training.train random_42 random_101 random_143 random_404 random_666 --device cuda:0
+uv run --extra ml python -m ml.training.train oos_styryl --device cuda:0
+uv run --extra ml python -m ml.training.train full --device cuda:0
+uv run --extra ml python -m ml.training.evaluate
 ```
 
-`train.py` writes `results/<set>/<split>/model.pt` and the test predictions, or with
-`full` a model trained on all data for a fixed number of epochs (the median best epoch of
-the set's random-split runs); `test_predictions.py` writes the same predictions for a
-checkpoint placed by hand; `evaluate.py` reads the predictions of every split of a set that
-has them. `select_hyperparameters.py` picks the set with the lower mean validation loss over
-the five random splits, so that each set's test metrics remain a fair report. All
-checkpoints are committed (about 69 MB each; `trial_0/random_42` is `model_final.pt`, stored
-once).
+`train.py` writes `results/<split>/model.pt`, the checkpoint with the lowest validation
+loss, and its test predictions. With `full` it trains on every molecule for a fixed number
+of epochs, the median best epoch of the five random-split runs, and keeps the last epoch;
+that model is copied to `data/model_final.pt`. A finished `model.pt` is never overwritten.
+`test_predictions.py` rewrites the test predictions of a split from its checkpoint.
+`evaluate.py` turns the test predictions into `results/metrics.csv` (per split and target),
+`results/metrics_random_splits.csv` (mean and SD over the random splits) and
+`results/uncertainty_filtering.csv`, and lists the random-split checkpoints in
+`results/ensemble_members.csv`. The settings are in the docstrings and constants of
+`train.py`, the hyperparameters in `hyperparameters.py`.
 
-On the GPU machine the whole sequence runs as the fixed steps of `training/campaign.py`,
-following `training/RUNBOOK.md`: train `trial_55` on the five random splits, select a set,
-then train the selected set on the out-of-sample split and on all data and record its five
-random-split models as the ensemble.
+The test predictions are the raw model outputs: one row per test molecule in
+`test_predictions_graph.csv` (`idx`, `smiles`, and `<target>_target`, `_pred` and
+`_uncertainty` for each graph target), and one row per atom of a test molecule in
+`test_predictions_node.csv` (`idx`, `atom`, and the same three columns for the spin
+population). `idx` is the molecule's `idx` in the training dataset.
 
 `training/splits.py` writes one file per split with one row per molecule in dataset order
 (`idx`, `split`); `read_split(name)` turns a file into positional train, validation and test
@@ -234,7 +232,8 @@ Both procedures are Leon's own; the styryl split is the out-of-sample split of h
 
 `training/hyperparameter_optimization.py` is the Optuna search that chose the
 hyperparameters, kept for reproducibility only; it is not part of training or evaluating a
-model. Its results as Leon ran it are in `results/hyperparameter_optimization/`.
+model. Its results as Leon ran it are in `results/hyperparameter_optimization/`, and
+`hyperparameters.py` takes the trial with the lowest validation loss, trial 55.
 
 Everything in this package, training and hyperparameter optimization included, installs
 with the one `ml` extra of the repository's `pyproject.toml`.
@@ -253,7 +252,7 @@ travels with it as `LICENSE-pyrates` and must stay with any redistribution. It l
 here as ordinary first-party code — develop against it, fix it, extend it — but the
 authorship is his, and anything published from it should say so. The package was
 renamed from `pyrates` to `ml` in this repository; `model/checkpoint.py` aliases the
-old dotted path so the committed checkpoint still unpickles, byte-identical.
+old dotted path so his checkpoint, `model_final_old.pt`, still unpickles, byte-identical.
 
 The code was taken at these commits:
 
@@ -265,9 +264,8 @@ The code was taken at these commits:
 `fastapi-webapp` is the base because it is the branch the deployed application is built
 from, and the only place the trained checkpoint exists. The dataset is added back from
 `main` because that branch deletes it. Upstream's `data/dataset.csv` is
-`data/training_dataset_full.csv` here, next to the checkpoint, which upstream calls
-`model.pt` and this repository `model_final.pt`; both files are byte-identical to
-upstream.
+`data/training_dataset_full.csv` here, and its checkpoint `model.pt` is
+`data/model_final_old.pt`; both files are byte-identical to upstream.
 
 The modules were rearranged into runtime and training code without changing them; only
 import paths differ. Where upstream code lives here:
@@ -296,8 +294,9 @@ docstring lists what changed.
 | `hyperparameter_optimization.py` | `hyperparameters/new_data/gps_ogdata_newmodel/opt.py` |
 | `splits.py` (procedures) | `og_data_opt_param/train.py` (random), `thesis/model/oos/train.py` (out of sample) |
 
-`model_final.pt` is that training script's seed-42 checkpoint, byte for byte; the
-checkpoints of the other four seeds come from the same folder, and
+`model_final_old.pt` is that training script's seed-42 checkpoint, byte for byte. That
+script carried the hyperparameters of trial 0 of the search by mistake; the models in
+`results/` and `model_final.pt` were trained in this repository with trial 55.
 `results/hyperparameter_optimization/optuna_results.csv` is the search's output, unchanged.
 
 ### Known issue: the two upstream branches have diverged

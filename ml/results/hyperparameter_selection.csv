@@ -1,3 +1,0 @@
-hyperparameters,n_splits,val_loss_mean,val_loss_sd,best_epoch_median,selected
-trial_0,5,-0.7656,0.0194,105.0,False
-trial_55,5,-0.8633,0.0208,164.0,True

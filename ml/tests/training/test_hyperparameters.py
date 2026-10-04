@@ -1,14 +1,18 @@
 import csv
+import importlib.resources as ir
+from pathlib import Path
 
 import pytest
 import torch
 
-from ml.model import checkpoint as _checkpoint  # noqa: F401
-from ml.training.hyperparameters import HYPERPARAMETERS, identify
+from ml.training.hyperparameters import HYPERPARAMETERS, NAME
 from ml.training.splits import RANDOM_SEEDS
-from ml.training.test_predictions import RESULTS, check_set, run_dir
+from ml.training.test_predictions import RESULTS, run_dir
 
 OPTUNA = RESULTS / "hyperparameter_optimization" / "optuna_results.csv"
+MODEL_FINAL = Path(str(ir.files("ml.data").joinpath("model_final.pt")))
+ARCHITECTURE_KEYS = ("node_hidden_dim", "encoder_layers", "encoder_dropout", "num_heads",
+                     "walk_length", "pe_dim", "n_components", "mdn_hidden_dims", "mdn_dropout")
 
 
 def _trial(number):
@@ -30,35 +34,21 @@ def _trial(number):
     }
 
 
-def test_trial_55_is_the_optuna_trial_exactly():
-    assert HYPERPARAMETERS["trial_55"] == _trial(55)
-
-
-def test_trial_55_has_the_lowest_validation_loss_of_the_search():
+def test_the_hyperparameters_are_the_best_optuna_trial_exactly():
     with open(OPTUNA, newline="", encoding="utf-8") as f:
         complete = [r for r in csv.DictReader(f) if r["state"] == "COMPLETE"]
-    assert min(complete, key=lambda r: float(r["value"]))["number"] == "55"
+    best = min(complete, key=lambda r: float(r["value"]))["number"]
+    assert NAME == f"trial_{best}"
+    assert HYPERPARAMETERS == _trial(int(best))
 
 
-def test_trial_0_is_the_optuna_trial_as_leon_rounded_it():
-    expected, ours = _trial(0), HYPERPARAMETERS["trial_0"]
-    for key, value in expected.items():
-        if isinstance(value, float):
-            assert ours[key] == pytest.approx(value, rel=1e-2), key
-        else:
-            assert ours[key] == value, key
+@pytest.mark.parametrize("split", [f"random_{s}" for s in RANDOM_SEEDS] + ["oos_styryl", "full"])
+def test_the_committed_checkpoints_were_trained_with_them(split):
+    checkpoint = torch.load(run_dir(split) / "model.pt", map_location="cpu", weights_only=False)
+    assert checkpoint["hyperparameters"] == NAME and checkpoint["split"] == split
+    for key in ARCHITECTURE_KEYS:
+        assert checkpoint["model_config"][key] == HYPERPARAMETERS[key], key
 
 
-@pytest.mark.parametrize("seed", RANDOM_SEEDS)
-def test_leons_checkpoints_are_trial_0(seed):
-    path = run_dir("trial_0", f"random_{seed}") / "model.pt"
-    config = torch.load(path, map_location="cpu", weights_only=False)["model_config"]
-    assert identify(config) == "trial_0"
-    with pytest.raises(ValueError):
-        check_set("trial_55", path)
-
-
-def test_the_two_sets_are_told_apart():
-    assert identify(HYPERPARAMETERS["trial_55"]) == "trial_55"
-    assert identify(HYPERPARAMETERS["trial_0"]) == "trial_0"
-    assert identify({**HYPERPARAMETERS["trial_55"], "walk_length": 6}) is None
+def test_the_deployed_model_is_the_full_data_model():
+    assert MODEL_FINAL.read_bytes() == (run_dir("full") / "model.pt").read_bytes()

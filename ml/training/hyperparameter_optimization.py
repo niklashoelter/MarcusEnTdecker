@@ -8,9 +8,9 @@ Writes  ml/results/hyperparameter_optimization/optuna_results.csv   one row per 
     uv run --extra ml python -m ml.training.hyperparameter_optimization
 
 Kept for completeness and reproducibility; it is not part of training or evaluating a model.
-The hyperparameters in train.py (and of ml/data/model_final.pt) are those of trial 0 of the
-study whose results ml/results/hyperparameter_optimization/optuna_results.csv holds as Leon
-Schlosser ran it; running this again replaces that file.
+ml/results/hyperparameter_optimization/optuna_results.csv holds the study as Leon Schlosser
+ran it, and hyperparameters.py takes its best trial, 55; running this again replaces that
+file.
 
 Leon's script, playground/hyperparameters/new_data/gps_ogdata_newmodel/opt.py. The search
 space, trial count, epochs per trial, learning-rate schedule, pruner and objective (the

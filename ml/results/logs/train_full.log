@@ -12,7 +12,7 @@ Epoch 8/164 | Train Loss: -0.0175 | LR: 0.000163 | Epoch Time: 74.71 s
 Epoch 9/164 | Train Loss: -0.0605 | LR: 0.000183 | Epoch Time: 74.15 s
 Epoch 10/164 | Train Loss: -0.0998 | LR: 0.000203 | Epoch Time: 76.45 s
 Epoch 11/164 | Train Loss: -0.1370 | LR: 0.000223 | Epoch Time: 75.64 s
-/home/employee/n_hoel07/machine_learning/MarcusEnTdecker/.venv/lib/python3.12/site-packages/torch/optim/lr_scheduler.py:240: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
+.venv/lib/python3.12/site-packages/torch/optim/lr_scheduler.py:240: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
   warnings.warn(EPOCH_DEPRECATION_WARNING, UserWarning)
 Epoch 12/164 | Train Loss: -0.1524 | LR: 0.000243 | Epoch Time: 73.97 s
 Epoch 13/164 | Train Loss: -0.1735 | LR: 0.000243 | Epoch Time: 73.96 s
@@ -167,4 +167,4 @@ Epoch 161/164 | Train Loss: -1.1435 | LR: 0.000000 | Epoch Time: 74.84 s
 Epoch 162/164 | Train Loss: -1.1432 | LR: 0.000000 | Epoch Time: 72.32 s
 Epoch 163/164 | Train Loss: -1.1430 | LR: 0.000000 | Epoch Time: 74.80 s
 Epoch 164/164 | Train Loss: -1.1445 | LR: 0.000000 | Epoch Time: 74.87 s
-Saved /home/employee/n_hoel07/machine_learning/MarcusEnTdecker/ml/results/trial_55/full/model.pt
+Saved ml/results/trial_55/full/model.pt

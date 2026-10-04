@@ -1,5 +1,0 @@
-target,n_splits,mae_mean,mae_sd,rmse_mean,rmse_sd,r2_mean,r2_sd
-adiabatic_energy,5,1.79,0.03,2.98,0.08,0.954,0.002
-lambda_acceptor_singlet,5,4.33,0.09,8.16,0.12,0.808,0.005
-lambda_donor_triplet,5,2.9,0.07,5.64,0.13,0.703,0.01
-spin_population,5,0.039,0.0,0.099,0.001,0.814,0.005

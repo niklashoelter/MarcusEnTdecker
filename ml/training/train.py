@@ -1,35 +1,35 @@
 """
-Train the graph MDN with one hyperparameter set, on a split or on all data.
+Train the graph MDN on a split or on all data.
 
 Reads   ml/data/training_dataset_full.csv, ml/data/splits/<split>.csv
-Writes  ml/results/<set>/<split>/model.pt                     the checkpoint with the lowest
-                                                              validation loss
-        ml/results/<set>/<split>/test_predictions_graph.csv   its test-set predictions,
-        ml/results/<set>/<split>/test_predictions_node.csv    as test_predictions.py writes them
-        ml/results/<set>/full/model.pt                        with `full`: trained on all data
+Writes  ml/results/<split>/model.pt                     the checkpoint with the lowest
+                                                        validation loss
+        ml/results/<split>/test_predictions_graph.csv   its test-set predictions,
+        ml/results/<split>/test_predictions_node.csv    as test_predictions.py writes them
+        ml/results/full/model.pt                        with `full`: trained on all data
 
-    uv run --extra ml python -m ml.training.train trial_55 random_101 [random_143 ...] [--device cuda:0]
-    uv run --extra ml python -m ml.training.train trial_55 full [--device cuda:0]
+    uv run --extra ml python -m ml.training.train random_42 [random_101 ...] [--device cuda:0]
+    uv run --extra ml python -m ml.training.train full [--device cuda:0]
 
-<set> is a name from hyperparameters.py. A finished model.pt is never overwritten; while a
-run is going, its best checkpoint is kept as model.pt.partial and renamed when it ends.
+A finished model.pt is never overwritten; while a run is going, its best checkpoint is kept
+as model.pt.partial and renamed when it ends.
 
-Leon Schlosser's training script for the model in ml/data/model_final.pt,
+Leon Schlosser's training script for the model in ml/data/model_final_old.pt,
 playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py.
 Its settings, model, optimizer, learning-rate schedule, early stopping and checkpoint are
-unchanged. What differs: the hyperparameters are a named set instead of constants; the data
+unchanged. What differs: the hyperparameters come from hyperparameters.py; the data
 come from ml/data/training_dataset_full.csv, the output of his `DataLoader.compute_targets` on
 the original dataset, instead of recomputing it from the raw energies; the split comes from
 ml/data/splits/ instead of being drawn here (the same draw, see splits.py); the plots and the
 copies of the split data are not written; the final test predictions are written by
 test_predictions.py from the saved best checkpoint, which is the model his script reloads for
-that step; and the checkpoint also records its set, split and seed.
+that step; and the checkpoint also records its hyperparameters, split and seed.
 
 Added for this repository, not in his script:
 - Seeding. Python, numpy and torch are seeded with the split's seed (42 for the out-of-sample
   split and for `full`). GPU kernels are not deterministic, so a rerun is close, not identical.
 - `full`: trains on every molecule. With no validation set there is no early stopping; the
-  run lasts as many epochs as the median best epoch of the set's five random-split runs, with
+  run lasts as many epochs as the median best epoch of the five random-split runs, with
   the same warmup and a cosine schedule over that length, and keeps the last epoch.
 """
 
@@ -44,11 +44,10 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR
 
 from ml.model.graph_mdn import GraphMDN
 from ml.model.inference import predict
-from ml.training.hyperparameters import HYPERPARAMETERS
+from ml.training.hyperparameters import HYPERPARAMETERS, NAME
 from ml.training.loop import train_epoch, validate_epoch
 from ml.training.splits import OOS_SEED, RANDOM_SEEDS, read_split
-from ml.training.test_predictions import (RESULTS, load_dataset, run_dir,
-                                          write_test_predictions)
+from ml.training.test_predictions import load_dataset, run_dir, write_test_predictions
 from ml.utils.molecule_dataset import create_dataloaders
 
 # ------------------------------CONFIG------------------------------
@@ -150,7 +149,7 @@ def optimizer_and_scheduler(model, params, epochs):
     return optimizer, scheduler
 
 
-def checkpoint_dict(model, scaler, epoch, val_loss, model_config, name, split, seed):
+def checkpoint_dict(model, scaler, epoch, val_loss, model_config, split, seed):
     return {
         'model_state_dict': model.state_dict(),
         'scaler': scaler,
@@ -159,16 +158,16 @@ def checkpoint_dict(model, scaler, epoch, val_loss, model_config, name, split, s
         'target_columns_graph': GRAPH_TARGETS,
         'target_columns_node': None,
         'model_config': model_config,
-        'hyperparameters': name,
+        'hyperparameters': NAME,
         'split': split,
         'seed': seed,
     }
 
 
-def train(name, split, device, data=None, epochs=EPOCHS):
-    """Train set `name` on `split` with early stopping, then write its test predictions."""
-    params = HYPERPARAMETERS[name]
-    out_dir = run_dir(name, split)
+def train(split, device, data=None, epochs=EPOCHS):
+    """Train on `split` with early stopping, then write its test predictions."""
+    params = HYPERPARAMETERS
+    out_dir = run_dir(split)
     checkpoint_path = out_dir / 'model.pt'
     data = load_dataset() if data is None else data
 
@@ -195,7 +194,7 @@ def train(name, split, device, data=None, epochs=EPOCHS):
         )
 
         # -------------------------------TRAINING LOOP--------------------------------
-        print(f"Start training {name} on {split} (seed {seed})")
+        print(f"Start training on {split} (seed {seed})")
         model, model_config = build_model(params, device, train_loader)
         optimizer, scheduler = optimizer_and_scheduler(model, params, epochs)
 
@@ -229,7 +228,7 @@ def train(name, split, device, data=None, epochs=EPOCHS):
                 no_improvement_epochs = 0
                 if epoch > epochs * 0.2:
                     torch.save(checkpoint_dict(model, scaler, epoch + 1, val_loss, model_config,
-                                               name, split, seed), partial_path)
+                                               split, seed), partial_path)
                     print(f"New best model saved with val loss: {best_val_loss:.4f} at epoch {epoch + 1}")
             else:
                 no_improvement_epochs += 1
@@ -239,7 +238,7 @@ def train(name, split, device, data=None, epochs=EPOCHS):
                 break
 
         if not partial_path.exists():
-            raise RuntimeError(f"{name} {split}: no checkpoint was saved (the best epoch "
+            raise RuntimeError(f"{split}: no checkpoint was saved (the best epoch "
                                f"came before epoch {int(epochs * 0.2) + 1})")
         partial_path.replace(checkpoint_path)
 
@@ -250,30 +249,30 @@ def train(name, split, device, data=None, epochs=EPOCHS):
         model.eval()
         print_metrics(predict(model, test_loader, device, scaler, mode=INFERENCE_MODE))
 
-    write_test_predictions(name, split, device=device, data=data)
+    write_test_predictions(split, device=device, data=data)
     print(f"Test predictions saved to {out_dir}")
 
 
-def full_epochs(name):
-    """The median best epoch of the set's five random-split runs."""
+def full_epochs():
+    """The median best epoch of the five random-split runs."""
     epochs = []
     for seed in RANDOM_SEEDS:
-        path = run_dir(name, f"random_{seed}") / 'model.pt'
+        path = run_dir(f"random_{seed}") / 'model.pt'
         if not path.exists():
             raise FileNotFoundError(f"{path} is needed to fix the length of the full run")
         epochs.append(torch.load(path, map_location='cpu', weights_only=False)['epoch'])
     return int(np.median(epochs))
 
 
-def train_full(name, device, data=None, epochs=None):
-    """Train set `name` on every molecule for a fixed number of epochs; keep the last."""
-    params = HYPERPARAMETERS[name]
-    out_dir = run_dir(name, FULL)
+def train_full(device, data=None, epochs=None):
+    """Train on every molecule for a fixed number of epochs; keep the last."""
+    params = HYPERPARAMETERS
+    out_dir = run_dir(FULL)
     checkpoint_path = out_dir / 'model.pt'
     if checkpoint_path.exists():
         print(f"{checkpoint_path} exists; not retraining")
         return
-    epochs = full_epochs(name) if epochs is None else epochs
+    epochs = full_epochs() if epochs is None else epochs
     if epochs <= WARMUP_EPOCHS:
         raise ValueError(f"{epochs} epochs do not outlast the {WARMUP_EPOCHS}-epoch warmup")
 
@@ -294,7 +293,7 @@ def train_full(name, device, data=None, epochs=None):
         positional_encoding_kwargs={'walk_length': params['walk_length']}
     )
 
-    print(f"Start training {name} on all {len(all_idx)} molecules for {epochs} epochs")
+    print(f"Start training on all {len(all_idx)} molecules for {epochs} epochs")
     model, model_config = build_model(params, device, train_loader)
     optimizer, scheduler = optimizer_and_scheduler(model, params, epochs)
 
@@ -309,14 +308,13 @@ def train_full(name, device, data=None, epochs=None):
 
     partial_path = out_dir / 'model.pt.partial'
     torch.save(checkpoint_dict(model, scaler, epochs, float('nan'), model_config,
-                               name, FULL, FULL_SEED), partial_path)
+                               FULL, FULL_SEED), partial_path)
     partial_path.replace(checkpoint_path)
     print(f"Saved {checkpoint_path}")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
-    parser.add_argument("hyperparameters", choices=sorted(HYPERPARAMETERS))
     parser.add_argument("splits", nargs="+", help="split names, e.g. random_101 oos_styryl, or full")
     parser.add_argument("--device", default='cuda' if torch.cuda.is_available() else 'cpu')
     args = parser.parse_args()
@@ -324,9 +322,9 @@ def main():
     data = load_dataset()
     for split in args.splits:
         if split == FULL:
-            train_full(args.hyperparameters, args.device, data)
+            train_full(args.device, data)
         else:
-            train(args.hyperparameters, split, args.device, data)
+            train(split, args.device, data)
 
 
 if __name__ == "__main__":
