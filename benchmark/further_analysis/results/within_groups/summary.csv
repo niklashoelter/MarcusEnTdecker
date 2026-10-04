@@ -1,8 +1,8 @@
 criterion,parameters,variant,group,groups,median_MCC,median_AUC
 adiabatic,dft,,photocatalyst,25,0.08361204013377926,0.6190476190476191
 adiabatic,dft,,quencher,41,0.3105295017040594,0.8571428571428571
-adiabatic,ml,,photocatalyst,25,0.13912166872805048,0.6802721088435374
-adiabatic,ml,,quencher,41,0.3563483225498992,0.8571428571428571
+adiabatic,ml,,photocatalyst,25,0.08234111154840207,0.6889632107023411
+adiabatic,ml,,quencher,41,0.302407368379503,0.8571428571428571
 dvte,dft,"p = 0.005, normal",photocatalyst,25,0.16151457061744964,0.6909090909090909
 dvte,dft,"p = 0.005, normal",quencher,41,0.3892494720807615,0.8571428571428571
 dvte,dft,"p = 0.005, kde",photocatalyst,25,0.13912166872805048,0.7004830917874396
@@ -21,25 +21,25 @@ dvte,dft,"p = 0.015, kde",photocatalyst,25,0.13261933174731558,0.690635451505016
 dvte,dft,"p = 0.015, kde",quencher,41,0.4082482904638631,0.8571428571428571
 marcus_barrier,dft,lambda raw,photocatalyst,25,0.115278083540847,0.6584362139917695
 marcus_barrier,dft,lambda raw,quencher,41,0.3849001794597505,0.797979797979798
-marcus_barrier,ml,lambda raw,photocatalyst,25,0.08606629658238704,0.6153846153846154
-marcus_barrier,ml,lambda raw,quencher,41,0.3779644730092272,0.7777777777777778
+marcus_barrier,ml,lambda raw,photocatalyst,25,0.062136976600120006,0.5683760683760684
+marcus_barrier,ml,lambda raw,quencher,41,0.3464101615137754,0.7857142857142857
 marcus_barrier,dft,lambda scaled,photocatalyst,25,0.3872983346207417,0.7958579881656804
 marcus_barrier,dft,lambda scaled,quencher,41,0.4082482904638631,0.8571428571428571
-marcus_barrier,ml,lambda scaled,photocatalyst,25,0.21057989315866538,0.7037037037037037
-marcus_barrier,ml,lambda scaled,quencher,41,0.3985266984930429,0.8333333333333334
+marcus_barrier,ml,lambda scaled,photocatalyst,25,0.314302690314802,0.6908212560386473
+marcus_barrier,ml,lambda scaled,quencher,41,0.3892494720807615,0.8333333333333334
 marcus_rate,dft,lambda raw,photocatalyst,25,0.15106010774684853,0.6584362139917695
 marcus_rate,dft,lambda raw,quencher,41,0.25,0.8888888888888888
-marcus_rate,ml,lambda raw,photocatalyst,25,0.04256282653793743,0.6153846153846154
-marcus_rate,ml,lambda raw,quencher,41,0.26590801173915524,0.8775510204081632
+marcus_rate,ml,lambda raw,photocatalyst,25,0.048167164724278275,0.5683760683760684
+marcus_rate,ml,lambda raw,quencher,41,0.30261376633440124,0.8775510204081632
 marcus_rate,dft,lambda scaled,photocatalyst,25,0.16012815380508713,0.7333333333333333
 marcus_rate,dft,lambda scaled,quencher,41,0.435285750066007,0.9083333333333333
-marcus_rate,ml,lambda scaled,photocatalyst,25,0.14924050144892728,0.642512077294686
-marcus_rate,ml,lambda scaled,quencher,41,0.42817441928883765,0.9047619047619048
+marcus_rate,ml,lambda scaled,photocatalyst,25,0.08763841367493648,0.6378600823045267
+marcus_rate,ml,lambda scaled,quencher,41,0.4082482904638631,0.9047619047619048
 rehm_weller_rate,dft,lambda raw,photocatalyst,25,0.10223260251369135,0.62
 rehm_weller_rate,dft,lambda raw,quencher,41,0.047619047619047616,0.90625
-rehm_weller_rate,ml,lambda raw,photocatalyst,25,0.0,0.5581395348837209
-rehm_weller_rate,ml,lambda raw,quencher,41,0.24308621740219885,0.8916666666666667
+rehm_weller_rate,ml,lambda raw,photocatalyst,25,-0.02529903086328818,0.5390946502057613
+rehm_weller_rate,ml,lambda raw,quencher,41,0.25,0.8833333333333333
 rehm_weller_rate,dft,lambda scaled,photocatalyst,25,0.17186756976946388,0.68
 rehm_weller_rate,dft,lambda scaled,quencher,41,0.4082482904638631,0.9270833333333334
-rehm_weller_rate,ml,lambda scaled,photocatalyst,25,0.126356871353303,0.6190476190476191
-rehm_weller_rate,ml,lambda scaled,quencher,41,0.4082482904638631,0.9166666666666666
+rehm_weller_rate,ml,lambda scaled,photocatalyst,25,0.11348048444153169,0.5879629629629629
+rehm_weller_rate,ml,lambda scaled,quencher,41,0.435285750066007,0.9191919191919192
