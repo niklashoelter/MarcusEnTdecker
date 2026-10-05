@@ -13,20 +13,13 @@ authors = [
     { name = "Leon Schlosser" },
 ]
 
-# Deliberately empty. Every script under data/ declares its own dependencies in a
-# PEP 723 header and runs standalone under `uv run`, so nothing has to be installed
-# to reproduce the data pipeline. Only the optional groups below need resolving.
+# Deliberately empty. The scripts under data/ and benchmark/ declare their own
+# dependencies in a PEP 723 header and run standalone under `uv run`, so nothing has to
+# be installed to reproduce them. The two data scripts that call the ml package
+# (quencher_ml.py, quencher_ml_timing.py) run with the ml extra instead.
 dependencies = []
 
 [project.optional-dependencies]
-# The theory benchmarks.
-benchmark = [
-    "numpy>=2.0",
-    "pandas>=2.2",
-    "scipy>=1.14",
-    "matplotlib>=3.9",
-]
-
 # The `ml` package: the graph MDN, its training, evaluation and hyperparameter
 # optimization (optuna), its inference, and the prediction API and CLI built on them.
 # A multi-gigabyte tree, which is why it is optional -- the data pipeline and the
@@ -64,7 +57,10 @@ webapp = [
 ent-ml = "ml.cli:main"
 
 [dependency-groups]
-dev = ["pytest==9.0.2"]
+dev = [
+    "httpx==0.28.1",
+    "pytest==9.0.2",
+]
 
 # ml/ and webapp/ are the two packages. Everything else in the tree -- data/,
 # benchmark/, reproduce.py -- is scripts, and neither package may reach into them.

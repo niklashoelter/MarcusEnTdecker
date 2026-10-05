@@ -58,10 +58,8 @@ def write_test_predictions(split, device="cpu", data=None):
     _, _, test_idx = read_split(split)
     test = data.iloc[test_idx].reset_index(drop=True)
 
-    inference._global_model_cache = None  # get_predictions keeps the first model it loads
     result = inference.get_predictions(test["smiles"].tolist(), model_path=checkpoint_path,
                                        device=device, task="all")
-    inference._global_model_cache = None
 
     graph = pd.DataFrame({"idx": test["idx"], "smiles": test["smiles"]})
     for i, target in enumerate(GRAPH_TARGETS):

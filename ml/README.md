@@ -5,8 +5,8 @@ prediction.py       the model wrapper: SMILES in, E_T and both reorganization en
 predict.py          the prediction API: a pair in, a rate constant out
 cli.py              the `ent-ml` command
 model/              the graph MDN, its loss and its inference
-  checkpoint.py     lets the committed checkpoint unpickle after the package rename
-energy/             Marcus and Eyring — the theory the web application and the paper share
+  checkpoint.py     lets Leon's checkpoint, model_final_old.pt, unpickle after the rename
+energy/             Marcus and Eyring — the theory the web application and predict.py use
 utils/              graph construction and the molecule dataset
 training/           offline only, left out of the wheel; nothing else may import it
   splits.py         builds the train/validation/test splits in data/splits/
@@ -15,9 +15,10 @@ training/           offline only, left out of the wheel; nothing else may import
   test_predictions.py   a checkpoint's predictions for the test set of its split
   evaluate.py       metrics from the test predictions, and the ensemble's member list
   hyperparameter_optimization.py   the Optuna search behind the hyperparameters
-  build_dataset.py  training targets from raw DFT energies
+  build_dataset.py  Leon's training targets from raw DFT energies (the raw energies are not
+                    in this repository; kept for the record and its test)
   loop.py           one training or validation epoch, and the loss composition
-  metrics.py        spin-population metrics
+  metrics.py        spin-population ranking metrics, not used by evaluate.py
 data/
   model_final.pt              the deployed checkpoint, a copy of results/full/model.pt,
                               loaded through importlib.resources
@@ -30,10 +31,10 @@ results/            what training/ writes:
   full/model.pt                 the model trained on all data
   metrics.csv, metrics_random_splits.csv, uncertainty_filtering.csv, ensemble_members.csv
   hyperparameter_optimization/optuna_results.csv
-  logs/                         the console output of the runs that made these files
-ensemble.py         the random-split models predicting together (not from pyrates)
+  logs/                         the console output of the runs that made these files,
+                                written before the results were moved out of trial_55/
+ensemble.py         the random-split models predicting together
 tests/              the package's own test suite
-LICENSE-pyrates     MIT, Leon Schlosser
 ```
 
 ## Installing
@@ -56,7 +57,8 @@ or `benchmark/`, and it will work unchanged in a clone that has neither director
 Anything else it needs is an argument. In particular the photocatalyst table:
 `photocatalyst_properties(source, pc_id)` takes a path to an .xlsx or .csv, a pandas
 DataFrame, or a mapping, with one row per photocatalyst carrying `new_id`,
-`E_T / kcal mol-1`, `lambda_S0_to_T1 / kcal mol-1` and `lambda_T1_to_S0 / kcal mol-1`.
+`E_T / kcal mol-1`, `lambda_S0_T1 / kcal mol-1` and `lambda_T1_S0 / kcal mol-1` (an .xlsx
+with its headers on row 2, as the property workbooks in the root `data/` have them).
 There is no built-in default, because a default would be a claim about where the
 caller keeps their data.
 
@@ -65,14 +67,15 @@ caller keeps their data.
 ```python
 from ml.prediction import predict
 
-predict([smiles, ...])          # DataFrame: E_T, lambda_S_T, lambda_T_S, uncertainties
+predict([smiles, ...])          # DataFrame: triplet_energy_adiabatic, lamda_S_T, lamda_T_S,
+                                # each with _uncertainty and its mixture, and spin_map
 ```
 
 ```python
 from ml.predict import RatePredictor, photocatalyst_properties
 
-photocatalyst = photocatalyst_properties("photocatalysts.xlsx", 1)
-result = RatePredictor(lambda_scale=0.4).predict(photocatalyst, quencher=Q_SMILES)
+photocatalyst = photocatalyst_properties("photocatalyst_properties_calc.xlsx", 1)
+result = RatePredictor().predict(photocatalyst, quencher=Q_SMILES)
 
 result.dG_kcal          # driving force
 result.dG_barrier_kcal  # Marcus activation barrier
@@ -81,16 +84,14 @@ result.quenches         # k_ent above the detection threshold
 result.uncertainty      # from the mixture density network
 ```
 
-`predict_many` takes an iterable of pairs and runs one forward pass per *structure*,
-not per pair, so screening 48 quenchers against one photocatalyst costs 48 passes
-rather than 96.
+`predict_many` takes an iterable of pairs and sends each distinct structure given as a
+SMILES to the model once, not once per pair.
 
 ### The ensemble
 
 `ml.ensemble` lets the five random-split models (`results/random_<seed>/model.pt`) predict
 together. Its members are listed in `results/ensemble_members.csv` with their md5 sums, and
-a member whose file has changed is refused. It was written for this repository; it is not
-part of pyrates.
+a member whose file has changed is refused. It was written for this repository.
 
 ```python
 from ml.ensemble import predict
@@ -105,8 +106,7 @@ mean of the members' predictions and its uncertainty is the standard deviation o
 pooled mixture: the members' own uncertainties plus their disagreement, which is reported
 alone as `_model_spread`. An ensemble of `model_final.pt` alone returns exactly the
 deployed model's prediction. The members are in the repository, not in the installed
-package; outside a checkout, pass `checkpoints=`. The deployed model remains
-`model_final.pt`.
+package; outside a checkout, pass `checkpoints=`.
 
 ## Command line
 
@@ -119,11 +119,11 @@ ent-ml predict --file quenchers.smi       one SMILES per line
        --format table|csv|json  --out predictions.csv
 
 ent-ml rate --quencher SMILES --photocatalysts photocatalysts.xlsx
-       [--photocatalyst 1] [--lambda-scale 0.4]
+       [--photocatalyst 1] [--lambda-scale S]
 
 ent-ml predict|rate ... --ensemble        the same, from the ensemble
 
-ent-ml info                               checkpoint, epoch, val loss, vocabulary
+ent-ml info                               the checkpoint, how it was trained, vocabulary
 ```
 
 An invalid SMILES or a missing file exits non-zero with one line, not a traceback.
@@ -178,38 +178,42 @@ tuned scale factors are in its result files, not here.
 
 ## Where it is least trustworthy
 
-The screened quenchers also have DFT triplet energies (`q_E_T_dft` and `q_E_T_ml` in
-`data/exp_dataset_ent.csv`), and the difference between the two is concentrated rather
-than spread: the largest deviations are dichalcogenides — disulfides and selenium
-compounds — predicted well above DFT. The likely explanation is that the DFT is wrong
-there: an S–S or Se–Se triplet is dissociative, so an adiabatic triplet optimisation
-returns something closer to a homolysis energy, and their DFT reorganization energies
-are implausibly large for the same reason. Selenium is in the vocabulary, so these are
-not silently rejected inputs. Check those DFT entries before trusting either number for
-them.
+The screened quenchers also have DFT triplet energies (`q_E_T_dft` and `q_E_T_ml` in the
+root `data/exp_dataset_ent.csv`), and the difference between the two is concentrated
+rather than spread: the largest deviations are the disulfides, the diselenide and the
+selenoxide, all predicted well above DFT. For these the DFT is the suspect number: their
+triplet optimisations break a bond (S–S, Se–Se or C–Se), so the adiabatic triplet energy
+is closer to a fragmentation energy, and their DFT reorganization energies are implausibly
+large for the same reason; `data/README.md` lists the affected states. Selenium is in the
+vocabulary, so these are not silently rejected inputs, but neither number should be
+trusted for them.
 
 ## Training
 
-`data/training_dataset_full.csv` is the training dataset. The model is validated by
-cross-validation over five random splits and on one out-of-sample split, each trained with
-the same settings and hyperparameters; `model_final.pt` is then trained on all data.
+`ml/data/training_dataset_full.csv` is the training dataset. The model is validated on
+five random splits, each drawing its own test set (repeated random hold-out, so the test
+sets overlap), and on one out-of-sample split, all trained with the same settings and
+hyperparameters; `model_final.pt` is then trained on all data.
 
 ```
+uv run --extra ml python -m ml.training.splits        # rewrites ml/data/splits/, identically
 uv run --extra ml python -m ml.training.train random_42 random_101 random_143 random_404 random_666 --device cuda:0
 uv run --extra ml python -m ml.training.train oos_styryl --device cuda:0
 uv run --extra ml python -m ml.training.train full --device cuda:0
 uv run --extra ml python -m ml.training.evaluate
+cp ml/results/full/model.pt ml/data/model_final.pt
 ```
 
-`train.py` writes `results/<split>/model.pt`, the checkpoint with the lowest validation
+`train.py` writes `ml/results/<split>/model.pt`, the checkpoint with the lowest validation
 loss, and its test predictions. With `full` it trains on every molecule for a fixed number
-of epochs, the median best epoch of the five random-split runs, and keeps the last epoch;
-that model is copied to `data/model_final.pt`. A finished `model.pt` is never overwritten.
-`test_predictions.py` rewrites the test predictions of a split from its checkpoint.
-`evaluate.py` turns the test predictions into `results/metrics.csv` (per split and target),
-`results/metrics_random_splits.csv` (mean and SD over the random splits) and
-`results/uncertainty_filtering.csv`, and lists the random-split checkpoints in
-`results/ensemble_members.csv`. The settings are in the docstrings and constants of
+of epochs, the median best epoch of the five random-split runs, and keeps the last epoch.
+A finished `model.pt` is never overwritten: in a checkout, where they are all committed,
+`train` only rewrites a split's test predictions from its checkpoint, so move the
+committed `model.pt` files away to retrain. `test_predictions.py` rewrites the test
+predictions of a split on its own. `evaluate.py` turns the test predictions into
+`ml/results/metrics.csv` (per split and target), `metrics_random_splits.csv` (mean and SD
+over the random splits) and `uncertainty_filtering.csv`, and lists the random-split
+checkpoints in `ensemble_members.csv`. The settings are in the docstrings and constants of
 `train.py`, the hyperparameters in `hyperparameters.py`.
 
 The test predictions are the raw model outputs: one row per test molecule in
@@ -227,8 +231,8 @@ indices.
 | `random_<seed>`, seeds 42, 101, 143, 404, 666 | 10 %, by `train_test_split` | 80 : 10 |
 | `oos_styryl` | every molecule matching the SMARTS `c1ccc(cc1)C=C` | 80 : 20 of the rest, shuffled with seed 42 |
 
-Both procedures are Leon's own; the styryl split is the out-of-sample split of his thesis
-(Project 1). The files are regenerated byte-identically by `ml.training.splits`.
+Both procedures are Leon's own; the styryl split is the out-of-sample split of his thesis.
+The files are regenerated byte-identically by `ml.training.splits`.
 
 `training/hyperparameter_optimization.py` is the Optuna search that chose the
 hyperparameters, kept for reproducibility only; it is not part of training or evaluating a
@@ -238,18 +242,11 @@ model. Its results as Leon ran it are in `results/hyperparameter_optimization/`,
 Everything in this package, training and hyperparameter optimization included, installs
 with the one `ml` extra of the repository's `pyproject.toml`.
 
-When it is pointed at the experimental dataset instead, the split matters more
-than it looks: an earlier audit found ML classifiers on this data largely memorizing
-per-photocatalyst λ fingerprints, and a random split reports that memorization as
-accuracy. Leave-one-photocatalyst-out is the honest measure, and it is the only split
-that makes a model-versus-theory comparison mean anything.
-
 ## Credit and origin
 
 **The model code here is Leon Schlosser's work, not this repository's.** It comes from
-[le-schlo/pyrates](https://github.com/le-schlo/pyrates) and is MIT licensed; the licence
-travels with it as `LICENSE-pyrates` and must stay with any redistribution. It lives
-here as ordinary first-party code — develop against it, fix it, extend it — but the
+[le-schlo/pyrates](https://github.com/le-schlo/pyrates). It lives here as ordinary
+first-party code — develop against it, fix it, extend it — but the
 authorship is his, and anything published from it should say so. The package was
 renamed from `pyrates` to `ml` in this repository; `model/checkpoint.py` aliases the
 old dotted path so his checkpoint, `model_final_old.pt`, still unpickles, byte-identical.
@@ -258,17 +255,22 @@ The code was taken at these commits:
 
 | | source | commit | date |
 |---|---|---|---|
-| everything | branch `fastapi-webapp` | `c7d5fec279a7d05f03bd2a715d66d2e52bab9fd8` | 2026-07-31 |
+| the model code | branch `fastapi-webapp` | `c7d5fec279a7d05f03bd2a715d66d2e52bab9fd8` | 2026-07-31 |
 | `data/training_dataset_full.csv` | branch `main` | `8b1de3c74b05940c0b0c28d64a2482e2154629d1` | 2026-07-31 |
 
 `fastapi-webapp` is the base because it is the branch the deployed application is built
-from, and the only place the trained checkpoint exists. The dataset is added back from
+from, and the only place Leon's trained checkpoint exists. The dataset is added back from
 `main` because that branch deletes it. Upstream's `data/dataset.csv` is
 `data/training_dataset_full.csv` here, and its checkpoint `model.pt` is
 `data/model_final_old.pt`; both files are byte-identical to upstream.
 
-The modules were rearranged into runtime and training code without changing them; only
-import paths differ. Where upstream code lives here:
+The modules were rearranged into runtime and training code. Beyond import paths, two
+changed: in `model/inference.py`, building a model from a checkpoint is its own function,
+`build_model`, which `ensemble.py` reuses, and `get_predictions` takes the checkpoint path
+as a required argument (upstream defaulted to a path on Leon's machine) and reloads
+the model when the path or device changes; in `prediction.py`, the table is built by its own function,
+`frame`, and the checkpoint is found through `importlib.resources`. Where upstream code
+lives here:
 
 | upstream (`pyrates/`) | here (`ml/`) |
 |---|---|
@@ -302,7 +304,5 @@ script carried the hyperparameters of trial 0 of the search by mistake; the mode
 ### Known issue: the two upstream branches have diverged
 
 `main` and `fastapi-webapp` forked at `1ae1a13` on 2026-03-20 and were never merged;
-nine commits on `main` are absent from the deployed branch. This does not affect the
-physics — `energy/` is byte-identical between the two — but "which branch produced the
-published numbers" is a question a reviewer can reasonably ask, and it should be
-reconciled before publication.
+nine commits on `main` are absent from the deployed branch. They do not touch the
+physics: `energy/` is byte-identical between the two.

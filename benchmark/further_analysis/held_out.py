@@ -74,8 +74,8 @@ def main():
     df = pairs.scored(pairs.load())
     summary, chosen = held_out(df)
     RESULTS.mkdir(parents=True, exist_ok=True)
-    summary.to_csv(RESULTS / "summary.csv", index=False, lineterminator="\n")
-    chosen.to_csv(RESULTS / "chosen.csv", index=False, lineterminator="\n")
+    scoring.rounded(summary).to_csv(RESULTS / "summary.csv", index=False, lineterminator="\n")
+    scoring.rounded(chosen).to_csv(RESULTS / "chosen.csv", index=False, lineterminator="\n")
 
     shown = ["criterion", "parameters", "variant", "held_out_by", "MCC_all_pairs", "MCC",
              "settings_chosen"]

@@ -180,6 +180,9 @@ def objective(trial):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    argparse.ArgumentParser(description=__doc__.splitlines()[1]).parse_args()
     print(f"Starting Optuna Optimization on {DEVICE}")
 
     # Create study
@@ -200,5 +203,5 @@ if __name__ == "__main__":
     df = study.trials_dataframe()
     results_path = Path(save_path) / 'optuna_results.csv'
     results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
+    df.to_csv(results_path, index=False, lineterminator="\n")
     print(f"\nResults saved to {results_path}")

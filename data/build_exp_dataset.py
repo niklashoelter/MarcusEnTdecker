@@ -8,6 +8,7 @@ Build the pair-level experimental dataset: one row per photocatalyst-quencher pa
 Reads   experimental_data_processed/stern_volmer_fits.csv
         experimental_data_processed/photocatalyst_properties_exp.xlsx
         experimental_data_processed/quencher_properties_exp.xlsx
+        compound_identification.xlsx   (ids and names)
 Writes  exp_dataset.csv     input to build_exp_dataset_ent.py
         exp_dataset.xlsx    the same table in the property-workbook layout
 

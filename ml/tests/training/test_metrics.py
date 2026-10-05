@@ -1,6 +1,4 @@
 import numpy as np
-import pytest
-from ml.training.metrics import digitize_spin_populations
 from ml.training.metrics import top_k_jaccard_similarity
 from ml.training.metrics import ranked_score, highest_dens
 

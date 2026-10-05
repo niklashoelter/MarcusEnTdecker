@@ -16,8 +16,8 @@ the trace tail. The decay is fitted with a single exponential with 1/y weights; 
 and its error are the fitted value and standard error. The instrument export `PC<n>.FL`
 is stored beside each trace.
 
-The fit starts at the first channel after the pulse at or below 1000 counts. For PC4 it
-starts at 1500 ns on the instrument time axis instead (FIT_START_NS), so that its fast
+The fit starts at the first channel after the pulse at or below 1000 counts. For old PC4
+it starts at 1500 ns on the instrument time axis instead (FIT_START_NS), so that its fast
 early component is excluded and only the long-lived decay is fitted.
 """
 

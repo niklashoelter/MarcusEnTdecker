@@ -10,7 +10,7 @@ Reads   ../compound_identification.xlsx   (quencher ids)
         ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_measured.csv
 Writes  ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv
 
-Usage: uv run quencher_redox_potentials.py
+    uv run data/experimental_data_scripts/quencher_redox_potentials.py
 
 The potentials are read by hand from the voltammograms in `measured data/`, or taken from
 the literature, and entered in one of the two input files. Both have the columns of the

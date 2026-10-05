@@ -1,5 +1,4 @@
 import torch
-import pytest
 from ml.model.loss import mdn_loss, calibration_loss
 
 def test_mdn_loss_perfect_fit():

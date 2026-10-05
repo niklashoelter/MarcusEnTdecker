@@ -2,6 +2,7 @@
 Metrics of the validation runs, from their test predictions.
 
 Reads   ml/results/<split>/test_predictions_{graph,node}.csv   for every split that has them
+        ml/results/random_<seed>/model.pt                     for their md5 sums
 Writes  ml/results/metrics.csv                  per split and target
         ml/results/metrics_random_splits.csv    mean and SD over the random splits
         ml/results/uncertainty_filtering.csv    metrics on the test molecules whose predicted
@@ -32,11 +33,7 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, r2_score, root_mean_squared_error
 
 from ml.training.splits import RANDOM_SEEDS
-from ml.training.test_predictions import RESULTS, run_dir
-
-GRAPH_TARGETS = ["adiabatic_energy", "lambda_acceptor_singlet", "lambda_donor_triplet"]
-NODE_TARGETS = ["spin_population"]
-ALL_TARGETS = GRAPH_TARGETS + NODE_TARGETS
+from ml.training.test_predictions import ALL_TARGETS, NODE_TARGETS, RESULTS, run_dir
 
 RANDOM_SPLITS = [f"random_{seed}" for seed in RANDOM_SEEDS]
 SPLITS = RANDOM_SPLITS + ["oos_styryl"]
@@ -113,7 +110,7 @@ def uncertainty_filtering(splits):
                             for y, yhat, unc in runs])
             mean, sd = arr.mean(axis=0), arr.std(axis=0)
             rows.append({"target": target, "n_splits": len(runs), "threshold": threshold,
-                         "n_kept": int(mean[3]), "data_used_percent": 100 * mean[3] / mean[4],
+                         "n_kept": int(round(mean[3])), "data_used_percent": 100 * mean[3] / mean[4],
                          "mae_mean": mean[0], "mae_sd": sd[0],
                          "rmse_mean": mean[1], "rmse_sd": sd[1],
                          "r2_mean": mean[2], "r2_sd": sd[2]})
@@ -136,7 +133,8 @@ def rounded(table):
 
 
 def evaluate():
-    """Write the three metric tables; the five random splits must be there."""
+    """Write the three metric tables and the ensemble's members; the five random splits
+    must be there."""
     metrics = split_metrics(SPLITS)
     found = set(metrics["split"]) if not metrics.empty else set()
     missing_random = [s for s in RANDOM_SPLITS if s not in found]

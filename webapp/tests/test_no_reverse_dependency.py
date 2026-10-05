@@ -33,6 +33,11 @@ EXCLUDED = {("ml", "tests"), ("webapp", "tests")}
 
 FORBIDDEN_PACKAGES = ("data", "benchmark")
 
+# The scripts' own module names, so that a sys.path insert followed by, say,
+# `import pairs` or `import properties_workbook` is caught as well.
+SCRIPT_MODULES = {p.stem for d in FORBIDDEN_PACKAGES for p in (ROOT / d).rglob("*.py")
+                  if "computational_data_raw" not in p.parts} | {"reproduce"}
+
 # A path literal is forbidden if one of its segments is exactly `data` or `benchmark`,
 # or if it is exactly that word. `ml.data` and `webapp.data` are module names, not
 # paths, and never match; neither does `new_data/` or a `data:image/png;base64,` URI.
@@ -160,7 +165,7 @@ def test_runtime_never_imports_training(path):
 @pytest.mark.parametrize("path", ALL_MODULES, ids=_ids(ALL_MODULES))
 def test_no_package_imports_the_scripts(path):
     """`data/` and `benchmark/` are scripts, not importable packages."""
-    offending = sorted(_imported_roots(_tree(path)) & set(FORBIDDEN_PACKAGES))
+    offending = sorted(_imported_roots(_tree(path)) & (set(FORBIDDEN_PACKAGES) | SCRIPT_MODULES))
     assert not offending, (
         f"{path.relative_to(ROOT).as_posix()} imports {offending}. Those are the "
         f"repository's script directories, not libraries the packages may depend on."

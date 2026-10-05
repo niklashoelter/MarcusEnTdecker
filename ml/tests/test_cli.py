@@ -134,7 +134,7 @@ def test_info_names_the_checkpoint_and_the_vocabulary(capsys):
     cli.main(["info"])
 
     out = capsys.readouterr().out
-    assert "model_final.pt" in out and "epoch" in out and "val loss" in out
+    assert "model_final.pt" in out and "split" in out and "epoch" in out
     assert out.splitlines()[-1].split()[1:] == [
         "H", "B", "C", "N", "O", "F", "Si", "P", "S", "Cl", "Se", "Br", "Sn", "I"]
 

@@ -33,6 +33,7 @@ import pandas as pd  # noqa: E402
 
 import classification  # noqa: E402
 import pairs  # noqa: E402
+import scoring  # noqa: E402
 import theory  # noqa: E402
 
 RESULTS = HERE / "results" / "barrier_variants"
@@ -69,8 +70,8 @@ def main():
     df = pairs.scored(pairs.load())
     every, best = run(df)
     RESULTS.mkdir(parents=True, exist_ok=True)
-    every.to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
-    best.to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
+    scoring.rounded(every).to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
+    scoring.rounded(best).to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
 
     shown = ["criterion", "parameters", "variant", "alpha", "barrier_threshold / kcal mol-1",
              "recall", "specificity", "MCC", "AUC"]

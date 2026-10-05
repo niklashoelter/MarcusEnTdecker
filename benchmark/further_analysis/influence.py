@@ -53,7 +53,7 @@ def main():
     df = pairs.scored(pairs.load())
     table = influence(df)
     RESULTS.mkdir(parents=True, exist_ok=True)
-    table.to_csv(RESULTS / "metrics.csv", index=False, lineterminator="\n")
+    scoring.rounded(table).to_csv(RESULTS / "metrics.csv", index=False, lineterminator="\n")
 
     removed = table[table["removed"] != "none"]
     spread = removed.groupby(["criterion", "parameters", "variant", "removed"])["delta_MCC"]

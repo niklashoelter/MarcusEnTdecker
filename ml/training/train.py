@@ -2,6 +2,7 @@
 Train the graph MDN on a split or on all data.
 
 Reads   ml/data/training_dataset_full.csv, ml/data/splits/<split>.csv
+        ml/results/random_<seed>/model.pt               with `full`: their best epochs
 Writes  ml/results/<split>/model.pt                     the checkpoint with the lowest
                                                         validation loss
         ml/results/<split>/test_predictions_graph.csv   its test-set predictions,
@@ -47,7 +48,8 @@ from ml.model.inference import predict
 from ml.training.hyperparameters import HYPERPARAMETERS, NAME
 from ml.training.loop import train_epoch, validate_epoch
 from ml.training.splits import OOS_SEED, RANDOM_SEEDS, read_split
-from ml.training.test_predictions import load_dataset, run_dir, write_test_predictions
+from ml.training.test_predictions import (GRAPH_TARGETS, NODE_TARGETS, load_dataset,
+                                          run_dir, write_test_predictions)
 from ml.utils.molecule_dataset import create_dataloaders
 
 # ------------------------------CONFIG------------------------------
@@ -61,10 +63,6 @@ EARLY_STOPPING_MIN_DELTA = 1e-4  # smallest improvement that counts
 MPNN_ENCODER = 'gps'
 WARMUP_EPOCHS = 12
 INFERENCE_MODE = 'mixture_mean'
-
-GRAPH_TARGETS = ['adiabatic_energy', 'lambda_acceptor_singlet', 'lambda_donor_triplet']
-NODE_TARGETS = ['spin_population']
-ALL_TARGETS = GRAPH_TARGETS + NODE_TARGETS
 
 FULL = 'full'
 FULL_SEED = 42

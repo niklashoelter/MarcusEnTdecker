@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import tempfile
 import os
-import ast
 from pathlib import Path
 from ml.training.build_dataset import DataLoader
 
@@ -118,40 +117,20 @@ def test_filter_limits_default(sample_csv):
     assert 3 in df['idx'].values # 31.37 is ok
     assert 2 not in df['idx'].values # 125.5 > 120
 
-def test_filter_limits_unparsed_spin_population_bug(sample_csv):
+def test_spin_population_filter_needs_spin_population_among_the_targets(sample_csv):
     """
-    If spin_population filter is requested, but it is NOT in target_columns,
-    it remains a string, and filtering might fail or be incorrect.
-
-    This test currently EXPECTS failure or incorrect behavior if bug exists.
-    If code is fixed, it should pass (filter correctly).
+    The spin populations are parsed from their strings only when `spin_population` is
+    one of the target columns. Filtering on them without that compares a string with a
+    float, which raises.
     """
     loader = DataLoader(sample_csv)
 
-    # We filter on spin_population >= 0. Should drop row 2.
-    # But we calculate adiabatic_energy only.
-
-    try:
-        df = loader.compute_targets(
+    with pytest.raises(TypeError):
+        loader.compute_targets(
             target_columns=['adiabatic_energy'],
             filter_limits={'spin_population': (0.0, None)},
             return_compact=False
         )
-
-        # If no error, verify result
-        # String comparison "[-0.1, 1.1]" >= 0.0 ? TypeError in Py3.
-        # But wait, maybe the code just compares strings?
-        # If it compares strings, outcome is unpredictable or wrong.
-
-        # We assert that the row IS removed, which implies correct parsing occurred.
-        filtered_out = 3 not in df['idx'].values
-        if not filtered_out:
-            pytest.xfail("Known bug: verify spin_pop filtered even if not in target_columns")
-
-    except TypeError:
-        # If it raises TypeError, it confirms the bug (unparsed string vs float)
-        # We can mark this test as xfail (expected failure) or just pass it as 'bug confirmed'
-        pass
 
 
 def test_compute_targets_lambda_acceptor_singlet(sample_csv):

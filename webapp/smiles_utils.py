@@ -21,10 +21,6 @@ def canonicalize_smiles(smiles: str) -> Optional[str]:
         return None
     return Chem.MolToSmiles(mol)
 
-def kekulize_smiles(smiles: str) -> Optional[str]:
-    mol = Chem.MolFromSmiles(smiles)
-    return Chem.MolToSmiles(mol, kekuleSmiles=True) if mol else None
-
 def is_single_fragment_smiles(smiles: str) -> bool:
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:

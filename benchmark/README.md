@@ -12,7 +12,8 @@ uv run benchmark/cost.py                    CPU time per quencher
 ```
 
 Inputs: `../data/exp_dataset_ent.csv`; `cost.py` also reads
-`../data/computational_data_processed/quencher_timings.csv` and `quencher_timings_ml.csv`.
+`../data/computational_data_processed/quencher_timings.csv` and `quencher_timings_ml.csv`,
+and the quencher SMILES from `../data/compound_identification.xlsx`.
 
 Tests: `uv run --no-project --with pytest --with numpy --with pandas --with scipy pytest benchmark/tests`
 
@@ -25,7 +26,7 @@ benchmark/
 ├── scoring.py          metrics, AUC, choice of the best setting
 ├── classification.py   the classification criteria
 ├── cost.py             CPU time per quencher for each criterion
-├── tests/              pytest tests of theory, scoring and classification
+├── tests/              pytest tests of theory, scoring, classification and cost
 ├── results/
 │   ├── classification/
 │   │   ├── settings.csv    every DFT setting of every criterion
@@ -42,8 +43,9 @@ benchmark/
 - **Quenching pairs:** kept only if every single-electron-transfer channel with a
   measured quencher potential is more than 0.25 V uphill.
 
-`pairs.py` leaves out PC22 on loading and scores a pair only if every input of every
-criterion is present, so all criteria are scored on the same pairs.
+`pairs.py` leaves out PC22 on loading, because its emission is too weak for Stern–Volmer
+analysis, and scores a pair only if every input of every criterion is present, so all
+criteria are scored on the same pairs.
 
 ## Classification
 
@@ -51,7 +53,7 @@ The ground truth is `quenches`. Photocatalyst properties are DFT throughout.
 
 | criterion | predicts quenching when | variants | chosen on the data |
 |---|---|---|---|
-| `adiabatic` | ΔG_EnT ≤ 0 | `dft`, `ml` | nothing |
+| `adiabatic` | ΔG_EnT ≤ 0 | — | nothing |
 | `dvte` | E_T(PC) ≥ DvTE(p) | p = 0.005, 0.008, 0.01, 0.015; normal or KDE quantile | nothing |
 | `marcus_barrier` | ΔG‡ < threshold | `lambda raw`, `lambda scaled` | threshold; α (scaled) |
 | `marcus_rate` | k·τ₀ ≥ K_SV,crit | `lambda raw`, `lambda scaled` | α (scaled) |
@@ -61,11 +63,15 @@ The ground truth is `quenches`. Photocatalyst properties are DFT throughout.
   of 0.1. K_SV,crit = 10 M⁻¹. `lambda raw` is α = 1.
 - **Choice.** The setting with the highest MCC on the DFT parameters; among tied settings
   the middle one in grid order.
-- **ML.** The kinetic criteria are scored again with the ML quencher parameters, at the
-  setting chosen on DFT. `adiabatic` is scored with each source directly.
+- **ML.** The barrier and rate criteria are scored again with the ML quencher
+  parameters, at the setting chosen on DFT. `adiabatic` is scored with each source
+  directly; `dvte` has no ML counterpart.
 - **Metrics.** Confusion counts, accuracy, precision, recall (sensitivity), specificity,
   F1, MCC, and ROC AUC on each criterion's continuous score (−ΔG_EnT, E_T(PC) − DvTE,
-  −ΔG‡, log₁₀ k·τ₀).
+  −ΔG‡, log₁₀ k·τ₀). Written with three decimals.
+- **Columns.** `parameters` is the source of the quencher parameters, `dft` or `ml`.
+  `n_free` counts the parameters chosen on the data (α, the barrier threshold), and
+  `n_settings` the grid points that choice was made from; it is 0 on `ml` rows, which take the setting of their `dft` row.
 
 ## Physics
 
@@ -83,8 +89,9 @@ Energies in kcal/mol, T = 298.15 K.
 - **Rate, irreversible.** k = k_d / (1 + (k_d/Z)·exp(ΔG‡/RT)), k_d/Z = 0.2.
 - **Sandros.** k = k_d / (1 + exp(ΔG/RT)).
 
-The benchmark criteria use the symmetric Marcus barrier and the full scheme; the other
-forms are used in `further_analysis/`. Reorganization energies are named
+The benchmark criteria use the symmetric Marcus or the Rehm–Weller barrier with the full
+scheme; the asymmetric barrier, the irreversible rate and Sandros appear only in
+`further_analysis/`. Reorganization energies are named
 `lambda_<surface>_<geometry>`, as in `../data/`.
 
 ## Cost
@@ -104,7 +111,8 @@ photocatalyst calculations are not counted. Outputs in `results/cost/`:
 | ML, per call / batch | model inference of one quencher per call, or its share of one call for all quenchers | every `ml` row |
 
 DFT and DvTE: wall time × cores from `quencher_timings.csv` (MD trajectories from the Slurm
-reports). ML: process CPU time from `quencher_timings_ml.csv`, measured on one machine.
+reports). ML: process CPU time from `quencher_timings_ml.csv`, measured on one machine with
+the deployed model. Written with four significant figures.
 
 ## Further analysis
 

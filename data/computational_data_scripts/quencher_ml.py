@@ -3,14 +3,17 @@ Quencher SMILES -> the graph MDN's triplet energy and reorganization energies.
 
 Reads   ../compound_identification.xlsx                (ids, names, SMILES)
         ../../ml/data/model_final.pt                   (the trained checkpoint)
+        ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
+                                                       (DFT E_T, for the printed comparison)
 Writes  ../computational_data_processed/quencher_properties_ml.xlsx
 
     uv sync --extra ml
     uv run --extra ml python data/computational_data_scripts/quencher_ml.py
 
 One row per quencher, with the same layout and headers as `quencher_properties_calc.xlsx`.
-Each predicted value comes with the network's uncertainty. Both are rounded to 2 decimals. The model's own field names
-for lambda_S0_T1 and lambda_T1_S0 are `lamda_S_T` and `lamda_T_S`.
+Each predicted value comes with the network's uncertainty. Both are rounded to 2 decimals.
+The model's own field names for lambda_S0_T1 and lambda_T1_S0 are `lamda_S_T` and
+`lamda_T_S`.
 
 The script needs the `ml` package (torch, torch-geometric, rdkit) and the checkpoint
 ml/data/model_final.pt, so it is not a stage of `uv run reproduce.py data`. The workbook

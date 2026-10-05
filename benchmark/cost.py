@@ -104,6 +104,20 @@ def dataset_totals(long):
     return pd.DataFrame(rows)
 
 
+def significant(table, digits=4):
+    """Floats to `digits` significant figures, as written; summation noise around zero
+    (the spread of identical values) becomes 0."""
+    def one(x):
+        if pd.isna(x):
+            return x
+        return 0.0 if abs(x) < 1e-12 else float(f"{x:.{digits}g}")
+
+    out = table.copy()
+    for column in out.select_dtypes("float").columns:
+        out[column] = out[column].map(one)
+    return out
+
+
 def atom_counts():
     """{quencher name: number of atoms including hydrogens}, from the SMILES."""
     from rdkit import Chem
@@ -127,9 +141,9 @@ def main():
     stats, totals = statistics(long), dataset_totals(long)
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    long.to_csv(RESULTS / "per_quencher.csv", index=False, lineterminator="\n")
-    stats.to_csv(RESULTS / "statistics.csv", index=False, lineterminator="\n")
-    totals.to_csv(RESULTS / "dataset.csv", index=False, lineterminator="\n")
+    significant(long).to_csv(RESULTS / "per_quencher.csv", index=False, lineterminator="\n")
+    significant(stats).to_csv(RESULTS / "statistics.csv", index=False, lineterminator="\n")
+    significant(totals).to_csv(RESULTS / "dataset.csv", index=False, lineterminator="\n")
 
     number = lambda x: f"{x:.3g}"  # noqa: E731
     print(stats.to_string(index=False, float_format=number))

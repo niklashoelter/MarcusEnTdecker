@@ -82,7 +82,7 @@ def photocatalysts():
         ]),
         Block(f"Triplet energy / {KCAL}", [
             col(f"E_T / {KCAL}", f"E_T / {KCAL}",
-                "Adiabatic, Gibbs-corrected: ((E_T1 + G_T1) - (E_S0 + G_S0)) x 627.503."),
+                "Adiabatic, Gibbs-corrected: ((E_T1 + G_T1) - (E_S0 + G_S0)) x 627.509."),
         ]),
         Block(f"Reorganization energies / {KCAL}", [
             col(f"lambda_{s}_{g} / {KCAL}", f"lambda_{s}_{g} / {KCAL}",

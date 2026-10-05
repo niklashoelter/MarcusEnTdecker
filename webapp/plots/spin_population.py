@@ -1,12 +1,9 @@
-import io, base64
+import base64
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 import plotly.graph_objects as go
 from rdkit import Chem
 from rdkit.Chem.Draw import rdMolDraw2D
 from rdkit.Chem import rdDepictor
-from PIL import Image
 
 
 def _prepare_mol_and_drawer(smiles, spin_population, uncertainty, rgb, theme="light"):
@@ -64,38 +61,6 @@ def _make_colorbar_info(spin_population, uncertainty, rgb):
     label = 'Uncertainty' if uncertainty is not None else 'Spin density'
     alpha_start, alpha_end = (0.8, 0.0) if uncertainty is not None else (0.0, 0.8)
     return r, g, b, cmin, cmax, label, alpha_start, alpha_end
-
-
-def visualize_density(smiles, spin_population, uncertainty=None, show_image=True, rgb=[0, 64, 128]):
-    mol, drawer, *_ = _prepare_mol_and_drawer(smiles, spin_population, uncertainty, rgb)
-    r, g, b, cmin, cmax, label, alpha_start, alpha_end = _make_colorbar_info(spin_population, uncertainty, rgb)
-
-    img = Image.open(io.BytesIO(drawer.GetDrawingText()))
-
-    fig, ax = plt.subplots(figsize=(6, 5))
-    ax.imshow(img)
-    ax.axis("off")
-
-    cmap = mcolors.LinearSegmentedColormap('SpindensityAlpha', {
-        'red':   [(0.0, r, r), (1.0, r, r)],
-        'green': [(0.0, g, g), (1.0, g, g)],
-        'blue':  [(0.0, b, b), (1.0, b, b)],
-        'alpha': [(0.0, alpha_start, alpha_start), (1.0, alpha_end, alpha_end)],
-    })
-
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=mcolors.Normalize(vmin=cmin, vmax=cmax))
-    sm.set_array([])
-    fig.colorbar(sm, ax=ax, fraction=0.046, pad=0.04).set_label(label)
-    plt.tight_layout()
-
-    if show_image:
-        plt.show()
-
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight", dpi=300)
-    plt.close(fig)
-    buf.seek(0)
-    return buf.getvalue()
 
 
 def visualize_density_interactive(smiles, spin_population, uncertainty=None, rgb=[0, 64, 128], theme="light"):

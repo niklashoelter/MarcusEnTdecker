@@ -95,6 +95,7 @@ def predict(model, loader, device, scaler, mode='mixture_mean'):
 
     return _build_result(g_result, n_result)
 
+# (checkpoint path, device) -> the model built from it; only the last one is kept.
 _global_model_cache = None
 
 def build_model(checkpoint, device, smiles, batch_size=48):
@@ -159,19 +160,20 @@ def get_predictions(smiles: list,
 
     global _global_model_cache
     BATCH_SIZE = 48
-    if _global_model_cache is None:
+    key = (str(model_path), str(device))
+    if _global_model_cache is None or _global_model_cache[0] != key:
         print(f"Loading weights into cache from {model_path}...")
         if device == 'cpu':
-            checkpoint = torch.load(model_path, map_location='cpu')
+            checkpoint = torch.load(model_path, map_location='cpu', weights_only=False)
         else:
-            checkpoint = torch.load(str(model_path))
+            checkpoint = torch.load(str(model_path), weights_only=False)
         print(f"Loading {len(smiles)} molecules for prediction")
         model = build_model(checkpoint, device, smiles, batch_size=BATCH_SIZE)
         scaler = checkpoint['scaler']
 
-        _global_model_cache = (model, scaler, checkpoint)
+        _global_model_cache = (key, model, scaler, checkpoint)
 
-    model, scaler, checkpoint = _global_model_cache
+    _, model, scaler, checkpoint = _global_model_cache
 
     test_dataset = MoleculeDataset(smiles, positional_encoding_kwargs=checkpoint['model_config'])
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, collate_fn=collate_fn)

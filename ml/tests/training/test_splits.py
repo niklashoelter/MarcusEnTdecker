@@ -13,6 +13,13 @@ def test_committed_random_split_is_the_procedure(seed):
     assert (committed == expected).all()
 
 
+def test_committed_oos_split_is_the_procedure():
+    dataset = pd.read_csv(splits.DATASET, usecols=["smiles"])
+    expected = splits.labels(len(dataset), splits.oos_split(dataset["smiles"].tolist()))
+    committed = pd.read_csv(splits.SPLITS / "oos_styryl.csv")["split"].to_numpy()
+    assert (committed == expected).all()
+
+
 def test_random_split_is_80_10_10_and_disjoint():
     train, val, test = splits.random_split(1000, 42)
     assert (len(train), len(val), len(test)) == (800, 100, 100)

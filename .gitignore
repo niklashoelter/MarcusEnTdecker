@@ -18,13 +18,12 @@ data/computational_data_raw/quencher_adiabatic_DvTE/*
 # data/ has one README, data/README.md. None below it.
 data/*/**/README.md
 
-# The ml package IS committed, checkpoint included, so that
-# the deployed model is pinned by this repository. Its own .gitignore was removed for
-# exactly that reason — see ml/README.md.
-
 # The best checkpoint so far of a running ml/training/train.py, renamed to model.pt when the
 # run ends.
 ml/results/**/*.pt.partial
+
+# The alternative Stern-Volmer fit through (0, 1), written only on request.
+data/experimental_data_processed/stern_volmer_fits_fixed_intercept.csv
 
 # Site-specific deployment: the image build and the university cluster manifests, not published.
 webapp/deploy/
@@ -35,6 +34,9 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+build/
+dist/
+.pytest_cache/
 .ipynb_checkpoints/
 
 # Editors / OS
@@ -48,10 +50,3 @@ desktop.ini
 .owncloudsync.log
 *.owncloudsync.log.*
 *~sync-conflict*
-
-# Local overrides
-paths.local.toml
-
-# Local notes for writing the paper; not part of the repository.
-benchmark/DESIGN.md
-benchmark/review.html

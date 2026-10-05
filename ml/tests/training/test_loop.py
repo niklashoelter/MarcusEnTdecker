@@ -1,5 +1,4 @@
 import torch
-import pytest
 from unittest.mock import MagicMock
 from ml.training.loop import compute_loss
 

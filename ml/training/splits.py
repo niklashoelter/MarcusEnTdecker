@@ -89,6 +89,9 @@ def read_split(name):
 
 
 def main():
+    import argparse
+
+    argparse.ArgumentParser(description=__doc__.splitlines()[1]).parse_args()
     dataset = pd.read_csv(DATASET, usecols=["idx", "smiles"])
     SPLITS.mkdir(exist_ok=True)
 

@@ -4,10 +4,7 @@ import matplotlib.pyplot as plt
 
 from typing import Dict, Any
 
-from ml.energy.marcus_ent import (
-    _compute_marcus_core,
-    calculate_driving_force_and_barrier,
-)
+from ml.energy.marcus_ent import _compute_marcus_core
 
 
 def plot_reaction_coordinate(
@@ -19,8 +16,6 @@ def plot_reaction_coordinate(
     quencher_lambda_T_S: float,
     unit: str = "kcal/mol",
     *,
-    render: bool = False,
-    show: bool = False,
     theme: str = "light",
 ) -> Dict[str, Any]:
     """Plot the Marcus-theory parabolas for a triplet–triplet energy transfer reaction.
@@ -201,7 +196,7 @@ def plot_reaction_coordinate(
     )
 
     ax.set_title("Marcus Theory Plot for Energy Transfer", color=fg_color, fontsize=16)
-    ax.set_xlabel(f"Normalized Reaction Coordinate", color=fg_color, fontsize=14)
+    ax.set_xlabel("Normalized Reaction Coordinate", color=fg_color, fontsize=14)
     ax.set_ylabel(f"ΔG [{unit}]", color=fg_color, fontsize=14)
     ax.tick_params(colors=fg_color)
     
@@ -215,9 +210,6 @@ def plot_reaction_coordinate(
         
     fig.tight_layout()
 
-    # Reset default style so it doesn't affect other global scripts if any
-    #plt.style.use('default')
-
     result = {
         "fig": fig,
         "limits": {"xmin": xmin, "xmax": xmax, "ymin": ymin, "ymax": ymax},
@@ -227,39 +219,8 @@ def plot_reaction_coordinate(
         "x_intersect": x_intersect,
     }
 
-    if render:
-        # We handle plotting in the webapp side, no blocking `show()` inside the library function usually.
-        # Although if show -> plt.show()
-        if show:
-            plt.show()
-
     # Reset style
     plt.style.use('default')
 
     return result
 
-
-if __name__ == "__main__":
-    res = plot_reaction_coordinate(
-        pc_adiabatic_E_T=62.9,
-        pc_lambda_S_T=6.5,
-        pc_lambda_T_S=6.5,
-        quencher_E_T=60.9,
-        quencher_lambda_S_T=13.2,
-        quencher_lambda_T_S=13.2,
-        unit="kcal/mol",
-        render=True,
-        show=True,
-    )
-
-    dG, dG_act, dG_act_bwd = calculate_driving_force_and_barrier(
-        pc_adiabatic_E_T=60.0,
-        pc_lambda_S_T=2.0,
-        pc_lambda_T_S=3.0,
-        quencher_E_T=55.0,
-        quencher_lambda_S_T=55.0,
-        quencher_lambda_T_S=55.0,
-        symmetric_approx=False,
-    )
-
-    print(dG, dG_act, dG_act_bwd)

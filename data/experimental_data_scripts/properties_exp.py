@@ -13,12 +13,13 @@ Reads   ../compound_identification.xlsx   (ids, names, SMILES)
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
 
-Usage: uv run properties_exp.py
+    uv run data/experimental_data_scripts/properties_exp.py
 
 Collects the measured properties of each compound from the per-measurement tables in
 the raw folders and writes them in blocks (see ../properties_workbook.py). No values are
-computed here; redox potentials are rounded to 2 decimals. The workbooks are read by ../build_exp_dataset.py, and the quencher
-workbook also by ../build_exp_dataset_ent.py for the redox potentials and bound flags.
+computed here; redox potentials are rounded to 2 decimals. The workbooks are read by
+../build_exp_dataset.py, and the quencher workbook also by ../build_exp_dataset_ent.py for
+the redox potentials and bound flags.
 The redox table is joined from the hand-edited literature and measured tables by
 quencher_redox_potentials.py.
 """

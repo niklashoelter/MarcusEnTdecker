@@ -4,9 +4,9 @@ A smoke test, not a test of the science: the model is stubbed out, so nothing he
 runs a forward pass. What it checks is that `webapp.app` imports under its new module
 path, that the page renders, and that an API route that needs no prediction answers.
 
-It needs the `webapp` extra, which brings fastapi and its test client's httpx. Under
-`uv sync --extra ml` alone neither is installed and the whole file skips; the
-dependency test beside it does not, because it only reads source.
+It needs the `webapp` extra for fastapi, and the dev group for httpx, which fastapi's
+test client is built on. Under `uv sync --extra ml` alone fastapi is missing and the whole
+file skips; the dependency test beside it does not, because it only reads source.
 """
 
 from __future__ import annotations

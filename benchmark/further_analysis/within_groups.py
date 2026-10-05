@@ -62,8 +62,8 @@ def main():
     table = within_groups(df)
     summary = summarize(table)
     RESULTS.mkdir(parents=True, exist_ok=True)
-    table.to_csv(RESULTS / "metrics.csv", index=False, lineterminator="\n")
-    summary.to_csv(RESULTS / "summary.csv", index=False, lineterminator="\n")
+    scoring.rounded(table).to_csv(RESULTS / "metrics.csv", index=False, lineterminator="\n")
+    scoring.rounded(summary).to_csv(RESULTS / "summary.csv", index=False, lineterminator="\n")
     print(summary.round(3).to_string(index=False))
     print(f"\n-> {RESULTS.relative_to(pairs.HERE.parent)}")
 

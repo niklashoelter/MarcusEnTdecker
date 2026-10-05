@@ -2,13 +2,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import uvicorn
 import pandas as pd
 from pathlib import Path
 import io
-import json
-import base64
 from fastapi.responses import Response
 from contextlib import asynccontextmanager
 
@@ -17,13 +15,12 @@ matplotlib.use('Agg')
 
 from ml.prediction import predict
 from webapp.smiles_utils import is_valid_smiles, canonicalize_smiles, is_single_fragment_smiles
-from webapp.plots.spin_population import visualize_density_interactive, visualize_density
+from webapp.plots.spin_population import visualize_density_interactive
 from webapp.plots.plot_modes import plot_mode_distribution_single
 from webapp.photocatalysts import list_photocatalyst_names, get_photocatalyst_row
 from ml.energy import marcus_ent
 from webapp.plots import marcus_plot
 import matplotlib.pyplot as plt
-import numpy as np
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,10 +36,9 @@ async def lifespan(app: FastAPI):
     yield
     # Code here runs on app shutdown if necessary
 
-app = FastAPI(title="PyRates REST API", lifespan=lifespan)
+app = FastAPI(title="EnTdecker", lifespan=lifespan)
 
 # Mount static files (like ketcher)
-import os
 static_dir = Path(__file__).parent / "static"
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
@@ -122,7 +118,7 @@ def api_plot_mode(request: PlotModeRequest):
 class PlotSpinRequest(BaseModel):
     smiles: str
     spin_population: List[float]
-    uncertainty: List[float] = None
+    uncertainty: Optional[List[float]] = None
     show_uncertainty: bool = False
     theme: str = "light"
 
@@ -253,8 +249,6 @@ def api_marcus_plot(request: MarcusRequest):
             quencher_lambda_S_T=request.quencher_lambda_S_T,
             quencher_lambda_T_S=request.quencher_lambda_T_S,
             unit=request.unit,
-            render=True,
-            show=False,
             theme=request.theme,
         )
         fig = res.get("fig", None)
@@ -281,4 +275,4 @@ def index():
     return html_path.read_text("utf8")
 
 if __name__ == "__main__":
-    uvicorn.run("webapp.app:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("webapp.app:app", host="127.0.0.1", port=5000, reload=True)

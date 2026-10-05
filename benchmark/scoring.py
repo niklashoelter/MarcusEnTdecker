@@ -8,6 +8,15 @@ import numpy as np
 from scipy.stats import rankdata
 
 
+def rounded(table):
+    """A result table as written: every float to three decimals, from full precision.
+
+    The metrics are unitless; the settings and energies in these tables carry no more
+    than three decimals to begin with, so rounding leaves them as they are.
+    """
+    return table.round(3)
+
+
 def metrics(y, predicted) -> dict:
     """Confusion counts and the metrics built from them. Recall is sensitivity."""
     y = np.asarray(y, bool)

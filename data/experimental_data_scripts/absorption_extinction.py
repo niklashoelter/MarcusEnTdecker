@@ -11,7 +11,7 @@ Reads   ../experimental_data_raw/quencher_absorption/
 Writes  ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
         (48 quenchers, 18 wavelengths)
 
-Usage: uv run absorption_extinction.py
+    uv run data/experimental_data_scripts/absorption_extinction.py
 
 Absorbances are scaled from the 5.846 mm well depth to a 10 mm path, blanked against the
 mean of the solvent wells in column 7, and divided by the stock concentration. The values

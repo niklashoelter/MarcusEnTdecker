@@ -14,7 +14,7 @@ Writes  results/adiabatic_variants/margin.csv           E_T(PC) >= E_T(Q) + m fo
 
 Margin: m = 0 to 3 kcal/mol in steps of 0.1, with DFT and with ML quencher E_T.
 
-Uncertainty cutoff u, taken at every distinct uncertainty of the 48 quenchers, in two
+Uncertainty cutoff u, taken at every distinct uncertainty of the quenchers, in two
 modes:
     excluded           pairs whose quencher uncertainty exceeds u are not scored
     no quenching       pairs whose quencher uncertainty exceeds u are predicted not to quench
@@ -69,8 +69,9 @@ def main():
     df = pairs.scored(pairs.load())
     margins, uncertainty = margin(df), ml_uncertainty(df)
     RESULTS.mkdir(parents=True, exist_ok=True)
-    margins.to_csv(RESULTS / "margin.csv", index=False, lineterminator="\n")
-    uncertainty.to_csv(RESULTS / "ml_uncertainty.csv", index=False, lineterminator="\n")
+    scoring.rounded(margins).to_csv(RESULTS / "margin.csv", index=False, lineterminator="\n")
+    scoring.rounded(uncertainty).to_csv(RESULTS / "ml_uncertainty.csv", index=False,
+                                        lineterminator="\n")
 
     for source, rows in margins.groupby("parameters"):
         best = rows.loc[rows["MCC"].idxmax()]

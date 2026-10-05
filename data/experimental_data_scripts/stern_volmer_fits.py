@@ -19,7 +19,8 @@ residuals. The [Q] = 0 point is always kept. The chosen points are refitted by o
 least squares and by Theil-Sen, and the fit with the lower MAE is reported.
 
 Intercept. The fit has a free intercept. `--fix-intercept` fits I0/I = 1 + K_SV [Q]
-through (0, 1) instead, which changes every K_SV.
+through (0, 1) instead, which changes every K_SV; that run writes
+stern_volmer_fits_fixed_intercept.csv beside the table and leaves the table alone.
 
 Label. `quenches` is 1 if the fit clears any rung of a ladder in which weaker quenching
 needs a straighter line: K_SV > 50 at r2 > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
@@ -36,6 +37,7 @@ import numpy as np
 
 IN = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "stern_volmer_intensities.csv"
 OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "stern_volmer_fits.csv"
+OUT_FIXED_INTERCEPT = OUT.with_name("stern_volmer_fits_fixed_intercept.csv")
 
 MIN_POINTS_FOR_FIT = 3
 R2_NO_QUENCHING = 0.50        # all-points r2 below this: no quenching trend
@@ -329,14 +331,15 @@ def main(fix_intercept=FIX_INTERCEPT):
             "note": note,
         })
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    with OUT.open("w", newline="", encoding="utf-8") as fh:
+    out = OUT_FIXED_INTERCEPT if fix_intercept else OUT
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=COLUMNS)
         writer.writeheader()
         writer.writerows(rows)
 
     label = sum(1 for r in rows if r["quenches"])
-    print(f"{len(rows)} pairs -> {OUT.name}")
+    print(f"{len(rows)} pairs -> {out.name}")
     print(f"  quenches: {label} yes, {len(rows) - label} no")
     rungs = defaultdict(int)
     for r in rows:

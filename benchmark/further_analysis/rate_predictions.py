@@ -3,7 +3,8 @@
 # dependencies = ["numpy", "pandas", "scipy"]
 # ///
 """
-Predicted quenching rate constants for every scored pair, framework and alpha.
+Predicted quenching rate constants for every scored pair, source, rate law, barrier model
+and alpha.
 
 Reads   ../../data/exp_dataset_ent.csv (through pairs.py)
 Writes  results/rate_predictions/pairs.csv              the scored pairs with their
@@ -20,8 +21,8 @@ irreversible Marcus symmetric, Marcus asymmetric, Rehm-Weller      0.05 to 1.00
 sandros      none                                                  -
 
 Sources: DFT and ML quencher parameters; photocatalyst parameters are DFT. Nothing is
-fitted. For pairs that do not quench, the measured k_q is not a rate but an upper bound
-below K_SV,crit / tau0.
+fitted. For pairs that do not quench (`censored`), the measured k_q is an upper bound, not a
+rate.
 """
 
 import sys
@@ -66,8 +67,9 @@ def main():
     table = predictions(df)
     RESULTS.mkdir(parents=True, exist_ok=True)
     df[PAIR_COLUMNS].rename_axis("pair").to_csv(RESULTS / "pairs.csv", lineterminator="\n")
+    # mtime 0 keeps the gzip header, and so the file, the same from run to run.
     table.to_csv(RESULTS / "predictions.csv.gz", index=False, lineterminator="\n",
-                 float_format="%.5g")
+                 float_format="%.5g", compression={"method": "gzip", "mtime": 0})
     print(f"{len(df)} pairs, {len(table) // len(df)} predictions per pair "
           f"-> {RESULTS.relative_to(pairs.HERE.parent)}")
 

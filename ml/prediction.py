@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Iterable
+from typing import Sequence
 from ml.model.inference import get_predictions
 import importlib.resources as ir
 import pandas as pd
@@ -19,15 +19,17 @@ def collect_results(smiles: list):
 
     return graph_output, node_output
 
-def predict(smiles_list: Iterable[str]) -> pd.DataFrame:
-    """Stub prediction function to be replaced by real ML models.
+def predict(smiles_list: Sequence[str]) -> pd.DataFrame:
+    """Predict with the deployed model, ml/data/model_final.pt, on the CPU.
 
-    Returns a DataFrame with columns (base unit: kcal/mol):
+    One row per SMILES, with the columns (energies in kcal/mol):
       - smiles
-      - triplet_energy_adiabatic        (in kcal/mol, constrained to [30, 75])
-      - lamda_S_T                        (in kcal/mol)
-      - lamda_T_S                        (in kcal/mol)
-      - spin_map                         (dict: atom_idx -> spin density) [internal usage, hidden in table]
+      - triplet_energy_adiabatic        adiabatic triplet energy
+      - lamda_S_T                        reorganization energy on the S0 surface
+      - lamda_T_S                        reorganization energy on the T1 surface
+      - <each of the three>_uncertainty  standard deviation of the predicted mixture
+      - <each of the three>_mdn_mu, _mdn_sigma, _mdn_pi   the mixture's components
+      - spin_map, spin_map_uncertainty   per-atom spin population, in atom order
     """
     graph_output, node_output = collect_results(smiles_list)
     return frame(smiles_list, graph_output, node_output)
@@ -40,7 +42,6 @@ def frame(smiles_list, graph_output, node_output) -> pd.DataFrame:
     graph_predictions, graph_uncertainties = graph_output['predictions'], graph_output['uncertainties']
     g_mu, g_sigma, g_pi = graph_output['mdn_params']['mu'], graph_output['mdn_params']['sigma'], graph_output['mdn_params']['pi']
     node_predictions_flat, node_uncertainties_flat = node_output['predictions'], node_output['uncertainties']
-    n_mu_flat, n_sigma_flat, n_pi_flat = node_output['mdn_params']['mu'], node_output['mdn_params']['sigma'], node_output['mdn_params']['pi']
 
 
     # Calculate number of atoms per molecule

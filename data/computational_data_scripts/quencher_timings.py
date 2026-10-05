@@ -9,6 +9,7 @@ Reads   ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/
         ../computational_data_raw/quencher_adiabatic_DvTE/Gaussian_Freq/gaussian_s0_q<n>/
         ../computational_data_raw/quencher_adiabatic_DvTE/Milo_MD/milo_q<n>/md_<k>/
         ../computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz
+        ../compound_identification.xlsx   (quencher ids)
 Writes  ../computational_data_processed/quencher_timings.csv
         ../computational_data_raw/quencher_adiabatic_DvTE/quencher_timings_vertical_sp.csv.gz
 

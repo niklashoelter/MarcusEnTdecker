@@ -23,8 +23,8 @@ WHAT IT COMPOSES
         ml.energy.marcus_ent                       properties -> dG, dG barrier
         Balzani rate expression (below)            barrier -> k
 
-    Keeping the barrier in `ml.energy` means the web application, the paper's numbers
-    and this API all compute it the same way. Only the last step is written here,
+    Keeping the barrier in `ml.energy` means the web application and this API compute
+    it the same way. Only the last step is written here,
     because `ml.energy` stops at the barrier and does not combine it with diffusion.
 
 THE RATE EXPRESSION
@@ -98,8 +98,8 @@ from typing import Any, Iterable, Sequence, Union
 WORKBOOK_HEADER_ROW = 2
 
 #: What a photocatalyst row has to carry, beyond `new_id`, to yield a prediction.
-PC_COLUMNS = ("E_T / kcal mol-1", "lambda_S0_to_T1 / kcal mol-1",
-              "lambda_T1_to_S0 / kcal mol-1")
+PC_COLUMNS = ("E_T / kcal mol-1", "lambda_S0_T1 / kcal mol-1",
+              "lambda_T1_S0 / kcal mol-1")
 
 # Gas constant in kcal mol-1 K-1.
 R_KCAL = 1.987204259e-3
@@ -181,9 +181,11 @@ def photocatalyst_properties(source: Any = None,
     row as a mapping. `pc_id` picks the row by its `new_id`, and may be left out when
     the table holds exactly one row.
 
-    The two reorganization energies map across by which surface they relax on --
-    `lambda_S0_to_T1` is the relaxation on the triplet surface from the singlet
-    geometry, which is what the Marcus expression calls `lambda_S_T`.
+    The two reorganization energies map across by surface: the table's `lambda_S0_T1`
+    (E_S0 at the T1 geometry minus E_S0 at its own) is the model's `lambda_S_T`, and
+    `lambda_T1_S0` (E_T1 at the S0 geometry minus E_T1 at its own) its `lambda_T_S`.
+    An .xlsx is read with its headers on row 2, as the property workbooks in `data/`
+    have them.
     """
     rows = _rows(source)
 
@@ -246,7 +248,7 @@ class RatePrediction:
 
 
 class RatePredictor:
-    """Predicts energy transfer rate constants from two SMILES strings.
+    """Predicts energy transfer rate constants for photocatalyst-quencher pairs.
 
     The model is loaded once, on the first prediction, and reused. Properties are
     cached per structure, so screening many quenchers against one photocatalyst costs
@@ -258,16 +260,12 @@ class RatePredictor:
 
     def __init__(
         self,
-        model_path: Path | None = None,
-        device: str = "cpu",
         temperature: float = DEFAULT_TEMPERATURE_K,
         k_diff: float = K_DIFF_ACETONITRILE,
         lambda_scale: float = 1.0,
         quenching_threshold: float = K_Q_THRESHOLD,
         ensemble: bool = False,
     ):
-        self.model_path = model_path
-        self.device = device
         self.temperature = temperature
         self.k_diff = k_diff
         self.lambda_scale = lambda_scale

@@ -19,6 +19,7 @@ import contextlib
 import csv
 import io
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -143,9 +144,12 @@ def _info(args) -> None:
     elements = GetPeriodicTable()
 
     print(f"checkpoint  {path}")
-    for key, label in (("epoch", "epoch"), ("val_loss", "val loss")):
-        if key in checkpoint:
-            print(f"{label:<11} {checkpoint[key]}")
+    for key, label in (("hyperparameters", "hyperparams"), ("split", "split"),
+                       ("seed", "seed"), ("epoch", "epoch"), ("val_loss", "val loss")):
+        value = checkpoint.get(key)
+        if value is None or (isinstance(value, float) and math.isnan(value)):
+            continue  # the full-data model has no validation set, so no val loss
+        print(f"{label:<11} {value}")
     print("elements    " + " ".join(elements.GetElementSymbol(z)
                                     for z in ATOM_FEATURES["atomic_num"]))
 

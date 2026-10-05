@@ -27,10 +27,11 @@ data/
 ├── computational_data_processed/
 │   ├── photocatalyst_properties_calc.xlsx
 │   ├── quencher_properties_calc.xlsx
-│   ├── quencher_properties_ml.xlsx  the same three quantities, predicted from the SMILES
+│   ├── quencher_properties_ml.xlsx  E_T, lambda_S0_T1 and lambda_T1_S0 predicted from the SMILES
 │   ├── quencher_timings.csv         wall time, cores and CPU hours of every quencher job
-│   └── quencher_timings_ml.csv      the model's inference time per quencher
-├── experimental_data_scripts/       one script per raw folder, plus properties_exp.py
+│   └── quencher_timings_ml.csv      the deployed model's inference time per quencher
+├── experimental_data_scripts/       one script per raw folder (pc_emission/ has none, its
+│                                    scans are deposited only), plus properties_exp.py
 ├── computational_data_scripts/      one script per raw folder, plus properties_calc.py,
 │                                    quencher_timings.py, quencher_ml.py,
 │                                    quencher_ml_timing.py and photocatalyst_curate.py
@@ -57,7 +58,6 @@ which writes the computational cost of the quencher jobs to
 `computational_data_processed/`. Three scripts are not part of it:
 
 - `quencher_ml.py` needs the model environment and is run by hand:
-  `uv sync --extra ml`, then
   `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`.
   Its workbook is in git.
 - `quencher_ml_timing.py` measures the model's inference time on the machine it runs on,
@@ -91,13 +91,13 @@ column. Row 1 names the blocks; row 2 holds the headers as `quantity / unit`. Th
 
 ## exp_dataset
 
-One row per photocatalyst–quencher pair, 27 × 48 = 1296, sorted by `pc_new_id` then
-`quencher_id`. Ten columns, all measured: the ids, K_SV, τ0, k_q = K_SV/τ0, `quenches`
-and `censored`. The xlsx holds the same table in the workbook
+One row per photocatalyst–quencher pair, every combination, sorted by `pc_new_id` then
+`quencher_id`. All columns are measured: the ids, K_SV, τ0, k_q = K_SV/τ0, `quenches` and
+`censored`. The xlsx holds the same table in the workbook
 layout.
 
-PC22 (old PC24) is included although its emission was too weak; the theory benchmark
-drops it.
+PC22 (old PC24) is included although its emission is too weak for Stern–Volmer
+analysis; the theory benchmark drops it.
 
 `quenches` is 1 if the Stern–Volmer fit meets any one of these thresholds:
 K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
@@ -120,7 +120,7 @@ The pairs of `exp_dataset` on which quenching can be attributed to energy transf
   `dE_SET_ox_bound` / `dE_SET_red_bound`. It rules a channel out only if the limit itself
   is past 0.25 V.
 
-Besides the ten `exp_dataset` columns and the two ΔE_SET columns, each row carries:
+Besides the `exp_dataset` columns and the two ΔE_SET columns, each row carries:
 - **Photocatalyst (DFT):** E_T and both λ.
 - **Quencher (DFT):** E_T and both λ.
 - **Quencher (DvTE):** mean and standard deviation of the vertical gaps, and their
@@ -129,7 +129,7 @@ Besides the ten `exp_dataset` columns and the two ΔE_SET columns, each row carr
   organic molecules only, so there are no predicted photocatalyst values.
 - **Driving force:** ΔG_EnT = E_T(Q) − E_T(PC), from both quencher sources.
 
-Blanks stay blank.
+A value missing from its source table is left empty here; nothing is filled in.
 
 ## Methods notes
 
@@ -139,7 +139,7 @@ PC3 were read with saved protocols that name no filters; their wavelengths come 
 screen's photocatalyst sheet.
 
 **Quencher redox potentials** are read by hand from the voltammograms, or taken from the
-literature. Each quencher is entered in one of two files, `quencher_redox_measured.csv`
+literature; where a voltammogram is not in `measured data/`, the row's `comment` says so. Each quencher is entered in one of two files, `quencher_redox_measured.csv`
 (source `CV`) or `quencher_redox_literature.csv` (a DOI, or `estimated`), and
 `quencher_redox_potentials.py` joins them into `quencher_redox_potentials.csv`. Each row
 has a bound column (`>` or `<` where the value is a limit) and a free-text `comment`.
@@ -155,6 +155,15 @@ state at another state's optimized geometry, minus that state at its own geometr
 oxidized and reduced states (`ox` and `red` job folders). Electronic energies only, no
 thermal corrections.
 
+**Dissociative states.** In some quencher states the optimisation breaks a bond, so the
+optimized structure is not the intact molecule: the T1 states of Q10 and Q11 (S–S), Q17
+(Se–Se) and Q45 (Se–C), and the reduced states of Q17 (Se–Se) and Q25, Q26 and Q27
+(C–Br). Reruns of Q17 and Q45 from the S0 minimum broke a different bond, so the starting
+geometry is not the cause. Their energies are kept, but the
+reorganization energies involving these states are not those of an intact molecule, and
+the adiabatic triplet energies of Q10, Q11, Q17 and Q45 are closer to fragmentation
+energies.
+
 **Predicted quencher properties.** `quencher_properties_ml.xlsx` holds E_T, lambda_S0_T1
 and lambda_T1_S0 predicted from the SMILES by the graph mixture density network in
 `../ml/data/model_final.pt`, each with its predicted uncertainty.
@@ -168,15 +177,18 @@ timed by their Slurm reports, as are the vertical single-point steps whose ORCA 
 failed or hit the time limit (`dvte sp failed`). Where a Slurm report exists next to a
 program output it is recorded as a cross-check and disagreements are flagged.
 `quencher_timings_ml.csv` holds the model's import and load times and the median time of
-one prediction per quencher and of all 48 in one call, on the CPU; the machine and
-versions are in its `#` header lines.
+one prediction per quencher and of all quenchers in one call, on the CPU, measured with
+`../ml/data/model_final.pt`; the machine, versions and checkpoint are in its `#` header
+lines.
 
-**Calculations.** The computational folders hold one calculation per state:
-`Q<n>/<state>/` and `PC_<n>/<state>/` contain one geometry optimisation and its single
-points, named `opt`, `sp` and `sp_vert_<kind>`. For quenchers, the lowest-energy
-conformer is kept. In Q17 S0 the thermal correction, and in Q18 S0 the reduced-state
-vertical single point, come from a second run of the same conformer, so there
-`opt_output.out` is not the run behind `sp_output.out`.
+**Calculations.** The computational folders hold one calculation per state. A quencher
+state folder, `Q<n>/<state>/`, holds the geometry optimisation (`opt`), the single point
+at that geometry (`sp`) and the vertical single points of the other states
+(`sp_vert_<kind>`); the lowest-energy conformer is kept. A photocatalyst state folder,
+`PC_<n>/<state>/`, holds the optimisation and the vertical single points
+(`sp_vert_<state>`), and `PC_<n>/conf/` the conformer search. In Q17 S0, `opt_output.out`
+(the thermal correction) and `sp_output.out` come from two runs of the same conformer; in
+Q18 S0, the reduced-state vertical single point comes from a second run.
 
 ## Git and Zenodo
 

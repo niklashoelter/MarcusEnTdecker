@@ -6,6 +6,7 @@
 Photocatalyst triplet energies, reorganization energies and excited-state potentials.
 
 Reads   ../computational_data_raw/photocatalysts/PC_<n>/{S0,T1,ox,red}/*_output.out
+        ../compound_identification.xlsx   (photocatalyst ids)
 Writes  ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
 
     uv run data/computational_data_scripts/photocatalyst_dft.py
@@ -14,7 +15,7 @@ Each state folder holds the optimisation with frequencies (`opt_output.out`) and
 vertical single points of the other states at that geometry (`sp_vert_<state>_output.out`).
 E is the electronic energy, G the Gibbs correction G-E(el):
 
-    E_T                ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.503
+    E_T                ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.509
     lambda_X_Y         (E_X at the Y geometry - E_X) * 627.509     electronic only
     dG_ox_ES           ((E_ox + G_ox) - (E_T1 + G_T1)) * 627.509   PC* -> PC+
     dG_red_ES          ((E_red + G_red) - (E_T1 + G_T1)) * 627.509  PC* -> PC-
@@ -44,8 +45,7 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "computational_data_raw" / "photocatalysts"
 OUT = RAW / "photocatalyst_dft.csv"
 
-HARTREE_KCAL_E_T = 627.503      # for E_T
-HARTREE_KCAL = 627.509          # for every other energy difference
+HARTREE_KCAL = 627.509
 FARADAY_KCAL_V = 23.061
 SCE_ABSOLUTE_V = 4.42
 DECIMALS = 2                    # for kcal/mol and V
@@ -166,7 +166,7 @@ def main():
                 return None
             return (free[final] - free[initial]) * factor
 
-        e_t = dG("E_T1", "E_S0", HARTREE_KCAL_E_T)
+        e_t = dG("E_T1", "E_S0")
         dg_ox, dg_red = dG("E_ox", "E_T1"), dG("E_red", "E_T1")
         e_star_minus = -dg_red / FARADAY_KCAL_V - SCE_ABSOLUTE_V if dg_red is not None else None
         e_plus_star = dg_ox / FARADAY_KCAL_V - SCE_ABSOLUTE_V if dg_ox is not None else None

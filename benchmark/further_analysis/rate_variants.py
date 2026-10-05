@@ -89,10 +89,12 @@ def main():
     df = pairs.scored(pairs.load())
     best, grid = best_table(df), alpha_k_map(df)
     RESULTS.mkdir(parents=True, exist_ok=True)
-    best.to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
-    grid.to_csv(RESULTS / "alpha_k_sv_crit.csv", index=False, lineterminator="\n")
+    scoring.rounded(best).to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
+    scoring.rounded(grid).to_csv(RESULTS / "alpha_k_sv_crit.csv", index=False,
+                                 lineterminator="\n")
     grid_best = map_best(grid)
-    grid_best.to_csv(RESULTS / "alpha_k_sv_crit_best.csv", index=False, lineterminator="\n")
+    scoring.rounded(grid_best).to_csv(RESULTS / "alpha_k_sv_crit_best.csv", index=False,
+                                      lineterminator="\n")
 
     shown = ["criterion", "parameters", "variant", "alpha", "recall", "specificity", "MCC", "AUC"]
     print(best[shown].round(3).to_string(index=False))

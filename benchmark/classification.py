@@ -191,8 +191,8 @@ def main():
     every, best = score(pairs.scored(table))
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    every.to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
-    best.to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
+    scoring.rounded(every).to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
+    scoring.rounded(best).to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
 
     shown = ["criterion", "parameters", "variant", "alpha", "barrier_threshold / kcal mol-1",
              "recall", "specificity", "MCC", "AUC"]

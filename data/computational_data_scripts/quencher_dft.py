@@ -14,8 +14,8 @@ Each of the 48 quenchers has four states, S0, T1, ox and red. A state folder hol
 optimisation with frequencies (`opt_output.out`, thermal correction G-E(el)), the single
 point at that geometry (`sp_output.out`) and the vertical single points of the other
 states at that geometry (`sp_vert_<kind>_output.out`). Each state is the lowest-energy
-conformer. In Q17/S0 and Q18/S0, `opt_output.out` and `sp_output.out` come from two runs
-of the same conformer.
+conformer. In Q17/S0, `opt_output.out` and `sp_output.out` come from two runs of the same
+conformer; in Q18/S0, `sp_vert_red_output.out` comes from a second run.
 
     E_combined   E(sp) + G-E(el)(opt)
     E_T          E_combined(T1) - E_combined(S0)

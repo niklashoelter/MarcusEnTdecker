@@ -1,5 +1,4 @@
 import torch
-import pytest
 from torch_geometric.data import Data, Batch
 from ml.model.gnn.gat import GAT
 
