@@ -1,11 +1,13 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = []
+# dependencies = ["numpy"]
 # ///
 """
-Adiabatic triplet energies, redox potentials and reorganization energies of the quenchers.
+Adiabatic triplet energies, redox potentials, reorganization energies and molecular radii
+of the quenchers.
 
 Reads   ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/
+        ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/S0/opt_geometry.xyz
 Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
 
     uv run data/computational_data_scripts/quencher_dft.py
@@ -28,8 +30,13 @@ Reorganization energies are named lambda_<surface>_<geometry>: lambda_S0_T1 is E
 T1 geometry minus E_S0 at its own. Dplus and Dminus are the one-electron oxidized and
 reduced states, the `ox` and `red` folders.
 
+radius_S0 is the radius in A of the sphere with the van der Waals volume of the optimised
+S0 geometry (../molecular_size.py). The benchmark takes r_PC + r_Q as the contact distance
+of a pair.
+
 Every value is computed from the full-precision energies, potentials from the unrounded
-free energies, and rounded to 2 decimals in kcal/mol and V when written.
+free energies, and rounded to 2 decimals in kcal/mol and V when written; the radius is
+rounded to 2 decimals in A.
 """
 
 import csv
@@ -37,7 +44,8 @@ import re
 import sys
 from pathlib import Path
 
-RAW = Path(__file__).resolve().parent.parent / "computational_data_raw" / "quencher_adiabatic_DFT"
+DATA = Path(__file__).resolve().parent.parent
+RAW = DATA / "computational_data_raw" / "quencher_adiabatic_DFT"
 OUT_DIR = RAW
 OUT = OUT_DIR / "quencher_dft.csv"
 
@@ -45,7 +53,10 @@ H_TO_KCAL = 627.509          # Hartree -> kcal/mol
 F_KCAL_PER_V = 23.061        # Faraday constant, kcal mol-1 V-1
 # Absolute SCE potential in V, E = dG/F - 4.42. Same value as in photocatalyst_dft.py.
 SHE_TO_SCE = 4.42
-DECIMALS = 2                 # for kcal/mol and V
+DECIMALS = 2                 # for kcal/mol, V and A
+
+sys.path.insert(0, str(DATA))
+from molecular_size import radius  # noqa: E402
 
 STATES = ("S0", "T1", "ox", "red")
 
@@ -62,6 +73,7 @@ COLUMNS = [
     "E_T", "lambda_S0_T1", "lambda_T1_S0",
     "dG_Ox", "E_Ox_vs_SCE_calc", "lambda_S0_Dplus", "lambda_Dplus_S0",
     "dG_Red", "E_Red_vs_SCE_calc", "lambda_S0_Dminus", "lambda_Dminus_S0",
+    "radius_S0",
 ]
 
 
@@ -81,7 +93,7 @@ def to_volt(kcal):
 
 
 def rounded(x):
-    """A value in kcal/mol or V, to DECIMALS; blank if absent."""
+    """A value in kcal/mol, V or A, to DECIMALS; blank if absent."""
     return "" if x is None else round(x, DECIMALS)
 
 
@@ -177,8 +189,10 @@ def main():
             row["lambda_S0_Dminus"] = to_kcal(sub(red["E_vert_ox"], s0["E_singlepoint"]))
             row["lambda_Dminus_S0"] = to_kcal(sub(s0["E_vert_red"], red["E_singlepoint"]))
 
+        row["radius_S0"] = radius(qdir / "S0" / "opt_geometry.xyz")
+
         missing = [c for c in COLUMNS
-                   if c.startswith(("E_", "lambda", "dG")) and row.get(c) is None]
+                   if c.startswith(("E_", "lambda", "dG", "radius")) and row.get(c) is None]
         if missing:
             incomplete.append((qid, missing))
         rows.append({"quencher_id": qid,

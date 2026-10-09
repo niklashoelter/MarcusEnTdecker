@@ -1,11 +1,13 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = []
+# dependencies = ["numpy"]
 # ///
 """
-Photocatalyst triplet energies, reorganization energies and excited-state potentials.
+Photocatalyst triplet energies, reorganization energies, excited-state potentials and
+molecular radii.
 
 Reads   ../computational_data_raw/photocatalysts/PC_<n>/{S0,T1,ox,red}/*_output.out
+        ../computational_data_raw/photocatalysts/PC_<n>/S0/opt_geometry.xyz
         ../compound_identification.xlsx   (photocatalyst ids)
 Writes  ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
 
@@ -28,11 +30,16 @@ Dplus and Dminus are the one-electron oxidized and reduced states, the `ox` and 
 folders. Potentials are named by their couple: E(PC*/PC-) measures how strong an oxidant
 the triplet is.
 
+radius_S0 is the radius in A of the sphere with the van der Waals volume of the optimised
+S0 geometry (../molecular_size.py). The benchmark takes r_PC + r_Q as the contact distance
+of a pair.
+
 Photocatalysts are numbered by old id. Those excluded from the data are skipped
 (../compound_identification.py).
 
 Values in kcal/mol and V are computed from the full-precision energies and rounded to 2
-decimals when written. Energies in Hartree are copied as ORCA prints them.
+decimals when written, the radius to 2 decimals in A. Energies in Hartree are copied as
+ORCA prints them.
 """
 
 from __future__ import annotations
@@ -48,11 +55,12 @@ OUT = RAW / "photocatalyst_dft.csv"
 HARTREE_KCAL = 627.509
 FARADAY_KCAL_V = 23.061
 SCE_ABSOLUTE_V = 4.42
-DECIMALS = 2                    # for kcal/mol and V
+DECIMALS = 2                    # for kcal/mol, V and A
 
 # Old ids of the photocatalysts in the data.
 sys.path.insert(0, str(ROOT))
 from compound_identification import IN_DATA  # noqa: E402
+from molecular_size import radius  # noqa: E402
 
 # state directory, file stem -> the key it is stored under
 JOBS = {
@@ -78,6 +86,7 @@ COLUMNS = [
     "lambda_S0_Dminus / kcal mol-1", "lambda_Dminus_S0 / kcal mol-1",
     "dG_ox_ES / kcal mol-1", "dG_red_ES / kcal mol-1",
     "E_PCstar_PCminus / V", "E_PCplus_PCstar / V",
+    "radius_S0 / A",
     "E_S0 / Ha", "E_T1 / Ha", "E_ox / Ha", "E_red / Ha",
     "E_T1_at_S0geom / Ha", "E_S0_at_T1geom / Ha",
     "E_ox_at_S0geom / Ha", "E_S0_at_oxgeom / Ha",
@@ -123,7 +132,7 @@ def blank(x):
 
 
 def rounded(x):
-    """A value in kcal/mol or V, to DECIMALS; blank if absent."""
+    """A value in kcal/mol, V or A, to DECIMALS; blank if absent."""
     return "" if x is None else round(x, DECIMALS)
 
 
@@ -195,6 +204,7 @@ def main():
             "dG_red_ES / kcal mol-1": rounded(dg_red),
             "E_PCstar_PCminus / V": rounded(e_star_minus),
             "E_PCplus_PCstar / V": rounded(e_plus_star),
+            "radius_S0 / A": rounded(radius(pc_dir / "S0" / "opt_geometry.xyz")),
             **{f"{k} / Ha": blank(printed.get(k)) for k in JOBS},
             **{f"G_corr_{k[2:]} / Ha": blank(gibbs.get(k)) for k in OPTIMIZATIONS},
             **{f"n_imag_{k[2:]}": imag.get(k, "") for k in OPTIMIZATIONS},

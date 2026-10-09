@@ -48,6 +48,11 @@ IDENTIFICATION = "compound_identification.xlsx"
 # Reorganization energies are lambda_<surface>_<geometry> in both workbooks.
 LAMBDA_STATES = "Dplus and Dminus are the one-electron oxidized and reduced states."
 
+# The molecular radius, the same description in both workbooks.
+RADIUS = ("Radius of the sphere with the van der Waals volume of the optimised S0 geometry: "
+          "union of atomic spheres with Bondi radii (Ir and Ru 2.00 A), counted on a 0.1 A "
+          "grid. r_PC + r_Q is the contact distance of a pair in the benchmark.")
+
 
 def src(path, column):
     return f"{path.relative_to(DATA).as_posix()}: {column}"
@@ -99,6 +104,9 @@ def photocatalysts():
                 "PC*/PC-, how strong an oxidant the triplet is: -dG_red_ES / 23.061 - 4.42."),
             col("E_PCplus_PCstar / V", "E_PCplus_PCstar / V",
                 "PC+/PC*, how strong a reductant the triplet is: dG_ox_ES / 23.061 - 4.42."),
+        ]),
+        Block("Molecular size / A", [
+            col("radius_S0 / A", "radius_S0 / A", RADIUS),
         ]),
     ]
     note = """
@@ -165,9 +173,12 @@ def quenchers():
                  f"{p} quantile of a kernel density estimate of the samples (Scott's rule).")
               for p in DVTE_CUTOFFS],
         ]),
+        Block("Molecular size, DFT / A", [
+            col("radius_S0 / A", "radius_S0", RADIUS),
+        ]),
     ]
     note = """
-        One row per quencher. DFT values are rounded to 2 decimals in kcal/mol and V.
+        One row per quencher. DFT values are rounded to 2 decimals in kcal/mol, V and A.
         The energies behind each value are in the deposited ORCA outputs under
         computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/, and every sampled gap in
         computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz.

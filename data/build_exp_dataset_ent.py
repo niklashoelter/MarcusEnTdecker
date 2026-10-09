@@ -29,14 +29,16 @@ Which pairs
     uphill, so it rules the channel out only if the limit itself is past 0.25 V.
 
 Properties
-    Photocatalyst E_T and lambda are DFT. Quencher DvTE is the distribution of vertical
-    singlet-triplet gaps from MD: its mean, standard deviation and p-quantiles, both from a
-    normal distribution and from a KDE. Quencher E_T and lambda are given from DFT and
+    Photocatalyst E_T and lambda are DFT. The molecular radii of photocatalyst and quencher
+    are from their S0 DFT geometries; the benchmark adds them to the contact distance of a
+    pair. Quencher DvTE is the distribution of vertical singlet-triplet gaps from MD: its
+    mean, standard deviation and p-quantiles, both from a normal distribution and from a
+    KDE. Quencher E_T and lambda are given from DFT and
     as predicted by the ML model, with the model's uncertainty; the model covers organic molecules only, so there are
     no predicted photocatalyst values. dG_EnT = E_T(Q) - E_T(PC). A value the source does
     not have stays blank.
 
-Values in kcal/mol and V are written to 2 decimals. The SET differences are rounded the
+Values in kcal/mol, V and A are written to 2 decimals. The SET differences are rounded the
 same way before they are compared with 0.25 V.
 """
 
@@ -59,7 +61,7 @@ OUT_CSV = DATA / "exp_dataset_ent.csv"
 OUT_XLSX = DATA / "exp_dataset_ent.xlsx"
 
 SET_EXCLUSION_V = 0.25
-DECIMALS = 2                                    # for kcal/mol and V
+DECIMALS = 2                                    # for kcal/mol, V and A
 DVTE_P = ("0.005", "0.008", "0.01", "0.015")   # quantiles of the vertical gaps
 
 # (block, [(column, description, source)]) for the columns added to exp_dataset's.
@@ -85,6 +87,8 @@ ADDED = [
          "photocatalyst_properties_calc.xlsx: lambda_S0_T1"),
         ("pc_lambda_T1_S0_dft / kcal mol-1", "E_T1 at the S0 geometry minus E_T1.",
          "photocatalyst_properties_calc.xlsx: lambda_T1_S0"),
+        ("pc_radius_dft / A", "Radius of the sphere with the van der Waals volume of the S0 "
+         "geometry.", "photocatalyst_properties_calc.xlsx: radius_S0"),
     ]),
     ("Quencher, DFT", [
         ("q_E_T_dft / kcal mol-1", "Adiabatic triplet energy.",
@@ -93,6 +97,8 @@ ADDED = [
          "quencher_properties_calc.xlsx: lambda_S0_T1"),
         ("q_lambda_T1_S0_dft / kcal mol-1", "E_T1 at the S0 geometry minus E_T1.",
          "quencher_properties_calc.xlsx: lambda_T1_S0"),
+        ("q_radius_dft / A", "Radius of the sphere with the van der Waals volume of the S0 "
+         "geometry.", "quencher_properties_calc.xlsx: radius_S0"),
     ]),
     ("Quencher, DvTE", [
         ("q_dvte_mu / kcal mol-1", "Mean of the sampled vertical singlet-triplet gaps.",
@@ -188,9 +194,11 @@ def main():
                 "pc_E_T_dft / kcal mol-1": cell(pc_e_t),
                 "pc_lambda_S0_T1_dft / kcal mol-1": cell(number(pc, "lambda_S0_T1 / kcal mol-1")),
                 "pc_lambda_T1_S0_dft / kcal mol-1": cell(number(pc, "lambda_T1_S0 / kcal mol-1")),
+                "pc_radius_dft / A": cell(number(pc, "radius_S0 / A")),
                 "q_E_T_dft / kcal mol-1": cell(q_e_t_dft),
                 "q_lambda_S0_T1_dft / kcal mol-1": cell(number(qc, "lambda_S0_T1 / kcal mol-1")),
                 "q_lambda_T1_S0_dft / kcal mol-1": cell(number(qc, "lambda_T1_S0 / kcal mol-1")),
+                "q_radius_dft / A": cell(number(qc, "radius_S0 / A")),
                 "q_dvte_mu / kcal mol-1": cell(number(qc, "dvte_mu / kcal mol-1")),
                 "q_dvte_std / kcal mol-1": cell(number(qc, "dvte_std / kcal mol-1")),
                 **{f"q_dvte_{p}{kind} / kcal mol-1": cell(number(qc, f"dvte_{p}{kind} / kcal mol-1"))

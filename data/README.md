@@ -38,6 +38,8 @@ data/
 │                                    quencher_ml_timing.py and photocatalyst_curate.py
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
+├── molecular_size.py                molecular radius from a DFT geometry, used by the
+│                                    quencher and photocatalyst extraction scripts
 ├── build_exp_dataset.py             experimental processed data -> one row per pair
 ├── exp_dataset.csv, .xlsx           the pair-level experimental dataset
 ├── build_exp_dataset_ent.py         exp_dataset -> energy-transfer subset + properties
@@ -122,8 +124,8 @@ The pairs of `exp_dataset` on which quenching can be attributed to energy transf
   is past 0.25 V.
 
 Besides the `exp_dataset` columns and the two ΔE_SET columns, each row carries:
-- **Photocatalyst (DFT):** E_T and both λ.
-- **Quencher (DFT):** E_T and both λ.
+- **Photocatalyst (DFT):** E_T, both λ and the molecular radius.
+- **Quencher (DFT):** E_T, both λ and the molecular radius.
 - **Quencher (DvTE):** mean and standard deviation of the vertical gaps, and their
   p-quantiles for p = 0.005, 0.008, 0.01, 0.015, from a normal distribution and from a KDE.
 - **Quencher (ML):** E_T and both λ, each with the model's uncertainty. The model covers
@@ -155,6 +157,14 @@ state at another state's optimized geometry, minus that state at its own geometr
 `lambda_S0_T1` is E_S0 at the T1 geometry minus E_S0. `Dplus` and `Dminus` are the
 oxidized and reduced states (`ox` and `red` job folders). Electronic energies only, no
 thermal corrections.
+
+**Molecular radii.** `quencher_dft.py` and `photocatalyst_dft.py` also write `radius_S0`,
+the radius of the sphere with the molecule's van der Waals volume. The volume is that of
+the union of atomic spheres with Bondi radii around the optimized S0 geometry
+(`S0/opt_geometry.xyz`), counted on a cubic grid; Ir and Ru, which have no Bondi value, get
+one by hand. The radii and the grid spacing are in `molecular_size.py`. The radius reaches
+the workbooks as `radius_S0` and `exp_dataset_ent` as `pc_radius_dft` and `q_radius_dft`;
+the benchmark adds the two to the contact distance of a pair.
 
 **Photocatalyst triplet.** `T1/` holds one triplet per photocatalyst. Triplets with the
 excited electron on each kind of ligand were searched. The lowest minimum is kept. Where two
