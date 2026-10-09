@@ -20,9 +20,9 @@ Writes  results/cost/per_quencher.csv   CPU hours of each group per quencher, pe
 Group            calculations                                        criteria
 adiabatic DFT    S0 and T1 opt+freq, S0 and T1 single points         adiabatic (dft)
 four-point DFT   the above and both vertical spin-change points      barrier and rate criteria (dft)
-DvTE             Gaussian opt+freq, MD trajectories, vertical-gap    dvte
-                 single points, and single-point steps that failed
-                 or hit the time limit
+DvTE             Gaussian opt+freq, MD trajectories and the          dvte
+                 vertical-gap single points; single-point steps that
+                 failed or hit the time limit are not counted
 ML, per call     inference of one quencher per call                  all ml criteria
 ML, batch        one call for all quenchers, split equally per quencher
 
@@ -48,7 +48,7 @@ ADIABATIC = ("dft S0 opt_freq", "dft T1 opt_freq", "dft S0 sp", "dft T1 sp")
 CALCULATIONS = {
     "adiabatic DFT": ADIABATIC,
     "four-point DFT": (*ADIABATIC, "dft S0 sp_vert_spin_change", "dft T1 sp_vert_spin_change"),
-    "DvTE": ("dvte opt_freq", "dvte md", "dvte sp singlet", "dvte sp triplet", "dvte sp failed"),
+    "DvTE": ("dvte opt_freq", "dvte md", "dvte sp singlet", "dvte sp triplet"),
 }
 NORMALIZATIONS = {"per molecule": "cpu / h", "per atom": "cpu_per_atom / h"}
 

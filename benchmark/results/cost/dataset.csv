@@ -1,6 +1,6 @@
 group,quenchers,atoms,total / h,total_per_atom / h
 adiabatic DFT,48,1047,4331.0,4.136
 four-point DFT,48,1047,4826.0,4.609
-DvTE,48,1047,561500.0,536.3
-"ML, per call",48,1047,0.001324,1.264e-06
-"ML, batch",48,1047,0.000145,1.385e-07
+DvTE,48,1047,530400.0,506.5
+"ML, per call",48,1047,0.001121,1.071e-06
+"ML, batch",48,1047,0.0001675,1.6e-07

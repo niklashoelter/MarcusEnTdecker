@@ -3,9 +3,9 @@ adiabatic DFT,per molecule,48,2.171,558.4,90.22,114.4,53.75
 adiabatic DFT,per atom,48,0.2171,13.3,3.387,2.703,2.563
 four-point DFT,per molecule,48,3.066,617.6,100.5,126.3,59.68
 four-point DFT,per atom,48,0.3066,14.7,3.782,2.938,2.876
-DvTE,per molecule,48,1461.0,68690.0,11700.0,12860.0,7533.0
-DvTE,per atom,48,146.1,1493.0,455.6,262.2,390.9
-"ML, per call",per molecule,48,1.563e-05,4.861e-05,2.758e-05,7.976e-06,2.648e-05
-"ML, per call",per atom,48,4.547e-07,3.858e-06,1.394e-06,6.248e-07,1.165e-06
-"ML, batch",per molecule,48,3.02e-06,3.02e-06,3.02e-06,0.0,3.02e-06
-"ML, batch",per atom,48,6.565e-08,3.356e-07,1.544e-07,5.228e-08,1.51e-07
+DvTE,per molecule,48,1101.0,68060.0,11050.0,12670.0,6652.0
+DvTE,per atom,48,110.1,1480.0,424.5,264.1,360.4
+"ML, per call",per molecule,48,1.454e-05,3.277e-05,2.336e-05,4.018e-06,2.333e-05
+"ML, per call",per atom,48,5.942e-07,2.459e-06,1.184e-06,4.236e-07,1.158e-06
+"ML, batch",per molecule,48,3.49e-06,3.49e-06,3.49e-06,0.0,3.49e-06
+"ML, batch",per atom,48,7.588e-08,3.878e-07,1.785e-07,6.041e-08,1.745e-07
