@@ -82,7 +82,6 @@ result = RatePredictor().predict(photocatalyst, quencher=Q_SMILES)
 result.dG_kcal          # driving force
 result.dG_barrier_kcal  # Marcus activation barrier
 result.k_ent            # rate constant, M-1 s-1
-result.quenches         # k_ent above the detection threshold
 result.t_pc_kcal        # lifetime barrier t_PC from tau0; None without tau0
 result.two_gate         # dG <= 0 and barrier <= t_PC; None without tau0
 result.uncertainty      # from the mixture density network

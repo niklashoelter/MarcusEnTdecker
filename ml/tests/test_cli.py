@@ -109,7 +109,7 @@ def test_rate_reports_the_pair(stub_model, pc_table, capsys):
     row, = json.loads(capsys.readouterr().out)
     assert row["photocatalyst"] == "PC1" and row["quencher"] == "c1ccccc1"
     assert row["dG_kcal"] == pytest.approx(61.0 - 65.7)
-    assert row["k_ent"] > 0 and row["quenches"] is True
+    assert row["k_ent"] > 0
 
 
 def test_rate_takes_the_reorganization_energies_as_predicted(stub_model, pc_table, capsys):

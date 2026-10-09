@@ -129,8 +129,7 @@ def _rate(args) -> None:
            "quencher": result.quencher,
            "dG_kcal": result.dG_kcal,
            "dG_barrier_kcal": result.dG_barrier_kcal,
-           "k_ent": result.k_ent,
-           "quenches": result.quenches}
+           "k_ent": result.k_ent}
     if result.two_gate is not None:
         row |= {"t_pc_kcal": result.t_pc_kcal, "two_gate": result.two_gate}
     _emit([row], args.format, args.out)

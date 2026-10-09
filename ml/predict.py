@@ -10,7 +10,6 @@ Python API for predicting triplet energy transfer rates from structure alone.
     result.dG_kcal          driving force
     result.dG_barrier_kcal  Marcus activation barrier
     result.k_ent            rate constant, M-1 s-1
-    result.quenches         k_ent above the detection threshold
     result.t_pc_kcal        lifetime barrier t_PC, from the photocatalyst's tau0
     result.two_gate         dG <= 0 and dG_barrier <= t_PC; None without tau0
     result.uncertainty      from the mixture density network
@@ -106,10 +105,6 @@ R_KCAL = 1.987204259e-3
 
 # Acetonitrile diffusion limit, M-1 s-1. A solvent property, not a fitted parameter.
 K_DIFF_ACETONITRILE = 2.0e10
-
-# A pair counts as quenching above this rate constant. Repeated here so the API can
-# answer without loading the dataset.
-K_Q_THRESHOLD = 1.0e7
 
 DEFAULT_TEMPERATURE_K = 298.15
 
@@ -240,7 +235,6 @@ class RatePrediction:
 
     k_ent: float
     k_eyring: float
-    quenches: bool
 
     t_pc_kcal: float | None
     two_gate: bool | None
@@ -272,12 +266,10 @@ class RatePredictor:
         self,
         temperature: float = DEFAULT_TEMPERATURE_K,
         k_diff: float = K_DIFF_ACETONITRILE,
-        quenching_threshold: float = K_Q_THRESHOLD,
         ensemble: bool = False,
     ):
         self.temperature = temperature
         self.k_diff = k_diff
-        self.quenching_threshold = quenching_threshold
         self.ensemble = ensemble
         self._cache: dict[str, MolecularProperties] = {}
 
@@ -380,7 +372,6 @@ class RatePredictor:
             dG_barrier_reverse_kcal=float(barrier_reverse),
             k_ent=k_ent,
             k_eyring=float(eyring_equation(barrier, T=self.temperature)),
-            quenches=k_ent > self.quenching_threshold,
             t_pc_kcal=t_pc,
             two_gate=None if t_pc is None else two_gate_quenches(dG, barrier, t_pc),
             uncertainty=uncertainty,

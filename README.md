@@ -116,7 +116,7 @@ from ml.predict import RatePredictor, photocatalyst_properties
 photocatalyst = photocatalyst_properties(
     "data/computational_data_processed/photocatalyst_properties_calc.xlsx", 1)
 result = RatePredictor().predict(photocatalyst, quencher=Q_SMILES)
-result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.quenches
+result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.two_gate
 ```
 
 The photocatalysts are Ir and Ru complexes, which the model cannot read, so their
