@@ -17,9 +17,13 @@ with `# key: value` lines recording the machine and versions; read it with
     checkpoint load   torch.load of model_final.pt, timed inside the first call
     first call        the first predict call, one SMILES (Q1): checkpoint load, model
                       construction, lazy initialisation and the first prediction
-    individual        one predict call per quencher with that SMILES alone, REPEATS times
+    individual        one predict call per quencher with that SMILES alone, REPEATS times,
+                      after WARMUP_ROUNDS untimed rounds over all quenchers
     batch             one predict call with all 48 SMILES, REPEATS times, after one
                       untimed batch call
+
+The first call is the per-molecule time including model loading; the individual calls are
+the per-molecule time with the model already loaded.
 
 Individual and batch rows hold the median over the repeats, with the fastest and
 slowest repeat. Batch rows also give the median divided by the number of molecules.
@@ -49,7 +53,8 @@ from compound_identification import QUENCHERS  # noqa: E402
 CHECKPOINT = ROOT / "ml" / "data" / "model_final.pt"
 OUT = DATA / "computational_data_processed" / "quencher_timings_ml.csv"
 
-REPEATS = 5
+REPEATS = 20
+WARMUP_ROUNDS = 2
 SIGFIGS = 6
 
 COLUMNS = ["quencher_id", "quencher_name", "mode", "n_molecules", "n_heavy_atoms",
@@ -166,6 +171,11 @@ def main():
     ]
     print(f"import {import_wall:.2f} s, checkpoint load {load_wall:.2f} s, "
           f"first call {first_wall:.2f} s", flush=True)
+
+    print(f"warm-up, {WARMUP_ROUNDS} untimed rounds ...", flush=True)
+    for _ in range(WARMUP_ROUNDS):
+        for s in smiles:
+            timed(predict, [s])
 
     print(f"individual calls, {REPEATS} repeats each ...", flush=True)
     individual = {}
