@@ -58,7 +58,9 @@ def _compute_marcus_core(
         else:
             dG_activation = (lambda_rxn + dG) ** 2 / (4 * lambda_rxn)
 
-    dG_activation_backward = dG_activation + abs(dG)
+    # The backward barrier is the same crossing point seen from the product minimum,
+    # which sits at dG: dG_activation - dG, for exergonic and endergonic pairs alike.
+    dG_activation_backward = dG_activation - dG
     return (
         dG,
         dG_activation,
