@@ -21,6 +21,7 @@ data/
 │   └── stern_volmer_fits.csv
 ├── computational_data_raw/          ORCA/Milo jobs (Zenodo, not in git), plus derived tables
 │   ├── photocatalysts/              PC_<n>/{S0,T1,ox,red,conf}/ -> photocatalyst_dft.csv
+│   ├── organophotocatalysts/        OPC<n>/{S0,T1}/ -> organophotocatalyst_dft.csv
 │   ├── quencher_adiabatic_DFT/      Q<n>/{S0,T1,ox,red}/ -> quencher_dft.csv
 │   └── quencher_adiabatic_DvTE/     MD trajectories -> quencher_dvte.csv, _samples.csv.gz,
 │                                    quencher_timings_vertical_sp.csv.gz
@@ -155,6 +156,17 @@ state at another state's optimized geometry, minus that state at its own geometr
 oxidized and reduced states (`ox` and `red` job folders). Electronic energies only, no
 thermal corrections.
 
+**Photocatalyst triplet.** `T1/` holds one triplet per photocatalyst. Triplets with the
+excited electron on each kind of ligand were searched. The lowest minimum is kept. Where two
+lie within 1 kcal/mol, the character assigned by experiment is kept, or the original one if
+none is known. Some of these T1 jobs, and their `S0/sp_vert_T1`, start from a `guess.gbw`
+that is not deposited.
+
+**Organophotocatalysts.** `organophotocatalysts/` is a separate library of organic
+photocatalysts with no measured pairs. `exp_dataset_ent` and the benchmark do not read it.
+Its level of theory is wB97X-D4 / def2-TZVP // def2-TZVPP, CPCM(acetonitrile), without ZORA.
+There are no oxidized or reduced states, so there are no excited-state potentials.
+
 **Dissociative states.** In some quencher states the optimisation breaks a bond, so the
 optimized structure is not the intact molecule: the T1 states of Q10 and Q11 (S–S), Q17
 (Se–Se) and Q45 (Se–C), and the reduced states of Q17 (Se–Se) and Q25, Q26 and Q27
@@ -186,7 +198,8 @@ state folder, `Q<n>/<state>/`, holds the geometry optimisation (`opt`), the sing
 at that geometry (`sp`) and the vertical single points of the other states
 (`sp_vert_<kind>`); the lowest-energy conformer is kept. A photocatalyst state folder,
 `PC_<n>/<state>/`, holds the optimisation and the vertical single points
-(`sp_vert_<state>`), and `PC_<n>/conf/` the conformer search. In Q17 S0, `opt_output.out`
+(`sp_vert_<state>`), and `PC_<n>/conf/` the conformer search. An organophotocatalyst
+folder, `OPC<n>/{S0,T1}/`, is laid out the same way. In Q17 S0, `opt_output.out`
 (the thermal correction) and `sp_output.out` come from two runs of the same conformer; in
 Q18 S0, the reduced-state vertical single point comes from a second run.
 

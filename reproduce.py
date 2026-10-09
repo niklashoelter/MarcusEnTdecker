@@ -69,6 +69,8 @@ PIPELINE = [
      "data/computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz"),
     ("data", "data/computational_data_scripts/photocatalyst_dft.py",
      "data/computational_data_raw/photocatalysts/PC_1"),
+    ("data", "data/computational_data_scripts/organophotocatalyst_dft.py",
+     "data/computational_data_raw/organophotocatalysts/OPC1"),
     ("data", "data/computational_data_scripts/properties_calc.py",
      "data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv"),
     ("data", "data/build_exp_dataset.py",

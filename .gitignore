@@ -6,6 +6,9 @@ data/computational_data_raw/*
 !data/computational_data_raw/photocatalysts/
 data/computational_data_raw/photocatalysts/*
 !data/computational_data_raw/photocatalysts/photocatalyst_dft.csv
+!data/computational_data_raw/organophotocatalysts/
+data/computational_data_raw/organophotocatalysts/*
+!data/computational_data_raw/organophotocatalysts/organophotocatalyst_dft.csv
 !data/computational_data_raw/quencher_adiabatic_DFT/
 data/computational_data_raw/quencher_adiabatic_DFT/*
 !data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
