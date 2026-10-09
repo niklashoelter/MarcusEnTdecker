@@ -1,7 +1,8 @@
 """ent-ml: the command line over `ml.predict`.
 
     ent-ml predict SMILES ...   triplet energy and both reorganization energies
-    ent-ml rate --quencher ...  driving force, Marcus barrier and k_EnT for one pair
+    ent-ml rate --quencher ...  driving force, Marcus barrier and k_EnT for one pair, and
+                                the two-gate verdict when the photocatalyst's tau0 is known
     ent-ml info                 which checkpoint is loaded, and what it can encode
 
 `predict` and `rate` take `--ensemble` to use the five random-split models together
@@ -16,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import dataclasses
 import csv
 import io
 import json
@@ -119,15 +121,19 @@ def _ensemble_rows(smiles: list[str]) -> list[dict]:
 def _rate(args) -> None:
     quencher = _valid([args.quencher])[0]
     photocatalyst = photocatalyst_properties(args.photocatalysts, args.photocatalyst)
+    if args.tau0 is not None:
+        photocatalyst = dataclasses.replace(photocatalyst, tau0_ns=args.tau0)
     with _quiet_model():
-        result = RatePredictor(lambda_scale=args.lambda_scale,
-                               ensemble=args.ensemble).predict(photocatalyst, quencher)
-    _emit([{"photocatalyst": result.photocatalyst,
-            "quencher": result.quencher,
-            "dG_kcal": result.dG_kcal,
-            "dG_barrier_kcal": result.dG_barrier_kcal,
-            "k_ent": result.k_ent,
-            "quenches": result.quenches}], args.format, args.out)
+        result = RatePredictor(ensemble=args.ensemble).predict(photocatalyst, quencher)
+    row = {"photocatalyst": result.photocatalyst,
+           "quencher": result.quencher,
+           "dG_kcal": result.dG_kcal,
+           "dG_barrier_kcal": result.dG_barrier_kcal,
+           "k_ent": result.k_ent,
+           "quenches": result.quenches}
+    if result.two_gate is not None:
+        row |= {"t_pc_kcal": result.t_pc_kcal, "two_gate": result.two_gate}
+    _emit([row], args.format, args.out)
 
 
 def _info(args) -> None:
@@ -178,8 +184,9 @@ def build_parser() -> argparse.ArgumentParser:
                       help="an .xlsx or .csv with one row per photocatalyst")
     rate.add_argument("--photocatalyst", metavar="ID",
                       help="new_id of the row to use; omit only if the table has one row")
-    rate.add_argument("--lambda-scale", type=float, default=1.0, metavar="X",
-                      help="scales the predicted reorganization energies (default 1.0)")
+    rate.add_argument("--tau0", type=float, metavar="NS",
+                      help="excited-state lifetime of the photocatalyst in ns, for the "
+                           "two-gate verdict; overrides a `tau0 / ns` column of the table")
     rate.add_argument("--ensemble", action="store_true",
                       help="use the five random-split models together")
     rate.set_defaults(run=_rate)

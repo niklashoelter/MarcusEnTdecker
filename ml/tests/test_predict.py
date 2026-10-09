@@ -2,7 +2,7 @@
 
 import pytest
 
-from ml.predict import PC_COLUMNS, photocatalyst_properties
+from ml.predict import PC_COLUMNS, PC_TAU0, photocatalyst_properties
 
 ROW = {"new_id": 1, PC_COLUMNS[0]: 65.7, PC_COLUMNS[1]: 12.3, PC_COLUMNS[2]: 9.8}
 
@@ -69,6 +69,28 @@ def test_incomplete_row_refuses_to_predict():
 
     with pytest.raises(ValueError, match="incomplete"):
         photocatalyst_properties(row, 1)
+
+
+def test_reads_the_lifetime_when_the_table_has_it(tmp_path):
+    path = tmp_path / "pc.csv"
+    columns = ["new_id", *PC_COLUMNS, PC_TAU0]
+    path.write_text(",".join(columns) + "\n1,65.7,12.3,9.8,2387.8\n2,59.4,8.8,8.5,\n",
+                    encoding="utf-8")
+
+    assert photocatalyst_properties(path, 1).tau0_ns == 2387.8
+    assert photocatalyst_properties(path, 2).tau0_ns is None
+
+
+def test_a_blank_lifetime_in_a_dataframe_is_none():
+    pandas = pytest.importorskip("pandas")
+
+    table = pandas.DataFrame([dict(ROW, **{PC_TAU0: float("nan")})])
+
+    assert photocatalyst_properties(table, 1).tau0_ns is None
+
+
+def test_without_a_lifetime_column_tau0_is_none(tmp_path):
+    assert photocatalyst_properties(write_csv(tmp_path / "pc.csv"), 1).tau0_ns is None
 
 
 def test_the_module_does_not_name_the_repository_around_it():

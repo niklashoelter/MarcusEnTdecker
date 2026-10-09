@@ -93,5 +93,49 @@ def test_photocatalyst_api_answers(client):
     assert isinstance(first["E_T_adiabatic"], float)
 
 
+def test_photocatalysts_carry_their_measured_lifetime(client):
+    """tau0 where it was measured, None where it was not."""
+    photocatalysts = client.get("/api/photocatalysts").json()["photocatalysts"]
+    lifetimes = {pc["name"]: pc["tau0_ns"] for pc in photocatalysts}
+    assert any(isinstance(t, float) and t > 0 for t in lifetimes.values())
+    assert all(t is None or t > 0 for t in lifetimes.values())
+
+
+PAIR = {"pc_adiabatic_E_T": 65.7, "pc_lambda_S_T": 10.3, "pc_lambda_T_S": 8.3,
+        "quencher_E_T": 58.0, "quencher_lambda_S_T": 9.0, "quencher_lambda_T_S": 7.0}
+
+
+def test_marcus_without_lifetime_gives_the_barrier_only(client):
+    result = client.post("/api/marcus/compute", json=PAIR).json()
+    assert result["dG"] < 0 and result["dG_activation"] > 0
+    assert result["t_PC"] is None and result["two_gate"] is None
+
+
+def test_marcus_with_lifetime_gives_the_two_gate_verdict(client):
+    from ml.energy.two_gate import lifetime_barrier
+
+    result = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 2000.0}).json()
+    assert result["t_PC"] == pytest.approx(lifetime_barrier(2000.0))
+    assert result["two_gate"] is (result["dG"] <= 0
+                                  and result["dG_activation"] <= result["t_PC"])
+
+    short = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 0.4}).json()
+    assert short["t_PC"] is None and short["two_gate"] is False
+
+
+def test_marcus_lifetime_barrier_follows_the_energy_unit(client):
+    kcal = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 2000.0}).json()
+    in_ev = {k: v / 23.060548868 for k, v in PAIR.items()}
+    ev = client.post("/api/marcus/compute",
+                     json={**in_ev, "unit": "eV", "pc_tau0_ns": 2000.0}).json()
+    assert ev["t_PC"] == pytest.approx(kcal["t_PC"] / 23.060548868)
+    assert ev["two_gate"] == kcal["two_gate"]
+
+
+def test_marcus_refuses_a_lifetime_that_is_not_positive(client):
+    response = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 0.0})
+    assert response.status_code == 400
+
+
 def test_the_model_was_never_called(client, stub):
     assert stub.calls == 0, "a route ran a forward pass -- the stub was bypassed"

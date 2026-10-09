@@ -16,10 +16,8 @@ Writes  results/barrier_variants/settings.csv   every DFT setting
 Barrier models: Marcus symmetric, Marcus asymmetric, Rehm-Weller (theory.BARRIERS).
 Conditions: barrier < threshold; dG_EnT <= 0 and barrier < threshold.
 Variants:
-    lambda raw                alpha = 1, threshold from the benchmark grid
-    lambda scaled             alpha and threshold from the benchmark grids
-    threshold 5, lambda raw   alpha = 1, threshold 5 kcal/mol (nothing chosen)
-    threshold 5, scaled       alpha from the benchmark grid, threshold 5 kcal/mol
+    threshold tuned   threshold from the benchmark grid
+    threshold 5       threshold 5 kcal/mol (nothing chosen)
 """
 
 import sys
@@ -43,14 +41,10 @@ CONDITIONS = {"barrier only": False, "dG <= 0 and barrier": True}
 
 def variants(model, exergonic):
     base = classification.Setting("barrier", barrier_model=model, requires_exergonic=exergonic)
-    grid = classification.BARRIER_THRESHOLDS
-    alphas = classification.ALPHAS
     return {
-        "lambda raw": [replace(base, barrier_threshold=t) for t in grid],
-        "lambda scaled": [replace(base, alpha=a, barrier_threshold=t) for a in alphas for t in grid],
-        "threshold 5, lambda raw": [replace(base, barrier_threshold=FIXED_THRESHOLD)],
-        "threshold 5, lambda scaled": [replace(base, alpha=a, barrier_threshold=FIXED_THRESHOLD)
-                                       for a in alphas],
+        "threshold tuned": [replace(base, barrier_threshold=t)
+                            for t in classification.BARRIER_THRESHOLDS],
+        "threshold 5": [replace(base, barrier_threshold=FIXED_THRESHOLD)],
     }
 
 
@@ -73,7 +67,7 @@ def main():
     scoring.rounded(every).to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
     scoring.rounded(best).to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
 
-    shown = ["criterion", "parameters", "variant", "alpha", "barrier_threshold / kcal mol-1",
+    shown = ["criterion", "parameters", "variant", "barrier_threshold / kcal mol-1",
              "recall", "specificity", "MCC", "AUC"]
     print(best[shown].rename(columns={"barrier_threshold / kcal mol-1": "threshold"})
           .round(3).to_string(index=False))

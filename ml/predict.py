@@ -11,6 +11,8 @@ Python API for predicting triplet energy transfer rates from structure alone.
     result.dG_barrier_kcal  Marcus activation barrier
     result.k_ent            rate constant, M-1 s-1
     result.quenches         k_ent above the detection threshold
+    result.t_pc_kcal        lifetime barrier t_PC, from the photocatalyst's tau0
+    result.two_gate         dG <= 0 and dG_barrier <= t_PC; None without tau0
     result.uncertainty      from the mixture density network
 
 `ml.cli` wraps these same calls as the `ent-ml` command.
@@ -21,6 +23,7 @@ WHAT IT COMPOSES
 
         ml.prediction.predict(smiles)              graph -> E_T, lambda_S_T, lambda_T_S
         ml.energy.marcus_ent                       properties -> dG, dG barrier
+        ml.energy.two_gate                         tau0 -> t_PC, two-gate verdict, k_-d/nu
         Balzani rate expression (below)            barrier -> k
 
     Keeping the barrier in `ml.energy` means the web application and this API compute
@@ -29,29 +32,23 @@ WHAT IT COMPOSES
 
 THE RATE EXPRESSION
 
-    k_EnT = k_diff / (1 + exp(dG/RT) + 0.25 * exp(dG_barrier/RT))
+    k_EnT = k_diff / (1 + exp(dG/RT) + (k_-d/nu) * exp(dG_barrier/RT))
 
-    The three terms are diffusion, thermodynamic back-reaction and the activation
-    barrier. It reduces to k_diff when transfer is fast and strongly exergonic, which
+    with k_-d = k_diff / K_A, K_A the Eigen encounter constant at the contact distance
+    7 A, and nu = k_B T / h (ml.energy.two_gate.escape_over_frequency, the same
+    constants as t_PC). The three terms are diffusion, thermodynamic back-reaction and
+    the activation barrier. It reduces to k_diff when transfer is fast and strongly exergonic, which
     is the physically right ceiling -- a bimolecular rate cannot exceed the rate at
     which the two molecules meet. A bare Eyring rate has no such ceiling and will
     happily return 1e14 M-1 s-1, so it is offered as `k_eyring` for comparison but is
     not what `k_ent` reports.
 
-LAMBDA SCALING
-    `lambda_scale` multiplies the DFT-like reorganization energies the model predicts
-    before they reach the barrier. It defaults to 1.0, the raw prediction.
-
-    A scale below one is expected, and it is not a fudge factor: the classical Marcus
-    barrier applies only to modes with energy well below k_BT, while a harmonic
-    reorganization energy sums over all of them. High-frequency modes tunnel rather
-    than contribute classically, exchange coupling is insensitive to outer-sphere
-    solvent reorganization, and continuum solvation over-predicts the outer-sphere
-    part. Each effect pushes the same way, and together they predict an effective
-    scale of roughly 0.3-0.5.
-
-    Set it deliberately. The default is left at 1.0 so that nothing is silently
-    scaled, but 1.0 is known to over-estimate the barrier.
+THE TWO-GATE VERDICT
+    `two_gate` is True when dG <= 0 and the barrier is at most t_PC, the barrier at which
+    k * tau0 reaches K_SV,crit = 10 M-1 (ml.energy.two_gate, contact distance 7 A). It
+    needs the measured lifetime tau0 of the photocatalyst, `tau0_ns` of its properties,
+    read from a `tau0 / ns` column of the photocatalyst table when there is one. Without
+    tau0, `t_pc_kcal` and `two_gate` are None.
 
 THE MODEL CANNOT SEE THE PHOTOCATALYSTS
     Its element vocabulary is H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I. Iridium
@@ -101,6 +98,9 @@ WORKBOOK_HEADER_ROW = 2
 PC_COLUMNS = ("E_T / kcal mol-1", "lambda_S0_T1 / kcal mol-1",
               "lambda_T1_S0 / kcal mol-1")
 
+#: An optional photocatalyst column: the excited-state lifetime, for the two-gate verdict.
+PC_TAU0 = "tau0 / ns"
+
 # Gas constant in kcal mol-1 K-1.
 R_KCAL = 1.987204259e-3
 
@@ -130,6 +130,8 @@ class MolecularProperties:
     lambda_T_S_uncertainty: float | None = None
     spin_density: list[float] = field(default_factory=list)
     source: str = "model"
+    # The measured excited-state lifetime of a photocatalyst, ns; None when unknown.
+    tau0_ns: float | None = None
 
 
 #: Either a structure the model can encode, or properties already in hand.
@@ -184,6 +186,7 @@ def photocatalyst_properties(source: Any = None,
     The two reorganization energies map across by surface: the table's `lambda_S0_T1`
     (E_S0 at the T1 geometry minus E_S0 at its own) is the model's `lambda_S_T`, and
     `lambda_T1_S0` (E_T1 at the S0 geometry minus E_T1 at its own) its `lambda_T_S`.
+    A `tau0 / ns` column, where present and filled, becomes `tau0_ns`.
     An .xlsx is read with its headers on row 2, as the property workbooks in `data/`
     have them.
     """
@@ -211,12 +214,16 @@ def photocatalyst_properties(source: Any = None,
             f"It cannot be used for a rate prediction."
         )
 
+    tau0 = row.get(PC_TAU0)
+    if tau0 in (None, "") or (isinstance(tau0, float) and math.isnan(tau0)):
+        tau0 = None  # a blank cell from a .csv, an .xlsx or a DataFrame
     return MolecularProperties(
         smiles=name,
         E_T=float(row[PC_COLUMNS[0]]),
         lambda_S_T=float(row[PC_COLUMNS[1]]),
         lambda_T_S=float(row[PC_COLUMNS[2]]),
         source="dft",
+        tau0_ns=None if tau0 is None else float(tau0),
     )
 
 
@@ -234,6 +241,9 @@ class RatePrediction:
     k_ent: float
     k_eyring: float
     quenches: bool
+
+    t_pc_kcal: float | None
+    two_gate: bool | None
 
     uncertainty: float | None
     uncertainty_covers: str
@@ -262,13 +272,11 @@ class RatePredictor:
         self,
         temperature: float = DEFAULT_TEMPERATURE_K,
         k_diff: float = K_DIFF_ACETONITRILE,
-        lambda_scale: float = 1.0,
         quenching_threshold: float = K_Q_THRESHOLD,
         ensemble: bool = False,
     ):
         self.temperature = temperature
         self.k_diff = k_diff
-        self.lambda_scale = lambda_scale
         self.quenching_threshold = quenching_threshold
         self.ensemble = ensemble
         self._cache: dict[str, MolecularProperties] = {}
@@ -340,18 +348,20 @@ class RatePredictor:
         from ml.energy.marcus_ent import (
             calculate_driving_force_and_barrier,
         )
+        from ml.energy.two_gate import lifetime_barrier, quenches as two_gate_quenches
 
-        a = self.lambda_scale
         dG, barrier, barrier_reverse = calculate_driving_force_and_barrier(
             pc_adiabatic_E_T=pc.E_T,
-            pc_lambda_S_T=a * pc.lambda_S_T,
-            pc_lambda_T_S=a * pc.lambda_T_S,
+            pc_lambda_S_T=pc.lambda_S_T,
+            pc_lambda_T_S=pc.lambda_T_S,
             quencher_E_T=q.E_T,
-            quencher_lambda_S_T=a * q.lambda_S_T,
-            quencher_lambda_T_S=a * q.lambda_T_S,
+            quencher_lambda_S_T=q.lambda_S_T,
+            quencher_lambda_T_S=q.lambda_T_S,
         )
 
         k_ent = self._balzani(dG, barrier)
+        t_pc = (None if pc.tau0_ns is None
+                else lifetime_barrier(pc.tau0_ns, temperature=self.temperature))
 
         # Only the partners the model spoke about contribute. Combining an estimated
         # uncertainty with an absent one by treating the absent one as zero would
@@ -371,34 +381,40 @@ class RatePredictor:
             k_ent=k_ent,
             k_eyring=float(eyring_equation(barrier, T=self.temperature)),
             quenches=k_ent > self.quenching_threshold,
+            t_pc_kcal=t_pc,
+            two_gate=None if t_pc is None else two_gate_quenches(dG, barrier, t_pc),
             uncertainty=uncertainty,
             uncertainty_covers=covers,
             # calculate_driving_force_and_barrier falls back to the symmetric form
             # when the parabolas do not intersect. It reports that by printing, not
             # by returning, so it is re-derived here from the same condition.
-            symmetric_approximation=self._is_symmetric(pc, q, a),
+            symmetric_approximation=self._is_symmetric(pc, q),
             photocatalyst_properties=pc,
             quencher_properties=q,
         )
 
     def _balzani(self, dG: float, barrier: float) -> float:
-        """k_diff / (1 + exp(dG/RT) + 0.25 exp(barrier/RT)), guarded against overflow."""
+        """k_diff / (1 + exp(dG/RT) + (k_-d/nu) exp(barrier/RT)), guarded against overflow."""
+        from ml.energy.two_gate import escape_over_frequency
+
         rt = R_KCAL * self.temperature
+        escape_over_nu = escape_over_frequency(temperature=self.temperature,
+                                               k_diff=self.k_diff)
 
         def bounded_exp(x):
             # Both terms only ever increase the denominator, so a saturated exponent
             # drives the rate to zero, which is the correct limit.
             return math.exp(min(x / rt, 700.0))
 
-        denominator = 1.0 + bounded_exp(dG) + 0.25 * bounded_exp(barrier)
+        denominator = 1.0 + bounded_exp(dG) + escape_over_nu * bounded_exp(barrier)
         return self.k_diff / denominator
 
     @staticmethod
-    def _is_symmetric(pc: MolecularProperties, q: MolecularProperties, a: float) -> bool:
+    def _is_symmetric(pc: MolecularProperties, q: MolecularProperties) -> bool:
         """Whether ml.energy.marcus_ent would have fallen back to the symmetric
         approximation."""
-        forward = a * (pc.lambda_T_S + q.lambda_S_T)
-        reverse = a * (pc.lambda_S_T + q.lambda_T_S)
+        forward = pc.lambda_T_S + q.lambda_S_T
+        reverse = pc.lambda_S_T + q.lambda_T_S
         dG = q.E_T - pc.E_T
         root = forward * reverse + (forward - reverse) * dG
         return root < 0 or abs(forward - reverse) < 1e-10

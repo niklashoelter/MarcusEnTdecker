@@ -62,17 +62,35 @@ def test_barrier_dispatches_by_model_name():
 
 
 def test_rate_of_the_full_scheme():
-    expected = theory.K_DIFF / (1.0 + 1.0 + theory.K_ESCAPE_OVER_NU * 1.0)
-    assert theory.rate(0.0, 0.0) == pytest.approx(expected)
+    escape_over_nu = theory.escape_over_frequency()
+    expected = theory.K_DIFF / (1.0 + 1.0 + escape_over_nu * 1.0)
+    assert theory.rate(0.0, 0.0, escape_over_nu) == pytest.approx(expected)
 
 
 def test_rate_is_diffusion_limited_without_barrier_at_large_driving_force():
-    assert theory.rate(-100.0, 0.0) == pytest.approx(theory.K_DIFF / (1.0 + theory.K_ESCAPE_OVER_NU))
+    escape_over_nu = theory.escape_over_frequency()
+    assert theory.rate(-100.0, 0.0, escape_over_nu) == pytest.approx(
+        theory.K_DIFF / (1.0 + escape_over_nu))
+
+
+def test_rate_takes_the_escape_over_frequency_of_each_pair():
+    r = np.array([5.0, 7.0, 10.0])
+    k = theory.rate(np.full(3, -100.0), np.full(3, 10.0), theory.escape_over_frequency(r))
+    expected = [theory.rate(-100.0, 10.0, theory.escape_over_frequency(d)) for d in r]
+    assert k == pytest.approx(expected)
+    assert np.all(np.diff(k) > 0)
+
+
+def test_rate_at_the_lifetime_barrier_reaches_k_sv_crit_in_the_exergonic_limit():
+    tau0, k_sv_crit = 1e-6, 10.0
+    escape_over_nu = theory.escape_over_frequency()
+    barrier = theory.lifetime_barrier(tau0, k_sv_crit, escape_over_nu)
+    assert theory.rate(-100.0, barrier, escape_over_nu) * tau0 == pytest.approx(k_sv_crit)
 
 
 def test_rate_does_not_overflow_for_huge_barriers():
     with np.errstate(all="raise"):
-        k = theory.rate(np.array([50.0]), np.array([1e6]))
+        k = theory.rate(np.array([50.0]), np.array([1e6]), theory.escape_over_frequency())
     assert k[0] == pytest.approx(0.0, abs=1e-100)
 
 
@@ -83,3 +101,28 @@ def test_irreversible_rate_ignores_back_transfer():
 
 def test_sandros_rate_is_half_the_diffusion_limit_at_zero_driving_force():
     assert theory.sandros_rate(0.0) == pytest.approx(theory.K_DIFF / 2.0)
+
+
+def test_encounter_constant_is_the_contact_sphere_in_litres_per_mole():
+    assert theory.encounter_constant(7.0) == pytest.approx(0.8652, rel=1e-4)
+    assert theory.encounter_constant(14.0) == pytest.approx(8.0 * theory.encounter_constant(7.0))
+
+
+def test_escape_over_frequency_divides_the_dissociation_rate_by_kt_over_h():
+    k_escape = theory.K_DIFF / theory.encounter_constant()
+    frequency = theory.K_BOLTZMANN * theory.TEMPERATURE / theory.PLANCK
+    assert theory.escape_over_frequency() == pytest.approx(k_escape / frequency)
+
+
+def test_lifetime_barrier_gives_k_tau0_equal_to_k_sv_crit_in_the_exergonic_limit():
+    tau0, k_sv_crit, escape_over_nu = np.array([2e-7, 1e-6, 5e-6]), 10.0, 3.7e-3
+    barrier = theory.lifetime_barrier(tau0, k_sv_crit, escape_over_nu)
+    k = theory.K_DIFF / (1.0 + escape_over_nu * np.exp(barrier / theory.RT))
+    assert k * tau0 == pytest.approx(np.full(3, k_sv_crit))
+    assert np.all(np.diff(barrier) > 0)
+
+
+def test_lifetime_barrier_rises_by_3rt_ln_r_with_the_contact_distance():
+    r = np.array([5.0, 7.0, 10.0])
+    barrier = theory.lifetime_barrier(1e-6, 10.0, theory.escape_over_frequency(r))
+    assert barrier - barrier[1] == pytest.approx(3.0 * theory.RT * np.log(r / 7.0), abs=1e-6)

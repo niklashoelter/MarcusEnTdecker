@@ -4,7 +4,9 @@ EnTdecker puts the model in a browser: draw or paste a quencher and get its pred
 triplet energy and reorganization energies with their uncertainties, the predicted
 distributions behind them and its spin-population map; pick a photocatalyst from a short
 table and get the driving force, the Marcus barriers and a reaction-coordinate plot for
-the pair.
+the pair. Given the photocatalyst's excited-state lifetime τ₀ (prefilled where it was
+measured), it also gives the two-gate verdict of `ml.energy.two_gate`: ΔG ≤ 0 and the
+barrier at most the lifetime barrier t_PC. Without τ₀ it shows the barrier only.
 
 This directory *is* the `webapp` package. It is a consumer of `ml` and nothing more: the
 model, the checkpoint and the Marcus arithmetic all live on the other side of
@@ -18,7 +20,7 @@ smiles_utils.py     SMILES validation and canonicalization
 plots/              Marcus, mode-distribution and spin-population figures
 templates/          index.html, the single page
 static/ketcher/     the EPAM Ketcher structure editor, as built for the browser
-data/               photocatalysts.csv and the structure images
+data/               photocatalysts.csv (with τ₀ in ns where measured) and the structure images
 tests/              a smoke test, and the rule that the dependency never reverses
 ```
 

@@ -3,14 +3,18 @@ Loads the energy-transfer dataset and names its columns.
 
 Reads   ../data/exp_dataset_ent.csv
 
-PC22 is left out on loading. Of the remaining pairs, a pair is scored only if every
-input of every criterion is present; `excluded` names the blank inputs of the others.
+PC22 (LEFT_OUT) and the quenchers Q31 and Q38 (LEFT_OUT_QUENCHERS) are left out on
+loading. The contact distance r_PC + r_Q of each pair (CONTACT) is added from the
+molecular radii of the dataset (PC_RADIUS, Q_RADIUS, from the S0 DFT geometries). Of the
+remaining pairs, a pair is scored only if every input of every criterion is present;
+`excluded` names the blank inputs of the others.
 
 Not a script; imported by the benchmark and further_analysis scripts.
 """
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
@@ -25,6 +29,9 @@ TAU0 = "tau0 / ns"
 K_Q = "k_q / M-1 s-1"
 QUENCHES = "quenches"
 EXCLUDED = "excluded"
+CONTACT = "contact_distance / A"        # r_PC + r_Q, added on loading
+PC_RADIUS = "pc_radius_dft / A"
+Q_RADIUS = "q_radius_dft / A"
 
 PC_E_T = "pc_E_T_dft / kcal mol-1"
 PC_LAMBDA_S0_T1 = "pc_lambda_S0_T1_dft / kcal mol-1"
@@ -36,6 +43,10 @@ DVTE_P = ("0.005", "0.008", "0.01", "0.015")
 DVTE_KINDS = ("normal", "kde")
 
 LEFT_OUT = {"PC22": "emission too weak for Stern-Volmer analysis"}
+LEFT_OUT_QUENCHERS = {
+    "Q31": "quenching is not EnT: weak k_q, nearly constant over the driving force, follows tau0",
+    "Q38": "1,3-butadiene: no pair quenches, not even strongly downhill (stock likely evaporated)",
+}
 
 
 def q_lambda_s0_t1(source):
@@ -61,22 +72,32 @@ def q_ml_uncertainty(name):
 
 
 # Every input a benchmark criterion reads.
-INPUTS = [TAU0, PC_E_T, PC_LAMBDA_S0_T1, PC_LAMBDA_T1_S0,
+INPUTS = [TAU0, CONTACT, PC_E_T, PC_LAMBDA_S0_T1, PC_LAMBDA_T1_S0,
           *(q_dvte(p, kind) for p in DVTE_P for kind in DVTE_KINDS),
           *(column(s) for s in SOURCES for column in (q_lambda_s0_t1, q_lambda_t1_s0, dg_ent))]
 
 
+def contact_distance(df) -> np.ndarray:
+    """r_PC + r_Q in Angstrom for every row; NaN where a radius is blank."""
+    return df[PC_RADIUS].to_numpy(float) + df[Q_RADIUS].to_numpy(float)
+
+
 def load() -> pd.DataFrame:
-    """The dataset without LEFT_OUT, with `excluded` naming the blank inputs of a pair."""
+    """The dataset without LEFT_OUT and LEFT_OUT_QUENCHERS, with the contact distance and
+    with `excluded` naming the blank inputs of a pair."""
     if not DATASET.exists():
         raise FileNotFoundError(f"{DATASET} not found; run `uv run reproduce.py data` first")
     df = pd.read_csv(DATASET)
-    missing = [c for c in INPUTS + [PC_NAME, Q_ID, Q_NAME, K_Q, QUENCHES] if c not in df.columns]
+    missing = [c for c in INPUTS + [PC_NAME, Q_ID, Q_NAME, K_Q, QUENCHES, PC_RADIUS, Q_RADIUS]
+               if c not in df.columns and c != CONTACT]
     if missing:
         raise KeyError(f"{DATASET.name} has no column {', '.join(missing)}")
+    df[CONTACT] = contact_distance(df)
 
     left_out = {name: int((df[PC_NAME] == name).sum()) for name in LEFT_OUT}
-    df = df[~df[PC_NAME].isin(list(LEFT_OUT))].reset_index(drop=True)
+    df = df[~df[PC_NAME].isin(list(LEFT_OUT))]
+    left_out |= {name: int((df[Q_NAME] == name).sum()) for name in LEFT_OUT_QUENCHERS}
+    df = df[~df[Q_NAME].isin(list(LEFT_OUT_QUENCHERS))].reset_index(drop=True)
     df.attrs["left_out"] = left_out
 
     reason = pd.Series("", index=df.index)
@@ -111,13 +132,18 @@ def tau0_seconds(df):
     return df[TAU0].to_numpy(float) * 1e-9
 
 
+def contact_distances(df):
+    """r_PC + r_Q in Angstrom, as an array."""
+    return df[CONTACT].to_numpy(float)
+
+
 def summary(df) -> str:
     kept = scored(df)
     left_out = df.attrs.get("left_out", {})
     lines = [f"{len(df) + sum(left_out.values())} pairs in {DATASET.name}, {len(kept)} scored "
              f"({int(kept[QUENCHES].sum())} quench, {int((kept[QUENCHES] == 0).sum())} do not)"]
     for name, n in left_out.items():
-        lines.append(f"  left out    {n:4d}  {name}: {LEFT_OUT[name]}")
+        lines.append(f"  left out    {n:4d}  {name}: {(LEFT_OUT | LEFT_OUT_QUENCHERS)[name]}")
     for reason, n in df.loc[df[EXCLUDED] != "", EXCLUDED].value_counts().items():
         lines.append(f"  not scored  {n:4d}  {reason}")
     return "\n".join(lines)

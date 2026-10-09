@@ -1,17 +1,5 @@
 criterion,parameters,variant,held_out_by,MCC_all_pairs,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,settings_chosen
-marcus_barrier,dft,lambda raw,quencher,0.392,905,264,200,313,128,0.638,0.569,0.673,0.61,0.617,0.281,3
-marcus_barrier,ml,lambda raw,quencher,0.338,905,282,241,272,110,0.612,0.539,0.719,0.53,0.616,0.25,3
-marcus_barrier,dft,lambda raw,photocatalyst,0.392,905,304,196,317,88,0.686,0.608,0.776,0.618,0.682,0.392,2
-marcus_barrier,ml,lambda raw,photocatalyst,0.338,905,313,239,274,79,0.649,0.567,0.798,0.534,0.663,0.338,2
-marcus_barrier,dft,lambda scaled,quencher,0.598,905,256,64,449,136,0.779,0.8,0.653,0.875,0.719,0.548,4
-marcus_barrier,ml,lambda scaled,quencher,0.515,905,254,87,426,138,0.751,0.745,0.648,0.83,0.693,0.489,4
-marcus_barrier,dft,lambda scaled,photocatalyst,0.598,905,256,59,454,136,0.785,0.813,0.653,0.885,0.724,0.56,4
-marcus_barrier,ml,lambda scaled,photocatalyst,0.515,905,251,81,432,141,0.755,0.756,0.64,0.842,0.693,0.496,4
-marcus_rate,dft,lambda scaled,quencher,0.502,905,309,165,348,83,0.726,0.652,0.788,0.678,0.714,0.463,3
-marcus_rate,ml,lambda scaled,quencher,0.465,905,321,205,308,71,0.695,0.61,0.819,0.6,0.699,0.421,3
-marcus_rate,dft,lambda scaled,photocatalyst,0.502,905,319,165,348,73,0.737,0.659,0.814,0.678,0.728,0.489,2
-marcus_rate,ml,lambda scaled,photocatalyst,0.465,905,334,204,309,58,0.71,0.621,0.852,0.602,0.718,0.459,2
-rehm_weller_rate,dft,lambda scaled,quencher,0.481,905,302,146,367,90,0.739,0.674,0.77,0.715,0.719,0.481,1
-rehm_weller_rate,ml,lambda scaled,quencher,0.423,905,313,192,321,79,0.701,0.62,0.798,0.626,0.698,0.423,1
-rehm_weller_rate,dft,lambda scaled,photocatalyst,0.481,905,302,146,367,90,0.739,0.674,0.77,0.715,0.719,0.481,1
-rehm_weller_rate,ml,lambda scaled,photocatalyst,0.423,905,313,192,321,79,0.701,0.62,0.798,0.626,0.698,0.423,1
+marcus_barrier,dft,,quencher,0.409,856,313,225,251,67,0.659,0.582,0.824,0.527,0.682,0.361,2
+marcus_barrier,ml,,quencher,0.351,856,327,250,226,53,0.646,0.567,0.861,0.475,0.683,0.355,2
+marcus_barrier,dft,,photocatalyst,0.409,856,320,222,254,60,0.671,0.59,0.842,0.534,0.694,0.387,2
+marcus_barrier,ml,,photocatalyst,0.351,856,330,250,226,50,0.65,0.569,0.868,0.475,0.688,0.365,2

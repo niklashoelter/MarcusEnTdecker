@@ -5,6 +5,7 @@ bottom, and the rest is argument handling and output shape.
 """
 
 import json
+import math
 import subprocess
 import sys
 
@@ -111,13 +112,86 @@ def test_rate_reports_the_pair(stub_model, pc_table, capsys):
     assert row["k_ent"] > 0 and row["quenches"] is True
 
 
-def test_rate_scales_the_reorganization_energies(stub_model, pc_table, capsys):
-    def barrier(scale):
-        cli.main(["rate", "--quencher", "c1ccccc1", "--photocatalysts", str(pc_table),
-                  "--photocatalyst", "1", "--lambda-scale", scale, "--format", "json"])
-        return json.loads(capsys.readouterr().out)[0]["dG_barrier_kcal"]
+def test_rate_takes_the_reorganization_energies_as_predicted(stub_model, pc_table, capsys):
+    from ml.energy.marcus_ent import calculate_driving_force_and_barrier
 
-    assert barrier("0.4") < barrier("1.0")
+    cli.main(["rate", "--quencher", "c1ccccc1", "--photocatalysts", str(pc_table),
+              "--photocatalyst", "1", "--format", "json"])
+
+    row, = json.loads(capsys.readouterr().out)
+    _, barrier, _ = calculate_driving_force_and_barrier(65.7, 12.3, 9.8, 61.0, 12.0, 9.0)
+    assert row["dG_barrier_kcal"] == pytest.approx(barrier)
+
+
+def test_rate_takes_the_prefactor_from_the_encounter_constant_at_7_a(stub_model, pc_table,
+                                                                     capsys):
+    from ml.energy.two_gate import K_BOLTZMANN, PLANCK, encounter_constant
+
+    cli.main(["rate", "--quencher", "c1ccccc1", "--photocatalysts", str(pc_table),
+              "--photocatalyst", "1", "--format", "json"])
+
+    row, = json.loads(capsys.readouterr().out)
+    rt = 1.987204259e-3 * 298.15
+    escape_over_nu = 2.0e10 / encounter_constant(7.0) / (K_BOLTZMANN * 298.15 / PLANCK)
+    expected = 2.0e10 / (1.0 + math.exp(row["dG_kcal"] / rt)
+                         + escape_over_nu * math.exp(row["dG_barrier_kcal"] / rt))
+    assert row["k_ent"] == pytest.approx(expected)
+
+
+def test_rate_without_tau0_reports_the_barrier_only(stub_model, pc_table, capsys):
+    cli.main(["rate", "--quencher", "c1ccccc1", "--photocatalysts", str(pc_table),
+              "--photocatalyst", "1", "--format", "json"])
+
+    row, = json.loads(capsys.readouterr().out)
+    assert "two_gate" not in row and "t_pc_kcal" not in row
+
+
+def test_rate_with_tau0_adds_the_two_gate_verdict(stub_model, pc_table, capsys):
+    from ml.energy.two_gate import lifetime_barrier
+
+    cli.main(["rate", "--quencher", "c1ccccc1", "--photocatalysts", str(pc_table),
+              "--photocatalyst", "1", "--tau0", "1000", "--format", "json"])
+
+    row, = json.loads(capsys.readouterr().out)
+    assert row["t_pc_kcal"] == pytest.approx(lifetime_barrier(1000.0))
+    assert row["two_gate"] is (row["dG_kcal"] <= 0
+                               and row["dG_barrier_kcal"] <= row["t_pc_kcal"])
+
+
+def test_rate_takes_tau0_from_the_table(stub_model, tmp_path, capsys):
+    from ml.predict import PC_TAU0
+
+    path = tmp_path / "photocatalysts.csv"
+    path.write_text("new_id," + ",".join(PC_COLUMNS) + f",{PC_TAU0}\n1,65.7,12.3,9.8,1000\n",
+                    encoding="utf-8")
+
+    cli.main(["rate", "--quencher", "c1ccccc1", "--photocatalysts", str(path),
+              "--format", "json"])
+
+    row, = json.loads(capsys.readouterr().out)
+    assert "two_gate" in row
+
+
+def test_two_gate_verdict_follows_the_lifetime(stub_model):
+    from ml.predict import photocatalyst_properties
+
+    pc = {"new_id": 1, PC_COLUMNS[0]: 65.7, PC_COLUMNS[1]: 12.3, PC_COLUMNS[2]: 9.8}
+    short = photocatalyst_properties(dict(pc, **{"tau0 / ns": 0.4}))
+    long = photocatalyst_properties(dict(pc, **{"tau0 / ns": 1e6}))
+    unknown = photocatalyst_properties(pc)
+
+    predictor = RatePredictor()
+    assert predictor.predict(short, "c1ccccc1").two_gate is False
+    assert predictor.predict(long, "c1ccccc1").two_gate is True
+    assert predictor.predict(unknown, "c1ccccc1").two_gate is None
+
+
+def test_rate_refuses_a_lifetime_that_is_not_positive(stub_model, pc_table):
+    with pytest.raises(SystemExit) as exited:
+        cli.main(["rate", "--quencher", "c1ccccc1", "--photocatalysts", str(pc_table),
+                  "--photocatalyst", "1", "--tau0", "0"])
+
+    assert "tau0" in str(exited.value)
 
 
 def test_rate_reports_an_unknown_photocatalyst(stub_model, pc_table):

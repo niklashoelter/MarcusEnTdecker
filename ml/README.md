@@ -6,7 +6,8 @@ predict.py          the prediction API: a pair in, a rate constant out
 cli.py              the `ent-ml` command
 model/              the graph MDN, its loss and its inference
   checkpoint.py     lets Leon's checkpoint, model_final_old.pt, unpickle after the rename
-energy/             Marcus and Eyring — the theory the web application and predict.py use
+energy/             Marcus, Eyring and the two-gate verdict — the theory the web
+                    application and predict.py use
 utils/              graph construction and the molecule dataset
 training/           offline only, left out of the wheel; nothing else may import it
   splits.py         builds the train/validation/test splits in data/splits/
@@ -58,7 +59,8 @@ Anything else it needs is an argument. In particular the photocatalyst table:
 `photocatalyst_properties(source, pc_id)` takes a path to an .xlsx or .csv, a pandas
 DataFrame, or a mapping, with one row per photocatalyst carrying `new_id`,
 `E_T / kcal mol-1`, `lambda_S0_T1 / kcal mol-1` and `lambda_T1_S0 / kcal mol-1` (an .xlsx
-with its headers on row 2, as the property workbooks in the root `data/` have them).
+with its headers on row 2, as the property workbooks in the root `data/` have them), and
+optionally `tau0 / ns`, the photocatalyst's excited-state lifetime.
 There is no built-in default, because a default would be a claim about where the
 caller keeps their data.
 
@@ -81,8 +83,16 @@ result.dG_kcal          # driving force
 result.dG_barrier_kcal  # Marcus activation barrier
 result.k_ent            # rate constant, M-1 s-1
 result.quenches         # k_ent above the detection threshold
+result.t_pc_kcal        # lifetime barrier t_PC from tau0; None without tau0
+result.two_gate         # dG <= 0 and barrier <= t_PC; None without tau0
 result.uncertainty      # from the mixture density network
 ```
+
+The two-gate verdict (`ml.energy.two_gate`) needs the photocatalyst's lifetime: `tau0_ns`
+of its properties, from a `tau0 / ns` column of the table or set with
+`dataclasses.replace(photocatalyst, tau0_ns=...)`. t_PC is the barrier at which k·τ₀
+reaches K_SV,crit in the exergonic limit, with the encounter constant at a fixed contact
+distance; the constants are in `energy/two_gate.py`.
 
 `predict_many` takes an iterable of pairs and sends each distinct structure given as a
 SMILES to the model once, not once per pair.
@@ -119,7 +129,7 @@ ent-ml predict --file quenchers.smi       one SMILES per line
        --format table|csv|json  --out predictions.csv
 
 ent-ml rate --quencher SMILES --photocatalysts photocatalysts.xlsx
-       [--photocatalyst 1] [--lambda-scale S]
+       [--photocatalyst 1] [--tau0 NS]     with tau0, also t_pc_kcal and two_gate
 
 ent-ml predict|rate ... --ensemble        the same, from the ensemble
 
@@ -160,21 +170,18 @@ Nothing in it reimplements the model or the theory; it is the seam.
 ```
 ml.prediction.predict(smiles)    graph -> E_T, lambda_S_T, lambda_T_S
 ml.energy.marcus_ent             properties -> dG and the activation barrier
+ml.energy.two_gate               tau0 -> t_PC and the two-gate verdict; k_-d/ν
 Balzani rate expression          barrier -> k, capped at the diffusion limit
 ```
 
 Only the last step is written there, because `ml.energy` stops at the barrier. The
-rate is `k_diff / (1 + exp(dG/RT) + 0.25 exp(dG‡/RT))`, which saturates at the
+rate is `k_diff / (1 + exp(dG/RT) + (k_-d/ν) exp(dG‡/RT))`, which saturates at the
 diffusion limit. A bare Eyring rate has no such ceiling and will return 1e14 M⁻¹ s⁻¹
 for a strongly exergonic pair, so it is exposed as `k_eyring` for comparison but is
-not what `k_ent` reports.
-
-### λ-scaling
-
-`RatePredictor(lambda_scale=...)` scales the predicted reorganization energies before
-they reach the barrier. It defaults to 1.0 — raw prediction, nothing silently applied
-— but 1.0 is known to over-estimate the barrier. Set it deliberately; the benchmark's
-tuned scale factors are in its result files, not here.
+not what `k_ent` reports. The prefactor is `k_-d/ν = (k_diff/K_A)/(k_BT/h)`, with K_A
+the Eigen encounter constant at the fixed contact distance of the two-gate verdict
+(`energy/two_gate.py`, `escape_over_frequency`). The predicted reorganization energies
+enter the barrier unscaled.
 
 ## Where it is least trustworthy
 

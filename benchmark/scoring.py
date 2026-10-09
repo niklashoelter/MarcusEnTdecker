@@ -48,6 +48,26 @@ def auc(y, score) -> float:
     return float((ranks[y].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
 
 
+def auc_within(y, score, groups) -> dict:
+    """ROC AUC within groups, over the groups that contain both classes.
+
+    `median` is the median of the per-group AUCs. `pooled` compares only positives and
+    negatives of the same group: the per-group AUCs weighted by n_pos * n_neg.
+    """
+    y, score, groups = np.asarray(y, bool), np.asarray(score, float), np.asarray(groups)
+    values, weights = [], []
+    for group in dict.fromkeys(groups):
+        inside = groups == group
+        n_pos, n_neg = int(y[inside].sum()), int((~y[inside]).sum())
+        if n_pos and n_neg:
+            values.append(auc(y[inside], score[inside]))
+            weights.append(n_pos * n_neg)
+    if not values:
+        return {"median": float("nan"), "pooled": float("nan")}
+    return {"median": float(np.median(values)),
+            "pooled": float(np.average(values, weights=weights))}
+
+
 def mcc_rows(y, matrix):
     """MCC of every row of a (settings x pairs) prediction matrix."""
     y, matrix = np.asarray(y, bool), np.asarray(matrix, bool)

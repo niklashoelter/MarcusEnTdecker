@@ -1,49 +1,25 @@
-criterion,parameters,variant,n_free,alpha,barrier_threshold / kcal mol-1,K_SV_crit / M-1,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,AUC,n_settings
-"marcus_symmetric barrier, barrier only",dft,lambda raw,1,1.0,8.5,,905,304,196,317,88,0.686,0.608,0.776,0.618,0.682,0.392,0.762,200
-"marcus_symmetric barrier, barrier only",ml,lambda raw,1,1.0,8.5,,905,313,239,274,79,0.649,0.567,0.798,0.534,0.663,0.338,0.727,0
-"marcus_symmetric barrier, barrier only",dft,lambda scaled,2,0.35,1.1,,905,255,43,470,137,0.801,0.856,0.651,0.916,0.739,0.598,0.837,4000
-"marcus_symmetric barrier, barrier only",ml,lambda scaled,2,0.35,1.1,,905,254,76,437,138,0.764,0.77,0.648,0.852,0.704,0.515,0.808,0
-"marcus_symmetric barrier, barrier only",dft,"threshold 5, lambda raw",0,1.0,5.0,,905,120,25,488,272,0.672,0.828,0.306,0.951,0.447,0.348,0.762,1
-"marcus_symmetric barrier, barrier only",ml,"threshold 5, lambda raw",0,1.0,5.0,,905,155,67,446,237,0.664,0.698,0.395,0.869,0.505,0.305,0.727,0
-"marcus_symmetric barrier, barrier only",dft,"threshold 5, lambda scaled",1,0.7,5.0,,905,297,130,383,95,0.751,0.696,0.758,0.747,0.725,0.501,0.817,20
-"marcus_symmetric barrier, barrier only",ml,"threshold 5, lambda scaled",1,0.7,5.0,,905,307,175,338,85,0.713,0.637,0.783,0.659,0.703,0.439,0.777,0
-"marcus_symmetric barrier, dG <= 0 and barrier",dft,lambda raw,1,1.0,9.5,,905,302,117,396,90,0.771,0.721,0.77,0.772,0.745,0.539,0.762,200
-"marcus_symmetric barrier, dG <= 0 and barrier",ml,lambda raw,1,1.0,9.5,,905,306,157,356,86,0.731,0.661,0.781,0.694,0.716,0.47,0.727,0
-"marcus_symmetric barrier, dG <= 0 and barrier",dft,lambda scaled,2,0.35,1.1,,905,255,43,470,137,0.801,0.856,0.651,0.916,0.739,0.598,0.837,4000
-"marcus_symmetric barrier, dG <= 0 and barrier",ml,lambda scaled,2,0.35,1.1,,905,254,76,437,138,0.764,0.77,0.648,0.852,0.704,0.515,0.808,0
-"marcus_symmetric barrier, dG <= 0 and barrier",dft,"threshold 5, lambda raw",0,1.0,5.0,,905,120,24,489,272,0.673,0.833,0.306,0.953,0.448,0.351,0.762,1
-"marcus_symmetric barrier, dG <= 0 and barrier",ml,"threshold 5, lambda raw",0,1.0,5.0,,905,155,63,450,237,0.669,0.711,0.395,0.877,0.508,0.316,0.727,0
-"marcus_symmetric barrier, dG <= 0 and barrier",dft,"threshold 5, lambda scaled",1,0.65,5.0,,905,305,104,409,87,0.789,0.746,0.778,0.797,0.762,0.573,0.824,20
-"marcus_symmetric barrier, dG <= 0 and barrier",ml,"threshold 5, lambda scaled",1,0.65,5.0,,905,312,149,364,80,0.747,0.677,0.796,0.71,0.732,0.501,0.785,0
-"marcus_asymmetric barrier, barrier only",dft,lambda raw,1,1.0,7.9,,905,318,184,329,74,0.715,0.633,0.811,0.641,0.711,0.451,0.784,200
-"marcus_asymmetric barrier, barrier only",ml,lambda raw,1,1.0,7.9,,905,331,210,303,61,0.701,0.612,0.844,0.591,0.71,0.44,0.759,0
-"marcus_asymmetric barrier, barrier only",dft,lambda scaled,2,0.55,2.3,,905,248,50,463,144,0.786,0.832,0.633,0.903,0.719,0.564,0.827,4000
-"marcus_asymmetric barrier, barrier only",ml,lambda scaled,2,0.55,2.3,,905,250,76,437,142,0.759,0.767,0.638,0.852,0.696,0.505,0.805,0
-"marcus_asymmetric barrier, barrier only",dft,"threshold 5, lambda raw",0,1.0,5.0,,905,141,28,485,251,0.692,0.834,0.36,0.945,0.503,0.388,0.784,1
-"marcus_asymmetric barrier, barrier only",ml,"threshold 5, lambda raw",0,1.0,5.0,,905,173,69,444,219,0.682,0.715,0.441,0.865,0.546,0.343,0.759,0
-"marcus_asymmetric barrier, barrier only",dft,"threshold 5, lambda scaled",1,0.75,5.0,,905,300,128,385,92,0.757,0.701,0.765,0.75,0.732,0.512,0.818,20
-"marcus_asymmetric barrier, barrier only",ml,"threshold 5, lambda scaled",1,0.75,5.0,,905,316,177,336,76,0.72,0.641,0.806,0.655,0.714,0.459,0.796,0
-"marcus_asymmetric barrier, dG <= 0 and barrier",dft,lambda raw,1,1.0,7.9,,905,297,100,413,95,0.785,0.748,0.758,0.805,0.753,0.562,0.784,200
-"marcus_asymmetric barrier, dG <= 0 and barrier",ml,lambda raw,1,1.0,7.9,,905,305,131,382,87,0.759,0.7,0.778,0.745,0.737,0.518,0.759,0
-"marcus_asymmetric barrier, dG <= 0 and barrier",dft,lambda scaled,2,0.8,5.8,,905,302,99,414,90,0.791,0.753,0.77,0.807,0.762,0.576,0.812,4000
-"marcus_asymmetric barrier, dG <= 0 and barrier",ml,lambda scaled,2,0.8,5.8,,905,309,141,372,83,0.752,0.687,0.788,0.725,0.734,0.509,0.79,0
-"marcus_asymmetric barrier, dG <= 0 and barrier",dft,"threshold 5, lambda raw",0,1.0,5.0,,905,141,27,486,251,0.693,0.839,0.36,0.947,0.504,0.391,0.784,1
-"marcus_asymmetric barrier, dG <= 0 and barrier",ml,"threshold 5, lambda raw",0,1.0,5.0,,905,173,65,448,219,0.686,0.727,0.441,0.873,0.549,0.354,0.759,0
-"marcus_asymmetric barrier, dG <= 0 and barrier",dft,"threshold 5, lambda scaled",1,0.75,5.0,,905,294,97,416,98,0.785,0.752,0.75,0.811,0.751,0.561,0.818,20
-"marcus_asymmetric barrier, dG <= 0 and barrier",ml,"threshold 5, lambda scaled",1,0.75,5.0,,905,300,136,377,92,0.748,0.688,0.765,0.735,0.725,0.496,0.796,0
-"rehm_weller barrier, barrier only",dft,lambda raw,1,1.0,8.7,,905,287,191,322,105,0.673,0.6,0.732,0.628,0.66,0.357,0.739,200
-"rehm_weller barrier, barrier only",ml,lambda raw,1,1.0,8.7,,905,297,243,270,95,0.627,0.55,0.758,0.526,0.637,0.287,0.706,0
-"rehm_weller barrier, barrier only",dft,lambda scaled,2,0.1,0.2,,905,279,65,448,113,0.803,0.811,0.712,0.873,0.758,0.597,0.838,4000
-"rehm_weller barrier, barrier only",ml,lambda scaled,2,0.1,0.2,,905,274,99,414,118,0.76,0.735,0.699,0.807,0.716,0.509,0.802,0
-"rehm_weller barrier, barrier only",dft,"threshold 5, lambda raw",0,1.0,5.0,,905,113,24,489,279,0.665,0.825,0.288,0.953,0.427,0.334,0.739,1
-"rehm_weller barrier, barrier only",ml,"threshold 5, lambda raw",0,1.0,5.0,,905,137,66,447,255,0.645,0.675,0.349,0.871,0.461,0.262,0.706,0
-"rehm_weller barrier, barrier only",dft,"threshold 5, lambda scaled",1,0.6,5.0,,905,321,183,330,71,0.719,0.637,0.819,0.643,0.717,0.461,0.804,20
-"rehm_weller barrier, barrier only",ml,"threshold 5, lambda scaled",1,0.6,5.0,,905,339,219,294,53,0.699,0.608,0.865,0.573,0.714,0.446,0.764,0
-"rehm_weller barrier, dG <= 0 and barrier",dft,lambda raw,1,1.0,9.8,,905,289,112,401,103,0.762,0.721,0.737,0.782,0.729,0.518,0.739,200
-"rehm_weller barrier, dG <= 0 and barrier",ml,lambda raw,1,1.0,9.8,,905,297,155,358,95,0.724,0.657,0.758,0.698,0.704,0.451,0.706,0
-"rehm_weller barrier, dG <= 0 and barrier",dft,lambda scaled,2,0.1,0.2,,905,279,65,448,113,0.803,0.811,0.712,0.873,0.758,0.597,0.838,4000
-"rehm_weller barrier, dG <= 0 and barrier",ml,lambda scaled,2,0.1,0.2,,905,274,99,414,118,0.76,0.735,0.699,0.807,0.716,0.509,0.802,0
-"rehm_weller barrier, dG <= 0 and barrier",dft,"threshold 5, lambda raw",0,1.0,5.0,,905,113,23,490,279,0.666,0.831,0.288,0.955,0.428,0.338,0.739,1
-"rehm_weller barrier, dG <= 0 and barrier",ml,"threshold 5, lambda raw",0,1.0,5.0,,905,137,62,451,255,0.65,0.688,0.349,0.879,0.464,0.274,0.706,0
-"rehm_weller barrier, dG <= 0 and barrier",dft,"threshold 5, lambda scaled",1,0.6,5.0,,905,308,119,394,84,0.776,0.721,0.786,0.768,0.752,0.55,0.804,20
-"rehm_weller barrier, dG <= 0 and barrier",ml,"threshold 5, lambda scaled",1,0.6,5.0,,905,316,162,351,76,0.737,0.661,0.806,0.684,0.726,0.487,0.764,0
+criterion,parameters,variant,n_free,barrier_threshold / kcal mol-1,K_SV_crit / M-1,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,AUC,AUC_within_PC_median,AUC_within_PC_pooled,n_settings
+"marcus_symmetric barrier, barrier only",dft,threshold tuned,1,9.3,,856,331,228,248,49,0.676,0.592,0.871,0.521,0.705,0.409,0.776,0.673,0.673,200
+"marcus_symmetric barrier, barrier only",ml,threshold tuned,1,9.3,,856,335,266,210,45,0.637,0.557,0.882,0.441,0.683,0.351,0.762,0.653,0.64,0
+"marcus_symmetric barrier, barrier only",dft,threshold 5,0,5.0,,856,120,25,451,260,0.667,0.828,0.316,0.947,0.457,0.349,0.776,0.673,0.673,1
+"marcus_symmetric barrier, barrier only",ml,threshold 5,0,5.0,,856,155,52,424,225,0.676,0.749,0.408,0.891,0.528,0.347,0.762,0.653,0.64,0
+"marcus_symmetric barrier, dG <= 0 and barrier",dft,threshold tuned,1,9.5,,856,302,103,373,78,0.789,0.746,0.795,0.784,0.769,0.576,0.776,0.673,0.673,200
+"marcus_symmetric barrier, dG <= 0 and barrier",ml,threshold tuned,1,9.5,,856,306,134,342,74,0.757,0.695,0.805,0.718,0.746,0.521,0.762,0.653,0.64,0
+"marcus_symmetric barrier, dG <= 0 and barrier",dft,threshold 5,0,5.0,,856,120,24,452,260,0.668,0.833,0.316,0.95,0.458,0.352,0.776,0.673,0.673,1
+"marcus_symmetric barrier, dG <= 0 and barrier",ml,threshold 5,0,5.0,,856,155,48,428,225,0.681,0.764,0.408,0.899,0.532,0.359,0.762,0.653,0.64,0
+"marcus_asymmetric barrier, barrier only",dft,threshold tuned,1,7.9,,856,318,169,307,62,0.73,0.653,0.837,0.645,0.734,0.483,0.809,0.717,0.706,200
+"marcus_asymmetric barrier, barrier only",ml,threshold tuned,1,7.9,,856,331,186,290,49,0.725,0.64,0.871,0.609,0.738,0.488,0.796,0.698,0.67,0
+"marcus_asymmetric barrier, barrier only",dft,threshold 5,0,5.0,,856,141,25,451,239,0.692,0.849,0.371,0.947,0.516,0.4,0.809,0.717,0.706,1
+"marcus_asymmetric barrier, barrier only",ml,threshold 5,0,5.0,,856,173,54,422,207,0.695,0.762,0.455,0.887,0.57,0.385,0.796,0.698,0.67,0
+"marcus_asymmetric barrier, dG <= 0 and barrier",dft,threshold tuned,1,7.9,,856,297,85,391,83,0.804,0.777,0.782,0.821,0.78,0.603,0.809,0.717,0.706,200
+"marcus_asymmetric barrier, dG <= 0 and barrier",ml,threshold tuned,1,7.9,,856,305,108,368,75,0.786,0.738,0.803,0.773,0.769,0.572,0.796,0.698,0.67,0
+"marcus_asymmetric barrier, dG <= 0 and barrier",dft,threshold 5,0,5.0,,856,141,24,452,239,0.693,0.855,0.371,0.95,0.517,0.404,0.809,0.717,0.706,1
+"marcus_asymmetric barrier, dG <= 0 and barrier",ml,threshold 5,0,5.0,,856,173,50,426,207,0.7,0.776,0.455,0.895,0.574,0.396,0.796,0.698,0.67,0
+"rehm_weller barrier, barrier only",dft,threshold tuned,1,10.4,,856,342,268,208,38,0.643,0.561,0.9,0.437,0.691,0.37,0.749,0.637,0.639,200
+"rehm_weller barrier, barrier only",ml,threshold tuned,1,10.4,,856,350,295,181,30,0.62,0.543,0.921,0.38,0.683,0.347,0.738,0.617,0.612,0
+"rehm_weller barrier, barrier only",dft,threshold 5,0,5.0,,856,113,24,452,267,0.66,0.825,0.297,0.95,0.437,0.335,0.749,0.637,0.639,1
+"rehm_weller barrier, barrier only",ml,threshold 5,0,5.0,,856,137,51,425,243,0.657,0.729,0.361,0.893,0.482,0.304,0.738,0.617,0.612,0
+"rehm_weller barrier, dG <= 0 and barrier",dft,threshold tuned,1,11.3,,856,320,138,338,60,0.769,0.699,0.842,0.71,0.764,0.55,0.749,0.637,0.639,200
+"rehm_weller barrier, dG <= 0 and barrier",ml,threshold tuned,1,11.3,,856,320,153,323,60,0.751,0.677,0.842,0.679,0.75,0.52,0.738,0.617,0.612,0
+"rehm_weller barrier, dG <= 0 and barrier",dft,threshold 5,0,5.0,,856,113,23,453,267,0.661,0.831,0.297,0.952,0.438,0.338,0.749,0.637,0.639,1
+"rehm_weller barrier, dG <= 0 and barrier",ml,threshold 5,0,5.0,,856,137,47,429,243,0.661,0.745,0.361,0.901,0.486,0.317,0.738,0.617,0.612,0

@@ -18,7 +18,7 @@ from webapp.smiles_utils import is_valid_smiles, canonicalize_smiles, is_single_
 from webapp.plots.spin_population import visualize_density_interactive
 from webapp.plots.plot_modes import plot_mode_distribution_single
 from webapp.photocatalysts import list_photocatalyst_names, get_photocatalyst_row
-from ml.energy import marcus_ent
+from ml.energy import marcus_ent, two_gate
 from webapp.plots import marcus_plot
 import matplotlib.pyplot as plt
 
@@ -199,6 +199,8 @@ def api_photocatalysts():
         e_ox = row.get("E_ox")
         e_red_val = float(e_red) if not pd.isna(e_red) else None
         e_ox_val = float(e_ox) if not pd.isna(e_ox) else None
+        tau0 = row.get("tau0_ns")
+        tau0_val = float(tau0) if tau0 is not None and not pd.isna(tau0) else None
 
         pcs.append({
             "name": n,
@@ -207,6 +209,7 @@ def api_photocatalysts():
             "lamda_T_S": float(row["lamda_T_S"]),
             "E_red": e_red_val,
             "E_ox": e_ox_val,
+            "tau0_ns": tau0_val,
             "smiles": str(s) if str(s).lower() != "nan" and s else ""
         })
     return {"photocatalysts": pcs}
@@ -220,6 +223,11 @@ class MarcusRequest(BaseModel):
     quencher_lambda_T_S: float
     unit: str = "kcal/mol"
     theme: str = "light"
+    pc_tau0_ns: Optional[float] = None
+
+# kcal/mol per unit of the energies a request carries
+KCAL_PER_UNIT = {"kcal/mol": 1.0, "kJ/mol": 1 / 4.184, "eV": 23.060548868,
+                 "Hartree": 627.5094740631}
 
 @app.post("/api/marcus/compute")
 def api_marcus_compute(request: MarcusRequest):
@@ -232,10 +240,23 @@ def api_marcus_compute(request: MarcusRequest):
         quencher_lambda_T_S=request.quencher_lambda_T_S,
         symmetric_approx=False,
     )
+    # The two-gate verdict needs the photocatalyst lifetime; without it, the barrier only.
+    t_pc = verdict = None
+    if request.pc_tau0_ns is not None:
+        if request.unit not in KCAL_PER_UNIT:
+            raise HTTPException(status_code=400, detail=f"Unknown unit {request.unit}")
+        try:
+            t_pc_kcal = two_gate.lifetime_barrier(request.pc_tau0_ns)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        t_pc = t_pc_kcal / KCAL_PER_UNIT[request.unit]
+        verdict = two_gate.quenches(dG, dG_act_fwd, t_pc)
     return {
         "dG": float(dG),
         "dG_activation": float(dG_act_fwd),
         "dG_activation_backEnT": float(dG_act_bwd),
+        "t_PC": None if t_pc is None or t_pc == float("-inf") else float(t_pc),
+        "two_gate": verdict,
     }
 
 @app.post("/api/marcus/plot")

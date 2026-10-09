@@ -12,10 +12,13 @@ R_KCAL = 1.9872e-3              # kcal mol-1 K-1
 TEMPERATURE = 298.15            # K
 RT = R_KCAL * TEMPERATURE
 K_DIFF = 2.0e10                 # M-1 s-1, diffusion-limited rate constant in acetonitrile
-K_ESCAPE_OVER_NU = 0.25         # k_-d / nu: escape from the encounter complex over the
-                                # frequency factor of transfer inside it
 K_DIFF_OVER_Z = 0.2             # k_d / Z in the irreversible form, Z = 1e11 M-1 s-1
 EXP_LIMIT = 500.0               # exponents are capped here to avoid overflow
+
+K_BOLTZMANN = 1.380649e-23      # J K-1
+PLANCK = 6.62607015e-34         # J s
+AVOGADRO = 6.02214076e23        # mol-1
+CONTACT_DISTANCE = 7.0          # Angstrom, fixed contact distance of the encounter complex
 
 BARRIERS = ("marcus_symmetric", "marcus_asymmetric", "rehm_weller")
 
@@ -79,13 +82,36 @@ def _exp(energy):
     return np.exp(np.minimum(np.asarray(energy, float) / RT, EXP_LIMIT))
 
 
-def rate(dG, barrier_height):
+def rate(dG, barrier_height, escape_over_nu):
     """k_d / (1 + exp(dG/RT) + (k_-d/nu) exp(barrier/RT)).
 
     Steady state of diffusion into an encounter complex, reversible transfer inside it,
-    and separation of the successor complex at k_-d.
+    and separation of the successor complex at k_-d. escape_over_nu is k_-d / nu, from
+    escape_over_frequency.
     """
-    return K_DIFF / (1.0 + _exp(dG) + K_ESCAPE_OVER_NU * _exp(barrier_height))
+    escape_over_nu = np.asarray(escape_over_nu, float)
+    return K_DIFF / (1.0 + _exp(dG) + escape_over_nu * _exp(barrier_height))
+
+
+def encounter_constant(distance=CONTACT_DISTANCE):
+    """Eigen association constant 4 pi N_A r^3 / 3 in M-1, r in Angstrom."""
+    volume = 4.0 / 3.0 * np.pi * (distance * 1e-10) ** 3          # m3
+    return volume * AVOGADRO * 1e3
+
+
+def escape_over_frequency(distance=CONTACT_DISTANCE):
+    """k_-d / nu with k_-d = k_d / K_A and nu = k_B T / h."""
+    return K_DIFF / encounter_constant(distance) / (K_BOLTZMANN * TEMPERATURE / PLANCK)
+
+
+def lifetime_barrier(tau0, k_sv_crit, escape_over_nu):
+    """The barrier at which k * tau0 = K_SV,crit when exp(dG/RT) is negligible.
+
+    From k_d / (1 + (k_-d/nu) exp(barrier/RT)) * tau0 = K_SV,crit, with tau0 in s and
+    K_SV,crit in M-1: RT ln((k_d tau0 / K_SV,crit - 1) / (k_-d/nu)).
+    """
+    tau0 = np.asarray(tau0, float)
+    return RT * np.log((K_DIFF * tau0 / k_sv_crit - 1.0) / escape_over_nu)
 
 
 def rate_irreversible(barrier_height):

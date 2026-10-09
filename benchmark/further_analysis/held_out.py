@@ -58,7 +58,7 @@ def held_out(df):
                         predictions[s][inside] = matrices[s][pick, inside]
                     o = options[pick]
                     chosen.append({"criterion": criterion, "variant": variant, "held_out_by": grouping,
-                                   "group": group, "alpha": o.alpha,
+                                   "group": group,
                                    "barrier_threshold / kcal mol-1": o.barrier_threshold})
                 best = scoring.best_setting(y, matrices["dft"])
                 for s in sources:

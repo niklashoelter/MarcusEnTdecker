@@ -29,8 +29,9 @@ Not every script is a stage:
     also with the ml extra: `uv run --extra ml python
     data/computational_data_scripts/quencher_ml_timing.py`. The table it writes is in git.
 
-    `compound_identification.py` and `properties_workbook.py` in data/, and `pairs.py`,
-    `theory.py` and `scoring.py` in benchmark/, are imported modules.
+    `compound_identification.py`, `properties_workbook.py` and `molecular_size.py` in
+    data/, and `pairs.py`, `theory.py` and `scoring.py` in benchmark/, are imported
+    modules.
 
 The model training is not a stage either; ml/README.md describes it.
 """
@@ -80,7 +81,7 @@ PIPELINE = [
     ("benchmark", "benchmark/cost.py", "data/computational_data_processed/quencher_timings_ml.csv"),
     *[("further_analysis", f"benchmark/further_analysis/{name}.py", "data/exp_dataset_ent.csv")
       for name in ("influence", "held_out", "within_groups", "adiabatic_variants",
-                   "barrier_variants", "rate_variants", "rate_predictions")],
+                   "barrier_variants", "rate_predictions")],
 ]
 
 STAGES = ["data", "benchmark", "further_analysis"]

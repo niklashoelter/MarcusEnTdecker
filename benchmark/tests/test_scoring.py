@@ -57,3 +57,17 @@ def test_best_setting_takes_the_lower_middle_of_an_even_tie():
 def test_best_setting_from_scores_takes_the_middle_of_tied_maxima():
     assert scoring.best_setting_from_scores([0.1, 0.5, 0.5, 0.5, 0.2]) == 2
     assert scoring.best_setting_from_scores([0.5, 0.5, 0.1]) == 0
+
+
+def test_auc_within_groups_median_and_pooled():
+    y = np.array([1, 1, 0, 1, 0, 1, 1], bool)
+    groups = np.array(["a", "a", "a", "b", "b", "c", "c"])
+    score = [3.0, 2.0, 1.0, 0.0, 1.0, 5.0, 5.0]   # a ordered, b reversed, c one class
+    within = scoring.auc_within(y, score, groups)
+    assert within["median"] == pytest.approx(0.5)
+    assert within["pooled"] == pytest.approx(2 / 3)
+
+
+def test_auc_within_groups_is_nan_without_a_group_of_both_classes():
+    within = scoring.auc_within(np.array([1, 0], bool), [1.0, 0.0], np.array(["a", "b"]))
+    assert np.isnan(within["median"]) and np.isnan(within["pooled"])

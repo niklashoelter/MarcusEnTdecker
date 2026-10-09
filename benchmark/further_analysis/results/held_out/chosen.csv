@@ -1,297 +1,73 @@
-criterion,variant,held_out_by,group,alpha,barrier_threshold / kcal mol-1
-marcus_barrier,lambda raw,quencher,Q1,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q2,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q3,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q4,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q5,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q6,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q7,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q8,1.0,4.6
-marcus_barrier,lambda raw,quencher,Q11,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q14,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q15,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q19,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q20,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q21,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q22,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q24,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q25,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q26,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q27,1.0,9.3
-marcus_barrier,lambda raw,quencher,Q29,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q31,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q34,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q36,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q37,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q38,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q40,1.0,4.6
-marcus_barrier,lambda raw,quencher,Q41,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q42,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q43,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q44,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q45,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q47,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q48,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q9,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q12,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q16,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q18,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q23,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q28,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q30,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q32,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q33,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q35,1.0,4.6
-marcus_barrier,lambda raw,quencher,Q39,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q46,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q10,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q13,1.0,8.5
-marcus_barrier,lambda raw,quencher,Q17,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC1,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC2,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC3,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC4,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC5,1.0,4.6
-marcus_barrier,lambda raw,photocatalyst,PC6,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC7,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC8,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC9,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC10,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC11,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC12,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC13,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC14,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC15,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC16,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC17,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC18,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC19,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC20,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC21,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC23,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC24,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC25,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC26,1.0,8.5
-marcus_barrier,lambda raw,photocatalyst,PC27,1.0,8.5
-marcus_barrier,lambda scaled,quencher,Q1,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q2,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q3,0.3,0.9
-marcus_barrier,lambda scaled,quencher,Q4,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q5,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q6,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q7,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q8,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q11,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q14,0.3,0.9
-marcus_barrier,lambda scaled,quencher,Q15,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q19,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q20,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q21,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q22,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q24,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q25,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q26,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q27,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q29,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q31,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q34,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q36,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q37,0.3,0.9
-marcus_barrier,lambda scaled,quencher,Q38,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q40,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q41,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q42,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q43,0.35,1.3
-marcus_barrier,lambda scaled,quencher,Q44,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q45,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q47,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q48,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q9,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q12,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q16,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q18,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q23,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q28,0.35,1.2
-marcus_barrier,lambda scaled,quencher,Q30,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q32,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q33,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q35,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q39,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q46,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q10,0.35,1.1
-marcus_barrier,lambda scaled,quencher,Q13,0.35,1.2
-marcus_barrier,lambda scaled,quencher,Q17,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC1,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC2,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC3,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC4,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC5,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC6,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC7,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC8,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC9,0.3,0.9
-marcus_barrier,lambda scaled,photocatalyst,PC10,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC11,0.35,1.2
-marcus_barrier,lambda scaled,photocatalyst,PC12,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC13,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC14,0.3,0.9
-marcus_barrier,lambda scaled,photocatalyst,PC15,0.35,1.3
-marcus_barrier,lambda scaled,photocatalyst,PC16,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC17,0.3,0.9
-marcus_barrier,lambda scaled,photocatalyst,PC18,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC19,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC20,0.3,0.9
-marcus_barrier,lambda scaled,photocatalyst,PC21,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC23,0.3,0.9
-marcus_barrier,lambda scaled,photocatalyst,PC24,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC25,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC26,0.35,1.1
-marcus_barrier,lambda scaled,photocatalyst,PC27,0.35,1.1
-marcus_rate,lambda scaled,quencher,Q1,0.7,
-marcus_rate,lambda scaled,quencher,Q2,0.8,
-marcus_rate,lambda scaled,quencher,Q3,0.7,
-marcus_rate,lambda scaled,quencher,Q4,0.7,
-marcus_rate,lambda scaled,quencher,Q5,0.7,
-marcus_rate,lambda scaled,quencher,Q6,0.7,
-marcus_rate,lambda scaled,quencher,Q7,0.7,
-marcus_rate,lambda scaled,quencher,Q8,0.7,
-marcus_rate,lambda scaled,quencher,Q11,0.7,
-marcus_rate,lambda scaled,quencher,Q14,0.7,
-marcus_rate,lambda scaled,quencher,Q15,0.7,
-marcus_rate,lambda scaled,quencher,Q19,0.7,
-marcus_rate,lambda scaled,quencher,Q20,0.7,
-marcus_rate,lambda scaled,quencher,Q21,0.7,
-marcus_rate,lambda scaled,quencher,Q22,0.7,
-marcus_rate,lambda scaled,quencher,Q24,0.7,
-marcus_rate,lambda scaled,quencher,Q25,0.7,
-marcus_rate,lambda scaled,quencher,Q26,0.7,
-marcus_rate,lambda scaled,quencher,Q27,0.7,
-marcus_rate,lambda scaled,quencher,Q29,0.7,
-marcus_rate,lambda scaled,quencher,Q31,0.7,
-marcus_rate,lambda scaled,quencher,Q34,0.7,
-marcus_rate,lambda scaled,quencher,Q36,0.7,
-marcus_rate,lambda scaled,quencher,Q37,0.7,
-marcus_rate,lambda scaled,quencher,Q38,0.7,
-marcus_rate,lambda scaled,quencher,Q40,0.7,
-marcus_rate,lambda scaled,quencher,Q41,0.75,
-marcus_rate,lambda scaled,quencher,Q42,0.7,
-marcus_rate,lambda scaled,quencher,Q43,0.7,
-marcus_rate,lambda scaled,quencher,Q44,0.7,
-marcus_rate,lambda scaled,quencher,Q45,0.7,
-marcus_rate,lambda scaled,quencher,Q47,0.7,
-marcus_rate,lambda scaled,quencher,Q48,0.7,
-marcus_rate,lambda scaled,quencher,Q9,0.7,
-marcus_rate,lambda scaled,quencher,Q12,0.7,
-marcus_rate,lambda scaled,quencher,Q16,0.7,
-marcus_rate,lambda scaled,quencher,Q18,0.7,
-marcus_rate,lambda scaled,quencher,Q23,0.7,
-marcus_rate,lambda scaled,quencher,Q28,0.7,
-marcus_rate,lambda scaled,quencher,Q30,0.7,
-marcus_rate,lambda scaled,quencher,Q32,0.7,
-marcus_rate,lambda scaled,quencher,Q33,0.7,
-marcus_rate,lambda scaled,quencher,Q35,0.7,
-marcus_rate,lambda scaled,quencher,Q39,0.7,
-marcus_rate,lambda scaled,quencher,Q46,0.7,
-marcus_rate,lambda scaled,quencher,Q10,0.7,
-marcus_rate,lambda scaled,quencher,Q13,0.7,
-marcus_rate,lambda scaled,quencher,Q17,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC1,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC2,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC3,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC4,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC5,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC6,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC7,0.8,
-marcus_rate,lambda scaled,photocatalyst,PC8,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC9,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC10,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC11,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC12,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC13,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC14,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC15,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC16,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC17,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC18,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC19,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC20,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC21,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC23,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC24,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC25,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC26,0.7,
-marcus_rate,lambda scaled,photocatalyst,PC27,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q1,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q2,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q3,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q4,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q5,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q6,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q7,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q8,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q11,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q14,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q15,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q19,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q20,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q21,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q22,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q24,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q25,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q26,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q27,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q29,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q31,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q34,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q36,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q37,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q38,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q40,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q41,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q42,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q43,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q44,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q45,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q47,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q48,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q9,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q12,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q16,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q18,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q23,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q28,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q30,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q32,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q33,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q35,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q39,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q46,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q10,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q13,0.7,
-rehm_weller_rate,lambda scaled,quencher,Q17,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC1,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC2,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC3,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC4,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC5,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC6,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC7,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC8,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC9,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC10,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC11,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC12,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC13,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC14,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC15,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC16,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC17,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC18,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC19,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC20,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC21,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC23,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC24,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC25,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC26,0.7,
-rehm_weller_rate,lambda scaled,photocatalyst,PC27,0.7,
+criterion,variant,held_out_by,group,barrier_threshold / kcal mol-1
+marcus_barrier,,quencher,Q1,9.3
+marcus_barrier,,quencher,Q2,8.5
+marcus_barrier,,quencher,Q3,9.3
+marcus_barrier,,quencher,Q4,9.3
+marcus_barrier,,quencher,Q5,9.3
+marcus_barrier,,quencher,Q6,9.3
+marcus_barrier,,quencher,Q7,9.3
+marcus_barrier,,quencher,Q8,8.5
+marcus_barrier,,quencher,Q11,9.3
+marcus_barrier,,quencher,Q14,8.5
+marcus_barrier,,quencher,Q15,9.3
+marcus_barrier,,quencher,Q19,9.3
+marcus_barrier,,quencher,Q20,9.3
+marcus_barrier,,quencher,Q21,9.3
+marcus_barrier,,quencher,Q22,9.3
+marcus_barrier,,quencher,Q24,9.3
+marcus_barrier,,quencher,Q25,9.3
+marcus_barrier,,quencher,Q26,9.3
+marcus_barrier,,quencher,Q27,9.3
+marcus_barrier,,quencher,Q29,9.3
+marcus_barrier,,quencher,Q34,8.5
+marcus_barrier,,quencher,Q36,9.3
+marcus_barrier,,quencher,Q37,8.5
+marcus_barrier,,quencher,Q40,9.3
+marcus_barrier,,quencher,Q41,9.3
+marcus_barrier,,quencher,Q42,9.3
+marcus_barrier,,quencher,Q43,9.3
+marcus_barrier,,quencher,Q44,8.5
+marcus_barrier,,quencher,Q45,9.3
+marcus_barrier,,quencher,Q47,9.3
+marcus_barrier,,quencher,Q48,9.3
+marcus_barrier,,quencher,Q9,9.3
+marcus_barrier,,quencher,Q12,9.3
+marcus_barrier,,quencher,Q16,9.3
+marcus_barrier,,quencher,Q18,9.3
+marcus_barrier,,quencher,Q23,9.3
+marcus_barrier,,quencher,Q28,9.3
+marcus_barrier,,quencher,Q30,9.3
+marcus_barrier,,quencher,Q32,9.3
+marcus_barrier,,quencher,Q33,9.3
+marcus_barrier,,quencher,Q35,9.3
+marcus_barrier,,quencher,Q39,9.3
+marcus_barrier,,quencher,Q46,9.3
+marcus_barrier,,quencher,Q10,8.5
+marcus_barrier,,quencher,Q13,9.3
+marcus_barrier,,quencher,Q17,9.3
+marcus_barrier,,photocatalyst,PC1,9.3
+marcus_barrier,,photocatalyst,PC2,9.3
+marcus_barrier,,photocatalyst,PC3,9.3
+marcus_barrier,,photocatalyst,PC4,8.5
+marcus_barrier,,photocatalyst,PC5,8.5
+marcus_barrier,,photocatalyst,PC6,9.3
+marcus_barrier,,photocatalyst,PC7,8.5
+marcus_barrier,,photocatalyst,PC8,8.5
+marcus_barrier,,photocatalyst,PC9,9.3
+marcus_barrier,,photocatalyst,PC10,9.3
+marcus_barrier,,photocatalyst,PC11,9.3
+marcus_barrier,,photocatalyst,PC12,9.3
+marcus_barrier,,photocatalyst,PC13,8.5
+marcus_barrier,,photocatalyst,PC14,9.3
+marcus_barrier,,photocatalyst,PC15,8.5
+marcus_barrier,,photocatalyst,PC16,9.3
+marcus_barrier,,photocatalyst,PC17,9.3
+marcus_barrier,,photocatalyst,PC18,9.3
+marcus_barrier,,photocatalyst,PC19,8.5
+marcus_barrier,,photocatalyst,PC20,9.3
+marcus_barrier,,photocatalyst,PC21,9.3
+marcus_barrier,,photocatalyst,PC23,9.3
+marcus_barrier,,photocatalyst,PC24,9.3
+marcus_barrier,,photocatalyst,PC25,9.3
+marcus_barrier,,photocatalyst,PC26,9.3
+marcus_barrier,,photocatalyst,PC27,8.5
