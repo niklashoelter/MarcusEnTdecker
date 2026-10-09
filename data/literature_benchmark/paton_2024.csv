@@ -1,0 +1,25 @@
+compound_id,label,name,smiles,role,isomer,E_T_adiabatic_lit,dvte_lit,source,notes
+P1,1,ethene,C=C,substrate,,63.1,82.3,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P3,3,"1,1-dichloroethene",C=C(Cl)Cl,substrate,,58.5,72.3,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P4,4,tetramethylethene,CC(C)=C(C)C,substrate,,58.0,78.2,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P5,5,cyclohexene,C1=CCCCC1,substrate,,64.8,79.4,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P6,6,cyclopentene,C1=CCCC1,substrate,,71.1,79.1,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P7,7,norbornene,C1=CC2CCC1C2,substrate,,68.2,74.6,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P8,8,styrene,C=Cc1ccccc1,substrate,,54.9,63.8,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P9,9,indene,C1=Cc2ccccc2C1,substrate,,65.6,63.8,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P10,10,(E)-beta-methylstyrene,C/C=C/c1ccccc1,substrate,E,54.6,63.3,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P11,11,(Z)-beta-methylstyrene,C/C=C\c1ccccc1,substrate,Z,52.2,68.3,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P2-E,2-E,(E)-stilbene,c1ccc(/C=C/c2ccccc2)cc1,substrate,E,47.1,51.6,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P2-Z,2-Z,(Z)-stilbene,c1ccc(/C=C\c2ccccc2)cc1,substrate,Z,43.8,58.9,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P12,12,isoprene,C=CC(C)=C,substrate,,54.0,58.2,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P13,13,cyclohex-2-en-1-one,O=C1C=CCCC1,substrate,,64.1,65.2,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P14,14,diphenylacetylene,c1ccc(C#Cc2ccccc2)cc1,substrate,,67.5,63.1,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P15,15,(E)-dimethyldiazene,C/N=N/C,substrate,E,42.2,51.7,"Figure 3, Chem 2024, 10, 3428, p. 3435",E isomer read from the Figure 3 drawing
+P16,16,benzene,c1ccccc1,substrate,,88.2,81.2,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P17,17,naphthalene,c1ccc2ccccc2c1,substrate,,65.7,62.1,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P18,18,azulene,c1ccc2cccc2cc1,substrate,,38.2,36.7,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P19,19,biphenyl,c1ccc(-c2ccccc2)cc1,substrate,,74.8,72.6,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P20,20,9H-fluoren-9-one oxime,ON=C1c2ccccc2-c2ccccc21,substrate,,46.7,53.4,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P21,21,9H-xanthen-9-one oxime,ON=C1c2ccccc2Oc2ccccc21,substrate,,43.0,52.0,"Figure 3, Chem 2024, 10, 3428, p. 3435",
+P22,22,phenyl azide,[N-]=[N+]=Nc1ccccc1,substrate,,36.5,68.0,"Figure 3, Chem 2024, 10, 3428, p. 3435",adiabatic from M06-2X/6-31G(d) optimisation (Fig. 3 footnote b)
+P23,23,cyclohexyl azide,[N-]=[N+]=NC1CCCCC1,substrate,,,77.0,"Figure 3, Chem 2024, 10, 3428, p. 3435",no adiabatic value: T1 loses N2 on optimisation (Fig. 3 footnote c)

@@ -1,0 +1,33 @@
+compound_id,label,name,smiles,role,isomer,predictable,reason,E_T_ml / kcal mol-1,E_T_ml_mode / kcal mol-1,E_T_ml_uncertainty / kcal mol-1,lambda_S0_T1_ml / kcal mol-1,lambda_S0_T1_ml_mode / kcal mol-1,lambda_S0_T1_ml_uncertainty / kcal mol-1,lambda_T1_S0_ml / kcal mol-1,lambda_T1_S0_ml_mode / kcal mol-1,lambda_T1_S0_ml_uncertainty / kcal mol-1
+7a,7a,"N,N-dibenzylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,46.08,45.83,4.77,58.31,59.73,7.88,44.03,45.91,7.24
+7b,7b,"N,N-bis(3-chlorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cccc(Cl)c1)Cc1cccc(Cl)c1,substrate,,True,,46.91,46.29,6.04,58.77,60.21,7.99,49.33,49.71,7.26
+7c,7c,"N,N-bis(4-fluorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(F)cc1)Cc1ccc(F)cc1,substrate,,True,,47.14,46.62,5.45,65.25,65.65,6.0,50.82,51.62,9.29
+7d,7d,"N,N-bis(3,5-dimethylbenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cc(C)cc(C)c1)Cc1cc(C)cc(C)c1,substrate,,True,,47.79,47.62,4.19,64.6,64.93,6.39,49.22,50.72,7.89
+7e,7e,"N,N-bis(4-methoxybenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(OC)cc1)Cc1ccc(OC)cc1,substrate,,True,,62.65,52.02,10.93,57.02,59.02,7.63,37.7,38.16,6.94
+7f,7f,"N-benzyl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccccc1,substrate,,True,,45.54,45.5,3.36,68.07,68.56,7.53,48.73,49.79,7.62
+7g,7g,"N-(4-fluorobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(F)cc1,substrate,,True,,47.03,46.89,3.83,69.1,69.72,7.96,49.27,49.7,8.75
+7h,7h,"N-methyl-N-(naphthalen-2-ylmethyl)buta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc2ccccc2c1,substrate,,True,,60.85,60.8,0.98,12.44,12.42,0.63,10.9,10.77,1.8
+7i,7i,"N-(4-bromobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(Br)cc1,substrate,,True,,47.77,47.67,3.75,63.43,64.4,8.58,42.59,43.47,7.71
+7j,7j,"N-benzyl-N-(tert-butyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)(C)C,substrate,,True,,45.92,45.83,3.77,63.6,64.22,7.46,45.35,46.64,7.98
+7k,7k,"N-benzyl-N-isopropylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)C,substrate,,True,,45.88,45.74,4.19,51.5,53.87,7.33,41.05,42.55,7.03
+7l,7l,"N-benzyl-N-[(trimethylsilyl)methyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C[Si](C)(C)C,substrate,,True,,46.64,45.83,6.56,57.95,60.39,9.63,41.75,42.21,7.32
+7m,7m,"N-benzyl-N-[2-(benzyloxy)ethyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)CCOCc1ccccc1,substrate,,True,,49.13,48.75,5.19,60.06,62.31,10.0,47.39,48.35,8.53
+7n,7n,"N-allyl-N-phenylbuta-2,3-dienamide",C=C=CC(=O)N(CC=C)c1ccccc1,substrate,,True,,55.96,54.1,4.9,26.83,25.73,4.07,24.46,25.56,4.57
+7o,7o,"1-(thiazolidin-3-yl)buta-2,3-dien-1-one",C=C=CC(=O)N1CCSC1,substrate,,True,,47.22,47.1,3.42,69.33,70.67,10.43,44.34,44.47,7.2
+11,11,"N,N-dibenzyl-5,5-dimethylhexa-2,3-dienamide (racemic allene)",CC(C)(C)C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,47.88,47.85,3.06,66.64,66.81,6.02,38.68,37.69,6.25
+13b,13b,"N-benzhydryl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)C(c1ccccc1)c1ccccc1,substrate,,True,,43.51,43.49,3.62,61.44,61.95,6.76,45.36,47.58,7.06
+13c,13c,"N,N-diisopropylbuta-2,3-dienamide",C=C=CC(=O)N(C(C)C)C(C)C,substrate,,True,,46.83,46.74,3.74,53.03,54.45,6.81,34.51,37.36,8.03
+13d,13d,"N,N-dicyclohexylbuta-2,3-dienamide",C=C=CC(=O)N(C1CCCCC1)C1CCCCC1,substrate,,True,,48.57,48.48,3.38,41.88,41.2,4.19,29.82,24.56,6.94
+7f-d1,7f-d1,"N-benzyl-N-methylbuta-2,3-dienamide-d1 (benzylic CHD)",C=C=CC(=O)N(C)C([2H])c1ccccc1,substrate,,True,,45.32,45.29,3.04,72.7,72.93,6.77,54.1,55.19,9.05
+7f-d2,7f-d2,"N-benzyl-N-methylbuta-2,3-dienamide-d2 (benzylic CD2)",C=C=CC(=O)N(C)C([2H])([2H])c1ccccc1,substrate,,True,,45.48,45.45,3.03,70.91,71.2,6.85,54.27,55.91,9.81
+PC_TXT,TXT,TXT,O=c1c2ccccc2sc2ccccc12,photocatalyst,,True,,66.5,65.33,3.22,6.0,5.99,0.99,4.34,4.3,1.1
+PC_Br2-TXT,Br2-TXT,Br2-TXT,O=c1c2cc(Br)ccc2sc2ccc(Br)cc12,photocatalyst,,True,,63.37,63.5,1.99,5.75,5.74,1.13,4.08,4.02,1.31
+PC_XT,XT,XT,O=c1c2ccccc2oc2ccccc12,photocatalyst,,True,,75.61,75.65,1.51,6.76,6.73,1.07,4.6,4.53,1.17
+PC_BP,BP,BP,O=C(c1ccccc1)c1ccccc1,photocatalyst,,True,,67.45,67.59,1.33,11.16,11.07,1.53,14.94,15.71,3.4
+PC_AQ,AQ,AQ,O=C1c2ccccc2C(=O)c2ccccc12,photocatalyst,,True,,62.41,62.5,2.68,8.27,7.96,3.2,8.21,4.68,5.56
+PC_4CzIPN,4CzIPN,4CzIPN,N#Cc1c(-n2c3ccccc3c3ccccc32)c(C#N)c(-n2c3ccccc3c3ccccc32)c(-n2c3ccccc3c3ccccc32)c1-n1c2ccccc2c2ccccc21,photocatalyst,,True,,61.98,61.99,1.58,17.14,17.96,2.71,9.18,8.99,1.81
+PC_acetone,acetone,acetone,CC(C)=O,photocatalyst,,True,,78.79,77.99,3.98,34.49,31.53,11.46,19.14,11.9,10.32
+PC_ACP,ACP,ACP,CC(=O)c1ccccc1,photocatalyst,,True,,69.32,69.3,0.92,10.62,10.53,1.23,11.64,13.09,2.47
+PC_TXT'',TXT'',TXT'',COc1ccc2c(c1)sc1cc(OC)ccc1c2=O,photocatalyst,,True,,70.27,70.69,1.79,5.98,5.91,1.55,4.18,4.12,1.36
+PC_Ir-dFCF3,Ir-dFCF3,Ir-dFCF3,FC(F)(F)c1ccc2-c3c(F)cc(F)c[c]3[Ir+]34([c]5cc(F)cc(F)c5-c5ccc(C(F)(F)F)c[n]->35)(<-[n]2c1)<-[n]1ccc(C(C)(C)C)cc1-c1cc(C(C)(C)C)cc[n]->41,photocatalyst,,False,element(s) Ir outside the model vocabulary,,,,,,,,,
+PC_Ir(ppy)3,Ir(ppy)3,Ir(ppy)3,[Ir]123(<-n4ccccc4-c4ccccc4-1)(<-n1ccccc1-c1ccccc1-2)<-n1ccccc1-c1ccccc1-3,photocatalyst,,False,element(s) Ir outside the model vocabulary,,,,,,,,,

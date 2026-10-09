@@ -1,0 +1,45 @@
+compound_id,label,name,smiles,role,isomer,E_T_pipi_lit,E_T_npi_lit,E_T_lit,dE_TT_lit,triplet_character,lambda_S0_T1_lit,lambda_T1_S0_lit,dG_half_lit,z_percent_E1,yield_percent_27a,k_q,k_q_quencher,k_q_method,k_q_source,k_q_Z1,notes,dG_EnT_lit_2E,barrier_lit_2E,dG_EnT_lit_2Z,barrier_lit_2Z,barrier_form,reacts_lit
+N1,N1,nitrobenzene,O=[N+]([O-])c1ccccc1,photocatalyst,,77.5,64.8,64.8,12.7,"3n,pi*",,,,1.0,18.0,,,,,,,,,,,asymmetric,
+N2,N2,1-methyl-2-nitrobenzene,Cc1ccccc1[N+](=O)[O-],photocatalyst,,77.7,63.0,63.0,14.7,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N3,N3,1-methoxy-2-nitrobenzene,COc1ccccc1[N+](=O)[O-],photocatalyst,,73.3,62.2,62.2,11.1,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N4,N4,1-fluoro-2-nitrobenzene,O=[N+]([O-])c1ccccc1F,photocatalyst,,80.2,63.0,63.0,17.2,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N5,N5,ethyl 2-nitrobenzoate,CCOC(=O)c1ccccc1[N+](=O)[O-],photocatalyst,,75.5,62.4,62.4,13.1,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N6,N6,2-nitrobenzonitrile,N#Cc1ccccc1[N+](=O)[O-],photocatalyst,,76.1,62.4,62.4,13.7,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N7,N7,1-nitro-2-(trifluoromethyl)benzene,O=[N+]([O-])c1ccccc1C(F)(F)F,photocatalyst,,77.2,62.3,62.3,14.9,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N8,N8,1-methyl-3-nitrobenzene,Cc1cccc([N+](=O)[O-])c1,photocatalyst,,74.1,64.8,64.8,9.3,"3n,pi*",,,,3.0,,,,,,,,,,,,asymmetric,
+N9,N9,1-methoxy-3-nitrobenzene,COc1cccc([N+](=O)[O-])c1,photocatalyst,,63.6,64.6,63.6,-1.0,"3pi,pi*",,,,73.0,63.0,,,,,,,,,,,asymmetric,
+N10,N10,1-fluoro-3-nitrobenzene,O=[N+]([O-])c1cccc(F)c1,photocatalyst,,75.6,64.3,64.3,11.3,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N11,N11,ethyl 3-nitrobenzoate,CCOC(=O)c1cccc([N+](=O)[O-])c1,photocatalyst,,79.0,64.5,64.5,14.5,"3n,pi*",,,,3.0,,,,,,,,,,,,asymmetric,
+N12,N12,3-nitrobenzonitrile,N#Cc1cccc([N+](=O)[O-])c1,photocatalyst,,80.3,64.1,64.1,16.2,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N13,N13,1-nitro-3-(trifluoromethyl)benzene,O=[N+]([O-])c1cccc(C(F)(F)F)c1,photocatalyst,,78.9,64.3,64.3,14.6,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N14,N14,1-methyl-4-nitrobenzene,Cc1ccc([N+](=O)[O-])cc1,photocatalyst,,74.1,65.3,65.3,8.8,"3n,pi*",,,,1.0,15.0,,,,,,,,,,,asymmetric,
+N15,N15,1-methoxy-4-nitrobenzene,COc1ccc([N+](=O)[O-])cc1,photocatalyst,,69.7,66.3,66.3,3.5,"3n,pi*",,,,12.0,28.0,,,,,,,,,,,asymmetric,
+N16,N16,1-fluoro-4-nitrobenzene,O=[N+]([O-])c1ccc(F)cc1,photocatalyst,,76.8,65.2,65.2,11.6,"3n,pi*",,,,1.0,13.0,,,,,,,,,,,asymmetric,
+N17,N17,ethyl 4-nitrobenzoate,CCOC(=O)c1ccc([N+](=O)[O-])cc1,photocatalyst,,75.4,63.6,63.6,11.7,"3n,pi*",,,,3.0,,,,,,,,,,,,asymmetric,
+N18,N18,4-nitrobenzonitrile,N#Cc1ccc([N+](=O)[O-])cc1,photocatalyst,,74.9,63.2,63.2,11.7,"3n,pi*",,,,3.0,18.0,,,,,,,,,,,asymmetric,
+N19,N19,1-nitro-4-(trifluoromethyl)benzene,O=[N+]([O-])c1ccc(C(F)(F)F)cc1,photocatalyst,,79.1,63.7,63.7,15.4,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N20,N20,"1,2-dimethoxy-3-nitrobenzene",COc1cccc([N+](=O)[O-])c1OC,photocatalyst,,67.2,61.1,61.1,6.1,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N21,N21,"2,4-dimethoxy-1-nitrobenzene",COc1ccc([N+](=O)[O-])c(OC)c1,photocatalyst,,74.7,63.2,63.2,11.5,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N22,N22,"1,4-dimethoxy-2-nitrobenzene",COc1ccc(OC)c([N+](=O)[O-])c1,photocatalyst,,57.0,62.0,57.0,-5.0,"3pi,pi*",,,,8.0,,,,,,,,,,,,asymmetric,
+N23,N23,"1,3-dimethoxy-2-nitrobenzene",COc1cccc(OC)c1[N+](=O)[O-],photocatalyst,,76.8,62.8,62.8,14.0,"3n,pi*",39.0,49.3,-58.5,1.0,,12000000.0,(E)-1,steady-state emission Stern-Volmer,SI Fig. 14,,"lambda_S0_T1/lambda_T1_S0 mapped from the paper's lambda_P/lambda_R, which Suppl. Table 3 writes in the de-excitation direction",-10.1,15.2,-11.7,17.3,asymmetric,
+N24,N24,"1,2-dimethoxy-4-nitrobenzene",COc1ccc([N+](=O)[O-])cc1OC,photocatalyst,,59.6,66.1,59.6,-6.5,"3pi,pi*",11.0,13.4,-56.3,99.0,58.0,167000000.0,(E)-1,transient-absorption lifetime Stern-Volmer,"SI Fig. 10 ((E)-1), SI Fig. 11 ((Z)-1)",22000000.0,"lambda_S0_T1/lambda_T1_S0 mapped from the paper's lambda_P/lambda_R, which Suppl. Table 3 writes in the de-excitation direction",-7.9,8.3,-9.5,10.5,asymmetric,
+N25,N25,"1,3-dimethoxy-5-nitrobenzene",COc1cc(OC)cc([N+](=O)[O-])c1,photocatalyst,,63.3,64.3,63.3,-1.0,"3pi,pi*",,,,97.0,41.0,490000000.0,(E)-1,transient-absorption lifetime Stern-Volmer,SI Fig. 12,,,,,,,asymmetric,
+N26,N26,2-methoxy-4-nitrobenzonitrile,COc1cc([N+](=O)[O-])ccc1C#N,photocatalyst,,63.6,63.0,63.0,0.6,"3n,pi*",,,,68.0,,,,,,,,,,,,asymmetric,
+N27,N27,3-methoxy-5-nitrobenzonitrile,COc1cc(C#N)cc([N+](=O)[O-])c1,photocatalyst,,65.9,63.9,63.9,2.0,"3n,pi*",,,,15.0,,,,,,,,,,,,asymmetric,
+N28,N28,2-methoxy-4-nitro-1-(trifluoromethyl)benzene,COc1cc([N+](=O)[O-])ccc1C(F)(F)F,photocatalyst,,64.8,63.5,63.5,1.3,"3n,pi*",,,,15.0,,,,,,,,,,,,asymmetric,
+N29,N29,1-methoxy-3-nitro-5-(trifluoromethyl)benzene,COc1cc([N+](=O)[O-])cc(C(F)(F)F)c1,photocatalyst,,65.3,64.0,64.0,1.3,"3n,pi*",,,,14.0,51.0,,,,,,,,,,,asymmetric,
+N30,N30,2-methoxy-5-nitrobenzonitrile,COc1ccc([N+](=O)[O-])cc1C#N,photocatalyst,,74.5,65.7,65.7,8.8,"3n,pi*",,,,8.0,,,,,,,,,,,,asymmetric,
+N31,N31,4-methoxy-1-nitro-3-(trifluoromethyl)benzene,COc1ccc([N+](=O)[O-])cc1C(F)(F)F,photocatalyst,,72.7,65.9,65.9,6.8,"3n,pi*",,,,3.0,,,,,,,,,,,,asymmetric,
+N32,N32,"5-nitrobenzene-1,3-dicarbonitrile",N#Cc1cc(C#N)cc([N+](=O)[O-])c1,photocatalyst,,81.5,63.5,63.5,18.0,"3n,pi*",,,,1.0,,,,,,,,,,,,asymmetric,
+N33,N33,"1-nitro-3,5-bis(trifluoromethyl)benzene",O=[N+]([O-])c1cc(C(F)(F)F)cc(C(F)(F)F)c1,photocatalyst,,79.8,63.7,63.7,16.1,"3n,pi*",28.4,52.2,-59.4,1.0,3.0,,,,,,"lambda_S0_T1/lambda_T1_S0 mapped from the paper's lambda_P/lambda_R, which Suppl. Table 3 writes in the de-excitation direction",-11.0,12.9,-12.6,15.4,asymmetric,
+N34,N34,1-nitronaphthalene,O=[N+]([O-])c1cccc2ccccc12,photocatalyst,,60.2,62.6,60.2,-2.4,"3pi,pi*",,,,93.0,72.0,23000000.0,27,transient-absorption lifetime Stern-Volmer,SI Fig. 20,,,,,,,asymmetric,
+N35,N35,"4-methoxy-4-nitro-1,1-biphenyl",COc1ccc(-c2ccc([N+](=O)[O-])cc2)cc1,photocatalyst,,62.1,65.1,62.1,-3.0,"3pi,pi*",,,,99.0,24.0,,,,,,,,,,,asymmetric,
+N36,N36,2-methoxy-1-methyl-4-nitrobenzene,COc1cc([N+](=O)[O-])ccc1C,photocatalyst,,62.8,65.1,62.8,-2.3,"3pi,pi*",,,,82.0,74.0,150000000.0,(E)-1,transient-absorption lifetime Stern-Volmer,SI Fig. 13,,,,,,,asymmetric,
+1E,(E)-1,ethyl (E)-3-phenylpent-2-enoate,CCOC(=O)/C=C(\CC)c1ccccc1,substrate,E,,,,,,,,,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction",,,,,asymmetric,True
+1Z,(Z)-1,ethyl (Z)-3-phenylpent-2-enoate,CCOC(=O)/C=C(/CC)c1ccccc1,substrate,Z,,,,,,,,,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction",,,,,asymmetric,True
+2E,(E)-2,methyl (E)-3-phenylbut-2-enoate,COC(=O)/C=C(\C)c1ccccc1,substrate,E,,,,,,51.6,28.6,48.4,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction",,,,,asymmetric,True
+2Z,(Z)-2,methyl (Z)-3-phenylbut-2-enoate,COC(=O)/C=C(/C)c1ccccc1,substrate,Z,,,,,,49.6,46.4,46.8,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction",,,,,asymmetric,True
+27,27,(E)-cinnamyl allyl ether,C=CCOC/C=C/c1ccccc1,substrate,E,,,,,,,,,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction",,,,,asymmetric,True
+S11E,(E)-S11,ethyl (E)-3-methylpent-2-enoate,CCOC(=O)/C=C(\C)CC,substrate,E,,,62.0,,,,,,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction; E_T_lit: adiabatic, SI Table 8 (entry 1 E, entry 2 Z), against N24 at 59.6",,,,,asymmetric,False
+S11Z,(Z)-S11,ethyl (Z)-3-methylpent-2-enoate,CCOC(=O)/C=C(/C)CC,substrate,Z,,,62.2,,,,,,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction; E_T_lit: adiabatic, SI Table 8 (entry 1 E, entry 2 Z), against N24 at 59.6",,,,,asymmetric,False
+S12,S12,ethyl (E)-3-(adamantan-1-yl)but-2-enoate,CCOC(=O)/C=C(\C)C12CC3CC(CC(C3)C1)C2,substrate,E,,,,,,,,,,,,,,,,"substrate half-transformation, Suppl. Table 3; written in the excitation direction",,,,,asymmetric,False

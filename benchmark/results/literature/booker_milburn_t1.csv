@@ -1,0 +1,15 @@
+predictor,model,estimate,role,n,rho,rho_excl_parent_TX,mae,mean_signed_error,pass_rho,pass_vs_tddft,pass_T1,rho_ci_low,rho_ci_high
+"paper TD-DFT B3LYP/6-31+G(d,p)",,,baseline,11,1.0,0.9999999999999999,0.98,-0.85,,,,,
+"paper TD-DFT B3LYP/6-31G(d,p)",,,baseline,11,1.0,0.9999999999999999,0.85,0.59,,,,,
+ours,deployed,mean,tested,11,0.9818181818181818,0.9757575757575757,0.97,0.69,True,True,True,0.8578199052132701,1.0
+ours,deployed,mode,tested,11,0.9727272727272729,0.9636363636363635,1.14,0.79,True,True,True,,
+ours,random_42,mean,tested,11,0.9636363636363637,0.9515151515151514,1.61,-0.27,True,True,True,,
+ours,random_42,mode,tested,11,0.9636363636363637,0.9515151515151514,1.69,-0.16,True,True,True,,
+ours,random_101,mean,tested,11,0.9727272727272729,0.9636363636363635,2.32,2.32,True,True,True,,
+ours,random_101,mode,tested,11,0.9727272727272729,0.9636363636363635,2.48,2.47,True,True,True,,
+ours,random_143,mean,tested,11,0.9363636363636365,0.9151515151515152,1.99,1.13,True,False,False,,
+ours,random_143,mode,tested,11,0.9181818181818183,0.8909090909090909,2.58,1.51,True,False,False,,
+ours,random_404,mean,tested,11,0.8909090909090911,0.8666666666666665,2.33,1.84,False,False,False,,
+ours,random_404,mode,tested,11,0.9272727272727275,0.9151515151515152,2.48,2.2,True,False,False,,
+ours,random_666,mean,tested,11,0.990909090909091,0.9878787878787878,1.71,-1.69,True,True,True,,
+ours,random_666,mode,tested,11,0.990909090909091,0.9878787878787878,1.6,-1.36,True,True,True,,

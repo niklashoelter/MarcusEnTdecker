@@ -1,0 +1,181 @@
+compound_id,label,name,smiles,role,isomer,predictable,reason,E_T_ml / kcal mol-1,E_T_ml_mode / kcal mol-1,E_T_ml_uncertainty / kcal mol-1,lambda_S0_T1_ml / kcal mol-1,lambda_S0_T1_ml_mode / kcal mol-1,lambda_S0_T1_ml_uncertainty / kcal mol-1,lambda_T1_S0_ml / kcal mol-1,lambda_T1_S0_ml_mode / kcal mol-1,lambda_T1_S0_ml_uncertainty / kcal mol-1,model
+7a,7a,"N,N-dibenzylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,46.08,45.83,4.77,58.31,59.73,7.88,44.03,45.91,7.24,deployed
+7b,7b,"N,N-bis(3-chlorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cccc(Cl)c1)Cc1cccc(Cl)c1,substrate,,True,,46.91,46.29,6.04,58.77,60.21,7.99,49.33,49.71,7.26,deployed
+7c,7c,"N,N-bis(4-fluorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(F)cc1)Cc1ccc(F)cc1,substrate,,True,,47.14,46.62,5.45,65.25,65.65,6.0,50.82,51.62,9.29,deployed
+7d,7d,"N,N-bis(3,5-dimethylbenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cc(C)cc(C)c1)Cc1cc(C)cc(C)c1,substrate,,True,,47.79,47.62,4.19,64.6,64.93,6.39,49.22,50.72,7.89,deployed
+7e,7e,"N,N-bis(4-methoxybenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(OC)cc1)Cc1ccc(OC)cc1,substrate,,True,,62.65,52.02,10.93,57.02,59.02,7.63,37.7,38.16,6.94,deployed
+7f,7f,"N-benzyl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccccc1,substrate,,True,,45.54,45.5,3.36,68.07,68.56,7.53,48.73,49.79,7.62,deployed
+7g,7g,"N-(4-fluorobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(F)cc1,substrate,,True,,47.03,46.89,3.83,69.1,69.72,7.96,49.27,49.7,8.75,deployed
+7h,7h,"N-methyl-N-(naphthalen-2-ylmethyl)buta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc2ccccc2c1,substrate,,True,,60.85,60.8,0.98,12.44,12.42,0.63,10.9,10.77,1.8,deployed
+7i,7i,"N-(4-bromobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(Br)cc1,substrate,,True,,47.77,47.67,3.75,63.43,64.4,8.58,42.59,43.47,7.71,deployed
+7j,7j,"N-benzyl-N-(tert-butyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)(C)C,substrate,,True,,45.92,45.83,3.77,63.6,64.22,7.46,45.35,46.64,7.98,deployed
+7k,7k,"N-benzyl-N-isopropylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)C,substrate,,True,,45.88,45.74,4.19,51.5,53.87,7.33,41.05,42.55,7.03,deployed
+7l,7l,"N-benzyl-N-[(trimethylsilyl)methyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C[Si](C)(C)C,substrate,,True,,46.64,45.83,6.56,57.95,60.39,9.63,41.75,42.21,7.32,deployed
+7m,7m,"N-benzyl-N-[2-(benzyloxy)ethyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)CCOCc1ccccc1,substrate,,True,,49.13,48.75,5.19,60.06,62.31,10.0,47.39,48.35,8.53,deployed
+7n,7n,"N-allyl-N-phenylbuta-2,3-dienamide",C=C=CC(=O)N(CC=C)c1ccccc1,substrate,,True,,55.96,54.1,4.9,26.83,25.73,4.07,24.46,25.56,4.57,deployed
+7o,7o,"1-(thiazolidin-3-yl)buta-2,3-dien-1-one",C=C=CC(=O)N1CCSC1,substrate,,True,,47.22,47.1,3.42,69.33,70.67,10.43,44.34,44.47,7.2,deployed
+11,11,"N,N-dibenzyl-5,5-dimethylhexa-2,3-dienamide (racemic allene)",CC(C)(C)C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,47.88,47.85,3.06,66.64,66.81,6.02,38.68,37.69,6.25,deployed
+13b,13b,"N-benzhydryl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)C(c1ccccc1)c1ccccc1,substrate,,True,,43.51,43.49,3.62,61.44,61.95,6.76,45.36,47.58,7.06,deployed
+13c,13c,"N,N-diisopropylbuta-2,3-dienamide",C=C=CC(=O)N(C(C)C)C(C)C,substrate,,True,,46.83,46.74,3.74,53.03,54.45,6.81,34.51,37.36,8.03,deployed
+13d,13d,"N,N-dicyclohexylbuta-2,3-dienamide",C=C=CC(=O)N(C1CCCCC1)C1CCCCC1,substrate,,True,,48.57,48.48,3.38,41.88,41.2,4.19,29.82,24.56,6.94,deployed
+7f-d1,7f-d1,"N-benzyl-N-methylbuta-2,3-dienamide-d1 (benzylic CHD)",C=C=CC(=O)N(C)C([2H])c1ccccc1,substrate,,True,,45.32,45.29,3.04,72.7,72.93,6.77,54.1,55.19,9.05,deployed
+7f-d2,7f-d2,"N-benzyl-N-methylbuta-2,3-dienamide-d2 (benzylic CD2)",C=C=CC(=O)N(C)C([2H])([2H])c1ccccc1,substrate,,True,,45.48,45.45,3.03,70.91,71.2,6.85,54.27,55.91,9.81,deployed
+PC_TXT,TXT,TXT,O=c1c2ccccc2sc2ccccc12,photocatalyst,,True,,66.5,65.33,3.22,6.0,5.99,0.99,4.34,4.3,1.1,deployed
+PC_Br2-TXT,Br2-TXT,Br2-TXT,O=c1c2cc(Br)ccc2sc2ccc(Br)cc12,photocatalyst,,True,,63.37,63.5,1.99,5.75,5.74,1.13,4.08,4.02,1.31,deployed
+PC_XT,XT,XT,O=c1c2ccccc2oc2ccccc12,photocatalyst,,True,,75.61,75.65,1.51,6.76,6.73,1.07,4.6,4.53,1.17,deployed
+PC_BP,BP,BP,O=C(c1ccccc1)c1ccccc1,photocatalyst,,True,,67.45,67.59,1.33,11.16,11.07,1.53,14.94,15.71,3.4,deployed
+PC_AQ,AQ,AQ,O=C1c2ccccc2C(=O)c2ccccc12,photocatalyst,,True,,62.41,62.5,2.68,8.27,7.96,3.2,8.21,4.68,5.56,deployed
+PC_4CzIPN,4CzIPN,4CzIPN,N#Cc1c(-n2c3ccccc3c3ccccc32)c(C#N)c(-n2c3ccccc3c3ccccc32)c(-n2c3ccccc3c3ccccc32)c1-n1c2ccccc2c2ccccc21,photocatalyst,,True,,61.98,61.99,1.58,17.14,17.96,2.71,9.18,8.99,1.81,deployed
+PC_acetone,acetone,acetone,CC(C)=O,photocatalyst,,True,,78.79,77.99,3.98,34.49,31.53,11.46,19.14,11.9,10.32,deployed
+PC_ACP,ACP,ACP,CC(=O)c1ccccc1,photocatalyst,,True,,69.32,69.3,0.92,10.62,10.53,1.23,11.64,13.09,2.47,deployed
+PC_TXT'',TXT'',TXT'',COc1ccc2c(c1)sc1cc(OC)ccc1c2=O,photocatalyst,,True,,70.27,70.69,1.79,5.98,5.91,1.55,4.18,4.12,1.36,deployed
+7a,7a,"N,N-dibenzylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,47.94,47.45,4.78,46.08,59.62,18.62,30.53,36.08,10.07,random_42
+7b,7b,"N,N-bis(3-chlorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cccc(Cl)c1)Cc1cccc(Cl)c1,substrate,,True,,44.73,44.78,3.04,54.93,63.28,17.61,48.67,48.79,6.91,random_42
+7c,7c,"N,N-bis(4-fluorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(F)cc1)Cc1ccc(F)cc1,substrate,,True,,46.61,46.37,4.3,63.01,66.19,13.39,44.57,46.21,9.76,random_42
+7d,7d,"N,N-bis(3,5-dimethylbenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cc(C)cc(C)c1)Cc1cc(C)cc(C)c1,substrate,,True,,51.21,50.28,5.21,25.73,19.32,13.63,21.46,14.5,8.81,random_42
+7e,7e,"N,N-bis(4-methoxybenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(OC)cc1)Cc1ccc(OC)cc1,substrate,,True,,56.65,52.43,8.57,25.46,17.89,13.61,27.3,28.37,5.8,random_42
+7f,7f,"N-benzyl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccccc1,substrate,,True,,45.23,45.12,3.78,61.27,65.85,15.2,40.26,41.5,7.65,random_42
+7g,7g,"N-(4-fluorobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(F)cc1,substrate,,True,,45.19,45.2,3.27,66.35,68.48,11.43,49.28,49.56,7.4,random_42
+7h,7h,"N-methyl-N-(naphthalen-2-ylmethyl)buta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc2ccccc2c1,substrate,,True,,60.52,60.52,0.84,12.17,12.14,0.78,10.82,10.72,1.23,random_42
+7i,7i,"N-(4-bromobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(Br)cc1,substrate,,True,,45.25,45.3,2.63,57.48,64.78,16.96,45.09,45.16,5.76,random_42
+7j,7j,"N-benzyl-N-(tert-butyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)(C)C,substrate,,True,,46.05,45.83,3.93,50.12,54.05,9.43,38.09,39.76,7.37,random_42
+7k,7k,"N-benzyl-N-isopropylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)C,substrate,,True,,45.78,45.74,3.56,59.33,65.06,15.99,40.65,43.39,9.41,random_42
+7l,7l,"N-benzyl-N-[(trimethylsilyl)methyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C[Si](C)(C)C,substrate,,True,,48.6,48.33,4.12,36.59,26.63,15.47,31.7,36.85,10.38,random_42
+7m,7m,"N-benzyl-N-[2-(benzyloxy)ethyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)CCOCc1ccccc1,substrate,,True,,48.23,48.23,3.37,46.11,61.17,19.32,46.9,47.91,9.57,random_42
+7n,7n,"N-allyl-N-phenylbuta-2,3-dienamide",C=C=CC(=O)N(CC=C)c1ccccc1,substrate,,True,,50.2,49.63,4.2,22.42,22.2,3.2,18.98,17.17,4.15,random_42
+7o,7o,"1-(thiazolidin-3-yl)buta-2,3-dien-1-one",C=C=CC(=O)N1CCSC1,substrate,,True,,45.35,45.43,2.67,66.95,69.21,11.31,42.93,42.95,4.92,random_42
+11,11,"N,N-dibenzyl-5,5-dimethylhexa-2,3-dienamide (racemic allene)",CC(C)(C)C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,45.18,45.09,4.31,66.18,68.6,12.55,32.38,29.93,7.27,random_42
+13b,13b,"N-benzhydryl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)C(c1ccccc1)c1ccccc1,substrate,,True,,47.79,47.27,4.78,49.45,62.24,20.46,28.28,35.12,9.13,random_42
+13c,13c,"N,N-diisopropylbuta-2,3-dienamide",C=C=CC(=O)N(C(C)C)C(C)C,substrate,,True,,45.51,45.47,3.46,57.51,61.43,11.37,45.08,45.63,7.24,random_42
+13d,13d,"N,N-dicyclohexylbuta-2,3-dienamide",C=C=CC(=O)N(C1CCCCC1)C1CCCCC1,substrate,,True,,48.04,48.07,2.92,51.03,56.24,10.34,43.56,44.81,7.85,random_42
+7f-d1,7f-d1,"N-benzyl-N-methylbuta-2,3-dienamide-d1 (benzylic CHD)",C=C=CC(=O)N(C)C([2H])c1ccccc1,substrate,,True,,44.92,44.97,3.19,62.44,65.48,12.66,47.35,48.05,7.91,random_42
+7f-d2,7f-d2,"N-benzyl-N-methylbuta-2,3-dienamide-d2 (benzylic CD2)",C=C=CC(=O)N(C)C([2H])([2H])c1ccccc1,substrate,,True,,45.85,45.89,3.15,58.28,64.07,15.64,45.33,46.29,8.16,random_42
+PC_TXT,TXT,TXT,O=c1c2ccccc2sc2ccccc12,photocatalyst,,True,,62.5,62.08,2.22,5.51,5.5,1.03,3.78,3.75,1.19,random_42
+PC_Br2-TXT,Br2-TXT,Br2-TXT,O=c1c2cc(Br)ccc2sc2ccc(Br)cc12,photocatalyst,,True,,60.39,60.41,1.59,5.89,5.86,1.03,4.46,4.41,1.14,random_42
+PC_XT,XT,XT,O=c1c2ccccc2oc2ccccc12,photocatalyst,,True,,74.03,74.7,3.54,6.02,6.02,0.97,3.93,3.87,1.29,random_42
+PC_BP,BP,BP,O=C(c1ccccc1)c1ccccc1,photocatalyst,,True,,68.59,68.6,1.34,11.78,11.61,1.43,14.63,14.87,2.75,random_42
+PC_AQ,AQ,AQ,O=C1c2ccccc2C(=O)c2ccccc12,photocatalyst,,True,,57.8,58.1,2.78,6.26,5.48,4.79,4.58,3.15,3.68,random_42
+PC_4CzIPN,4CzIPN,4CzIPN,N#Cc1c(-n2c3ccccc3c3ccccc32)c(C#N)c(-n2c3ccccc3c3ccccc32)c(-n2c3ccccc3c3ccccc32)c1-n1c2ccccc2c2ccccc21,photocatalyst,,True,,63.86,69.9,7.04,16.73,24.93,8.89,5.15,5.87,3.75,random_42
+PC_acetone,acetone,acetone,CC(C)=O,photocatalyst,,True,,79.9,80.0,2.22,27.34,27.1,5.05,10.89,10.63,2.44,random_42
+PC_ACP,ACP,ACP,CC(=O)c1ccccc1,photocatalyst,,True,,69.9,69.9,0.98,10.84,10.79,1.15,11.56,13.02,2.18,random_42
+PC_TXT'',TXT'',TXT'',COc1ccc2c(c1)sc1cc(OC)ccc1c2=O,photocatalyst,,True,,70.75,71.16,2.39,5.89,5.79,1.72,3.95,3.83,1.62,random_42
+7a,7a,"N,N-dibenzylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,49.21,48.75,4.73,57.59,61.08,10.33,34.97,43.08,13.56,random_101
+7b,7b,"N,N-bis(3-chlorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cccc(Cl)c1)Cc1cccc(Cl)c1,substrate,,True,,50.63,49.65,5.33,60.05,64.45,12.06,51.33,51.91,11.43,random_101
+7c,7c,"N,N-bis(4-fluorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(F)cc1)Cc1ccc(F)cc1,substrate,,True,,47.95,47.83,3.38,60.99,62.69,8.64,46.97,49.53,11.86,random_101
+7d,7d,"N,N-bis(3,5-dimethylbenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cc(C)cc(C)c1)Cc1cc(C)cc(C)c1,substrate,,True,,50.62,50.55,3.13,66.24,67.37,10.02,39.22,43.62,11.7,random_101
+7e,7e,"N,N-bis(4-methoxybenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(OC)cc1)Cc1ccc(OC)cc1,substrate,,True,,49.49,49.44,2.88,63.89,65.35,10.13,48.8,48.91,8.02,random_101
+7f,7f,"N-benzyl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccccc1,substrate,,True,,47.09,46.94,3.58,61.64,63.09,8.31,39.59,43.46,11.61,random_101
+7g,7g,"N-(4-fluorobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(F)cc1,substrate,,True,,46.56,46.15,4.58,56.88,59.99,9.24,47.63,48.05,9.68,random_101
+7h,7h,"N-methyl-N-(naphthalen-2-ylmethyl)buta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc2ccccc2c1,substrate,,True,,60.54,60.52,1.09,12.27,12.26,0.7,10.7,10.63,1.15,random_101
+7i,7i,"N-(4-bromobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(Br)cc1,substrate,,True,,47.02,45.23,7.76,49.71,54.76,7.61,43.17,43.94,9.04,random_101
+7j,7j,"N-benzyl-N-(tert-butyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)(C)C,substrate,,True,,57.77,50.31,12.17,40.89,40.73,4.48,29.14,38.39,14.62,random_101
+7k,7k,"N-benzyl-N-isopropylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)C,substrate,,True,,57.99,48.78,13.8,43.47,42.33,5.78,29.35,39.55,15.51,random_101
+7l,7l,"N-benzyl-N-[(trimethylsilyl)methyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C[Si](C)(C)C,substrate,,True,,49.46,46.54,9.94,49.57,42.06,11.26,33.58,39.09,14.59,random_101
+7m,7m,"N-benzyl-N-[2-(benzyloxy)ethyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)CCOCc1ccccc1,substrate,,True,,49.43,48.27,6.51,54.91,60.37,11.36,35.59,43.29,14.9,random_101
+7n,7n,"N-allyl-N-phenylbuta-2,3-dienamide",C=C=CC(=O)N(CC=C)c1ccccc1,substrate,,True,,56.88,51.63,7.02,32.85,33.73,4.06,27.08,27.32,4.06,random_101
+7o,7o,"1-(thiazolidin-3-yl)buta-2,3-dien-1-one",C=C=CC(=O)N1CCSC1,substrate,,True,,47.25,46.81,4.55,59.64,64.62,15.39,43.23,43.24,4.82,random_101
+11,11,"N,N-dibenzyl-5,5-dimethylhexa-2,3-dienamide (racemic allene)",CC(C)(C)C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,47.18,47.04,3.47,70.56,70.99,7.68,36.13,32.71,9.3,random_101
+13b,13b,"N-benzhydryl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)C(c1ccccc1)c1ccccc1,substrate,,True,,53.3,48.91,10.48,47.12,40.69,9.85,36.78,43.0,15.3,random_101
+13c,13c,"N,N-diisopropylbuta-2,3-dienamide",C=C=CC(=O)N(C(C)C)C(C)C,substrate,,True,,59.65,52.21,9.82,42.62,42.77,3.31,23.36,23.7,4.82,random_101
+13d,13d,"N,N-dicyclohexylbuta-2,3-dienamide",C=C=CC(=O)N(C1CCCCC1)C1CCCCC1,substrate,,True,,65.43,65.62,3.42,39.87,38.99,4.27,22.93,23.15,4.83,random_101
+7f-d1,7f-d1,"N-benzyl-N-methylbuta-2,3-dienamide-d1 (benzylic CHD)",C=C=CC(=O)N(C)C([2H])c1ccccc1,substrate,,True,,45.97,45.96,2.39,69.22,69.36,6.25,36.8,32.3,8.51,random_101
+7f-d2,7f-d2,"N-benzyl-N-methylbuta-2,3-dienamide-d2 (benzylic CD2)",C=C=CC(=O)N(C)C([2H])([2H])c1ccccc1,substrate,,True,,45.66,45.62,3.13,58.81,59.82,8.2,36.41,41.57,8.72,random_101
+PC_TXT,TXT,TXT,O=c1c2ccccc2sc2ccccc12,photocatalyst,,True,,66.3,66.13,1.76,6.51,6.44,1.42,4.05,4.03,1.03,random_101
+PC_Br2-TXT,Br2-TXT,Br2-TXT,O=c1c2cc(Br)ccc2sc2ccc(Br)cc12,photocatalyst,,True,,65.22,65.2,1.82,5.7,5.67,1.26,4.18,4.15,1.18,random_101
+PC_XT,XT,XT,O=c1c2ccccc2oc2ccccc12,photocatalyst,,True,,71.43,72.02,2.09,7.53,7.46,1.45,5.15,5.12,1.14,random_101
+PC_BP,BP,BP,O=C(c1ccccc1)c1ccccc1,photocatalyst,,True,,67.76,67.62,1.35,12.4,11.89,3.03,15.98,16.24,2.53,random_101
+PC_AQ,AQ,AQ,O=C1c2ccccc2C(=O)c2ccccc12,photocatalyst,,True,,60.35,60.52,2.58,10.06,7.91,7.05,9.87,10.95,4.97,random_101
+PC_4CzIPN,4CzIPN,4CzIPN,N#Cc1c(-n2c3ccccc3c3ccccc32)c(C#N)c(-n2c3ccccc3c3ccccc32)c(-n2c3ccccc3c3ccccc32)c1-n1c2ccccc2c2ccccc21,photocatalyst,,True,,49.23,45.79,6.75,19.07,19.84,2.74,3.13,4.05,3.17,random_101
+PC_acetone,acetone,acetone,CC(C)=O,photocatalyst,,True,,77.66,77.67,2.14,25.87,25.44,4.24,13.02,11.3,6.24,random_101
+PC_ACP,ACP,ACP,CC(=O)c1ccccc1,photocatalyst,,True,,70.33,70.49,1.09,11.67,11.62,1.13,10.67,9.95,1.93,random_101
+PC_TXT'',TXT'',TXT'',COc1ccc2c(c1)sc1cc(OC)ccc1c2=O,photocatalyst,,True,,72.7,72.9,1.65,6.32,6.29,1.1,3.87,3.83,1.09,random_101
+7a,7a,"N,N-dibenzylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,45.8,45.13,4.12,54.32,59.33,14.66,44.81,45.16,7.66,random_143
+7b,7b,"N,N-bis(3-chlorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cccc(Cl)c1)Cc1cccc(Cl)c1,substrate,,True,,47.9,46.48,4.89,45.17,55.09,17.08,48.62,48.7,7.03,random_143
+7c,7c,"N,N-bis(4-fluorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(F)cc1)Cc1ccc(F)cc1,substrate,,True,,46.32,45.61,4.32,47.83,56.07,16.57,43.53,43.95,7.46,random_143
+7d,7d,"N,N-bis(3,5-dimethylbenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cc(C)cc(C)c1)Cc1cc(C)cc(C)c1,substrate,,True,,50.32,49.48,4.96,22.06,19.8,10.62,31.56,35.26,10.57,random_143
+7e,7e,"N,N-bis(4-methoxybenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(OC)cc1)Cc1ccc(OC)cc1,substrate,,True,,55.52,47.92,11.68,20.03,13.51,14.57,35.77,36.51,6.74,random_143
+7f,7f,"N-benzyl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccccc1,substrate,,True,,47.82,46.85,3.67,63.04,63.87,8.23,49.79,50.09,7.85,random_143
+7g,7g,"N-(4-fluorobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(F)cc1,substrate,,True,,48.1,46.86,3.5,58.34,59.61,8.25,51.13,51.33,7.58,random_143
+7h,7h,"N-methyl-N-(naphthalen-2-ylmethyl)buta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc2ccccc2c1,substrate,,True,,60.86,60.88,0.93,12.35,12.33,0.59,10.75,10.49,2.55,random_143
+7i,7i,"N-(4-bromobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(Br)cc1,substrate,,True,,48.21,47.0,3.59,56.17,58.7,10.63,51.14,51.23,7.19,random_143
+7j,7j,"N-benzyl-N-(tert-butyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)(C)C,substrate,,True,,47.16,46.43,3.56,52.09,54.04,6.71,44.91,45.4,7.0,random_143
+7k,7k,"N-benzyl-N-isopropylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)C,substrate,,True,,48.7,47.76,3.52,60.33,60.8,6.55,48.0,48.34,7.28,random_143
+7l,7l,"N-benzyl-N-[(trimethylsilyl)methyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C[Si](C)(C)C,substrate,,True,,44.58,44.16,3.35,62.3,63.29,8.61,47.74,48.01,7.58,random_143
+7m,7m,"N-benzyl-N-[2-(benzyloxy)ethyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)CCOCc1ccccc1,substrate,,True,,45.73,44.94,3.83,55.91,60.7,14.42,50.49,50.69,8.14,random_143
+7n,7n,"N-allyl-N-phenylbuta-2,3-dienamide",C=C=CC(=O)N(CC=C)c1ccccc1,substrate,,True,,45.92,45.08,6.31,31.42,20.14,17.4,34.55,35.17,7.51,random_143
+7o,7o,"1-(thiazolidin-3-yl)buta-2,3-dien-1-one",C=C=CC(=O)N1CCSC1,substrate,,True,,45.97,45.42,3.77,59.55,61.06,9.7,47.93,47.94,6.36,random_143
+11,11,"N,N-dibenzyl-5,5-dimethylhexa-2,3-dienamide (racemic allene)",CC(C)(C)C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,43.67,43.33,3.22,63.52,64.79,9.51,43.94,44.97,7.86,random_143
+13b,13b,"N-benzhydryl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)C(c1ccccc1)c1ccccc1,substrate,,True,,47.11,45.98,4.19,53.03,58.55,15.26,45.83,46.27,7.72,random_143
+13c,13c,"N,N-diisopropylbuta-2,3-dienamide",C=C=CC(=O)N(C(C)C)C(C)C,substrate,,True,,48.78,48.21,3.48,56.39,56.78,5.68,42.65,43.15,6.58,random_143
+13d,13d,"N,N-dicyclohexylbuta-2,3-dienamide",C=C=CC(=O)N(C1CCCCC1)C1CCCCC1,substrate,,True,,45.68,45.43,3.97,57.65,58.25,6.84,40.65,40.81,6.03,random_143
+7f-d1,7f-d1,"N-benzyl-N-methylbuta-2,3-dienamide-d1 (benzylic CHD)",C=C=CC(=O)N(C)C([2H])c1ccccc1,substrate,,True,,44.89,44.46,3.27,57.59,58.34,7.06,47.92,48.31,7.4,random_143
+7f-d2,7f-d2,"N-benzyl-N-methylbuta-2,3-dienamide-d2 (benzylic CD2)",C=C=CC(=O)N(C)C([2H])([2H])c1ccccc1,substrate,,True,,44.69,44.37,3.41,53.51,54.45,6.33,45.27,45.86,7.2,random_143
+PC_TXT,TXT,TXT,O=c1c2ccccc2sc2ccccc12,photocatalyst,,True,,69.62,70.9,2.59,5.72,5.67,1.47,4.51,4.71,1.31,random_143
+PC_Br2-TXT,Br2-TXT,Br2-TXT,O=c1c2cc(Br)ccc2sc2ccc(Br)cc12,photocatalyst,,True,,66.61,66.62,2.27,6.11,6.09,1.16,5.02,5.12,1.25,random_143
+PC_XT,XT,XT,O=c1c2ccccc2oc2ccccc12,photocatalyst,,True,,72.85,72.86,1.36,6.51,6.27,2.59,4.55,4.76,1.31,random_143
+PC_BP,BP,BP,O=C(c1ccccc1)c1ccccc1,photocatalyst,,True,,67.76,67.67,1.19,11.55,11.48,1.39,15.47,15.65,2.43,random_143
+PC_AQ,AQ,AQ,O=C1c2ccccc2C(=O)c2ccccc12,photocatalyst,,True,,58.1,57.27,4.52,9.0,7.28,8.44,7.82,5.54,4.79,random_143
+PC_4CzIPN,4CzIPN,4CzIPN,N#Cc1c(-n2c3ccccc3c3ccccc32)c(C#N)c(-n2c3ccccc3c3ccccc32)c(-n2c3ccccc3c3ccccc32)c1-n1c2ccccc2c2ccccc21,photocatalyst,,True,,64.28,64.3,1.13,15.34,15.56,1.91,3.28,3.36,0.81,random_143
+PC_acetone,acetone,acetone,CC(C)=O,photocatalyst,,True,,78.6,78.74,2.39,27.55,28.53,2.68,12.23,12.16,1.87,random_143
+PC_ACP,ACP,ACP,CC(=O)c1ccccc1,photocatalyst,,True,,69.54,69.54,0.9,11.02,10.97,1.33,13.16,14.12,2.72,random_143
+PC_TXT'',TXT'',TXT'',COc1ccc2c(c1)sc1cc(OC)ccc1c2=O,photocatalyst,,True,,70.98,71.46,2.48,6.38,6.26,2.2,5.53,5.62,1.58,random_143
+7a,7a,"N,N-dibenzylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,75.85,81.47,10.51,40.16,46.38,9.74,21.61,32.02,10.95,random_404
+7b,7b,"N,N-bis(3-chlorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cccc(Cl)c1)Cc1cccc(Cl)c1,substrate,,True,,70.51,76.19,11.59,40.46,51.24,13.16,36.76,39.7,11.2,random_404
+7c,7c,"N,N-bis(4-fluorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(F)cc1)Cc1ccc(F)cc1,substrate,,True,,72.73,82.26,11.13,39.15,50.03,12.32,28.46,33.12,10.36,random_404
+7d,7d,"N,N-bis(3,5-dimethylbenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cc(C)cc(C)c1)Cc1cc(C)cc(C)c1,substrate,,True,,79.16,80.64,5.9,34.83,34.99,9.45,16.3,12.6,7.44,random_404
+7e,7e,"N,N-bis(4-methoxybenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(OC)cc1)Cc1ccc(OC)cc1,substrate,,True,,76.56,78.62,4.61,29.0,23.87,9.06,19.49,19.25,5.84,random_404
+7f,7f,"N-benzyl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccccc1,substrate,,True,,70.29,81.91,14.46,45.57,47.68,7.07,20.84,19.36,6.63,random_404
+7g,7g,"N-(4-fluorobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(F)cc1,substrate,,True,,58.58,49.44,13.97,51.56,54.94,10.19,34.66,38.02,9.55,random_404
+7h,7h,"N-methyl-N-(naphthalen-2-ylmethyl)buta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc2ccccc2c1,substrate,,True,,59.52,59.53,0.92,11.94,11.91,0.67,10.58,10.47,1.56,random_404
+7i,7i,"N-(4-bromobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(Br)cc1,substrate,,True,,76.65,81.24,8.75,45.64,48.96,8.72,31.41,34.03,8.75,random_404
+7j,7j,"N-benzyl-N-(tert-butyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)(C)C,substrate,,True,,66.24,66.15,3.58,38.27,36.44,5.7,26.51,22.01,8.96,random_404
+7k,7k,"N-benzyl-N-isopropylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)C,substrate,,True,,69.17,75.98,8.57,47.22,47.98,5.01,21.99,21.17,5.34,random_404
+7l,7l,"N-benzyl-N-[(trimethylsilyl)methyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C[Si](C)(C)C,substrate,,True,,75.93,83.04,12.23,39.4,36.83,9.28,27.54,32.34,10.0,random_404
+7m,7m,"N-benzyl-N-[2-(benzyloxy)ethyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)CCOCc1ccccc1,substrate,,True,,72.05,83.61,12.93,45.32,52.0,10.95,37.36,40.34,11.9,random_404
+7n,7n,"N-allyl-N-phenylbuta-2,3-dienamide",C=C=CC(=O)N(CC=C)c1ccccc1,substrate,,True,,57.89,57.4,3.19,26.14,24.34,4.13,21.46,20.63,3.45,random_404
+7o,7o,"1-(thiazolidin-3-yl)buta-2,3-dien-1-one",C=C=CC(=O)N1CCSC1,substrate,,True,,49.49,48.09,6.75,64.63,66.11,9.59,39.53,40.04,6.15,random_404
+11,11,"N,N-dibenzyl-5,5-dimethylhexa-2,3-dienamide (racemic allene)",CC(C)(C)C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,56.71,51.94,10.03,61.55,63.53,11.61,34.91,42.04,12.88,random_404
+13b,13b,"N-benzhydryl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)C(c1ccccc1)c1ccccc1,substrate,,True,,68.23,61.42,9.87,36.67,34.94,8.02,17.73,17.09,5.67,random_404
+13c,13c,"N,N-diisopropylbuta-2,3-dienamide",C=C=CC(=O)N(C(C)C)C(C)C,substrate,,True,,57.55,56.89,3.87,43.95,44.76,3.78,23.82,23.64,3.19,random_404
+13d,13d,"N,N-dicyclohexylbuta-2,3-dienamide",C=C=CC(=O)N(C1CCCCC1)C1CCCCC1,substrate,,True,,59.64,57.85,5.4,43.43,45.68,5.52,24.77,23.33,5.52,random_404
+7f-d1,7f-d1,"N-benzyl-N-methylbuta-2,3-dienamide-d1 (benzylic CHD)",C=C=CC(=O)N(C)C([2H])c1ccccc1,substrate,,True,,51.29,49.07,8.99,53.25,56.92,11.47,33.51,38.53,10.0,random_404
+7f-d2,7f-d2,"N-benzyl-N-methylbuta-2,3-dienamide-d2 (benzylic CD2)",C=C=CC(=O)N(C)C([2H])([2H])c1ccccc1,substrate,,True,,59.71,55.54,11.45,39.41,48.09,10.59,27.5,33.27,8.55,random_404
+PC_TXT,TXT,TXT,O=c1c2ccccc2sc2ccccc12,photocatalyst,,True,,65.72,65.81,1.8,5.46,5.23,3.22,4.16,4.01,1.8,random_404
+PC_Br2-TXT,Br2-TXT,Br2-TXT,O=c1c2cc(Br)ccc2sc2ccc(Br)cc12,photocatalyst,,True,,65.89,65.99,1.7,5.31,5.16,2.61,4.13,3.98,1.78,random_404
+PC_XT,XT,XT,O=c1c2ccccc2oc2ccccc12,photocatalyst,,True,,71.41,71.44,1.47,6.63,6.54,1.91,4.82,4.7,1.4,random_404
+PC_BP,BP,BP,O=C(c1ccccc1)c1ccccc1,photocatalyst,,True,,67.52,67.51,1.18,11.67,11.46,2.47,14.48,14.8,2.75,random_404
+PC_AQ,AQ,AQ,O=C1c2ccccc2C(=O)c2ccccc12,photocatalyst,,True,,64.13,64.76,3.27,10.89,7.7,8.72,8.19,8.62,3.9,random_404
+PC_4CzIPN,4CzIPN,4CzIPN,N#Cc1c(-n2c3ccccc3c3ccccc32)c(C#N)c(-n2c3ccccc3c3ccccc32)c(-n2c3ccccc3c3ccccc32)c1-n1c2ccccc2c2ccccc21,photocatalyst,,True,,59.6,61.48,2.57,21.64,21.28,2.86,11.0,11.09,1.92,random_404
+PC_acetone,acetone,acetone,CC(C)=O,photocatalyst,,True,,76.03,77.33,5.56,34.45,32.61,8.26,12.3,11.0,5.13,random_404
+PC_ACP,ACP,ACP,CC(=O)c1ccccc1,photocatalyst,,True,,69.35,69.39,1.07,11.22,11.06,2.39,13.69,14.8,2.97,random_404
+PC_TXT'',TXT'',TXT'',COc1ccc2c(c1)sc1cc(OC)ccc1c2=O,photocatalyst,,True,,70.0,69.84,1.54,6.43,6.3,2.32,5.01,4.71,1.79,random_404
+7a,7a,"N,N-dibenzylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,52.29,52.04,4.48,66.48,68.39,11.91,41.16,43.64,12.39,random_666
+7b,7b,"N,N-bis(3-chlorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cccc(Cl)c1)Cc1cccc(Cl)c1,substrate,,True,,49.84,49.55,4.44,56.87,58.94,10.65,51.05,52.09,10.39,random_666
+7c,7c,"N,N-bis(4-fluorobenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(F)cc1)Cc1ccc(F)cc1,substrate,,True,,52.11,52.06,3.46,62.24,63.91,10.72,46.92,48.11,11.2,random_666
+7d,7d,"N,N-bis(3,5-dimethylbenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1cc(C)cc(C)c1)Cc1cc(C)cc(C)c1,substrate,,True,,56.69,56.5,3.8,60.36,63.42,12.54,37.68,41.03,10.06,random_666
+7e,7e,"N,N-bis(4-methoxybenzyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccc(OC)cc1)Cc1ccc(OC)cc1,substrate,,True,,53.95,53.4,4.53,52.85,58.94,15.42,33.43,33.9,6.41,random_666
+7f,7f,"N-benzyl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccccc1,substrate,,True,,46.86,46.05,6.68,59.23,60.36,9.13,46.64,49.59,10.27,random_666
+7g,7g,"N-(4-fluorobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(F)cc1,substrate,,True,,48.06,47.91,4.34,58.92,60.22,9.72,47.45,49.75,10.74,random_666
+7h,7h,"N-methyl-N-(naphthalen-2-ylmethyl)buta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc2ccccc2c1,substrate,,True,,60.32,60.32,0.93,12.14,12.08,1.3,10.9,10.72,1.77,random_666
+7i,7i,"N-(4-bromobenzyl)-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)Cc1ccc(Br)cc1,substrate,,True,,46.76,45.52,7.06,56.6,58.41,9.72,50.34,51.52,9.06,random_666
+7j,7j,"N-benzyl-N-(tert-butyl)buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)(C)C,substrate,,True,,60.79,54.43,7.78,43.19,43.3,3.67,32.68,30.97,8.33,random_666
+7k,7k,"N-benzyl-N-isopropylbuta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C(C)C,substrate,,True,,57.77,48.04,13.76,44.79,45.42,4.96,36.83,46.16,11.91,random_666
+7l,7l,"N-benzyl-N-[(trimethylsilyl)methyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)C[Si](C)(C)C,substrate,,True,,50.8,50.42,5.15,60.98,62.12,9.96,43.89,47.31,12.2,random_666
+7m,7m,"N-benzyl-N-[2-(benzyloxy)ethyl]buta-2,3-dienamide",C=C=CC(=O)N(Cc1ccccc1)CCOCc1ccccc1,substrate,,True,,51.92,51.81,3.95,62.13,64.01,11.17,54.4,55.06,12.45,random_666
+7n,7n,"N-allyl-N-phenylbuta-2,3-dienamide",C=C=CC(=O)N(CC=C)c1ccccc1,substrate,,True,,58.56,53.23,9.61,24.48,23.78,6.34,27.68,29.69,6.93,random_666
+7o,7o,"1-(thiazolidin-3-yl)buta-2,3-dien-1-one",C=C=CC(=O)N1CCSC1,substrate,,True,,41.77,41.73,3.65,57.05,60.02,11.19,37.81,37.81,4.67,random_666
+11,11,"N,N-dibenzyl-5,5-dimethylhexa-2,3-dienamide (racemic allene)",CC(C)(C)C=C=CC(=O)N(Cc1ccccc1)Cc1ccccc1,substrate,,True,,53.01,53.01,2.9,75.76,80.12,17.57,37.88,41.47,10.67,random_666
+13b,13b,"N-benzhydryl-N-methylbuta-2,3-dienamide",C=C=CC(=O)N(C)C(c1ccccc1)c1ccccc1,substrate,,True,,51.84,51.45,5.07,63.18,64.03,9.05,39.57,42.82,10.89,random_666
+13c,13c,"N,N-diisopropylbuta-2,3-dienamide",C=C=CC(=O)N(C(C)C)C(C)C,substrate,,True,,49.17,47.37,8.21,48.7,49.17,4.37,39.12,36.58,6.85,random_666
+13d,13d,"N,N-dicyclohexylbuta-2,3-dienamide",C=C=CC(=O)N(C1CCCCC1)C1CCCCC1,substrate,,True,,53.25,51.2,7.13,44.9,45.51,3.92,33.36,32.59,5.58,random_666
+7f-d1,7f-d1,"N-benzyl-N-methylbuta-2,3-dienamide-d1 (benzylic CHD)",C=C=CC(=O)N(C)C([2H])c1ccccc1,substrate,,True,,47.04,46.98,3.97,62.98,63.58,8.23,49.51,53.14,10.97,random_666
+7f-d2,7f-d2,"N-benzyl-N-methylbuta-2,3-dienamide-d2 (benzylic CD2)",C=C=CC(=O)N(C)C([2H])([2H])c1ccccc1,substrate,,True,,48.0,47.98,3.78,60.27,61.48,9.58,47.99,50.81,10.69,random_666
+PC_TXT,TXT,TXT,O=c1c2ccccc2sc2ccccc12,photocatalyst,,True,,62.08,61.44,2.14,7.13,7.11,1.07,5.64,5.6,1.29,random_666
+PC_Br2-TXT,Br2-TXT,Br2-TXT,O=c1c2cc(Br)ccc2sc2ccc(Br)cc12,photocatalyst,,True,,61.45,61.29,1.88,6.77,6.75,1.17,5.48,5.4,1.73,random_666
+PC_XT,XT,XT,O=c1c2ccccc2oc2ccccc12,photocatalyst,,True,,75.28,75.32,1.37,6.94,6.85,1.52,4.42,4.31,1.43,random_666
+PC_BP,BP,BP,O=C(c1ccccc1)c1ccccc1,photocatalyst,,True,,68.04,68.07,1.1,12.14,12.01,2.41,14.76,15.56,2.27,random_666
+PC_AQ,AQ,AQ,O=C1c2ccccc2C(=O)c2ccccc12,photocatalyst,,True,,59.89,60.47,4.08,9.74,9.46,3.43,10.27,6.45,7.84,random_666
+PC_4CzIPN,4CzIPN,4CzIPN,N#Cc1c(-n2c3ccccc3c3ccccc32)c(C#N)c(-n2c3ccccc3c3ccccc32)c(-n2c3ccccc3c3ccccc32)c1-n1c2ccccc2c2ccccc21,photocatalyst,,True,,46.06,34.2,18.11,18.89,20.24,8.88,9.24,10.0,2.46,random_666
+PC_acetone,acetone,acetone,CC(C)=O,photocatalyst,,True,,82.72,78.63,12.41,38.91,34.42,14.07,18.69,20.97,7.74,random_666
+PC_ACP,ACP,ACP,CC(=O)c1ccccc1,photocatalyst,,True,,69.69,69.74,1.25,11.09,10.97,1.67,11.11,9.36,2.4,random_666
+PC_TXT'',TXT'',TXT'',COc1ccc2c(c1)sc1cc(OC)ccc1c2=O,photocatalyst,,True,,69.26,69.33,1.93,6.79,6.76,1.17,5.02,4.95,1.41,random_666
