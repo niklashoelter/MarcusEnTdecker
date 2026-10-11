@@ -27,7 +27,7 @@ two_gate,dft,r = 7 A,photocatalyst,22,0.412,0.806
 two_gate,dft,r = 7 A,quencher,40,0.612,0.982
 two_gate,ml,r = 7 A,photocatalyst,22,0.303,0.692
 two_gate,ml,r = 7 A,quencher,40,0.576,0.982
-marcus_barrier,dft,,photocatalyst,22,0.181,0.673
+marcus_barrier,dft,,photocatalyst,22,0.19,0.673
 marcus_barrier,dft,,quencher,40,0.408,0.911
-marcus_barrier,ml,,photocatalyst,22,0.117,0.653
-marcus_barrier,ml,,quencher,40,0.399,0.911
+marcus_barrier,ml,,photocatalyst,22,0.151,0.653
+marcus_barrier,ml,,quencher,40,0.408,0.911
