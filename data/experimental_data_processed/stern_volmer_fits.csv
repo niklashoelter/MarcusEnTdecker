@@ -287,22 +287,22 @@ pc_old_id,quencher_id,K_SV,intercept,r2,num_points,n_measured,K_SV_all_points,r2
 6,46,-7.68363,1.02878,0.190708,6,6,-7.68363,0.190708,0,,linear,high,negative initial slope
 6,47,-10.0506,1.03791,0.282216,6,6,-10.0506,0.282216,0,,linear,high,negative initial slope
 6,48,-10.9144,1.02364,0.531094,6,6,-10.9144,0.531094,0,,linear,high,negative initial slope
-8,1,56055.8,1.03232,0.999776,3,6,52245.9,0.980003,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,2,49490.1,0.972875,0.999797,3,6,49148.5,0.988836,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,3,61343.1,1.11706,0.999058,4,6,55699.7,0.989212,1,K_SV > 50 and r2 > 0.75,linear,very high,range scanned
-8,4,37528.6,0.957072,0.999118,3,6,43202.6,0.985586,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,5,59030.8,0.916826,0.998721,4,6,47986.4,0.96746,1,K_SV > 50 and r2 > 0.75,linear,very high,range scanned
-8,6,54996.6,1.01031,0.999905,3,6,26800.7,0.769272,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,7,54541.8,0.968838,0.99978,3,6,53055.2,0.991048,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,8,18928.3,1.01394,0.998537,3,6,36036.8,0.971704,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,9,44379.6,0.917208,0.997656,3,6,49438.5,0.991255,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,10,35751.4,0.890489,0.993707,3,6,45626.6,0.967355,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,11,1254.71,0.992852,0.980608,4,6,2944.63,0.898975,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,12,44061.9,0.93092,0.999356,4,6,33518.9,0.924413,1,K_SV > 50 and r2 > 0.75,linear,very high,range scanned
-8,13,70579.7,1.13588,0.997504,3,6,54379.6,0.930487,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,14,8893.47,1.0124,0.994782,3,6,24375.5,0.943733,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,15,36886.2,1.04983,0.995097,3,6,51219.4,0.952048,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
-8,16,25029.4,1.0858,0.969246,3,6,264.085,0.000647287,1,K_SV > 50 and r2 > 0.75,linear,medium,scanned despite a low all-points r2
+8,1,65108.3,1.05944,0.997755,3,6,53195.8,0.983956,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,2,48151.8,1.04532,0.997614,3,6,39785.8,0.986099,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,3,70862.5,1.11706,0.992686,3,6,49908.4,0.938517,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,4,35177.8,1.02185,0.998959,3,6,28989.2,0.983768,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,5,76748.2,1.10935,0.994548,3,6,53003.4,0.971099,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,6,68358.8,1.09884,0.994387,3,6,52466.5,0.972223,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,7,58402.4,1.07015,0.996119,3,6,44678.4,0.975566,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,8,24189.7,1.00166,0.999987,3,6,21043.0,0.991904,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,9,41263.1,1.11864,0.998122,5,6,36182.5,0.984411,1,K_SV > 50 and r2 > 0.75,linear,very high,range scanned
+8,10,29516.4,1.12885,0.99568,5,6,26943.5,0.991011,1,K_SV > 50 and r2 > 0.75,linear,very high,range scanned
+8,11,935.962,1.003,0.996182,5,6,904.553,0.989363,1,K_SV > 50 and r2 > 0.75,linear,very high,range scanned
+8,12,42581.7,1.04798,0.996584,3,6,34318.8,0.982644,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,13,81112.1,1.13098,0.993009,3,6,63684.6,0.973763,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,14,10148.9,1.03974,0.998532,6,6,10148.9,0.998532,1,K_SV > 50 and r2 > 0.75,linear,very high,"perfect measurement, no range scan"
+8,15,46385.5,1.07999,0.992034,3,6,36853.7,0.983789,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
+8,16,37929.1,1.08989,0.985063,3,6,19639.4,0.870963,1,K_SV > 50 and r2 > 0.75,linear,medium,range scanned
 8,17,34253.1,1.06664,0.99725,4,6,30987.2,0.992098,1,K_SV > 50 and r2 > 0.75,linear,very high,range scanned
 8,18,15398.1,1.09754,0.996201,6,6,15398.1,0.996201,1,K_SV > 50 and r2 > 0.75,linear,very high,"perfect measurement, no range scan"
 8,19,21586.1,1.19361,0.988316,6,6,21586.1,0.988316,1,K_SV > 50 and r2 > 0.75,linear,high,range scanned
