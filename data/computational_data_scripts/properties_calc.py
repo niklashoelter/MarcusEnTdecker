@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["openpyxl>=3.1"]
+# dependencies = ["openpyxl==3.1.5"]
 # ///
 """
 Computational tables -> one property workbook per compound class.

@@ -23,7 +23,7 @@ WHAT IT COMPOSES
         ml.prediction.predict(smiles)              graph -> E_T, lambda_S_T, lambda_T_S
         ml.energy.marcus_ent                       properties -> dG, dG barrier
         ml.energy.two_gate                         tau0 -> t_PC, two-gate verdict, k_-d/nu
-        Balzani rate expression (below)            barrier -> k
+        encounter-complex rate (below)             barrier -> k
 
     Keeping the barrier in `ml.energy` means the web application and this API compute
     it the same way. Only the last step is written here,
@@ -351,7 +351,7 @@ class RatePredictor:
             quencher_lambda_T_S=q.lambda_T_S,
         )
 
-        k_ent = self._balzani(dG, barrier)
+        k_ent = self._encounter_rate(dG, barrier)
         t_pc = (None if pc.tau0_ns is None
                 else lifetime_barrier(pc.tau0_ns, temperature=self.temperature))
 
@@ -384,7 +384,7 @@ class RatePredictor:
             quencher_properties=q,
         )
 
-    def _balzani(self, dG: float, barrier: float) -> float:
+    def _encounter_rate(self, dG: float, barrier: float) -> float:
         """k_diff / (1 + exp(dG/RT) + (k_-d/nu) exp(barrier/RT)), guarded against overflow."""
         from ml.energy.two_gate import escape_over_frequency
 

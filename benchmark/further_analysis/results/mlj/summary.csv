@@ -1,0 +1,11 @@
+parameters,quantity,value
+dft,median lambda_v / kcal mol-1,21.37
+dft,median hw / cm-1,1394.0
+dft,median S,5.39
+dft,"median lambda_s,f / kcal mol-1",6.27
+dft,median log10 of 0.25 over the Eyring k_-d/nu / decades,2.073
+dft,"median log10 of F (symmetric) over exp(-barrier/RT), quenching pairs / decades",1.546
+dft,"t_PC at k_-d/nu = 0.25, minimum / kcal mol-1",3.78
+dft,"t_PC at k_-d/nu = 0.25, maximum / kcal mol-1",6.43
+dft,"t_PC (Eyring) minus t_PC at 0.25, minimum / kcal mol-1",2.6
+dft,"t_PC (Eyring) minus t_PC at 0.25, maximum / kcal mol-1",3.15

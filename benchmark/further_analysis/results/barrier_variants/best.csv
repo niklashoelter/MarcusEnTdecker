@@ -15,11 +15,3 @@ criterion,parameters,variant,n_free,barrier_threshold / kcal mol-1,K_SV_crit / M
 "marcus_asymmetric barrier, dG <= 0 and barrier",ml,threshold tuned,1,7.9,,855,304,108,368,75,0.786,0.738,0.802,0.773,0.769,0.572,0.797,0.698,0.67,0
 "marcus_asymmetric barrier, dG <= 0 and barrier",dft,threshold 5,0,5.0,,855,143,24,452,236,0.696,0.856,0.377,0.95,0.524,0.41,0.81,0.717,0.706,1
 "marcus_asymmetric barrier, dG <= 0 and barrier",ml,threshold 5,0,5.0,,855,174,50,426,205,0.702,0.777,0.459,0.895,0.577,0.4,0.797,0.698,0.67,0
-"rehm_weller barrier, barrier only",dft,threshold tuned,1,10.4,,855,342,268,208,37,0.643,0.561,0.902,0.437,0.692,0.373,0.75,0.637,0.639,200
-"rehm_weller barrier, barrier only",ml,threshold tuned,1,10.4,,855,350,295,181,29,0.621,0.543,0.923,0.38,0.684,0.351,0.739,0.617,0.612,0
-"rehm_weller barrier, barrier only",dft,threshold 5,0,5.0,,855,113,24,452,266,0.661,0.825,0.298,0.95,0.438,0.335,0.75,0.637,0.639,1
-"rehm_weller barrier, barrier only",ml,threshold 5,0,5.0,,855,137,51,425,242,0.657,0.729,0.361,0.893,0.483,0.305,0.739,0.617,0.612,0
-"rehm_weller barrier, dG <= 0 and barrier",dft,threshold tuned,1,10.4,,855,306,120,356,73,0.774,0.718,0.807,0.748,0.76,0.552,0.75,0.637,0.639,200
-"rehm_weller barrier, dG <= 0 and barrier",ml,threshold tuned,1,10.4,,855,313,145,331,66,0.753,0.683,0.826,0.695,0.748,0.519,0.739,0.617,0.612,0
-"rehm_weller barrier, dG <= 0 and barrier",dft,threshold 5,0,5.0,,855,113,23,453,266,0.662,0.831,0.298,0.952,0.439,0.339,0.75,0.637,0.639,1
-"rehm_weller barrier, dG <= 0 and barrier",ml,threshold 5,0,5.0,,855,137,47,429,242,0.662,0.745,0.361,0.901,0.487,0.318,0.739,0.617,0.612,0

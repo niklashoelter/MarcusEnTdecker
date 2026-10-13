@@ -30,15 +30,21 @@ data/
 │   ├── quencher_properties_calc.xlsx
 │   ├── quencher_properties_ml.xlsx  E_T, lambda_S0_T1 and lambda_T1_S0 predicted from the SMILES
 │   ├── quencher_timings.csv         wall time, cores and CPU hours of every quencher job
-│   └── quencher_timings_ml.csv      the deployed model's inference time per quencher
+│   ├── quencher_timings_ml.csv      the deployed model's inference time per quencher
+│   ├── quencher_geometry_S0_T1.csv  change of each quencher geometry from S0 to T1
+│   ├── molecular_extent.csv         extent radius of every photocatalyst and quencher
+│   └── reorganization_modes.csv     reorganization energies resolved into normal modes
 ├── experimental_data_scripts/       one script per raw folder (pc_emission/ has none, its
 │                                    scans are deposited only), plus properties_exp.py
 ├── computational_data_scripts/      one script per raw folder, plus properties_calc.py,
 │                                    quencher_timings.py, quencher_ml.py,
-│                                    quencher_ml_timing.py and photocatalyst_curate.py
+│                                    quencher_ml_timing.py, photocatalyst_curate.py,
+│                                    quencher_geometry.py, molecular_extent.py and
+│                                    reorganization_modes.py
 ├── literature_benchmark/            published tables of the literature benchmark, one CSV
-│                                    per study (the PDFs beside them are not in git)
-├── tests/                           pytest tests of molecular_size.py
+│                                    per study (the PDFs beside them are not in git), and
+│                                    photocatalyst_triplet_energies.csv
+├── tests/                           pytest tests of molecular_size.py and molecular_extent.py
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
 ├── molecular_size.py                molecular radius from a DFT geometry, used by the
@@ -61,7 +67,9 @@ data/
 
 `uv run reproduce.py data` runs all of this in order, including `quencher_timings.py`,
 which writes the computational cost of the quencher jobs to
-`computational_data_processed/`. Three scripts are not part of it:
+`computational_data_processed/`, and `quencher_geometry.py`, `molecular_extent.py` and
+`reorganization_modes.py`, which write the tables of the further analyses there (see
+Methods notes). Three scripts are not part of it:
 
 - `quencher_ml.py` needs the model environment and is run by hand:
   `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`.
@@ -168,6 +176,28 @@ the union of atomic spheres with Bondi radii around the optimized S0 geometry
 one by hand. The radii and the grid spacing are in `molecular_size.py`. The radius reaches
 the workbooks as `radius_S0` and `exp_dataset_ent` as `pc_radius_dft` and `q_radius_dft`;
 the benchmark adds the two to the contact distance of a pair.
+
+**Quencher geometry change.** `quencher_geometry.py` compares the S0 and T1 minima of
+each quencher (`opt_geometry.xyz`) and writes `quencher_geometry_S0_T1.csv`: the largest
+relative change of an S0 bond length, the largest change of the deviation from coplanarity
+about a non-aromatic double bond and about any heavy-atom bond, and the heavy-atom RMSD
+after Kabsch alignment. The script's docstring defines each column.
+
+**Molecular extent.** `molecular_extent.py` writes `molecular_extent.csv`, the extent
+radius r_extent = max_ij (d_ij + R_i + R_j)/2 of each photocatalyst in the data and each
+quencher, from the S0 geometry with the Bondi radii of `molecular_size.py`. It is an
+alternative to `radius_S0` for the contact distance.
+
+**Reorganization energies by mode.** `reorganization_modes.py` projects the displacement
+between the S0 and T1 minima onto the normal modes of the surface it is evaluated on and
+writes `reorganization_modes.csv`: per photocatalyst and quencher, surface (S0 or T1) and
+displacement (internal or Cartesian), the sum of the mode contributions λ_j, the fraction of
+λ in the modes below 3 k_BT (classical) and the λ-weighted mean frequency of the modes at or
+above it (quantum).
+
+**Literature triplet energies.** `literature_benchmark/photocatalyst_triplet_energies.csv`
+holds literature E_T of 15 photocatalysts, at 77 K and at room temperature, each with its
+measurement conditions and DOI.
 
 **Photocatalyst triplet.** `T1/` holds one triplet per photocatalyst. Triplets with the
 excited electron on each kind of ligand were searched. The lowest minimum is kept. Where two

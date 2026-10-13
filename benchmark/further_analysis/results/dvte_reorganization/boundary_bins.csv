@@ -1,0 +1,7 @@
+parameters,dG_low / kcal mol-1,dG_high / kcal mol-1,n,quench_fraction
+dft,-60,-5,331,0.71
+dft,-5,-2,112,0.661
+dft,-2,0,89,0.247
+dft,0,2,78,0.154
+dft,2,5,107,0.234
+dft,5,60,138,0.08

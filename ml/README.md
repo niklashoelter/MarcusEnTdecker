@@ -170,7 +170,7 @@ Nothing in it reimplements the model or the theory; it is the seam.
 ml.prediction.predict(smiles)    graph -> E_T, lambda_S_T, lambda_T_S
 ml.energy.marcus_ent             properties -> dG and the activation barrier
 ml.energy.two_gate               tau0 -> t_PC and the two-gate verdict; k_-d/ν
-Balzani rate expression          barrier -> k, capped at the diffusion limit
+encounter-complex rate           barrier -> k, capped at the diffusion limit
 ```
 
 Only the last step is written there, because `ml.energy` stops at the barrier. The

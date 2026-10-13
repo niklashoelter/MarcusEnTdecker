@@ -1,8 +1,12 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
+# ///
 """
 Hofer, Bertrams, Kerzig, Bach 2026: allene amides cyclise to beta-lactams by triplet energy
 transfer -- does the barrier explain a rate ratio that the triplet energy alone cannot?
 
-    uv run --extra ml python benchmark/literature/bach_allene.py
+    uv run benchmark/literature/bach_allene.py
 
 The acceptor is non-vertical by bending: the central allene carbon rehybridises from sp to
 sp2 in the triplet. The authors measure the quenching of 7a by two donors (xanthone, XT, and

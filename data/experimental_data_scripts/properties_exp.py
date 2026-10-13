@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["openpyxl>=3.1"]
+# dependencies = ["openpyxl==3.1.5"]
 # ///
 """
 Measured properties of the photocatalysts and quenchers, one workbook per compound class.

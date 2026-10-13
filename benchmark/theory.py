@@ -20,7 +20,7 @@ PLANCK = 6.62607015e-34         # J s
 AVOGADRO = 6.02214076e23        # mol-1
 CONTACT_DISTANCE = 7.0          # Angstrom, fixed contact distance of the encounter complex
 
-BARRIERS = ("marcus_symmetric", "marcus_asymmetric", "rehm_weller")
+BARRIERS = ("marcus_symmetric", "marcus_asymmetric")
 
 
 def pair_lambdas(pc_s0_t1, pc_t1_s0, q_s0_t1, q_t1_s0):
@@ -61,20 +61,12 @@ def marcus_barrier_asymmetric(dG, lambda_forward, lambda_reverse):
     return np.where(crossing, lr * x ** 2, symmetric)
 
 
-def rehm_weller_barrier(dG, lam):
-    """dG/2 + sqrt((dG/2)^2 + (lambda/4)^2)."""
-    dG, lam = np.asarray(dG, float), np.asarray(lam, float)
-    return dG / 2.0 + np.sqrt((dG / 2.0) ** 2 + (lam / 4.0) ** 2)
-
-
 def barrier(model, dG, lambda_forward, lambda_reverse):
-    """The barrier of one of BARRIERS; symmetric forms use the geometric-mean lambda."""
+    """The barrier of one of BARRIERS; the symmetric form uses the geometric-mean lambda."""
     if model == "marcus_symmetric":
         return marcus_barrier_symmetric(dG, geometric_mean(lambda_forward, lambda_reverse))
     if model == "marcus_asymmetric":
         return marcus_barrier_asymmetric(dG, lambda_forward, lambda_reverse)
-    if model == "rehm_weller":
-        return rehm_weller_barrier(dG, geometric_mean(lambda_forward, lambda_reverse))
     raise ValueError(f"unknown barrier model {model!r}; choose from {', '.join(BARRIERS)}")
 
 

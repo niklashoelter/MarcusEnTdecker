@@ -1,8 +1,12 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
+# ///
 """
 Sole-Daura 2024 (experiments: Zaehringer, Wienhold, Gilmour, Kerzig 2023): which isomer is
 sensitised faster?
 
-    uv run --extra ml python benchmark/literature/sole_daura_ez.py
+    uv run benchmark/literature/sole_daura_ez.py
 
 Contra-thermodynamic E-to-Z isomerisation works because sensitisation destroys the
 stereochemical information: the twisted triplet decays to both isomers, so the isomer that is

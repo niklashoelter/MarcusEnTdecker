@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["numpy"]
+# dependencies = ["numpy==2.4.2"]
 # ///
 """
 Adiabatic triplet energies, redox potentials, reorganization energies and molecular radii

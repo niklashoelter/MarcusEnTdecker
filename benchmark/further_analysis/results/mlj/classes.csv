@@ -1,0 +1,325 @@
+criterion,variant,parameters,quencher_class,n,TP,FP,TN,FN
+adiabatic,,dft,rigid,602,208,91,256,47
+adiabatic,,dft,flexible,207,111,81,14,1
+adiabatic,,dft,dissociative,46,12,29,5,0
+two_gate,Eyring,dft,rigid,602,204,76,271,51
+two_gate,Eyring,dft,flexible,207,100,16,79,12
+two_gate,Eyring,dft,dissociative,46,3,1,33,9
+two_gate,k_-d/nu = 0.25,dft,rigid,602,145,42,305,110
+two_gate,k_-d/nu = 0.25,dft,flexible,207,40,1,94,72
+two_gate,k_-d/nu = 0.25,dft,dissociative,46,0,0,34,12
+mlj_symmetric,"projected mode, Eyring, rate",dft,rigid,602,245,216,131,10
+mlj_symmetric,"projected mode, Eyring, rate",dft,flexible,207,111,80,15,1
+mlj_symmetric,"projected mode, Eyring, rate",dft,dissociative,46,12,27,7,0
+mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",dft,dissociative,46,12,27,7,0
+mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,27,7,0
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",dft,rigid,602,226,140,207,29
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",dft,flexible,207,111,64,31,1
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",dft,dissociative,46,9,14,20,3
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,207,83,264,48
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,63,32,1
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,9,14,20,3
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,207,83,264,48
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,63,32,1
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,9,14,20,3
+mlj_symmetric,"1200 cm-1, Eyring, rate",dft,rigid,602,242,212,135,13
+mlj_symmetric,"1200 cm-1, Eyring, rate",dft,flexible,207,111,79,16,1
+mlj_symmetric,"1200 cm-1, Eyring, rate",dft,dissociative,46,12,24,10,0
+mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",dft,dissociative,46,12,24,10,0
+mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,24,10,0
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",dft,rigid,602,216,119,228,39
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",dft,flexible,207,111,54,41,1
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",dft,dissociative,46,8,5,29,4
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,201,75,272,54
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,54,41,1
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,8,5,29,4
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,201,75,272,54
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,54,41,1
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,8,5,29,4
+mlj_symmetric,"1500 cm-1, Eyring, rate",dft,rigid,602,245,216,131,10
+mlj_symmetric,"1500 cm-1, Eyring, rate",dft,flexible,207,111,80,15,1
+mlj_symmetric,"1500 cm-1, Eyring, rate",dft,dissociative,46,12,30,4,0
+mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",dft,rigid,602,227,147,200,28
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",dft,flexible,207,111,67,28,1
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",dft,dissociative,46,9,12,22,3
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,207,83,264,48
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,66,29,1
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,9,12,22,3
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,207,83,264,48
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,66,29,1
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,9,12,22,3
+mlj_symmetric,"1800 cm-1, Eyring, rate",dft,rigid,602,245,219,128,10
+mlj_symmetric,"1800 cm-1, Eyring, rate",dft,flexible,207,111,80,15,1
+mlj_symmetric,"1800 cm-1, Eyring, rate",dft,dissociative,46,12,30,4,0
+mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,78,17,1
+mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",dft,rigid,602,234,170,177,21
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",dft,flexible,207,111,69,26,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",dft,dissociative,46,11,21,13,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,208,89,258,47
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,68,27,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,11,21,13,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,208,89,258,47
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,68,27,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,11,21,13,1
+mlj_asymmetric,"projected mode, Eyring, rate",dft,rigid,602,243,214,133,12
+mlj_asymmetric,"projected mode, Eyring, rate",dft,flexible,207,111,83,12,1
+mlj_asymmetric,"projected mode, Eyring, rate",dft,dissociative,46,12,30,4,0
+mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",dft,rigid,602,223,136,211,32
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",dft,flexible,207,111,73,22,1
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",dft,dissociative,46,10,17,17,2
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,207,79,268,48
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,72,23,1
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,10,17,17,2
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,207,79,268,48
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,72,23,1
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,10,17,17,2
+mlj_asymmetric,"1200 cm-1, Eyring, rate",dft,rigid,602,241,204,143,14
+mlj_asymmetric,"1200 cm-1, Eyring, rate",dft,flexible,207,111,82,13,1
+mlj_asymmetric,"1200 cm-1, Eyring, rate",dft,dissociative,46,12,26,8,0
+mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",dft,rigid,602,208,89,258,47
+mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",dft,dissociative,46,12,26,8,0
+mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,89,258,47
+mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,26,8,0
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",dft,rigid,602,218,118,229,37
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",dft,flexible,207,111,66,29,1
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",dft,dissociative,46,8,6,28,4
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,205,72,275,50
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,66,29,1
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,8,6,28,4
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,205,72,275,50
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,66,29,1
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,8,6,28,4
+mlj_asymmetric,"1500 cm-1, Eyring, rate",dft,rigid,602,242,214,133,13
+mlj_asymmetric,"1500 cm-1, Eyring, rate",dft,flexible,207,111,83,12,1
+mlj_asymmetric,"1500 cm-1, Eyring, rate",dft,dissociative,46,12,30,4,0
+mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",dft,rigid,602,224,145,202,31
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",dft,flexible,207,111,73,22,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",dft,dissociative,46,11,16,18,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,207,80,267,48
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,72,23,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,11,16,18,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,207,80,267,48
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,72,23,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,11,16,18,1
+mlj_asymmetric,"1800 cm-1, Eyring, rate",dft,rigid,602,244,215,132,11
+mlj_asymmetric,"1800 cm-1, Eyring, rate",dft,flexible,207,111,83,12,1
+mlj_asymmetric,"1800 cm-1, Eyring, rate",dft,dissociative,46,12,30,4,0
+mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",dft,rigid,602,208,91,256,47
+mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",dft,flexible,207,111,81,14,1
+mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",dft,dissociative,46,12,29,5,0
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",dft,rigid,602,227,164,183,28
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",dft,flexible,207,111,77,18,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",dft,dissociative,46,11,22,12,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,rigid,602,207,85,262,48
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,flexible,207,111,76,19,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,dissociative,46,11,22,12,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,rigid,602,207,85,262,48
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,flexible,207,111,76,19,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,dissociative,46,11,22,12,1
+adiabatic,,ml,rigid,602,211,106,241,44
+adiabatic,,ml,flexible,207,111,80,15,1
+adiabatic,,ml,dissociative,46,0,0,34,12
+two_gate,Eyring,ml,rigid,602,209,101,246,46
+two_gate,Eyring,ml,flexible,207,107,27,68,5
+two_gate,Eyring,ml,dissociative,46,0,0,34,12
+two_gate,k_-d/nu = 0.25,ml,rigid,602,161,69,278,94
+two_gate,k_-d/nu = 0.25,ml,flexible,207,49,5,90,63
+two_gate,k_-d/nu = 0.25,ml,dissociative,46,0,0,34,12
+mlj_symmetric,"projected mode, Eyring, rate",ml,rigid,602,251,223,124,4
+mlj_symmetric,"projected mode, Eyring, rate",ml,flexible,207,111,82,13,1
+mlj_symmetric,"projected mode, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",ml,rigid,602,237,165,182,18
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",ml,flexible,207,111,74,21,1
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,104,243,44
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,73,22,1
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,104,243,44
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,73,22,1
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1200 cm-1, Eyring, rate",ml,rigid,602,249,219,128,6
+mlj_symmetric,"1200 cm-1, Eyring, rate",ml,flexible,207,111,81,14,1
+mlj_symmetric,"1200 cm-1, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,flexible,207,111,79,16,1
+mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,79,16,1
+mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,rigid,602,233,149,198,22
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,flexible,207,111,71,24,1
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,101,246,44
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,70,25,1
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,101,246,44
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,70,25,1
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1500 cm-1, Eyring, rate",ml,rigid,602,251,223,124,4
+mlj_symmetric,"1500 cm-1, Eyring, rate",ml,flexible,207,111,84,11,1
+mlj_symmetric,"1500 cm-1, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,rigid,602,238,173,174,17
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,flexible,207,111,75,20,1
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,105,242,44
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,74,21,1
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,105,242,44
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,74,21,1
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1800 cm-1, Eyring, rate",ml,rigid,602,251,225,122,4
+mlj_symmetric,"1800 cm-1, Eyring, rate",ml,flexible,207,112,84,11,0
+mlj_symmetric,"1800 cm-1, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,rigid,602,242,189,158,13
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,flexible,207,111,78,17,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,77,18,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,77,18,1
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"projected mode, Eyring, rate",ml,rigid,602,250,222,125,5
+mlj_asymmetric,"projected mode, Eyring, rate",ml,flexible,207,111,83,12,1
+mlj_asymmetric,"projected mode, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",ml,rigid,602,236,171,176,19
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",ml,flexible,207,111,74,21,1
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,105,242,44
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,73,22,1
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,105,242,44
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,73,22,1
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1200 cm-1, Eyring, rate",ml,rigid,602,249,219,128,6
+mlj_asymmetric,"1200 cm-1, Eyring, rate",ml,flexible,207,111,81,14,1
+mlj_asymmetric,"1200 cm-1, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,rigid,602,233,158,189,22
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,flexible,207,111,70,25,1
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,103,244,44
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,69,26,1
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,103,244,44
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,69,26,1
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1500 cm-1, Eyring, rate",ml,rigid,602,250,223,124,5
+mlj_asymmetric,"1500 cm-1, Eyring, rate",ml,flexible,207,111,84,11,1
+mlj_asymmetric,"1500 cm-1, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,rigid,602,240,179,168,15
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,flexible,207,111,74,21,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,73,22,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,73,22,1
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1800 cm-1, Eyring, rate",ml,rigid,602,250,224,123,5
+mlj_asymmetric,"1800 cm-1, Eyring, rate",ml,flexible,207,112,84,11,0
+mlj_asymmetric,"1800 cm-1, Eyring, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,flexible,207,111,80,15,1
+mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,rigid,602,243,192,155,12
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,flexible,207,111,78,17,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,flexible,207,111,77,18,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,rigid,602,211,106,241,44
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,flexible,207,111,77,18,1
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,dissociative,46,0,0,34,12
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",dft,rigid,602,188,55,292,67
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",dft,flexible,207,94,10,85,18
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",dft,dissociative,46,3,0,34,9
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",ml,rigid,602,191,77,270,64
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",ml,flexible,207,97,24,71,15
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",ml,dissociative,46,0,0,34,12
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",dft,rigid,602,188,56,291,67
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",dft,flexible,207,94,10,85,18
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",dft,dissociative,46,3,0,34,9
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",ml,rigid,602,191,77,270,64
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",ml,flexible,207,97,24,71,15
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",ml,dissociative,46,0,0,34,12
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",dft,rigid,602,188,60,287,67
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",dft,flexible,207,94,14,81,18
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",dft,dissociative,46,3,1,33,9
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",ml,rigid,602,191,81,266,64
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",ml,flexible,207,97,24,71,15
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",ml,dissociative,46,0,0,34,12

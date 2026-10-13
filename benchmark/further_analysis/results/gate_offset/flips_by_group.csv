@@ -1,0 +1,13 @@
+criterion,parameters,quencher_class,n_pairs,n_flipped,FP_to_TN,TP_to_FN,net_correct
+two_gate,dft,dissociative,46,0,0,0,0
+two_gate,dft,flexible,207,1,1,0,1
+two_gate,dft,rigid,602,53,42,11,31
+two_gate,dft,all,855,54,43,11,32
+two_gate,ml,dissociative,46,0,0,0,0
+two_gate,ml,flexible,207,3,3,0,3
+two_gate,ml,rigid,602,62,50,12,38
+two_gate,ml,all,855,65,53,12,41
+adiabatic,dft,dissociative,46,1,1,0,1
+adiabatic,dft,flexible,207,2,2,0,2
+adiabatic,dft,rigid,602,66,54,12,42
+adiabatic,dft,all,855,69,57,12,45

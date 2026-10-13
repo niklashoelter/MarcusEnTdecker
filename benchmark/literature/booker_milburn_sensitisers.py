@@ -1,7 +1,11 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
+# ///
 """
 Elliott, Kayal, George, Booker-Milburn 2020: a thioxanthone sensitiser series -- SI material.
 
-    uv run --extra ml python benchmark/literature/booker_milburn_sensitisers.py
+    uv run benchmark/literature/booker_milburn_sensitisers.py
 
 The paper tunes thioxanthone (TX) with F and MeO groups, trading triplet energy for absorption
 wavelength, and measures the triplet energy of eleven TX by phosphorescence. Every TX triplet

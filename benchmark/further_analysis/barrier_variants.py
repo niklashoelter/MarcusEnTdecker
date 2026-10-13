@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas", "scipy"]
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
 Barrier criteria with every barrier model, with and without dG_EnT <= 0, and with a fixed
@@ -13,7 +13,7 @@ Writes  results/barrier_variants/settings.csv   every DFT setting
 
     uv run benchmark/further_analysis/barrier_variants.py
 
-Barrier models: Marcus symmetric, Marcus asymmetric, Rehm-Weller (theory.BARRIERS).
+Barrier models: Marcus symmetric, Marcus asymmetric (theory.BARRIERS).
 Conditions: barrier < threshold; dG_EnT <= 0 and barrier < threshold.
 Variants:
     threshold tuned   threshold from the benchmark grid

@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas", "rdkit"]
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "rdkit==2025.9.4"]
 # ///
 """
 CPU time per quencher for the inputs of each criterion; photocatalyst calculations are

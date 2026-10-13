@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["openpyxl>=3.1"]
+# dependencies = ["openpyxl==3.1.5"]
 # ///
 """
 Build the pair-level experimental dataset: one row per photocatalyst-quencher pair.

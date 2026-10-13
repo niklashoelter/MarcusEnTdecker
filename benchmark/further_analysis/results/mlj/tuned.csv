@@ -1,0 +1,4 @@
+evaluation,n_choices,median lambda_s / kcal mol-1,min lambda_s / kcal mol-1,max lambda_s / kcal mol-1
+all pairs,1,21.0,21.0,21.0
+LOQO,46,21.0,20.5,21.0
+LOPCO,26,21.0,17.5,21.0

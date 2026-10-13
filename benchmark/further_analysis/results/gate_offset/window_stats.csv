@@ -1,0 +1,7 @@
+parameters,region,n,n_quench,frac_quench,frac_quench_second_gate_passed,n_second_gate_passed,median K_SV non-quenching / M-1
+dft,window -1.5 < dG <= 0,69,12,0.174,0.204,54,-1.605
+dft,dG <= -1.5,463,319,0.689,0.855,346,-1.276
+dft,dG > 0,323,48,0.149,0.239,117,-4.798
+ml,window -1.5 < dG <= 0,71,13,0.183,0.185,65,-3.144
+ml,dG <= -1.5,437,309,0.707,0.802,379,-1.276
+ml,dG > 0,347,57,0.164,0.25,128,-4.475

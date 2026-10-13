@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas", "scipy"]
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
 Variants of the adiabatic criterion: a required margin, and a cutoff on the ML uncertainty.

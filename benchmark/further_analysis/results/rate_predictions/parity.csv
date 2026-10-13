@@ -1,0 +1,6 @@
+predictor,parameters,n,median bias / decades,RMSE / decades,MAE / decades,Spearman rho,within 1 decade,SD predicted / decades,SD measured / decades
+"full, marcus_asymmetric",dft,379,0.419,1.485,1.047,0.617,0.573,1.773,0.947
+"full, marcus_asymmetric",ml,379,0.695,1.809,1.213,0.653,0.562,2.078,0.947
+"full (r = 7 A), marcus_asymmetric",dft,379,0.232,1.498,1.035,0.614,0.607,1.802,0.947
+"full (r = 7 A), marcus_asymmetric",ml,379,0.524,1.789,1.159,0.652,0.57,2.104,0.947
+constant (mean measured),,379,-0.024,0.946,0.808,,0.617,0.0,0.947

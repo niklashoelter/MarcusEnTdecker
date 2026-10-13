@@ -1,0 +1,27 @@
+pc,compound,complex_class,E_T_dft / kcal mol-1,lambda_S0_T1_dft / kcal mol-1,lambda_T1_S0_dft / kcal mol-1,tau0 / ns,r / A,t_PC_median / kcal mol-1,t_PC_7A / kcal mol-1,n_pairs,fraction_quenching
+PC1,[Ir(dF(CF3)ppy)2(dtbbpy)][PF6],"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",65.7,10.28,8.25,2387.81,5.38,8.69,8.33,31,0.677
+PC2,[Ir(ppy)2(dtbbpy)][PF6],"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",59.35,8.83,8.54,557.115,5.15,7.79,7.47,43,0.07
+PC3,Ir(ppy)3,"Ir(III) homoleptic Ir(C^N)3, neutral",60.38,11.82,8.48,1698.34,4.73,8.36,8.13,34,0.382
+PC4,Ir(dFppy)3,"Ir(III) homoleptic Ir(C^N)3, neutral",65.62,13.32,8.89,1494.54,4.82,8.3,8.06,34,0.676
+PC5,[Ru(dtbbpy)3][PF6]2,Ru(II) tris(diimine),44.61,7.15,7.48,873.699,5.84,8.2,7.74,46,0.022
+PC6,[Ru(bpz)3][PF6]2,Ru(II) tris(diimine),46.98,7.03,7.08,626.38,4.61,7.74,7.54,40,0.1
+PC7,Ir(dF(Me)ppy)3,"Ir(III) homoleptic Ir(C^N)3, neutral",66.15,13.77,9.1,2314.85,4.99,8.59,8.31,33,0.818
+PC8,"[Ir(dF(CF3)ppy)2(d(5,5)CF3bpy)]PF6","Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",55.94,8.63,9.48,74.6559,5.18,6.6,6.28,37,0.0
+PC9,[Ir(dFppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",63.94,8.31,7.94,1331.42,5.21,8.31,7.99,37,0.703
+PC10,[Ir(dF(Me)ppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",63.38,8.2,7.88,1429.83,5.3,8.37,8.03,35,0.771
+PC11,[Ir(dF(CF3)ppy)2(bpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",65.67,10.34,8.75,2335.66,4.99,8.59,8.32,26,0.769
+PC12,"[Ir(dF(Me)ppy)2(d(5,5)CH3bpy)]PF6","Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",65.71,13.55,12.58,2330.54,5.01,8.6,8.32,34,0.765
+PC13,"[Ir(tCF3ppy)2(d(5,5)CH3bpy)]PF6","Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",59.39,11.39,9.22,3417.56,5.39,8.91,8.55,42,0.381
+PC14,[Ir(dF(Me)ppy)2(d(OMe)bpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",65.74,13.47,13.08,1539.96,5.06,8.37,8.07,37,0.595
+PC15,[Ir(ppy)2(d(OMe)bpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",59.92,9.14,9.02,277.386,4.9,7.33,7.06,43,0.047
+PC16,"[Ir(tCF3ppy)2(d(5,5)OMebpy)]PF6","Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",59.14,10.9,9.3,3664.57,5.44,8.96,8.59,35,0.143
+PC17,[Ir(dCF3ppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",60.55,13.24,10.81,4755.86,5.49,9.13,8.74,42,0.405
+PC18,[Ir(dF(6-OMe)ppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",64.83,12.7,11.75,1519.18,5.35,8.42,8.07,36,0.833
+PC19,[Ir(dF(OMe)ppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",63.27,12.88,10.57,1999.34,5.35,8.58,8.23,37,0.676
+PC20,[Ir(tCF3ppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",59.81,11.09,8.85,3304.66,5.65,8.94,8.53,40,0.225
+PC21,[Ir(tetraFppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",66.11,8.12,8.3,4487.75,5.26,9.04,8.71,27,0.889
+PC23,[Ir(dF(4-Me)ppy)2(dtbbpy)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",64.62,8.42,8.04,1314.69,5.3,8.33,7.98,34,0.706
+PC24,[Ir(ppy)2(phen)]PF6,"Ir(III) heteroleptic [Ir(C^N)2(N^N)]+, cationic",57.55,7.93,7.58,763.793,4.78,7.89,7.66,41,0.073
+PC25,[Ir(CF3-pmb)3],"Ir(III) homoleptic tris(NHC), neutral",73.23,14.36,13.69,6438.81,5.43,9.28,8.92,7,1.0
+PC26,[Ir(CH3-pmb)3],"Ir(III) homoleptic tris(NHC), neutral",76.82,19.11,13.66,2726.2,5.31,8.73,8.41,2,1.0
+PC27,[Ir(pmb)3],"Ir(III) homoleptic tris(NHC), neutral",77.7,17.43,12.77,1620.59,5.17,8.39,8.1,2,1.0

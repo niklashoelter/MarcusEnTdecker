@@ -1,0 +1,6 @@
+rule,parameters,n_predicted,MCC,AUC,AUC_within_PC_pooled,pairs_agreeing_with_DvTE,agreement_with_DvTE
+DvTE (molecular dynamics),dft,427,0.535,0.858,0.757,855,1.0
+"four-point, classical",dft,141,0.454,0.827,0.703,569,0.665
+"four-point, 1000 cm-1",dft,467,0.52,0.857,0.752,743,0.869
+"four-point, 1500 cm-1",dft,640,0.409,0.865,0.762,630,0.737
+"four-point, 1000 cm-1",ml,550,0.478,0.843,0.717,724,0.847

@@ -1,0 +1,10 @@
+parameters,quencher,admitted_only_asymmetric,admitted_only_asymmetric_quench
+dft,Q2,11,11
+dft,Q37,9,5
+dft,Q41,6,6
+dft,Q14,3,0
+dft,Q34,3,0
+dft,Q8,1,1
+dft,Q19,1,1
+dft,Q26,1,1
+dft,Q10,1,0

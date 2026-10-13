@@ -1,0 +1,21 @@
+scenario,criterion,n,n_quench,photocatalysts_both_outcomes,accuracy,MCC,AUC,AUC_within_PC_pooled
+all pairs,"adiabatic, dft",904,391,25,0.685,0.415,0.755,0.639
+all pairs,"adiabatic, ml",904,391,25,0.692,0.419,0.767,0.654
+all pairs,dvte,904,391,25,0.739,0.482,0.804,0.679
+all pairs,"two_gate, dft",904,391,25,0.785,0.567,0.82,0.716
+all pairs,"two_gate, ml",904,391,25,0.75,0.509,0.79,0.632
+without Q38,"adiabatic, dft",878,391,22,0.703,0.441,0.78,0.676
+without Q38,"adiabatic, ml",878,391,22,0.71,0.444,0.783,0.677
+without Q38,dvte,878,391,22,0.759,0.517,0.839,0.73
+without Q38,"two_gate, dft",878,391,22,0.798,0.593,0.831,0.728
+without Q38,"two_gate, ml",878,391,22,0.769,0.542,0.811,0.658
+without Q31,"adiabatic, dft",881,379,25,0.69,0.436,0.772,0.658
+without Q31,"adiabatic, ml",881,379,25,0.698,0.438,0.784,0.674
+without Q31,dvte,881,379,25,0.746,0.5,0.821,0.701
+without Q31,"two_gate, dft",881,379,25,0.793,0.586,0.84,0.741
+without Q31,"two_gate, ml",881,379,25,0.757,0.529,0.808,0.65
+without Q38 and Q31,"adiabatic, dft",855,379,22,0.709,0.462,0.798,0.699
+without Q38 and Q31,"adiabatic, ml",855,379,22,0.716,0.464,0.801,0.7
+without Q38 and Q31,dvte,855,379,22,0.766,0.535,0.858,0.757
+without Q38 and Q31,"two_gate, dft",855,379,22,0.807,0.612,0.851,0.754
+without Q38 and Q31,"two_gate, ml",855,379,22,0.777,0.562,0.829,0.678

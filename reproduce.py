@@ -34,8 +34,8 @@ Not every script is a stage:
     data/computational_data_scripts/quencher_ml_timing.py`. The table it writes is in git.
 
     `compound_identification.py`, `properties_workbook.py` and `molecular_size.py` in
-    data/, and `pairs.py`, `theory.py` and `scoring.py` in benchmark/, are imported
-    modules.
+    data/, `pairs.py`, `theory.py` and `scoring.py` in benchmark/, and `common.py` in
+    benchmark/further_analysis/labels/, are imported modules.
 
 The model training is not a stage either; ml/README.md describes it.
 """
@@ -65,8 +65,10 @@ PIPELINE = [
     # The computational extraction needs the deposit, which is not in git. Each stage
     # checks for a job directory rather than for its folder, because the folders are
     # present in a clone -- they hold the tables these stages write -- and would
-    # otherwise send a clone without the deposit into three failures instead of skips.
+    # otherwise send a clone without the deposit into failures instead of skips.
     ("data", "data/computational_data_scripts/quencher_dft.py",
+     "data/computational_data_raw/quencher_adiabatic_DFT/Q1"),
+    ("data", "data/computational_data_scripts/quencher_geometry.py",
      "data/computational_data_raw/quencher_adiabatic_DFT/Q1"),
     ("data", "data/computational_data_scripts/quencher_dvte.py",
      "data/computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz"),
@@ -74,8 +76,12 @@ PIPELINE = [
      "data/computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz"),
     ("data", "data/computational_data_scripts/photocatalyst_dft.py",
      "data/computational_data_raw/photocatalysts/PC_1"),
+    ("data", "data/computational_data_scripts/molecular_extent.py",
+     "data/computational_data_raw/photocatalysts/PC_1"),
     ("data", "data/computational_data_scripts/organophotocatalyst_dft.py",
      "data/computational_data_raw/organophotocatalysts/OPC1"),
+    ("data", "data/computational_data_scripts/reorganization_modes.py",
+     "data/computational_data_raw/photocatalysts/PC_1"),
     ("data", "data/computational_data_scripts/properties_calc.py",
      "data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv"),
     ("data", "data/build_exp_dataset.py",
@@ -86,6 +92,52 @@ PIPELINE = [
     *[("further_analysis", f"benchmark/further_analysis/{name}.py", "data/exp_dataset_ent.csv")
       for name in ("influence", "held_out", "within_groups", "adiabatic_variants",
                    "barrier_variants", "rate_predictions")],
+    # The quencher classes come first: most of the modules below read them.
+    ("further_analysis", "benchmark/further_analysis/quencher_classes.py",
+     "data/computational_data_processed/quencher_geometry_S0_T1.csv"),
+    *[("further_analysis", f"benchmark/further_analysis/{name}.py",
+       "benchmark/further_analysis/results/quencher_classes/quencher_classes.csv")
+      for name in ("metrics_extended", "bootstrap", "lifetimes", "figure_tables")],
+    ("further_analysis", "benchmark/further_analysis/contact_distance.py",
+     "data/computational_data_processed/molecular_extent.csv"),
+    ("further_analysis", "benchmark/further_analysis/gate_offset.py",
+     "benchmark/further_analysis/results/quencher_classes/quencher_classes.csv"),
+    ("further_analysis", "benchmark/further_analysis/error_propagation.py",
+     "data/exp_dataset_ent.csv"),
+    ("further_analysis", "benchmark/further_analysis/mlj.py",
+     "benchmark/further_analysis/results/quencher_classes/quencher_classes.csv"),
+    ("further_analysis", "benchmark/further_analysis/kinetics_series.py",
+     "data/exp_dataset_ent.csv"),
+    ("further_analysis", "benchmark/further_analysis/exclusion.py", "data/exp_dataset_ent.csv"),
+    ("further_analysis", "benchmark/further_analysis/anharmonicity.py",
+     "data/computational_data_processed/quencher_geometry_S0_T1.csv"),
+    ("further_analysis", "benchmark/further_analysis/dvte_reorganization.py",
+     "data/exp_dataset_ent.csv"),
+    ("further_analysis", "benchmark/further_analysis/ml_vs_dft.py",
+     "ml/data/training_dataset_full.csv"),
+    # The label analyses: three chains, each script reading the one before it.
+    ("further_analysis", "benchmark/further_analysis/labels/s1_noise_model.py",
+     "data/experimental_data_processed/stern_volmer_intensities.csv"),
+    ("further_analysis", "benchmark/further_analysis/labels/s2_posteriors.py",
+     "benchmark/further_analysis/results/labels/noise/noise_model_pc.csv"),
+    ("further_analysis", "benchmark/further_analysis/labels/s3_ladder_power.py",
+     "benchmark/further_analysis/results/labels/noise/detection_limits_pc.csv"),
+    ("further_analysis", "benchmark/further_analysis/labels/s4_downstream.py",
+     "benchmark/further_analysis/results/labels/noise/ladder_power_curves.csv"),
+    ("further_analysis", "benchmark/further_analysis/labels/s5_profile_g.py",
+     "benchmark/further_analysis/results/labels/noise/ladder_power_curves.csv"),
+    ("further_analysis", "benchmark/further_analysis/kdet_threshold.py",
+     "benchmark/further_analysis/results/labels/noise/pair_labels_probabilistic.csv"),
+    ("further_analysis", "benchmark/further_analysis/labels/robust_fits.py",
+     "data/experimental_data_processed/stern_volmer_intensities.csv"),
+    ("further_analysis", "benchmark/further_analysis/labels/robust_labels.py",
+     "benchmark/further_analysis/results/labels/robust/fits_long.csv.gz"),
+    ("further_analysis", "benchmark/further_analysis/labels/linear_shapes.py",
+     "data/experimental_data_processed/stern_volmer_intensities.csv"),
+    ("further_analysis", "benchmark/further_analysis/labels/linear_variants.py",
+     "benchmark/further_analysis/results/labels/linear/pair_shapes.csv.gz"),
+    ("further_analysis", "benchmark/further_analysis/labels/linear_downstream.py",
+     "benchmark/further_analysis/results/labels/linear/pair_variants.csv.gz"),
 ]
 
 STAGES = ["data", "benchmark", "further_analysis"]

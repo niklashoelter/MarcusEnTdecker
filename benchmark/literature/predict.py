@@ -8,8 +8,8 @@ reorganisation energies for every structure the model can encode. The comparison
 beside this one read what it writes; none of them calls the model.
 
 WHAT IS PREDICTED
-    Every substrate, and every photocatalyst that is an ordinary organic molecule: Leonori's
-    nitroarenes and Sole-Daura's thioxanthone. Iridium and ruthenium complexes cannot be
+    Every substrate, and every photocatalyst that is an ordinary organic molecule: for example
+    Leonori's nitroarenes and the thioxanthones. Iridium and ruthenium complexes cannot be
     encoded -- their elements are not in the model's atom vocabulary -- so they are skipped
     here and their parameters come from the publications.
 

@@ -45,7 +45,8 @@ data  ->  benchmark
 ml    ->  webapp
 ```
 
-`benchmark/` reads only what `data/` writes, so any number in the paper can be traced to
+`benchmark/` reads only what `data/` writes (and, for the comparison of ML with DFT
+parameters, the training set and splits in `ml/data/`), so any number in the paper can be traced to
 the instrument file it came from. The packages never read anything under `data/` or
 `benchmark/`, and `ml` never imports `webapp`; each carries its own resources —
 `ml/data/model_final.pt`, `webapp/data/` — and reads them with `importlib.resources`.
@@ -69,6 +70,9 @@ data/computational_data_processed/   photocatalyst_properties_calc.xlsx
                                      quencher_properties_calc.xlsx
                                      quencher_properties_ml.xlsx
                                      quencher_timings.csv, quencher_timings_ml.csv
+                                     quencher_geometry_S0_T1.csv, molecular_extent.csv,
+                                     reorganization_modes.csv   (read by
+                                     benchmark/further_analysis/)
 data/                                exp_dataset.csv, exp_dataset.xlsx   (every pair,
                                      measured values and labels only)
 data/                                exp_dataset_ent.csv, exp_dataset_ent.xlsx   (all
@@ -113,10 +117,13 @@ re-derive the extracted tables from scratch.
 ## Predicting from structure
 
 ```python
+import dataclasses
+
 from ml.predict import RatePredictor, photocatalyst_properties
 
 photocatalyst = photocatalyst_properties(
     "data/computational_data_processed/photocatalyst_properties_calc.xlsx", 1)
+photocatalyst = dataclasses.replace(photocatalyst, tau0_ns=TAU0_NS)   # two_gate needs tau0
 result = RatePredictor().predict(photocatalyst, quencher=Q_SMILES)
 result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.two_gate
 ```

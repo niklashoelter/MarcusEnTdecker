@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy"]
+# dependencies = ["numpy==2.4.2"]
 # ///
 """
 Photocatalyst triplet energies, reorganization energies, excited-state potentials and

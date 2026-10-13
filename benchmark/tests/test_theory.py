@@ -42,12 +42,6 @@ def test_asymmetric_barrier_falls_back_to_symmetric_without_a_crossing():
         theory.marcus_barrier_symmetric(dG, np.sqrt(lf * lr)))
 
 
-def test_rehm_weller_barrier_limits():
-    assert theory.rehm_weller_barrier(0.0, 20.0) == pytest.approx(5.0)
-    assert theory.rehm_weller_barrier(-2000.0, 20.0) == pytest.approx(0.0, abs=0.02)
-    assert theory.rehm_weller_barrier(2000.0, 20.0) == pytest.approx(2000.0, abs=0.02)
-
-
 def test_barrier_dispatches_by_model_name():
     dG, lf, lr = -5.0, 12.0, 30.0
     lam = np.sqrt(lf * lr)
@@ -55,8 +49,6 @@ def test_barrier_dispatches_by_model_name():
         theory.marcus_barrier_symmetric(dG, lam))
     assert theory.barrier("marcus_asymmetric", dG, lf, lr) == pytest.approx(
         theory.marcus_barrier_asymmetric(dG, lf, lr))
-    assert theory.barrier("rehm_weller", dG, lf, lr) == pytest.approx(
-        theory.rehm_weller_barrier(dG, lam))
     with pytest.raises(ValueError):
         theory.barrier("unknown", dG, lf, lr)
 

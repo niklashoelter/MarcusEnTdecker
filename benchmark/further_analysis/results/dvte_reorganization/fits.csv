@@ -1,0 +1,4 @@
+fit,n,slope,intercept / kcal mol-1,R2,rmse / kcal mol-1
+DvTE - E_T vs lambda_T1-S0,48,0.642,-9.84,0.866,2.68
+mean gap - E_T vs lambda_T1-S0,48,0.771,5.2,0.898,2.76
+DvTE - E_T vs lambda_S0-T1,48,0.209,-3.29,0.586,4.7

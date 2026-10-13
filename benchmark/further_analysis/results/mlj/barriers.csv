@@ -1,0 +1,5 @@
+parameters,quencher_class,n,median classical barrier / kcal mol-1,median MLJ effective barrier / kcal mol-1
+dft,rigid,602,6.79,4.65
+dft,flexible,207,7.7,3.09
+dft,dissociative,46,12.3,5.15
+dft,all,855,7.39,4.12

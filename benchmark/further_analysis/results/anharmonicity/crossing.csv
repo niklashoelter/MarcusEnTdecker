@@ -1,0 +1,4 @@
+parameters,pairs,group,n_pairs,x_cross_median,q_S0_at_crossing_over_RT_median
+dft,exergonic,dissociative,41,0.36,18.046
+dft,exergonic,planar T1,309,0.422,5.488
+dft,exergonic,twisted T1,182,0.304,11.213

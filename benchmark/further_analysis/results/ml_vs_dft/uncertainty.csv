@@ -1,0 +1,5 @@
+fallback,n_quenchers,quenchers,MCC,AUC_within_PC_pooled
+none,0,,0.562,0.678
+largest ML uncertainty sum,12,Q45 Q11 Q48 Q14 Q33 Q37 Q10 Q2 Q41 Q19 Q17 Q8,0.576,0.691
+largest effect (uses the outcomes),12,Q12 Q10 Q44 Q24 Q34 Q22 Q48 Q3 Q37 Q23 Q46 Q40,0.636,0.783
+in both,3,Q10 Q37 Q48,,

@@ -1,0 +1,27 @@
+pc_name,pc_E_T_dft / kcal mol-1,E_T_77K / kcal mol-1,E_T_RT / kcal mol-1,E_T_best / kcal mol-1,77K_minus_dft / kcal mol-1,RT_minus_dft / kcal mol-1,best_minus_dft / kcal mol-1,c_PC / kcal mol-1,pc_class,doi_77K,doi_RT
+PC1,65.7,61.82,60.83,61.82,-3.88,-4.87,-3.88,-5.01,Ir heteroleptic cationic (N^N),10.1016/j.chempr.2019.06.004,10.1021/cr300503r
+PC2,59.35,,49.21,49.21,,-10.14,-10.14,-13.8,Ir heteroleptic cationic (N^N),,10.1021/cr300503r
+PC3,60.38,57.88,55.19,57.88,-2.5,-5.19,-2.5,-4.44,Ir homoleptic tris-C^N,10.1021/cr300503r,10.1021/acs.oprd.6b00101
+PC4,65.62,63.5,60.07,63.5,-2.12,-5.55,-2.12,-2.14,Ir homoleptic tris-C^N,10.1039/c8cs00054a,10.1021/acs.oprd.6b00101
+PC5,44.61,,46.57,46.57,,1.96,1.96,,Ru tris-diimine,,10.1021/acs.oprd.6b00101
+PC6,46.98,,48.38,48.38,,1.4,1.4,11.38,Ru tris-diimine,,10.1021/cr300503r
+PC7,66.15,,,,,,,-2.67,,,
+PC8,55.94,,51.24,51.24,,-4.7,-4.7,,Ir heteroleptic cationic (N^N),,10.1021/jacs.0c12290
+PC9,63.94,63.65,54.65,63.65,-0.29,-9.29,-0.29,-1.9,Ir heteroleptic cationic (N^N),10.1021/acs.inorgchem.1c01604,10.1021/acs.inorgchem.1c01604
+PC10,63.38,62.96,54.0,62.96,-0.42,-9.38,-0.42,-1.34,Ir heteroleptic cationic (N^N),10.1016/j.chempr.2019.06.004,10.1016/j.chempr.2019.06.004
+PC11,65.67,,60.45,60.45,,-5.22,-5.22,-4.98,Ir heteroleptic cationic (N^N),,10.1021/acs.oprd.6b00101
+PC12,65.71,,55.99,55.99,,-9.72,-9.72,-2.23,Ir heteroleptic cationic (N^N),,10.1021/jacs.0c12290
+PC13,59.39,,,,,,,-13.84,,,
+PC14,65.74,,59.96,59.96,,-5.78,-5.78,-3.7,Ir heteroleptic cationic (N^N),,10.1021/jacs.0c12290
+PC15,59.92,,49.14,49.14,,-10.78,-10.78,,Ir heteroleptic cationic (N^N),,10.1021/jacs.0c12290
+PC16,59.14,,,,,,,1.2,,,
+PC17,60.55,,,,,,,0.14,,,
+PC18,64.83,,,,,,,-1.35,,,
+PC19,63.27,,,,,,,-1.23,,,
+PC20,59.81,,,,,,,-14.26,,,
+PC21,66.11,,,,,,,-1.54,,,
+PC23,64.62,,,,,,,-4.28,,,
+PC24,57.55,,48.4,48.4,,-9.15,-9.15,-12.0,Ir heteroleptic cationic (N^N),,10.1021/jacs.0c12290
+PC25,73.23,,,,,,,,,,
+PC26,76.82,,,,,,,,,,
+PC27,77.7,,75.24,75.24,,-2.46,-2.46,,Ir homoleptic tris-carbene,,10.1021/ic051296i

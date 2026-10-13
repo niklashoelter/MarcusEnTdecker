@@ -8,7 +8,7 @@ OUR CONVENTION, EVERYWHERE
     lambda_S0_T1 is the ground-state surface deformed to the triplet geometry, lambda_T1_S0
     the triplet surface deformed to the ground-state geometry. The literature tables in
     data/literature_benchmark/ are already written in this convention -- each paper's own
-    labels were mapped on extraction, which matters because two of the three write a
+    labels were mapped on extraction, which matters because some of them write a
     photocatalyst's half-transformation in the de-excitation direction, so their "R" column
     is our lambda_T1_S0. Nothing downstream re-maps anything.
 
@@ -183,5 +183,5 @@ def write(frame, name):
         if (_ENERGY.search(str(c)) and not _NOT_ENERGY.search(str(c))
                 and pd.api.types.is_float_dtype(frame[c])):
             frame[c] = frame[c].round(2)
-    frame.to_csv(OUT / name, index=False)
+    frame.to_csv(OUT / name, index=False, lineterminator="\n")
     print(f"{name}: {len(frame)} rows")

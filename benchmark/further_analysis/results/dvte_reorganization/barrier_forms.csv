@@ -1,0 +1,3 @@
+parameters,n_exergonic,rho_barrier_difference_vs_lambda_r_minus_lambda_f,rho_barrier_difference_vs_lambda_S0_T1_Q,median_barrier_difference_rigid / kcal mol-1,median_barrier_difference_flexible / kcal mol-1,median_barrier_difference_dissociative / kcal mol-1,admitted_only_asymmetric,admitted_only_asymmetric_quench,admitted_only_symmetric,admitted_only_symmetric_quench,MCC_asymmetric,MCC_symmetric,AUC_within_PC_pooled_asymmetric,AUC_within_PC_pooled_symmetric,pairs_inverted,min_lambda_plus_dG / kcal mol-1,min_lambda_f_plus_dG / kcal mol-1
+dft,532,0.958,0.868,-0.01,1.32,1.26,36,25,0,0,0.612,0.574,0.754,0.742,0,12.38,12.38
+ml,508,0.959,0.861,0.03,1.45,,47,32,0,0,0.562,0.51,0.678,0.663,0,9.78,8.47

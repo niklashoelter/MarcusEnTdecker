@@ -1,7 +1,11 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
+# ///
 """
 Molloy, ..., Gilmour 2020: does the barrier predict which beta-boryl acrylate isomer accumulates?
 
-    uv run --extra ml python benchmark/literature/gilmour_ez.py
+    uv run benchmark/literature/gilmour_ez.py
 
 The Sole-Daura case has one substrate our reorganisation term gets wrong: a beta-boryl
 acrylate, whose E isomer accumulates. This paper is that substrate class. With thioxanthone,

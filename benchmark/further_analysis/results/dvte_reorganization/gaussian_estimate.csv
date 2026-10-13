@@ -1,0 +1,9 @@
+quantity,estimate,n,R2,MSD / kcal mol-1,MAE / kcal mol-1,median_ratio
+mean,E_T + lambda_T1-S0,48,0.773,-0.21,2.57,0.99
+width,classical,48,0.234,-2.47,2.52,0.609
+width,1000 cm-1,48,0.234,0.32,1.29,0.954
+width,1500 cm-1,48,0.234,1.99,2.05,1.159
+quantile p = 0.008,classical,48,0.748,5.75,5.75,1.094
+quantile p = 0.008,1000 cm-1,48,0.748,-0.99,2.29,0.985
+quantile p = 0.008,1500 cm-1,48,0.682,-5.01,5.15,0.926
+quantile p = 0.008,"1000 cm-1, ML parameters",48,0.45,-1.62,3.79,0.972

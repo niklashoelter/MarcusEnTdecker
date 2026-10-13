@@ -1,4 +1,4 @@
-"""The dependency runs one way: data -> ml -> webapp, and never back.
+"""The dependency runs one way: ml -> webapp, and never back.
 
 `ml` is the models and the prediction API; `webapp` is EnTdecker built on top of it.
 So `webapp` may import `ml`, and `ml` may never import `webapp`.

@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "pandas", "scipy"]
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
 How the benchmark metrics move when one quencher or one photocatalyst is removed.

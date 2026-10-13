@@ -1,0 +1,4 @@
+class,n,n_quench,predicted_dft,predicted_ml,TP_dft,TP_ml,correct_dft,correct_ml
+rigid,602,255,280,310,204,209,475,455
+flexible,207,112,116,134,100,107,179,175
+dissociative,46,12,4,0,3,0,36,34

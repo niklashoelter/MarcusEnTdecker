@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["numpy"]
+# dependencies = ["numpy==2.4.2"]
 # ///
 """
 Well intensities -> one Stern-Volmer fit per photocatalyst/quencher pair.

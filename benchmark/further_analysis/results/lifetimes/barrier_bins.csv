@@ -1,0 +1,11 @@
+tau0_group,barrier_from / kcal mol-1,barrier_to / kcal mol-1,n_pairs,n_quench,fraction_quench
+short,0.0,3.0,0,0,
+short,3.0,6.0,21,5,0.238
+short,6.0,9.0,21,2,0.095
+short,9.0,12.0,23,1,0.043
+short,12.0,inf,14,0,0.0
+long,0.0,3.0,31,31,1.0
+long,3.0,6.0,201,163,0.811
+long,6.0,9.0,151,112,0.742
+long,9.0,12.0,53,11,0.208
+long,12.0,inf,17,6,0.353

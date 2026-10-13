@@ -1,0 +1,25 @@
+scope,probability,label,n,confident quench,uncertain,confident no quench
+all 1296 pairs,"P(K > K_det,PC)",0,561,0,62,499
+all 1296 pairs,"P(K > K_det,PC)",1,735,598,105,32
+all 1296 pairs,P(K > 10 M-1),0,561,0,365,196
+all 1296 pairs,P(K > 10 M-1),1,735,627,107,1
+all 1296 pairs,P(K > 0),0,561,19,502,40
+all 1296 pairs,P(K > 0),1,735,672,63,0
+all 1296 pairs,"P(K > K_det,PC), anchored",0,561,2,69,490
+all 1296 pairs,"P(K > K_det,PC), anchored",1,735,602,102,31
+26 benchmark PCs (PC22 out),"P(K > K_det,PC)",0,513,0,62,451
+26 benchmark PCs (PC22 out),"P(K > K_det,PC)",1,735,598,105,32
+26 benchmark PCs (PC22 out),P(K > 10 M-1),0,513,0,323,190
+26 benchmark PCs (PC22 out),P(K > 10 M-1),1,735,627,107,1
+26 benchmark PCs (PC22 out),P(K > 0),0,513,19,459,35
+26 benchmark PCs (PC22 out),P(K > 0),1,735,672,63,0
+26 benchmark PCs (PC22 out),"P(K > K_det,PC), anchored",0,513,2,68,443
+26 benchmark PCs (PC22 out),"P(K > K_det,PC), anchored",1,735,602,102,31
+scored pairs,"P(K > K_det,PC)",0,476,0,59,417
+scored pairs,"P(K > K_det,PC)",1,379,298,65,16
+scored pairs,P(K > 10 M-1),0,476,0,298,178
+scored pairs,P(K > 10 M-1),1,379,315,63,1
+scored pairs,P(K > 0),0,476,17,425,34
+scored pairs,P(K > 0),1,379,342,37,0
+scored pairs,"P(K > K_det,PC), anchored",0,476,2,65,409
+scored pairs,"P(K > K_det,PC), anchored",1,379,302,61,16

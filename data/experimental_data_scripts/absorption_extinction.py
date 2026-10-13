@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["openpyxl"]
+# dependencies = ["openpyxl==3.1.5"]
 # ///
 """
 Molar extinction coefficients of the quenchers from a plate-reader absorption scan.
