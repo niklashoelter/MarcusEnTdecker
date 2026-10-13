@@ -9,6 +9,8 @@ uv run reproduce.py benchmark               classification and cost
 uv run reproduce.py further_analysis        every script in further_analysis/
 uv run benchmark/classification.py          quenches or not
 uv run benchmark/cost.py                    CPU time per quencher
+uv run --extra ml python benchmark/literature/predict.py      literature predictions
+uv run --extra ml python benchmark/literature/<script>.py     one literature comparison
 ```
 
 Inputs: `../data/exp_dataset_ent.csv`, which also carries the molecular radii of
@@ -29,11 +31,13 @@ benchmark/
 ├── classification.py   the classification criteria
 ├── cost.py             CPU time per quencher for each criterion
 ├── tests/              pytest tests of theory, scoring, classification and cost
+├── literature/         the literature benchmark: predict.py, common.py, one script per study
 ├── results/
 │   ├── classification/
 │   │   ├── settings.csv    every DFT setting of every criterion
 │   │   └── best.csv        best DFT setting per criterion, and the same setting with ML
-│   └── cost/
+│   ├── cost/
+│   └── literature/     predictions and comparison tables of the literature benchmark
 └── further_analysis/   variants and diagnostics beyond the benchmark table
     └── results/
 ```
@@ -127,7 +131,7 @@ photocatalyst calculations are not counted. Outputs in `results/cost/`:
 |---|---|---|
 | adiabatic DFT | S0 and T1 opt+freq, S0 and T1 single points | `adiabatic` (dft) |
 | four-point DFT | the above and both vertical spin-change single points | `two_gate`, `marcus_barrier` (dft) |
-| DvTE | Gaussian opt+freq, MD trajectories, vertical-gap single points including failed and time-limited steps | `dvte` |
+| DvTE | Gaussian opt+freq, MD trajectories, vertical-gap single points; steps that failed or hit the time limit are not counted | `dvte` |
 | ML, per call / batch | model inference of one quencher per call, or its share of one call for all quenchers | every `ml` row |
 
 DFT and DvTE: wall time × cores from `quencher_timings.csv` (MD trajectories from the Slurm
@@ -146,3 +150,29 @@ Each script writes to `further_analysis/results/<script>/`.
 | `adiabatic_variants.py` | margin E_T(PC) ≥ E_T(Q) + m, m = 0–3 kcal/mol; cutoff on the ML uncertainty of E_T(Q) |
 | `barrier_variants.py` | barrier criteria for every barrier model, with and without ΔG_EnT ≤ 0, and with a threshold of 5 kcal/mol |
 | `rate_predictions.py` | log₁₀ k for every pair, source, rate law and barrier model; nothing fitted |
+
+## Literature
+
+`literature/` compares the model's predictions with published studies. The published
+tables are in `../data/literature_benchmark/`, one CSV per study. `predict.py` predicts E_T
+and both reorganization energies for every structure the model can encode and writes
+`results/literature/predictions_<case>.csv` and `predictions_members_<case>.csv`; the
+comparison scripts read those files and never call the model. The literature benchmark is
+not a stage of `reproduce.py`, and its scripts run with the `ml` extra:
+
+```
+uv run --extra ml python benchmark/literature/predict.py
+uv run --extra ml python benchmark/literature/ma_tolerance.py
+```
+
+| script | study |
+|---|---|
+| `ma_tolerance.py` | Ma 2023: functional-group tolerance of the azaarene reduction |
+| `sole_daura_ez.py` | Solé-Daura 2024: E/Z isomerization |
+| `gilmour_ez.py` | Gilmour 2020: β-boryl acrylates |
+| `leonori_ranking.py` | Leonori 2025: nitroarene photocatalysts |
+| `bach_allene.py` | Bach 2026: allene amides |
+| `booker_milburn_sensitisers.py` | Booker-Milburn 2020: thioxanthone sensitizers |
+| `paton_dvte.py` | Paton 2024: DvTE against the predicted reorganization energies |
+
+Each script's docstring names the tables it writes.

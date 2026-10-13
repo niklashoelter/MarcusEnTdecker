@@ -2,7 +2,7 @@
 Hofer, Bertrams, Kerzig, Bach 2026: allene amides cyclise to beta-lactams by triplet energy
 transfer -- does the barrier explain a rate ratio that the triplet energy alone cannot?
 
-    uv run python benchmark/literature/bach_allene.py
+    uv run --extra ml python benchmark/literature/bach_allene.py
 
 The acceptor is non-vertical by bending: the central allene carbon rehybridises from sp to
 sp2 in the triplet. The authors measure the quenching of 7a by two donors (xanthone, XT, and
@@ -16,7 +16,7 @@ All tests below were registered before any prediction was looked at, except thos
 POST HOC.
 
 CONVENTION
-    Asymmetric form, alpha = 1; the paper uses no Marcus form. Every property of every molecule
+    Asymmetric form, unscaled; the paper uses no Marcus form. Every property of every molecule
     is ours, donors included. Rates are compared as activation-limited constants,
     k_act = k_q k_d / (k_d - k_q), with the paper's k_d(MeCN) = 1.9e10 M-1 s-1, so the
     experimental quantity is ddG_exp = RT ln(k_act,XT / k_act,TXT).

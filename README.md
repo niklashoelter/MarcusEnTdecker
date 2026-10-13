@@ -19,8 +19,8 @@ glass-coated plates with six-point dilution series.
 ```
 data/           instrument output and DFT job files, the scripts that process them, and
                 the pair-level dataset built from them
-benchmark/      physical-organic criteria scored against the screen: adiabatic, DvTE,
-                Marcus and Rehm-Weller, as classifiers and as rate predictions
+benchmark/      feasibility criteria scored against the screen (adiabatic, DvTE and the
+                two-gate Marcus criterion), rate predictions, and the literature benchmark
 ml/             the `ml` package: the graph MDN, its training and inference, the trained
                 checkpoint, and the prediction API and `ent-ml` command line on top
 webapp/         the `webapp` package: EnTdecker, the FastAPI application that serves `ml`
@@ -49,10 +49,11 @@ ml    ->  webapp
 the instrument file it came from. The packages never read anything under `data/` or
 `benchmark/`, and `ml` never imports `webapp`; each carries its own resources —
 `ml/data/model_final.pt`, `webapp/data/` — and reads them with `importlib.resources`.
-`webapp/tests/test_no_reverse_dependency.py` keeps that from regressing. The one place
-where the two sides meet is the predicted quencher properties: two scripts in
-`data/computational_data_scripts/`, `quencher_ml.py` and `quencher_ml_timing.py`, call the
-`ml` package to write `quencher_properties_ml.xlsx` and `quencher_timings_ml.csv`.
+`webapp/tests/test_no_reverse_dependency.py` keeps that from regressing. The two sides
+meet in three scripts that call the `ml` package: `quencher_ml.py` and
+`quencher_ml_timing.py` in `data/computational_data_scripts/`, which write
+`quencher_properties_ml.xlsx` and `quencher_timings_ml.csv`, and
+`benchmark/literature/predict.py`, which writes the predictions of the literature benchmark.
 
 Inside `data/`, the processed folders hold one workbook per compound class and side, and
 the Stern–Volmer tables; `build_exp_dataset.py` turns the experimental ones into one row
@@ -83,7 +84,7 @@ folder beside the instrument files or jobs they were derived from.
 ## Reproducing
 
 ```
-uv run reproduce.py            # the data and benchmark stages, in dependency order
+uv run reproduce.py            # the data, benchmark and further_analysis stages, in dependency order
 uv run reproduce.py data       # just one stage
 ```
 
@@ -96,9 +97,10 @@ uv run data/experimental_data_scripts/stern_volmer_fits.py
 
 No install step, no environment to activate, no arguments. Paths are resolved relative
 to each script's own location, so the working directory does not matter. The exceptions
-are the two scripts that use the `ml` package (above), which run with
-`uv run --extra ml python <script>`, and the model training, which `ml/README.md`
-describes.
+are the three scripts that use the `ml` package (above), which run with
+`uv run --extra ml python <script>`, the comparison scripts of the literature benchmark,
+which are not a stage of `reproduce.py` and which `benchmark/README.md` describes, and the
+model training, which `ml/README.md` describes.
 
 ### The one thing that is not in this repository
 

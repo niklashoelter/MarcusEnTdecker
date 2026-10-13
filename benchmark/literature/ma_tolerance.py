@@ -1,7 +1,7 @@
 """
 Ma 2023: which functional groups survive energy-transfer catalysis?
 
-    uv run python benchmark/literature/ma_tolerance.py
+    uv run --extra ml python benchmark/literature/ma_tolerance.py
 
 The paper reduces azaarenes by energy transfer and finds a long list of reducible pendant
 groups untouched. The question for us is a classification: do our predicted driving force and

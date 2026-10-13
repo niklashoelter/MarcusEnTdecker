@@ -2,7 +2,7 @@
 Sole-Daura 2024 (experiments: Zaehringer, Wienhold, Gilmour, Kerzig 2023): which isomer is
 sensitised faster?
 
-    uv run python benchmark/literature/sole_daura_ez.py
+    uv run --extra ml python benchmark/literature/sole_daura_ez.py
 
 Contra-thermodynamic E-to-Z isomerisation works because sensitisation destroys the
 stereochemical information: the twisted triplet decays to both isomers, so the isomer that is
@@ -14,7 +14,7 @@ driving forces, ddG_EnT = dG_EnT(E) - dG_EnT(Z), ours and the paper's, on the sa
 convention (positive: E is sensitised more slowly and accumulates).
 
 CONVENTION
-    Asymmetric form (the paper's eq. 4), alpha = 1. Substrates are ours. Photocatalysts are the
+    Asymmetric form (the paper's eq. 4), unscaled. Substrates are ours. Photocatalysts are the
     paper's -- iridium and ruthenium cannot be encoded -- with the experimental E_T for all
     seven. Thioxanthone is organic, so its pairs are also run with our own TX prediction
     (`pc_source` = "ours"), as a sensitivity check.

@@ -1,7 +1,7 @@
 """
 Molloy, ..., Gilmour 2020: does the barrier predict which beta-boryl acrylate isomer accumulates?
 
-    uv run python benchmark/literature/gilmour_ez.py
+    uv run --extra ml python benchmark/literature/gilmour_ez.py
 
 The Sole-Daura case has one substrate our reorganisation term gets wrong: a beta-boryl
 acrylate, whose E isomer accumulates. This paper is that substrate class. With thioxanthone,
@@ -14,7 +14,7 @@ The comparison is by geometry (boron trans or cis to the carbonyl), never by the
 which flips with the substituents because boron ranks low in CIP.
 
 CONVENTION
-    Asymmetric form, alpha = 1, as for Sole-Daura. Thioxanthone at its experimental E_T from
+    Asymmetric form, unscaled, as for Sole-Daura. Thioxanthone at its experimental E_T from
     the paper's SI Table S1, with our predicted thioxanthone lambdas; Sole-Daura's published TX
     lambdas are run as a sensitivity check (`pc_source`).
 

@@ -1,7 +1,7 @@
 """
 Leonori 2025: nitroarene photocatalysts -- triplet character, and which substrates react.
 
-    uv run python benchmark/literature/leonori_ranking.py
+    uv run --extra ml python benchmark/literature/leonori_ranking.py
 
 The paper's claim is that a nitroarene's ability to sensitise is set by which triplet is
 lowest: the delocalised 3pi,pi* state works, the 3n,pi* state on the pyramidalised nitro group

@@ -1,8 +1,7 @@
 """
-Shared pieces for the three literature comparisons.
+Shared pieces for the literature comparisons.
 
-Not a script; imported by predict.py, ma_tolerance.py, sole_daura_ez.py and
-leonori_ranking.py.
+Not a script; imported by predict.py and by every comparison script beside it.
 
 OUR CONVENTION, EVERYWHERE
     Reorganisation energies are named for the transition they belong to, per molecule:
@@ -22,14 +21,13 @@ OUR CONVENTION, EVERYWHERE
     mapping was checked.
 
 UNSCALED
-    alpha = 1 in every literature case, for consistency across the three and with the
-    published DFT barriers they are compared against.
+    Reorganisation energies enter every barrier unscaled.
 
 THE TWO FORMS, AND WHY THE CHOICE IS PER PAPER
     Ma reports a symmetric barrier built on a single reorganisation energy which is exactly
     lambda_forward -- he never computes the reverse pair -- so his case is compared with
-    `barrier_symmetric(dG, lambda_forward)` and nothing else. Sole-Daura and Leonori use the
-    asymmetric form, so theirs is compared with `barrier_asymmetric`.
+    `barrier_symmetric(dG, lambda_forward)` and nothing else. Every other case with a barrier
+    uses the asymmetric form, `barrier_asymmetric`.
 
 MEAN AND MODE
     The model predicts a mixture of Gaussians per property. Its point prediction is the

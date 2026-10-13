@@ -36,6 +36,9 @@ data/
 ├── computational_data_scripts/      one script per raw folder, plus properties_calc.py,
 │                                    quencher_timings.py, quencher_ml.py,
 │                                    quencher_ml_timing.py and photocatalyst_curate.py
+├── literature_benchmark/            published tables of the literature benchmark, one CSV
+│                                    per study (the PDFs beside them are not in git)
+├── tests/                           pytest tests of molecular_size.py
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
 ├── molecular_size.py                molecular radius from a DFT geometry, used by the

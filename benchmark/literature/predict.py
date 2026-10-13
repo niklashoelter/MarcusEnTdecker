@@ -1,11 +1,11 @@
 """
-Our predictions for the compounds of the three literature cases.
+Our predictions for the compounds of the literature cases.
 
     uv run --extra ml python benchmark/literature/predict.py
 
-Reads the three tables in data/literature_benchmark/ and predicts E_T and both reorganisation
-energies for every structure the model can encode. The three comparison scripts beside this
-one read what it writes; none of them calls the model.
+Reads the tables in data/literature_benchmark/ (CASES) and predicts E_T and both
+reorganisation energies for every structure the model can encode. The comparison scripts
+beside this one read what it writes; none of them calls the model.
 
 WHAT IS PREDICTED
     Every substrate, and every photocatalyst that is an ordinary organic molecule: Leonori's

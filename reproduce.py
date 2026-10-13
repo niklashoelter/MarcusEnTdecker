@@ -21,6 +21,10 @@ Not every script is a stage:
     `photocatalyst_curate.py` builds the photocatalyst deposit from a job tree given as an
     argument, so it is run by hand.
 
+    The literature benchmark in benchmark/literature/ is run by hand with the ml extra:
+    `predict.py` first, then the comparison scripts (benchmark/README.md). Its results
+    are in git.
+
     `quencher_ml.py` needs the ml extra (torch, torch-geometric, rdkit). Run it by hand:
     `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`. The workbook
     it writes is in git.

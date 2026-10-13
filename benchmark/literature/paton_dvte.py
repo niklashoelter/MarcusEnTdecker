@@ -1,7 +1,7 @@
 """
 Paton 2024: dynamic vertical triplet energies (DvTE) against our predicted reorganisation energies.
 
-    uv run python benchmark/literature/paton_dvte.py
+    uv run --extra ml python benchmark/literature/paton_dvte.py
 
 Popescu and Paton (Chem 2024, 10, 3428) sample vertical singlet-triplet gaps along
 quasiclassical trajectories started at the ground-state minimum and report, for 24 molecules
