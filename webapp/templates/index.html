@@ -1010,7 +1010,7 @@
         }
 
         function runRenderResults() {
-            renderResults(window.appData, window.currentInvalid || []);
+            renderResults(window.appData, window.currentInvalid || [], window.currentErrors || []);
         }
 
         async function getSmilesFromKetcher() {
@@ -1076,13 +1076,14 @@
 
                 window.appData = data.results;
                 window.currentInvalid = data.invalid;
+                window.currentErrors = data.errors || [];
                 window.modePlotCache = {}; // clear cached images on new run
 
                 const container = document.getElementById('main-container');
                 container.classList.remove('focus-input', 'has-marcus');
                 container.classList.add('has-results');
 
-                document.getElementById('btn-marcus').classList.remove('hidden');
+                document.getElementById('btn-marcus').classList.toggle('hidden', data.results.length === 0);
 
                 runRenderResults();
                 prefetchInitialPlots(); // Prefetch images in background for instant loading
@@ -1095,7 +1096,7 @@
             }
         }
 
-        function renderResults(results, invalid) {
+        function renderResults(results, invalid, errors) {
             const container = document.getElementById('results-container');
             container.innerHTML = '';
 
@@ -1108,12 +1109,35 @@
                 container.appendChild(warn);
             }
 
+            // Per-molecule errors (no prediction for these molecules)
+            if (errors && errors.length > 0) {
+                const errBox = document.createElement('div');
+                errBox.className = 'bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg mb-6 text-sm font-medium';
+                const title = document.createElement('div');
+                title.innerText = 'Not predicted:';
+                errBox.appendChild(title);
+                const list = document.createElement('ul');
+                list.className = 'list-disc ml-5 mt-1';
+                errors.forEach((e) => {
+                    const li = document.createElement('li');
+                    const smi = document.createElement('span');
+                    smi.style.wordBreak = 'break-all';
+                    smi.style.fontFamily = 'ui-monospace, monospace';
+                    smi.innerText = e.smiles;
+                    li.appendChild(smi);
+                    li.appendChild(document.createTextNode(': ' + e.error));
+                    list.appendChild(li);
+                });
+                errBox.appendChild(list);
+                container.appendChild(errBox);
+            }
+
             if (!results || results.length === 0) {
-                container.innerHTML = `
+                container.insertAdjacentHTML('beforeend', `
                     <div class="flex flex-col items-center justify-center py-12 text-[var(--text-muted)]">
                         <svg class="w-12 h-12 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <p class="text-sm font-medium">No valid results.</p>
-                    </div>`;
+                    </div>`);
                 return;
             }
 
@@ -1385,7 +1409,10 @@
                 });
                 if(r1.ok) {
                     const metrics = await r1.json();
-                    rContainer.innerHTML = `
+                    const fallbackWarning = metrics.symmetric_fallback
+                        ? `<div class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 p-3 rounded-lg mb-4 text-sm font-medium">⚠️ Symmetric approximation used (the parabolas do not intersect, or λ<sub>forward</sub> = λ<sub>reverse</sub>).</div>`
+                        : '';
+                    rContainer.innerHTML = fallbackWarning + `
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             <div class="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-4 text-center">
                                 <div class="text-[var(--text-muted)] text-sm mb-1">Δ<i>G</i></div>
@@ -1416,12 +1443,7 @@
                     const blob = await r2.blob();
                     const url = URL.createObjectURL(blob);
 
-                    let symmWarning = '';
-                    if (r2.headers.get('X-Symmetric-Approx') === 'true') {
-                        symmWarning = `<div class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 p-3 rounded-lg mb-4 text-sm font-medium">⚠️ Symmetric approximation used (reason: ${r2.headers.get('X-Symmetric-Reason')}).</div>`;
-                    }
-
-                    pContainer.innerHTML = symmWarning + `<img src="${url}" class="w-full h-auto rounded" style="max-height: 500px; object-fit: contain;" />`;
+                    pContainer.innerHTML = `<img src="${url}" class="w-full h-auto rounded" style="max-height: 500px; object-fit: contain;" />`;
                 }
             } catch(e) {
                 console.error("Marcus analysis error", e);

@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 from ml.prediction import predict
-from webapp.smiles_utils import is_valid_smiles, canonicalize_smiles, is_single_fragment_smiles
+from webapp.smiles_utils import is_valid_smiles, canonicalize_smiles, is_single_fragment_smiles, vocabulary_error
 from webapp.plots.spin_population import visualize_density_interactive
 from webapp.plots.plot_modes import plot_mode_distribution_single
 from webapp.photocatalysts import photocatalysts, structure_image
@@ -56,6 +56,7 @@ def api_predict(request: PredictRequest):
 
     valid = []
     invalid = []
+    errors = []  # molecules the model cannot encode: {"smiles", "error"}, not predicted
     for s in request.smiles:
         is_val = False
         try:
@@ -68,17 +69,23 @@ def api_predict(request: PredictRequest):
         if not is_single_fragment_smiles(s):
             invalid.append(s)
             continue
+        message = vocabulary_error(s)
+        if message:
+            errors.append({"smiles": s.strip(), "error": message})
+            continue
         canon = canonicalize_smiles(s)
         valid.append(canon if canon else s.strip())
 
-    if not valid:
+    if not valid and not errors:
         raise HTTPException(status_code=400, detail="No valid SMILES provided")
+    if not valid:
+        return {"results": [], "invalid": invalid, "errors": errors}
 
     # Run predictions
     try:
         df = predict(valid)
         results = df.to_dict(orient="records")
-        return {"results": results, "invalid": invalid}
+        return {"results": results, "invalid": invalid, "errors": errors}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -198,7 +205,7 @@ class MarcusRequest(BaseModel):
 
 @app.post("/api/marcus/compute")
 def api_marcus_compute(request: MarcusRequest):
-    dG, dG_act_fwd, dG_act_bwd = marcus_ent.calculate_driving_force_and_barrier(
+    dG, dG_act_fwd, dG_act_bwd, fallback = marcus_ent.calculate_driving_force_and_barrier_flagged(
         pc_adiabatic_E_T=request.pc_adiabatic_E_T,
         pc_lambda_S_T=request.pc_lambda_S0_T1,
         pc_lambda_T_S=request.pc_lambda_T1_S0,
@@ -211,6 +218,7 @@ def api_marcus_compute(request: MarcusRequest):
         "dG": float(dG),
         "dG_activation": float(dG_act_fwd),
         "dG_activation_backEnT": float(dG_act_bwd),
+        "symmetric_fallback": bool(fallback),
     }
 
 @app.post("/api/marcus/plot")

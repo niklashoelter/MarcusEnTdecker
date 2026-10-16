@@ -86,6 +86,31 @@ def calculate_driving_force_and_barrier(
     lambda_forward ~= lambda_reverse.
     """
 
+    dG, dG_activation, dG_activation_backward, _fallback = calculate_driving_force_and_barrier_flagged(
+        pc_adiabatic_E_T,
+        pc_lambda_S_T,
+        pc_lambda_T_S,
+        quencher_E_T,
+        quencher_lambda_S_T,
+        quencher_lambda_T_S,
+        symmetric_approx,
+    )
+    return dG, dG_activation, dG_activation_backward
+
+
+def calculate_driving_force_and_barrier_flagged(
+    pc_adiabatic_E_T: float,
+    pc_lambda_S_T: float,
+    pc_lambda_T_S: float,
+    quencher_E_T: float,
+    quencher_lambda_S_T: float,
+    quencher_lambda_T_S: float,
+    symmetric_approx: bool = False,
+) -> Tuple[float, float, float, bool]:
+    """As `calculate_driving_force_and_barrier`, plus ``symmetric_fallback``: True when
+    the symmetric approximation was applied automatically (not requested).
+    """
+
     (
         dG,
         dG_activation,
@@ -104,11 +129,12 @@ def calculate_driving_force_and_barrier(
         symmetric_approx,
     )
 
-    if symmetric_flag and not symmetric_approx:
+    symmetric_fallback = bool(symmetric_flag and not symmetric_approx)
+    if symmetric_fallback:
         # warn only for the automatic fallback
         print(
             "Warning: Product and reactant parabolas do not intersect properly. Using symmetric approximation.",
             f"Reason: {reason}",
         )
 
-    return dG, dG_activation, dG_activation_backward
+    return dG, dG_activation, dG_activation_backward, symmetric_fallback
