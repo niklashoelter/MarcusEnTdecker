@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools==84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -29,11 +29,11 @@ dependencies = []
 ml = [
     "numpy==2.4.2",
     "pandas==2.3.3",
-    "scipy>=1.14",
+    "scipy==1.18.1",
     "matplotlib==3.10.8",
     "rdkit==2025.9.4",
     "scikit-learn==1.8.0",
-    "joblib>=1.4",
+    "joblib==1.6.0",
     "torch==2.5.1",
     "torch-geometric==2.7.0",
     "openpyxl==3.1.5",
@@ -48,9 +48,9 @@ webapp = [
     "kinetics-ent[ml]",
     "fastapi==0.135.2",
     "uvicorn[standard]==0.42.0",
-    "pydantic>=2",
+    "pydantic==2.13.5",
     "plotly==6.6.0",
-    "pillow>=10",
+    "pillow==12.3.0",
 ]
 
 [project.scripts]
