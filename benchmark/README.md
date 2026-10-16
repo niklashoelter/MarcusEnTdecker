@@ -17,8 +17,6 @@ Inputs: `../data/exp_dataset_ent.csv` (including the molecular radii `pc_radius_
 `../data/computational_data_processed/quencher_timings.csv`, `quencher_timings_ml.csv`
 and the quencher SMILES from `../data/compound_identification.xlsx`.
 
-Tests: `uv run --no-project --with pytest --with numpy --with pandas --with scipy pytest benchmark/tests`
-
 ## Layout
 
 ```
@@ -28,8 +26,6 @@ benchmark/
 ├── scoring.py          metrics, AUC, choice of the best setting
 ├── classification.py   the classification criteria
 ├── cost.py             CPU time per quencher for each criterion
-├── tests/              pytest tests of theory, scoring, classification, cost and the
-│                       further analyses
 ├── literature/         the literature benchmark: predict.py, common.py, one script per study
 ├── results/
 │   ├── classification/
