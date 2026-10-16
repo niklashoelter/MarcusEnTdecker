@@ -1,22 +1,6 @@
-# Raw computational job files (~11 GB) — archived to Zenodo, fetched on demand.
-data/computational_data_raw/*
-
-# Except the tables the extraction scripts write next to the jobs they read, which the
-# property workbooks in computational_data_processed/ are assembled from.
-!data/computational_data_raw/photocatalysts_new_ids/
-data/computational_data_raw/photocatalysts_new_ids/*
-!data/computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv
-!data/computational_data_raw/organophotocatalysts/
-data/computational_data_raw/organophotocatalysts/*
-!data/computational_data_raw/organophotocatalysts/organophotocatalyst_dft.csv
-!data/computational_data_raw/quencher_adiabatic_DFT/
-data/computational_data_raw/quencher_adiabatic_DFT/*
-!data/computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
-!data/computational_data_raw/quencher_adiabatic_DvTE/
-data/computational_data_raw/quencher_adiabatic_DvTE/*
-!data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
-!data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
-!data/computational_data_raw/quencher_adiabatic_DvTE/quencher_timings_vertical_sp.csv.gz
+# Raw data, on Zenodo.
+data/experimental_data_raw/
+data/computational_data_raw/
 
 # data/ has one README, data/README.md. None below it.
 data/*/**/README.md

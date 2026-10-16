@@ -7,7 +7,7 @@ and ORCA jobs -> one property workbook per compound class -> the pair-level data
 
 ```
 data/
-├── experimental_data_raw/           instrument files
+├── experimental_data_raw/           instrument files (Zenodo, not in git)
 │   ├── pc_emission/                 emission scans
 │   ├── pc_tcspc/                    PC<old id>.txt/.FL, one trace each
 │   ├── quencher_absorption/         absorption scans, plate map
@@ -228,5 +228,6 @@ single point from a second run.
 
 ## Git and Zenodo
 
-From `computational_data_raw/`, only the derived tables are in git. The ORCA/Milo job
-folders are on Zenodo.
+The raw data (`experimental_data_raw/`, `computational_data_raw/`) are not part of this
+repository; they are available on Zenodo (DOI: to follow). Without them,
+`uv run reproduce.py data` skips the extraction scripts.

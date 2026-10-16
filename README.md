@@ -14,8 +14,8 @@ glass-coated plates with six-point dilution series.
 ## Layout
 
 ```
-data/           instrument output and DFT job files, the scripts that process them, and
-                the pair-level dataset built from them
+data/           the tables extracted from the instrument output and DFT jobs (raw data on
+                Zenodo), the scripts that process them, and the pair-level dataset
 benchmark/      feasibility criteria scored against the screen (adiabatic, DvTE and the
                 two-gate Marcus criterion), rate predictions, and the literature benchmark
 ml/             the `ml` package: the graph MDN, its training and inference, the trained
@@ -100,9 +100,10 @@ are described in `benchmark/README.md`; the model training in `ml/README.md`.
 
 ### Not in this repository
 
-`data/computational_data_raw/` (ORCA and Milo job files) is archived to Zenodo. The
-tables extracted from it and the workbooks built from them are committed; the archive is
-needed only to re-derive the extracted tables.
+The raw data (`data/experimental_data_raw/`, `data/computational_data_raw/`) are not part
+of this repository; they are available on Zenodo (DOI: to follow). The tables extracted
+from them are committed; the raw data are needed only to re-derive those tables
+(`uv run reproduce.py data` skips the extraction scripts without them).
 
 ## Predicting from structure
 

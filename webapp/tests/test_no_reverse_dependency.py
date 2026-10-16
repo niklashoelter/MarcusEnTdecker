@@ -23,7 +23,7 @@ FORBIDDEN_PACKAGES = ("data", "benchmark")
 
 # Script module names (catches `import pairs` after a sys.path insert).
 SCRIPT_MODULES = {p.stem for d in FORBIDDEN_PACKAGES for p in (ROOT / d).rglob("*.py")
-                  if "computational_data_raw" not in p.parts} | {"reproduce"}
+                  if not any(part.endswith("_raw") for part in p.parts)} | {"reproduce"}
 
 # Forbidden: a literal with a path segment exactly `data` or `benchmark`. Does not match
 # `ml.data`, `new_data/` or a `data:image/png;base64,` URI.
