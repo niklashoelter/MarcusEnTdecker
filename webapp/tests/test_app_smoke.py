@@ -51,12 +51,12 @@ def test_the_library_is_the_screened_photocatalysts_and_the_organic_ones(client)
     assert ids == [f"PC{n}" for n in range(1, 28)] + [f"OPC{n}" for n in range(1, 9)]
 
 
-def test_only_the_screened_photocatalysts_carry_lifetime_and_potentials(client):
-    """tau0 was measured and the potentials computed for the screened ones only."""
+def test_only_the_screened_photocatalysts_carry_potentials(client):
+    """The excited-state potentials were computed for the screened ones only."""
     for pc in client.get("/api/photocatalysts").json()["photocatalysts"]:
-        values = (pc["tau0_ns"], pc["E_PCplus_PCstar"], pc["E_PCstar_PCminus"])
+        values = (pc["E_PCplus_PCstar"], pc["E_PCstar_PCminus"])
         if pc["id"].startswith("OPC"):
-            assert values == (None, None, None), pc["id"]
+            assert values == (None, None), pc["id"]
             assert pc["smiles"], f"{pc['id']} has no SMILES to draw it from"
         else:
             assert all(isinstance(v, float) for v in values), pc["id"]
@@ -65,11 +65,14 @@ def test_only_the_screened_photocatalysts_carry_lifetime_and_potentials(client):
 
 
 def test_every_photocatalyst_is_drawn_or_named(client):
-    """A drawing or a SMILES gives a structure; neither gives a 404 the page turns into the
-    compound name, never a 500."""
+    """The drawing <id>.png wherever the file exists, else the SMILES; neither gives a 404
+    the page turns into the compound name, never a 500."""
+    import importlib.resources as ir
+
+    drawings = ir.files("webapp.data").joinpath("pc_structures")
     for pc in client.get("/api/photocatalysts").json()["photocatalysts"]:
         response = client.post("/api/structure", json={"smiles": pc["smiles"], "name": pc["id"]})
-        if pc["structure_image"]:
+        if drawings.joinpath(f"{pc['id']}.png").is_file():
             assert response.headers["content-type"] == "image/png", pc["id"]
         elif pc["smiles"]:
             assert response.headers["content-type"].startswith("image/svg"), pc["id"]
@@ -80,14 +83,6 @@ def test_every_photocatalyst_is_drawn_or_named(client):
 def test_the_structure_name_is_an_id_not_a_path(client):
     response = client.post("/api/structure", json={"smiles": "", "name": "../photocatalysts"})
     assert response.status_code == 404
-
-
-def test_photocatalysts_carry_their_measured_lifetime(client):
-    """tau0 where it was measured, None where it was not."""
-    photocatalysts = client.get("/api/photocatalysts").json()["photocatalysts"]
-    lifetimes = {pc["name"]: pc["tau0_ns"] for pc in photocatalysts}
-    assert any(isinstance(t, float) and t > 0 for t in lifetimes.values())
-    assert all(t is None or t > 0 for t in lifetimes.values())
 
 
 PAIR = {"pc_adiabatic_E_T": 65.7, "pc_lambda_S0_T1": 10.3, "pc_lambda_T1_S0": 8.3,
@@ -113,36 +108,13 @@ def test_marcus_refuses_the_old_lambda_names(client):
     assert client.post("/api/marcus/compute", json=old).status_code == 422
 
 
-def test_marcus_without_lifetime_gives_the_barrier_only(client):
+def test_marcus_gives_the_driving_force_and_the_barriers_only(client):
+    """No lifetime goes in and no lifetime threshold or verdict comes out."""
     result = client.post("/api/marcus/compute", json=PAIR).json()
+    assert set(result) == {"dG", "dG_activation", "dG_activation_backEnT"}
     assert result["dG"] < 0 and result["dG_activation"] > 0
-    assert result["t_PC"] is None and result["two_gate"] is None
-
-
-def test_marcus_with_lifetime_gives_the_two_gate_verdict(client):
-    from ml.energy.two_gate import lifetime_barrier
-
-    result = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 2000.0}).json()
-    assert result["t_PC"] == pytest.approx(lifetime_barrier(2000.0))
-    assert result["two_gate"] is (result["dG"] <= 0
-                                  and result["dG_activation"] <= result["t_PC"])
-
-    short = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 0.4}).json()
-    assert short["t_PC"] is None and short["two_gate"] is False
-
-
-def test_marcus_lifetime_barrier_follows_the_energy_unit(client):
-    kcal = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 2000.0}).json()
-    in_ev = {k: v / 23.060548868 for k, v in PAIR.items()}
-    ev = client.post("/api/marcus/compute",
-                     json={**in_ev, "unit": "eV", "pc_tau0_ns": 2000.0}).json()
-    assert ev["t_PC"] == pytest.approx(kcal["t_PC"] / 23.060548868)
-    assert ev["two_gate"] == kcal["two_gate"]
-
-
-def test_marcus_refuses_a_lifetime_that_is_not_positive(client):
-    response = client.post("/api/marcus/compute", json={**PAIR, "pc_tau0_ns": 0.0})
-    assert response.status_code == 400
+    assert client.post("/api/marcus/compute",
+                       json={**PAIR, "pc_tau0_ns": 2000.0}).status_code == 422
 
 
 def test_the_model_was_never_called(client, stub):

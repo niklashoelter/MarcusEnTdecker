@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 import uvicorn
 from pathlib import Path
@@ -17,7 +17,7 @@ from webapp.smiles_utils import is_valid_smiles, canonicalize_smiles, is_single_
 from webapp.plots.spin_population import visualize_density_interactive
 from webapp.plots.plot_modes import plot_mode_distribution_single
 from webapp.photocatalysts import photocatalysts, structure_image
-from ml.energy import marcus_ent, two_gate
+from ml.energy import marcus_ent
 from webapp.plots import marcus_plot
 import matplotlib.pyplot as plt
 
@@ -180,15 +180,17 @@ def api_structure(request: StructureRequest):
 
 @app.get("/api/photocatalysts")
 def api_photocatalysts():
-    """The photocatalyst library: DFT E_T, lambda_S0_T1 and lambda_T1_S0 in kcal/mol, the
-    DFT excited-state potentials in V vs SCE and the measured tau0 in ns (None where absent)."""
+    """The photocatalyst library: DFT E_T, lambda_S0_T1 and lambda_T1_S0 in kcal/mol and the
+    DFT excited-state potentials in V vs SCE (None where not computed)."""
     return {"photocatalysts": photocatalysts()}
 
 class MarcusRequest(BaseModel):
     """A pair, in `unit`. lambda_S0_T1 is the S0 surface at the T1 geometry, lambda_T1_S0
     the T1 surface at the S0 geometry; ml.energy.marcus_ent pairs them into
     lambda_forward = lambda_T1_S0(PC) + lambda_S0_T1(Q) and
-    lambda_reverse = lambda_S0_T1(PC) + lambda_T1_S0(Q)."""
+    lambda_reverse = lambda_S0_T1(PC) + lambda_T1_S0(Q). Any other field is refused."""
+    model_config = ConfigDict(extra="forbid")
+
     pc_adiabatic_E_T: float
     pc_lambda_S0_T1: float
     pc_lambda_T1_S0: float
@@ -197,11 +199,6 @@ class MarcusRequest(BaseModel):
     quencher_lambda_T1_S0: float
     unit: str = "kcal/mol"
     theme: str = "light"
-    pc_tau0_ns: Optional[float] = None
-
-# kcal/mol per unit of the energies a request carries
-KCAL_PER_UNIT = {"kcal/mol": 1.0, "kJ/mol": 1 / 4.184, "eV": 23.060548868,
-                 "Hartree": 627.5094740631}
 
 @app.post("/api/marcus/compute")
 def api_marcus_compute(request: MarcusRequest):
@@ -214,23 +211,10 @@ def api_marcus_compute(request: MarcusRequest):
         quencher_lambda_T_S=request.quencher_lambda_T1_S0,
         symmetric_approx=False,
     )
-    # The two-gate verdict needs the photocatalyst lifetime; without it, the barrier only.
-    t_pc = verdict = None
-    if request.pc_tau0_ns is not None:
-        if request.unit not in KCAL_PER_UNIT:
-            raise HTTPException(status_code=400, detail=f"Unknown unit {request.unit}")
-        try:
-            t_pc_kcal = two_gate.lifetime_barrier(request.pc_tau0_ns)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
-        t_pc = t_pc_kcal / KCAL_PER_UNIT[request.unit]
-        verdict = two_gate.quenches(dG, dG_act_fwd, t_pc)
     return {
         "dG": float(dG),
         "dG_activation": float(dG_act_fwd),
         "dG_activation_backEnT": float(dG_act_bwd),
-        "t_PC": None if t_pc is None or t_pc == float("-inf") else float(t_pc),
-        "two_gate": verdict,
     }
 
 @app.post("/api/marcus/plot")

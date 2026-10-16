@@ -7,13 +7,13 @@ the organic photocatalysts offered only here (OPC<n>):
     id                  PC<n> or OPC<n>
     name                the compound
     smiles              organic photocatalysts only; the metal complexes have none
-    structure_image     a drawing in data/pc_structures/, where there is one
     E_T                 adiabatic triplet energy, DFT, kcal/mol
     lambda_S0_T1        reorganization energy on the S0 surface (at the T1 geometry), kcal/mol
     lambda_T1_S0        reorganization energy on the T1 surface (at the S0 geometry), kcal/mol
     E_PCplus_PCstar     E(PC+/PC*), DFT, V vs SCE; blank where not computed
     E_PCstar_PCminus    E(PC*/PC-), DFT, V vs SCE; blank where not computed
-    tau0_ns             measured excited-state lifetime, ns; blank where none was measured
+
+A photocatalyst's drawing is data/pc_structures/<id>.png, used wherever that file exists.
 """
 
 from __future__ import annotations
@@ -25,9 +25,9 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-COLUMNS = ("id", "name", "smiles", "structure_image", "E_T", "lambda_S0_T1", "lambda_T1_S0",
-           "E_PCplus_PCstar", "E_PCstar_PCminus", "tau0_ns")
-TEXT = ("id", "name", "smiles", "structure_image")
+COLUMNS = ("id", "name", "smiles", "E_T", "lambda_S0_T1", "lambda_T1_S0",
+           "E_PCplus_PCstar", "E_PCstar_PCminus")
+TEXT = ("id", "name", "smiles")
 REQUIRED = ("E_T", "lambda_S0_T1", "lambda_T1_S0")
 
 
@@ -72,9 +72,12 @@ def get_photocatalyst(pc_id: str) -> Optional[Dict[str, Any]]:
 
 
 def structure_image(pc_id: str) -> Optional[bytes]:
-    """The PNG drawing of a photocatalyst, or None where there is none."""
+    """The drawing pc_structures/<id>.png of a photocatalyst of the table, or None.
+
+    Only ids from the table are looked up, so a request never names a path.
+    """
     pc = get_photocatalyst(pc_id)
-    if pc is None or not pc["structure_image"]:
+    if pc is None:
         return None
-    image = ir.files("webapp.data").joinpath("pc_structures", pc["structure_image"])
+    image = ir.files("webapp.data").joinpath("pc_structures", f"{pc['id']}.png")
     return image.read_bytes() if image.is_file() else None

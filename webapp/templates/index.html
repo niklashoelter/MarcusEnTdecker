@@ -630,11 +630,7 @@
                             </div>
                         </div>
                         <div id="marcus-pc-struct" class="mb-3 w-full h-[150px] flex items-center justify-center bg-[#ffffff] border border-[var(--border-color)] rounded overflow-hidden shadow-sm"></div>
-                        <select id="pc-select" class="input-sleek py-2" onchange="fillPcTau0(); runMarcusAnalysis()"></select>
-                        <div class="flex items-center gap-2 mt-2">
-                            <label for="pc-tau0" class="text-sm font-medium text-[var(--text-muted)] whitespace-nowrap" title="Excited-state lifetime of the photocatalyst, prefilled where it was measured; needed for the two-gate verdict"><i>τ</i><sub>0</sub> (ns)</label>
-                            <input id="pc-tau0" type="number" min="0" step="any" placeholder="optional" class="input-sleek py-2" onchange="runMarcusAnalysis()">
-                        </div>
+                        <select id="pc-select" class="input-sleek py-2" onchange="runMarcusAnalysis()"></select>
                     </div>
                     <div class="flex-1 min-w-[200px]">
                         <div class="flex items-center justify-between mb-2">
@@ -1268,18 +1264,10 @@
                         opt.innerText = `${pc.id}: ${pc.name}`;
                         pcSelect.appendChild(opt);
                     });
-                    fillPcTau0();
                 }
             } catch(e) {
                 console.error("Failed to fetch photocatalysts", e);
             }
-        }
-
-        // Prefill the lifetime with the measured value of the selected photocatalyst, if any
-        function fillPcTau0() {
-            const pcVal = window.pcData[document.getElementById('pc-select').value];
-            const tau0 = pcVal ? pcVal.tau0_ns : null;
-            document.getElementById('pc-tau0').value = tau0 !== null && tau0 !== undefined ? tau0 : '';
         }
 
         function toggleMarcusTheory(e) {
@@ -1381,8 +1369,6 @@
                 quencher_lambda_T1_S0: convertEnergy(qVal.lamda_T_S, unit),
                 unit: unit
             };
-            const tau0 = parseFloat(document.getElementById('pc-tau0').value);
-            if (tau0 > 0) reqBody.pc_tau0_ns = tau0;
 
             // Setup loading state
             const rContainer = document.getElementById('marcus-results-container');
@@ -1418,16 +1404,6 @@
                             </div>
                         </div>
                     `;
-                    // Two-gate verdict only when a lifetime was given
-                    if (metrics.two_gate !== null && metrics.two_gate !== undefined) {
-                        const tpc = metrics.t_PC !== null ? `${metrics.t_PC.toFixed(2)} ${unit}` : 'none';
-                        rContainer.innerHTML += `
-                        <div class="bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-4 text-center mb-6">
-                            <div class="text-[var(--text-muted)] text-sm mb-1">Two-gate (Δ<i>G</i> ≤ 0 and Δ<i>G</i><sup>‡</sup> ≤ <i>t</i><sub>PC</sub> = ${tpc})</div>
-                            <div class="text-xl font-bold text-[var(--text-heading)]">${metrics.two_gate ? 'quenches' : 'does not quench'}</div>
-                        </div>
-                    `;
-                    }
                 }
 
                 // Fetch plot

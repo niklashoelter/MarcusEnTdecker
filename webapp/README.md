@@ -4,11 +4,8 @@ EnTdecker puts the model in a browser: draw or paste a quencher and get its pred
 triplet energy and reorganization energies (λS0-T1, the S0 surface at the T1 geometry,
 and λT1-S0, the T1 surface at the S0 geometry) with their uncertainties, the predicted
 distributions behind them and its spin-population map; pick a photocatalyst of the
-library and get the driving force, the Marcus barriers and a reaction-coordinate plot for
-the pair. Given the photocatalyst's excited-state lifetime τ₀ (prefilled where it was
-measured), it also gives the two-gate verdict of `ml.energy.two_gate`: ΔG ≤ 0 and the
-barrier at most the lifetime barrier t_PC, at the fixed contact distance of
-`ml.energy.two_gate`. Without τ₀ it shows the barrier only.
+library and get the driving force ΔG_EnT, the asymmetric Marcus barriers and the parabolas
+of the pair. It takes no lifetime and gives no verdict: the barrier is the answer.
 
 ## The photocatalyst library
 
@@ -21,16 +18,17 @@ uv run webapp/scripts/build_photocatalysts.py
 ```
 
 reads the repository's `data/` and takes each quantity from one source, the one the
-benchmark's thermokinetic criterion uses: E_T, λS0-T1 and λT1-S0 from DFT, the excited-state
-potentials E(PC⁺/PC*) and E(PC*/PC⁻) from DFT (V vs SCE), and τ₀ from TCSPC. The organic
-photocatalysts have neither potentials nor a measured τ₀, so their τ₀ is left for the user
-to enter. Rerun the generator after any change to those tables;
-`tests/test_photocatalyst_library.py` fails while the packaged table and `data/` disagree,
-and checks that the app scores every benchmark pair as the benchmark's 7 Å variant does.
+benchmark uses: E_T, λS0-T1 and λT1-S0 from DFT, and the excited-state potentials
+E(PC⁺/PC*) and E(PC*/PC⁻) from DFT (V vs SCE), which are shown but enter no calculation.
+The organic photocatalysts have no potentials. Rerun the generator after any change to
+those tables; `tests/test_photocatalyst_library.py` fails while the packaged table and
+`data/` disagree, and checks that the app gives every benchmark pair the benchmark's driving
+force and barrier.
 
-The metal complexes have no SMILES; they are drawn from `data/pc_structures/<id>.png` where
-a drawing exists, and otherwise the page shows the compound name. The organic
-photocatalysts are drawn from SMILES read off their DFT geometries. `scripts/` is not part
+A photocatalyst is drawn from `data/pc_structures/<id>.png` wherever that file exists;
+adding or replacing a drawing needs no rerun. Without one, an organic photocatalyst is
+drawn from its SMILES (read off its DFT geometry), and a metal complex, which has no SMILES,
+is shown by its compound name. `scripts/` is not part
 of the package: it has no `__init__.py`, is not installed, and nothing in the application
 imports it.
 

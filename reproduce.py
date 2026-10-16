@@ -5,7 +5,7 @@
 """
 Regenerate the data and the benchmark, in dependency order.
 
-    uv run reproduce.py                  every stage: data, benchmark, further_analysis
+    uv run reproduce.py                  every stage: data, benchmark, further_analysis, webapp
     uv run reproduce.py data             one stage
     uv run reproduce.py data benchmark   several stages
     uv run reproduce.py --list           what would run, without running it
@@ -112,9 +112,11 @@ PIPELINE = [
      "data/exp_dataset_ent.csv"),
     ("further_analysis", "benchmark/further_analysis/ml_vs_dft.py",
      "benchmark/further_analysis/results/quencher_classes/quencher_classes.csv"),
+    ("webapp", "webapp/scripts/build_photocatalysts.py",
+     "data/computational_data_processed/photocatalyst_properties_calc.xlsx"),
 ]
 
-STAGES = ["data", "benchmark", "further_analysis"]
+STAGES = ["data", "benchmark", "further_analysis", "webapp"]
 
 
 def run(script):
