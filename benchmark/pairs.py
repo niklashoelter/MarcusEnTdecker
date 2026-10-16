@@ -44,7 +44,7 @@ DVTE_KINDS = ("normal", "kde")
 
 LEFT_OUT = {"PC22": "emission too weak for Stern-Volmer analysis"}
 LEFT_OUT_QUENCHERS = {
-    "Q31": "quenching is not EnT: weak k_q, nearly constant over the driving force, follows tau0",
+    "Q31": "no CV wave, its potential limits are unreliable (decomposition on the electrode): SET not ruled out",
     "Q38": "1,3-butadiene: no pair quenches, not even strongly downhill (stock likely evaporated)",
 }
 
