@@ -11,7 +11,7 @@ Reads   ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/
         ../computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz
         ../compound_identification.xlsx   (quencher ids)
 Writes  ../computational_data_processed/quencher_timings.csv
-        ../computational_data_raw/quencher_adiabatic_DvTE/quencher_timings_vertical_sp.csv.gz
+        ../computational_data_processed/quencher_timings_vertical_sp.csv.gz
 
     uv run data/computational_data_scripts/quencher_timings.py
 
@@ -68,7 +68,7 @@ GAUSSIAN = DVTE / "Gaussian_Freq"
 MILO = DVTE / "Milo_MD"
 ARCHIVE = DVTE / "quenchers_vertical_gaps.tar.xz"
 OUT = DATA / "computational_data_processed" / "quencher_timings.csv"
-OUT_STEPS = DVTE / "quencher_timings_vertical_sp.csv.gz"
+OUT_STEPS = OUT.parent / "quencher_timings_vertical_sp.csv.gz"
 
 SIGFIGS = 6
 

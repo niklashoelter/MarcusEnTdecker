@@ -9,7 +9,7 @@ molecular radii.
 Reads   ../computational_data_raw/photocatalysts_new_ids/PC<n>/{S0,T1,ox,red}/*_output.out
         ../computational_data_raw/photocatalysts_new_ids/PC<n>/S0/opt_geometry.xyz
         ../compound_identification.xlsx   (photocatalyst ids)
-Writes  ../computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv
+Writes  ../computational_data_processed/photocatalyst_dft.csv
 
     uv run data/computational_data_scripts/photocatalyst_dft.py
 
@@ -39,7 +39,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "computational_data_raw" / "photocatalysts_new_ids"
-OUT = RAW / "photocatalyst_dft.csv"
+OUT = ROOT / "computational_data_processed" / "photocatalyst_dft.csv"
 
 HARTREE_KCAL = 627.509
 FARADAY_KCAL_V = 23.061

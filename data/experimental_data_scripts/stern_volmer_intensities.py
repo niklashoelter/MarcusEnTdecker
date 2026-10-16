@@ -9,7 +9,7 @@ Reads   ../experimental_data_raw/stern_volmer/
         <batch>.csv               BMG plate export, repeat reads per well
         <batch>.well_plate.json   Opentrons pipetting map
 Writes  ../experimental_data_processed/stern_volmer_intensities.csv
-        ../experimental_data_raw/stern_volmer/plate_reader_filters.csv   one row per batch
+        ../experimental_data_processed/plate_reader_filters.csv   one row per batch
 
     uv run data/experimental_data_scripts/stern_volmer_intensities.py
 
@@ -40,7 +40,7 @@ MAX_RSD = 0.05        # above this relative standard deviation, the worst read i
 CONC_SIGFIGS = 6
 INTENSITY_DP = 1
 
-FILTERS_OUT = RAW / "plate_reader_filters.csv"
+FILTERS_OUT = OUT.parent / "plate_reader_filters.csv"
 # "FI: Ex: 425-8 Em: 620-50" -> centre and bandwidth of each filter, nm
 MODE = re.compile(r"Ex:\s*(\d+)-(\d+)\s*Em:\s*(\d+)-(\d+)")
 # Saved protocols whose export names no filters: centres from the photocatalyst sheet,

@@ -3,7 +3,7 @@ Quencher SMILES -> the graph MDN's triplet energy and reorganization energies.
 
 Reads   ../compound_identification.xlsx                (ids, names, SMILES)
         ../../ml/data/model_final.pt                   (the trained checkpoint)
-        ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
+        ../computational_data_processed/quencher_dft.csv
                                                        (DFT E_T, for the printed comparison)
 Writes  ../computational_data_processed/quencher_properties_ml.xlsx
 
@@ -28,7 +28,7 @@ from properties_workbook import Block, Column, field, read_table, write_workbook
 ROOT = DATA.parent
 CHECKPOINT = ROOT / "ml" / "data" / "model_final.pt"
 OUT = DATA / "computational_data_processed" / "quencher_properties_ml.xlsx"
-Q_DFT = DATA / "computational_data_raw" / "quencher_adiabatic_DFT" / "quencher_dft.csv"
+Q_DFT = DATA / "computational_data_processed" / "quencher_dft.csv"
 
 IDENTIFICATION = "compound_identification.xlsx"
 MODEL = CHECKPOINT.relative_to(ROOT).as_posix()

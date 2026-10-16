@@ -7,24 +7,35 @@ and ORCA jobs -> one property workbook per compound class -> the pair-level data
 
 ```
 data/
-├── experimental_data_raw/           instrument files, plus the tables derived from them
+├── experimental_data_raw/           instrument files
 │   ├── pc_emission/                 emission scans
-│   ├── pc_tcspc/                    PC<old id>.txt/.FL, one trace each -> lifetimes_tcspc.csv
-│   ├── quencher_absorption/         absorption scans -> absorption_extinction.csv
-│   ├── quencher_cyclic_voltammetry/ measured data/ (voltammograms), redox potentials in three tables
-│   └── stern_volmer/                plate reads, pipetting maps -> plate_reader_filters.csv
+│   ├── pc_tcspc/                    PC<old id>.txt/.FL, one trace each
+│   ├── quencher_absorption/         absorption scans, plate map
+│   ├── quencher_cyclic_voltammetry/ measured data/ (voltammograms)
+│   └── stern_volmer/                plate reads, pipetting maps
 ├── experimental_data_processed/
+│   ├── lifetimes_tcspc.csv          from pc_tcspc/
+│   ├── absorption_extinction.csv    from quencher_absorption/
+│   ├── plate_reader_filters.csv     from stern_volmer/
+│   ├── quencher_redox_measured.csv, quencher_redox_literature.csv
+│   │                                redox potentials, entered by hand
+│   ├── quencher_redox_potentials.csv  the two joined
 │   ├── photocatalyst_properties_exp.xlsx
 │   ├── quencher_properties_exp.xlsx
 │   ├── stern_volmer_intensities.csv
 │   └── stern_volmer_fits.csv
-├── computational_data_raw/          ORCA/Milo jobs (Zenodo, not in git), plus derived tables
-│   ├── photocatalysts_new_ids/      PC<n>/{S0,T1,ox,red,conf}/ -> photocatalyst_dft.csv
-│   ├── organophotocatalysts/        OPC<n>/{S0,T1}/ -> organophotocatalyst_dft.csv
-│   ├── quencher_adiabatic_DFT/      Q<n>/{S0,T1,ox,red}/ -> quencher_dft.csv
-│   └── quencher_adiabatic_DvTE/     MD trajectories -> quencher_dvte.csv, _samples.csv.gz,
-│                                    quencher_timings_vertical_sp.csv.gz
+├── computational_data_raw/          ORCA/Milo jobs (Zenodo, not in git)
+│   ├── photocatalysts_new_ids/      PC<n>/{S0,T1,ox,red,conf}/
+│   ├── organophotocatalysts/        OPC<n>/{S0,T1}/
+│   ├── quencher_adiabatic_DFT/      Q<n>/{S0,T1,ox,red}/
+│   └── quencher_adiabatic_DvTE/     MD trajectories, vertical single points
 ├── computational_data_processed/
+│   ├── photocatalyst_dft.csv        from photocatalysts_new_ids/
+│   ├── organophotocatalyst_dft.csv  from organophotocatalysts/
+│   ├── quencher_dft.csv             from quencher_adiabatic_DFT/
+│   ├── quencher_dvte.csv, quencher_dvte_samples.csv.gz
+│   │                                from quencher_adiabatic_DvTE/
+│   ├── quencher_timings_vertical_sp.csv.gz  timing of every DvTE single point
 │   ├── photocatalyst_properties_calc.xlsx
 │   ├── quencher_properties_calc.xlsx
 │   ├── quencher_properties_ml.xlsx  E_T, lambda_S0_T1 and lambda_T1_S0 predicted from the SMILES
@@ -56,8 +67,8 @@ data/
 
 ## Pipeline
 
-1. Each extraction script reads one raw folder and writes its table into the same folder.
-   The two Stern–Volmer scripts write to `experimental_data_processed/`.
+1. Each extraction script reads one raw folder and writes its table into the matching
+   processed folder.
 2. `properties_exp.py` and `properties_calc.py` copy the per-compound values into the
    workbooks.
 3. `build_exp_dataset.py` builds `exp_dataset` from the experimental processed folder.
@@ -135,7 +146,7 @@ Values missing from the source table are left empty.
 ## Methods notes
 
 **Stern–Volmer wavelengths:** the filter pairs in the plate-reader export headers, with
-their bandwidths in `stern_volmer/plate_reader_filters.csv`. PC1 and PC3: wavelengths from
+their bandwidths in `plate_reader_filters.csv`. PC1 and PC3: wavelengths from
 the screen's photocatalyst sheet (saved protocols name no filters).
 
 **Quencher redox potentials:** read by hand from the voltammograms or taken from the

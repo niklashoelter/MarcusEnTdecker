@@ -41,7 +41,7 @@ ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 class Column:
     header: str                         # "tau0 / ns", unit after " / "
     description: str
-    source: str                         # "pc_tcspc/lifetimes_tcspc.csv: tau0_ns"
+    source: str                         # "experimental_data_processed/lifetimes_tcspc.csv: tau0_ns"
     value: Callable[[int], object]      # compound id -> cell value
 
 

@@ -8,7 +8,7 @@ The photocatalyst table of the web application.
 Reads   ../../data/compound_identification.xlsx                              PC names
         ../../data/computational_data_processed/photocatalyst_properties_calc.xlsx
                                                      E_T, both lambda, excited-state potentials
-        ../../data/computational_data_raw/organophotocatalysts/organophotocatalyst_dft.csv
+        ../../data/computational_data_processed/organophotocatalyst_dft.csv
                                                      OPC names, E_T and both lambda
         ../../data/computational_data_raw/organophotocatalysts/OPC<n>/S0/opt_geometry.xyz
                                                      OPC SMILES
@@ -46,7 +46,7 @@ DATA = ROOT / "data"
 IDENTIFICATION = DATA / "compound_identification.xlsx"
 CALC = DATA / "computational_data_processed" / "photocatalyst_properties_calc.xlsx"
 OPC_DIR = DATA / "computational_data_raw" / "organophotocatalysts"
-OPC_TABLE = OPC_DIR / "organophotocatalyst_dft.csv"
+OPC_TABLE = DATA / "computational_data_processed" / "organophotocatalyst_dft.csv"
 IMAGES = WEBAPP / "data" / "pc_structures"
 OUT = WEBAPP / "data" / "photocatalysts.csv"
 

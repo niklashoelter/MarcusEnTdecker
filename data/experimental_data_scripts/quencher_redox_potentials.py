@@ -6,17 +6,17 @@
 Quencher redox potentials, one table from the two hand-edited ones.
 
 Reads   ../compound_identification.xlsx   (quencher ids)
-        ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_literature.csv
-        ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_measured.csv
-Writes  ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv
+        ../experimental_data_processed/quencher_redox_literature.csv
+        ../experimental_data_processed/quencher_redox_measured.csv
+Writes  ../experimental_data_processed/quencher_redox_potentials.csv
 
     uv run data/experimental_data_scripts/quencher_redox_potentials.py
 
 Inputs and output share the columns quencher_id, E_Ox_vs_SCE_V, E_Ox_bound,
 E_Red_vs_SCE_V, E_Red_bound, source, comment. Measured: source `CV`, read by hand from the
-voltammograms in `measured data/`; literature: source a DOI or `estimated`. Each quencher
-in exactly one file. Bound: `>` on E_Ox, `<` on E_Red, with a value. Values copied as
-written, sorted by quencher id.
+voltammograms in `experimental_data_raw/quencher_cyclic_voltammetry/measured data/`;
+literature: source a DOI or `estimated`. Each quencher in exactly one file. Bound: `>` on
+E_Ox, `<` on E_Red, with a value. Values copied as written, sorted by quencher id.
 """
 
 import csv
@@ -28,7 +28,7 @@ sys.path.insert(0, str(DATA))
 
 from compound_identification import QUENCHERS  # noqa: E402
 
-FOLDER = DATA / "experimental_data_raw" / "quencher_cyclic_voltammetry"
+FOLDER = DATA / "experimental_data_processed"
 LITERATURE = FOLDER / "quencher_redox_literature.csv"
 MEASURED = FOLDER / "quencher_redox_measured.csv"
 OUT = FOLDER / "quencher_redox_potentials.csv"

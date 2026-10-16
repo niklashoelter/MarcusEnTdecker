@@ -6,7 +6,7 @@
 Organophotocatalyst triplet energies and reorganization energies.
 
 Reads   ../computational_data_raw/organophotocatalysts/OPC<n>/{S0,T1}/*_output.out
-Writes  ../computational_data_raw/organophotocatalysts/organophotocatalyst_dft.csv
+Writes  ../computational_data_processed/organophotocatalyst_dft.csv
 
     uv run data/computational_data_scripts/organophotocatalyst_dft.py
 
@@ -29,7 +29,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "computational_data_raw" / "organophotocatalysts"
-OUT = RAW / "organophotocatalyst_dft.csv"
+OUT = ROOT / "computational_data_processed" / "organophotocatalyst_dft.csv"
 
 HARTREE_KCAL = 627.509
 DECIMALS = 2                    # for kcal/mol

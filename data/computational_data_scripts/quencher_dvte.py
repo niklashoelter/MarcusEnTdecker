@@ -6,8 +6,8 @@
 Distribution of vertical singlet-triplet gaps (DvTE) per quencher from Milo trajectories.
 
 Reads   ../computational_data_raw/quencher_adiabatic_DvTE/quenchers_vertical_gaps.tar.xz
-Writes  ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
-        ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
+Writes  ../computational_data_processed/quencher_dvte.csv
+        ../computational_data_processed/quencher_dvte_samples.csv.gz
 
     uv run data/computational_data_scripts/quencher_dvte.py
 
@@ -36,7 +36,7 @@ from collections import defaultdict
 from pathlib import Path
 
 RAW = Path(__file__).resolve().parent.parent / "computational_data_raw" / "quencher_adiabatic_DvTE"
-OUT_DIR = RAW
+OUT_DIR = Path(__file__).resolve().parent.parent / "computational_data_processed"
 ARCHIVE = RAW / "quenchers_vertical_gaps.tar.xz"
 OUT = OUT_DIR / "quencher_dvte.csv"
 OUT_SAMPLES = OUT_DIR / "quencher_dvte_samples.csv.gz"

@@ -16,7 +16,7 @@ Substrates ours; the other photocatalysts keep the paper's DFT lambdas and exper
     ml          our prediction, same model as the substrates, mixture mean
 
 Reads    ../data/literature_benchmark/sole_daura_2024.csv
-         ../data/computational_data_raw/organophotocatalysts/organophotocatalyst_dft.csv
+         ../data/computational_data_processed/organophotocatalyst_dft.csv
          results/literature/predictions_members_sole_daura_2024.csv
 Writes   results/literature/sole_daura_tx.csv         one row per set, pair, model and estimate
          results/literature/sole_daura_tx_signs.csv   one row per set and E/Z group: ddG, its split, sign
@@ -30,7 +30,7 @@ import pandas as pd
 from common import (ESTIMATES, PROPERTIES, REPO, RT, barrier_asymmetric, barrier_symmetric,
                     literature, models, ours, pair_lambdas, split_difference, write)
 
-OPC = REPO / "data" / "computational_data_raw" / "organophotocatalysts" / "organophotocatalyst_dft.csv"
+OPC = REPO / "data" / "computational_data_processed" / "organophotocatalyst_dft.csv"
 EXCLUDED_SUBSTRATE = "4"
 DRAWS = 20000
 SOURCES = ("paper", "paper_dft", "opc_dft", "ml")

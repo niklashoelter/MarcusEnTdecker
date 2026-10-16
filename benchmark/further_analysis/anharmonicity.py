@@ -5,7 +5,7 @@
 """
 Shape of the DvTE vertical-gap distributions and the harmonic picture of the two-gate barrier.
 
-Reads   ../../data/computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz
+Reads   ../../data/computational_data_processed/quencher_dvte_samples.csv.gz
         ../../data/computational_data_processed/quencher_geometry_S0_T1.csv
         ../../data/exp_dataset_ent.csv (through pairs.py)
         results/quencher_classes/quencher_classes.csv
@@ -56,7 +56,7 @@ import scoring  # noqa: E402
 import theory  # noqa: E402
 
 DATA = HERE.parent.parent / "data"
-SAMPLES = DATA / "computational_data_raw" / "quencher_adiabatic_DvTE" / "quencher_dvte_samples.csv.gz"
+SAMPLES = DATA / "computational_data_processed" / "quencher_dvte_samples.csv.gz"
 GEOMETRY = DATA / "computational_data_processed" / "quencher_geometry_S0_T1.csv"
 CLASSES = HERE / "results" / "quencher_classes" / "quencher_classes.csv"
 RESULTS = HERE / "results" / "anharmonicity"

@@ -8,7 +8,7 @@ TCSPC decay traces -> excited-state lifetime tau0 of each photocatalyst.
 Reads   ../experimental_data_raw/pc_tcspc/PC<old id>.txt   tab-separated, header block then
                                                          time (ns) vs counts, 2048 channels
         ../compound_identification.xlsx   (old -> new photocatalyst id)
-Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv   keyed by pc_new_id
+Writes  ../experimental_data_processed/lifetimes_tcspc.csv   keyed by pc_new_id
 
     uv run data/experimental_data_scripts/lifetimes_tcspc.py
 
@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from compound_identification import NEW_ID  # noqa: E402
 
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "pc_tcspc"
-OUT = RAW / "lifetimes_tcspc.csv"
+OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "lifetimes_tcspc.csv"
 
 FIT_OFFSET_POINTS = 3                 # channels skipped after the pulse peak before looking for the start
 FIT_START_COUNT_THRESHOLD = 1000.0    # start at the first post-peak channel at or below this

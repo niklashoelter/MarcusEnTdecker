@@ -8,7 +8,7 @@ of the quenchers.
 
 Reads   ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/
         ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/S0/opt_geometry.xyz
-Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
+Writes  ../computational_data_processed/quencher_dft.csv
 
     uv run data/computational_data_scripts/quencher_dft.py
 
@@ -40,7 +40,7 @@ from pathlib import Path
 
 DATA = Path(__file__).resolve().parent.parent
 RAW = DATA / "computational_data_raw" / "quencher_adiabatic_DFT"
-OUT_DIR = RAW
+OUT_DIR = DATA / "computational_data_processed"
 OUT = OUT_DIR / "quencher_dft.csv"
 
 H_TO_KCAL = 627.509          # Hartree -> kcal/mol

@@ -5,9 +5,9 @@
 """
 Computational tables -> one property workbook per compound class.
 
-Reads   ../computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv
-        ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
-        ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
+Reads   ../computational_data_processed/photocatalyst_dft.csv
+        ../computational_data_processed/quencher_dft.csv
+        ../computational_data_processed/quencher_dvte.csv
         ../compound_identification.xlsx   (ids, names, SMILES)
 Writes  ../computational_data_processed/photocatalyst_properties_calc.xlsx
         ../computational_data_processed/quencher_properties_calc.xlsx
@@ -27,14 +27,13 @@ sys.path.insert(0, str(DATA))
 from compound_identification import PHOTOCATALYSTS, QUENCHERS  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
-RAW = DATA / "computational_data_raw"
 OUT_DIR = DATA / "computational_data_processed"
 PC_OUT = OUT_DIR / "photocatalyst_properties_calc.xlsx"
 Q_OUT = OUT_DIR / "quencher_properties_calc.xlsx"
 
-PC_DFT = RAW / "photocatalysts_new_ids" / "photocatalyst_dft.csv"
-Q_DFT = RAW / "quencher_adiabatic_DFT" / "quencher_dft.csv"
-Q_DVTE = RAW / "quencher_adiabatic_DvTE" / "quencher_dvte.csv"
+PC_DFT = OUT_DIR / "photocatalyst_dft.csv"
+Q_DFT = OUT_DIR / "quencher_dft.csv"
+Q_DVTE = OUT_DIR / "quencher_dvte.csv"
 
 KCAL = "kcal mol-1"
 DVTE_CUTOFFS = ["0.005", "0.008", "0.01", "0.015"]
@@ -107,7 +106,7 @@ def photocatalysts():
         One row per photocatalyst in the screen, sorted by new_id.
         Every value is computed from the ORCA outputs. Total energies, Gibbs corrections and
         frequency checks are in
-        computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv.
+        computational_data_processed/photocatalyst_dft.csv.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(dft), blocks, note
@@ -176,7 +175,7 @@ def quenchers():
         One row per quencher. DFT values are rounded to 2 decimals in kcal/mol, V and A.
         The energies behind each value are in the deposited ORCA outputs under
         computational_data_raw/quencher_adiabatic_DFT/Q<n>/<state>/, and every sampled gap in
-        computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte_samples.csv.gz.
+        computational_data_processed/quencher_dvte_samples.csv.gz.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     stray = sorted((set(dvte) | set(QUENCHERS)) ^ set(dft))

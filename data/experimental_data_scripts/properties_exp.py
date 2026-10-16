@@ -6,16 +6,16 @@
 Measured properties of the photocatalysts and quenchers, one workbook per compound class.
 
 Reads   ../compound_identification.xlsx   (ids, names, SMILES)
-        ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
-        ../experimental_data_raw/stern_volmer/plate_reader_filters.csv
-        ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
-        ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv
+        ../experimental_data_processed/lifetimes_tcspc.csv
+        ../experimental_data_processed/plate_reader_filters.csv
+        ../experimental_data_processed/absorption_extinction.csv
+        ../experimental_data_processed/quencher_redox_potentials.csv
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
 
     uv run data/experimental_data_scripts/properties_exp.py
 
-Values copied from the raw-folder tables (layout: ../properties_workbook.py); redox
+Values copied from the extraction tables (layout: ../properties_workbook.py); redox
 potentials rounded to 2 decimals.
 """
 
@@ -29,16 +29,15 @@ sys.path.insert(0, str(DATA))
 from compound_identification import PHOTOCATALYSTS, QUENCHERS  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
-RAW = DATA / "experimental_data_raw"
 OUT_DIR = DATA / "experimental_data_processed"
 PC_OUT = OUT_DIR / "photocatalyst_properties_exp.xlsx"
 Q_OUT = OUT_DIR / "quencher_properties_exp.xlsx"
 
 IDENTIFICATION = "compound_identification.xlsx"
-TAU0 = RAW / "pc_tcspc" / "lifetimes_tcspc.csv"
-FILTERS = RAW / "stern_volmer" / "plate_reader_filters.csv"
-ABSORPTION = RAW / "quencher_absorption" / "absorption_extinction.csv"
-REDOX = RAW / "quencher_cyclic_voltammetry" / "quencher_redox_potentials.csv"
+TAU0 = OUT_DIR / "lifetimes_tcspc.csv"
+FILTERS = OUT_DIR / "plate_reader_filters.csv"
+ABSORPTION = OUT_DIR / "absorption_extinction.csv"
+REDOX = OUT_DIR / "quencher_redox_potentials.csv"
 DECIMALS = 2                 # for V
 
 
@@ -165,7 +164,7 @@ def quenchers():
     note = """
         One row per quencher. The potentials are read by hand from the voltammograms or
         taken from the literature, and entered in quencher_redox_measured.csv or
-        quencher_redox_literature.csv in experimental_data_raw/quencher_cyclic_voltammetry/.
+        quencher_redox_literature.csv in experimental_data_processed/.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(QUENCHERS), blocks, note
