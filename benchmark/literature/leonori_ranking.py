@@ -3,25 +3,19 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-Leonori 2025: nitroarene photocatalysts -- triplet character, and which substrates react.
+Leonori 2025: nitroarene photocatalysts -- triplet character.
 
     uv run benchmark/literature/leonori_ranking.py
 
 The paper's claim is that a nitroarene's ability to sensitise is set by which triplet is
 lowest: the delocalised 3pi,pi* state works, the 3n,pi* state on the pyramidalised nitro group
 does not, because it must planarise before it can transfer its energy -- a reorganisation on
-the donor side. Two questions follow for us:
-
-    character     does our predicted reorganisation energy, from one predicted triplet,
-                  recover the paper's two-state descriptor (dE_TT = E(3pi,pi*) - E(3n,pi*)) and
-                  the triplet class? The catalyst's lambda_T1_S0 is the donor term of the forward
-                  barrier and is the one reported first; the other lambda, their sum and the
-                  barrier are given beside it. Both axes are computed, so this is a consistency
-                  check, and it is run at fixed E_T as well.
-    feasibility   does our barrier separate the substrates that react with N24, the paper's
-                  isomerisation catalyst, from the alkyl acrylates that do not? The paper
-                  explains the failures with adiabatic E_T (SI Table 8), so the driving force
-                  is scored beside the barrier.
+the donor side. The question for us: does our predicted reorganisation energy, from one
+predicted triplet, recover the paper's two-state descriptor (dE_TT = E(3pi,pi*) - E(3n,pi*))
+and the triplet class? The catalyst's lambda_T1_S0 is the donor term of the forward barrier
+and is the one reported first; the other lambda, their sum and the barrier are given beside
+it. Both axes are computed, so this is a consistency check, and it is run at fixed E_T as
+well.
 
 Reported as well: the measured quenching constants (a table: four catalysts against (E)-1, one
 against 27, measured by two methods, each converted to an experimental barrier by the Eyring
@@ -40,8 +34,6 @@ triplets, which no barrier can rescue.
 
 Writes   results/literature/leonori_catalysts.csv     one row per catalyst, model and estimate
          results/literature/leonori_character.csv     lambda against triplet character
-         results/literature/leonori_feasibility.csv   substrates with N24
-         results/literature/leonori_feasibility_summary.csv   the separation per model and estimate
          results/literature/leonori_quenching.csv     measured k_q beside our barriers, and the E/Z pair
 """
 
@@ -73,7 +65,6 @@ def partial_spearman(x, y, control):
 def main():
     lit = literature("leonori_2025").set_index("compound_id")
     cats = lit[lit.role == "photocatalyst"].index
-    subs = lit[lit.role == "substrate"].index
 
     rows = []
     for model, pred in models("leonori_2025").items():
@@ -129,28 +120,6 @@ def main():
             "lambda_sum_mean_npi": npi.lambda_sum_ml.mean()})
     write(pd.DataFrame(character), "leonori_character.csv")
 
-    feas, summary = [], []
-    for model, pred in models("leonori_2025").items():
-        for estimate in ESTIMATES:
-            pc = ours(pred.loc[ISOMERISATION_CATALYST], estimate)
-            f = []
-            for s in subs:
-                dG, barrier = pair_barrier(pc, ours(pred.loc[s], estimate))
-                f.append({"model": model, "estimate": estimate, "compound_id": s, "label": lit.at[s, "label"],
-                          "reacts_lit": bool(lit.at[s, "reacts_lit"]), "pc": ISOMERISATION_CATALYST,
-                          "dG_EnT_ml": dG, "barrier_ml": barrier,
-                          "dG_EnT_lit": lit.at[s, "E_T_lit"] - lit.at[ISOMERISATION_CATALYST, "E_T_lit"]})
-            f = pd.DataFrame(f); feas.append(f)
-            yes, no = f[f.reacts_lit], f[~f.reacts_lit]
-            summary.append({"model": model, "estimate": estimate, "n_react": len(yes), "n_not": len(no),
-                            "margin_barrier": no.barrier_ml.min() - yes.barrier_ml.max(),
-                            "margin_dG": no.dG_EnT_ml.min() - yes.dG_EnT_ml.max(),
-                            "closest_reacting": yes.loc[yes.barrier_ml.idxmax(), "label"],
-                            "auc_barrier": auc(-f.barrier_ml, f.reacts_lit), "auc_dG": auc(-f.dG_EnT_ml, f.reacts_lit)})
-    write(pd.concat(feas, ignore_index=True), "leonori_feasibility.csv")
-    write(pd.DataFrame(summary), "leonori_feasibility_summary.csv")
-
-
     quench = []
     measured = [(c, lit.at[c, "k_q"], lit.at[c, "k_q_quencher"], lit.at[c, "k_q_method"]) for c in cats if pd.notna(lit.at[c, "k_q"])]
     measured += [(ISOMERISATION_CATALYST, lit.at[ISOMERISATION_CATALYST, "k_q_Z1"], "(Z)-1", lit.at[ISOMERISATION_CATALYST, "k_q_method"])]
@@ -173,7 +142,6 @@ def main():
     write(pd.DataFrame(quench), "leonori_quenching.csv")
 
     print(pd.DataFrame(character).round(2).to_string(index=False))
-    print(pd.DataFrame(summary).round(2).to_string(index=False))
 
 
 if __name__ == "__main__":

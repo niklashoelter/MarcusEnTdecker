@@ -70,9 +70,10 @@ data/computational_data_processed/   photocatalyst_properties_calc.xlsx
                                      quencher_properties_calc.xlsx
                                      quencher_properties_ml.xlsx
                                      quencher_timings.csv, quencher_timings_ml.csv
-                                     quencher_geometry_S0_T1.csv, molecular_extent.csv,
+                                     quencher_geometry_S0_T1.csv,
                                      reorganization_modes.csv   (read by
                                      benchmark/further_analysis/)
+                                     molecular_extent.csv
 data/                                exp_dataset.csv, exp_dataset.xlsx   (every pair,
                                      measured values and labels only)
 data/                                exp_dataset_ent.csv, exp_dataset_ent.xlsx   (all

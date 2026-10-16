@@ -1,3 +1,0 @@
-test,criterion,gate,value_deployed_mean,runs_passing,pass
-T1,rho >= 0.9 and >= paper TD-DFT rho - 0.05,"deployed, mean",0.98,8,True
-T1,rho >= 0.9 (first part alone),"deployed, mean",0.98,11,True

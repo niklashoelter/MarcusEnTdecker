@@ -67,8 +67,8 @@ data/
 
 `uv run reproduce.py data` runs all of this in order, including `quencher_timings.py`,
 which writes the computational cost of the quencher jobs to
-`computational_data_processed/`, and `quencher_geometry.py`, `molecular_extent.py` and
-`reorganization_modes.py`, which write the tables of the further analyses there (see
+`computational_data_processed/`, `quencher_geometry.py` and `reorganization_modes.py`,
+which write the tables of the further analyses there, and `molecular_extent.py` (see
 Methods notes). Three scripts are not part of it:
 
 - `quencher_ml.py` needs the model environment and is run by hand:

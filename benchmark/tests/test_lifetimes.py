@@ -41,15 +41,3 @@ def test_dvte_table_splits_rejected_false_positives_by_gate():
     assert t.loc["rigid", "two_gate_FP_not_dvte"] == 1
     assert t.loc["all", "dvte_FP_rejected"] == 2
     assert t.loc["rigid", "dG_EnT_median_energy_gate / kcal mol-1"] == pytest.approx(0.5)
-
-
-def test_constant_threshold_uses_the_median_over_photocatalysts():
-    y = np.array([1, 0, 1, 0], bool)
-    pcs = np.array(["PC1", "PC1", "PC2", "PC3"])
-    t_7 = np.array([8.0, 8.0, 9.0, 10.0])                        # median over PCs: 9
-    dG = np.array([-1.0, -1.0, -1.0, -1.0])
-    barrier = np.array([8.5, 9.5, 8.0, 9.0])
-    row = lifetimes.constant_threshold(y, pcs, dG, barrier, t_7, np.array([0, 0, 1, 1], bool),
-                                       np.array([True, True, False, False]))
-    assert row["t_constant / kcal mol-1"] == pytest.approx(9.0)
-    assert (row["FP_short_constant"], row["FP_short_lifetime"]) == (0, 0)

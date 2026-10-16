@@ -11,7 +11,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "further_analysi
 import classification  # noqa: E402
 import dvte_reorganization as dr  # noqa: E402
 import pairs  # noqa: E402
-import scoring  # noqa: E402
 import theory  # noqa: E402
 
 
@@ -68,15 +67,3 @@ def test_two_gate_matches_the_benchmark_and_the_gate_free_variant_admits_more():
         assert np.array_equal(p, p_ref) and np.allclose(s, s_ref)
         free = dr.two_gate(df, source, energy_gate=False)[0]
         assert (free | ~p).all()
-
-
-def test_literature_metrics_without_replacement_is_the_benchmark():
-    df = make_pairs()
-    lit = pd.DataFrame({"pc_name": ["PC1", "PC2"], "E_T_77K / kcal mol-1": [np.nan, 55.0],
-                        "E_T_RT / kcal mol-1": [52.0, 50.0]})
-    t = dr.literature_metrics(df, lit).set_index("E_T(PC)")
-    y = df[pairs.QUENCHES].to_numpy(bool)
-    assert t.loc["DFT", "MCC two_gate, dft"] == pytest.approx(
-        scoring.metrics(y, classification.predict(df, dr.TWO_GATE, "dft")[0])["MCC"])
-    assert t.loc["77 K", "photocatalysts_replaced"] == 1
-    assert t.loc["best", "photocatalysts_replaced"] == 2

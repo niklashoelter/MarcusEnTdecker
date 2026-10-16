@@ -1,6 +1,0 @@
-criterion,n_disagree,frac_uncertain_among_disagree,frac_uncertain_among_agree,odds_ratio,fisher_p,disagree_rate_uncertain,disagree_rate_confident,n_FP_uncertain,n_FN_uncertain
-adiabatic dft,249,0.221,0.114,2.206,0.0,0.444,0.265,35,20
-adiabatic ml,243,0.235,0.109,2.493,0.0,0.46,0.254,28,29
-"DvTE (p = 0.008, normal)",200,0.285,0.102,3.498,0.0,0.46,0.196,21,36
-two-gate dft,165,0.285,0.112,3.171,0.0,0.379,0.161,17,30
-two-gate ml,191,0.288,0.104,3.487,0.0,0.444,0.186,23,32

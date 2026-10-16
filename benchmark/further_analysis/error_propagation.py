@@ -13,9 +13,6 @@ Writes  results/error_propagation/monte_carlo.csv        one row per error scena
                                                          its RMSE and Spearman rho against
                                                          the measured k_q, and MCC and class
                                                          changes of two_gate and adiabatic
-        results/error_propagation/monte_carlo_sigma_sweep.csv
-                                                         the same for a normal error in the
-                                                         quencher E_T, sigma = 0.25-5 kcal/mol
         results/error_propagation/sensitivity.csv        local sensitivity of log10 k_q to
                                                          the quencher E_T and lambda
 
@@ -27,7 +24,7 @@ r_PC + r_Q of each pair. two_gate: dG_EnT <= 0 and B <= t_PC(tau0, r), K_SV,crit
 as in classification.py; adiabatic: dG_EnT <= 0.
 
 Monte Carlo: N_DRAWS draws per scenario from one generator seeded with SEED, the
-scenarios in the order of SCENARIOS and then the sweep. An error is drawn once per
+scenarios in the order of SCENARIOS. An error is drawn once per
 molecule and applied to all of its pairs. A quencher lambda with an added error is floored
 at LAMBDA_MIN kcal/mol, a multiplicative lambda factor at LAMBDA_MIN.
 
@@ -197,13 +194,10 @@ def run(rng, data: Pairs, scenario, source, sigma, n=None):
 
 
 def monte_carlo(data: Pairs):
-    """(scenario table, sigma sweep), drawn in this order from one generator."""
+    """The scenario table, drawn in this order from one generator."""
     rng = np.random.default_rng(SEED)
-    scenarios = pd.DataFrame([run(rng, data, scenario, source, sigma)
-                              for scenario, sigma in SCENARIOS for source in pairs.SOURCES])
-    sweep = pd.DataFrame([run(rng, data, "Q E_T", source, sigma)
-                          for sigma in SWEEP_SIGMAS for source in pairs.SOURCES])
-    return scenarios, sweep
+    return pd.DataFrame([run(rng, data, scenario, source, sigma)
+                         for scenario, sigma in SCENARIOS for source in pairs.SOURCES])
 
 
 def sensitivity(data: Pairs):
@@ -239,12 +233,11 @@ def write(table, path):
 
 def main():
     data = Pairs(pairs.scored(pairs.load()))
-    scenarios, sweep = monte_carlo(data)
+    scenarios = monte_carlo(data)
     sens = sensitivity(data)
 
     RESULTS.mkdir(parents=True, exist_ok=True)
     write(scenarios, RESULTS / "monte_carlo.csv")
-    write(sweep, RESULTS / "monte_carlo_sigma_sweep.csv")
     write(sens, RESULTS / "sensitivity.csv")
 
     shown = ["scenario", "sigma", "start", "[two-gate] MCC median", "[two-gate] MCC 5%",

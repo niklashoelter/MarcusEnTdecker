@@ -3,7 +3,7 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-Per-quencher, per-photocatalyst, cost and lifetime-threshold tables of the scored pairs.
+Per-quencher, per-photocatalyst and cost tables of the scored pairs.
 
 Reads   ../../data/exp_dataset_ent.csv (through pairs.py)
         ../../data/compound_identification.xlsx               (photocatalyst names)
@@ -15,8 +15,6 @@ Writes  results/figure_tables/quenchers.csv        one row per quencher with sco
         results/figure_tables/cost.csv             CPU and wall time per quencher of each
                                                    cost method, with the metrics of every
                                                    criterion it enables
-        results/figure_tables/lifetime_curve.csv   t_PC against tau0 for several contact
-                                                   distances
 
     uv run benchmark/further_analysis/figure_tables.py
 
@@ -35,10 +33,6 @@ inference) and of the wall time (DFT and DvTE: sum of the job wall times; ML: on
 or the batch call divided by the number of molecules), grouped by ../cost.py. Ratios are
 to DvTE. One row per method and criterion it enables, with that criterion's metrics from
 metrics_extended.py (both ML methods enable the ML criteria).
-
-lifetime_curve.csv: t_PC = RT ln((k_d tau0 / K_SV,crit - 1) / (k_-d/nu)) on 601 log-spaced
-tau0 from 10 ns to 10 us, with the Eyring k_-d/nu at the median, smallest and largest
-r_PC + r_Q of the scored pairs and at r = 7 A, and with k_-d/nu = 0.25.
 
 kcal/mol, V and A rounded to 2 decimals, fractions and metrics to 3, times and ratios to
 4 significant figures.
@@ -63,8 +57,6 @@ import theory  # noqa: E402
 
 RESULTS = HERE / "results" / "figure_tables"
 KC = "kcal mol-1"
-TAU_GRID_NS = np.logspace(1, 4, 601)
-FIXED_ESCAPE_OVER_NU = 0.25
 
 COST_METHODS = {"adiabatic DFT": "adiabatic DFT", "four-point DFT": "four-point DFT", "DvTE": "DvTE",
                 "ML, per call": "ML per call", "ML, batch": "ML batch share per molecule"}
@@ -196,22 +188,6 @@ def cost_table(cpu_s, wall_s, metrics):
     return t
 
 
-def lifetime_curve(r_pairs):
-    r_med, r_min, r_max = np.median(r_pairs), r_pairs.min(), r_pairs.max()
-    models = [(f"Eyring k_-d/nu, r = median contact distance ({r_med:.2f} A)", r_med, "main"),
-              (f"Eyring k_-d/nu, r = smallest contact distance ({r_min:.2f} A)", r_min, "range"),
-              (f"Eyring k_-d/nu, r = largest contact distance ({r_max:.2f} A)", r_max, "range"),
-              (f"Eyring k_-d/nu, r = {theory.CONTACT_DISTANCE:.0f} A", theory.CONTACT_DISTANCE, "secondary")]
-    curves = [(name, round(float(r), 2), theory.escape_over_frequency(r), role) for name, r, role in models]
-    curves.append((f"k_-d/nu = {FIXED_ESCAPE_OVER_NU}", np.nan, FIXED_ESCAPE_OVER_NU, "SI"))
-    parts = [pd.DataFrame({"model": name, "role": role, "r / A": r, "k_-d_over_nu": significant(ratio),
-                           pairs.TAU0: np.round(TAU_GRID_NS, 3),
-                           f"t_PC / {KC}": r2(theory.lifetime_barrier(TAU_GRID_NS * 1e-9, classification.K_SV_CRIT,
-                                                                      ratio))})
-             for name, r, ratio, role in curves]
-    return pd.concat(parts, ignore_index=True)
-
-
 def main():
     sys.path.insert(0, str(cost.DATA))
     from compound_identification import PHOTOCATALYSTS
@@ -232,8 +208,7 @@ def main():
 
     tables = {"quenchers.csv": quencher_table(df, classes),
               "photocatalysts.csv": photocatalyst_table(df, names),
-              "cost.csv": cost_table(cpu_s.loc[scored], wall_s.loc[scored], metrics),
-              "lifetime_curve.csv": lifetime_curve(pairs.contact_distances(df))}
+              "cost.csv": cost_table(cpu_s.loc[scored], wall_s.loc[scored], metrics)}
     RESULTS.mkdir(parents=True, exist_ok=True)
     for name, table in tables.items():
         table.to_csv(RESULTS / name, index=False, lineterminator="\n")

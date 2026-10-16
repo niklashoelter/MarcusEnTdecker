@@ -1,7 +1,0 @@
-batch,well,pc,quencher_id,pos,y_obs,y_expected,K_cur,quenches,num_points_cur
-PC11_QBatch3,A12,PC9,41,6,33.496,1.704,172.727,1,5
-PC11_QBatch3,B12,PC9,42,6,21.933,2.197,297.61,1,5
-PC11_QBatch3,C11,PC9,43,5,34.195,1.785,463.113,1,4
-PC11_QBatch3,D12,PC9,44,6,30.388,1.0,0.675,0,5
-PC11_QBatch3,E12,PC9,45,6,20.147,1.074,16.038,0,5
-PC11_QBatch3,F12,PC9,46,6,8.499,1.0,1.16,0,5

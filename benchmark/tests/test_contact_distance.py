@@ -17,8 +17,6 @@ def make_pairs(n=12, seed=0):
     rng = np.random.default_rng(seed)
     df = pd.DataFrame({
         pairs.PC_NAME: [f"PC{i % 3}" for i in range(n)],
-        "pc_old_id": [i % 3 + 1 for i in range(n)],
-        pairs.Q_ID: [i % 4 + 1 for i in range(n)],
         pairs.Q_NAME: [f"Q{i % 4 + 1}" for i in range(n)],
         pairs.TAU0: rng.uniform(100, 5000, n),
         pairs.PC_RADIUS: rng.uniform(4.5, 6.0, n),
@@ -64,15 +62,3 @@ def test_a_larger_contact_distance_never_removes_a_predicted_pair():
     near, _ = contact_distance.two_gate(df, "dft", 5.0)
     far, _ = contact_distance.two_gate(df, "dft", 10.0)
     assert not (near & ~far).any()
-
-
-def test_extent_radii_are_mapped_by_old_photocatalyst_id_and_quencher_id(tmp_path, monkeypatch):
-    table = tmp_path / "molecular_extent.csv"
-    table.write_text("kind,id,n_atoms,r_extent / A\n"
-                     "photocatalyst,1,10,8.00\nphotocatalyst,2,10,7.00\nphotocatalyst,3,10,6.00\n"
-                     "quencher,1,5,4.00\nquencher,2,5,5.00\nquencher,3,5,6.00\nquencher,4,5,7.00\n")
-    monkeypatch.setattr(contact_distance, "EXTENT", table)
-    df = make_pairs(4)
-    r_pc, r_q = contact_distance.extent_radii(df)
-    np.testing.assert_allclose(r_pc, [8.0, 7.0, 6.0, 8.0])
-    np.testing.assert_allclose(r_q, [4.0, 5.0, 6.0, 7.0])

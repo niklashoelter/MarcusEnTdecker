@@ -1,4 +1,0 @@
-measurement_sd_definition,n_quenching_pairs,median_pair_sd / decades,rms_pair_sd / decades,SD_measured_log10kq / decades,SD_true_log10kq_deconvolved / decades,reliability (1 - noise var / observed var),RMSE_dft / decades,frac_MSE_from_noise_dft,RMSE_dft_noise_removed / decades,frac_pred_inside_95pct_meas_dft,chi2_per_pair_dft,RMSE_ml / decades,frac_MSE_from_noise_ml,RMSE_ml_noise_removed / decades,frac_pred_inside_95pct_meas_ml,chi2_per_pair_ml,RMSE_constant / decades
-statistical (noise model),379,0.05,0.153,0.947,0.935,0.974,1.485,0.011,1.477,0.106,798.854,1.809,0.007,1.803,0.084,1156.74,0.946
-statistical + analysis choice,379,0.065,0.165,0.947,0.933,0.97,1.485,0.012,1.476,0.111,611.432,1.809,0.008,1.801,0.09,958.018,0.946
-"within-PC (PC means removed), statistical + analysis choice",379,,0.165,0.838,0.822,,,,,,,,,,,,

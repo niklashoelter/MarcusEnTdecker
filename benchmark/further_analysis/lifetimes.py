@@ -15,8 +15,6 @@ Writes  results/lifetimes/barrier_bins.csv          exergonic pairs (DFT) per li
                                                     pairs, median t_PC, false positives of
                                                     the criteria, pairs the barrier gate
                                                     rejects
-        results/lifetimes/constant_threshold.csv    two-gate DFT at r = 7 A with t_PC(tau0)
-                                                    and with one constant threshold
         results/lifetimes/dvte_false_positives.csv  per quencher class: DvTE false positives
                                                     and true positives by the gate of
                                                     two-gate DFT that rejects them
@@ -25,19 +23,16 @@ Writes  results/lifetimes/barrier_bins.csv          exergonic pairs (DFT) per li
 
 Lifetime groups: tau0 < SHORT_NS (short) and tau0 >= SHORT_NS (long). Barrier bins of
 BIN_WIDTH kcal/mol, the last one open (BIN_EDGES). The criteria are those of
-metrics_extended.py (DFT quencher parameters; two-gate with r = r_PC + r_Q unless the
-column says 7 A). Gate of two-gate DFT for a pair: energy (dG_EnT > 0), barrier
-(exergonic but the asymmetric barrier exceeds t_PC) or pass.
-
-constant_threshold.csv: the constant threshold is the median over the photocatalysts of
-t_PC at r = 7 A (which depends on tau0 only), applied to every exergonic pair.
+metrics_extended.py (DFT quencher parameters; two-gate with r = r_PC + r_Q). Gate of
+two-gate DFT for a pair: energy (dG_EnT > 0), barrier (exergonic but the asymmetric
+barrier exceeds t_PC) or pass.
 
 dvte_false_positives.csv: DvTE false positives that two-gate DFT does not predict, split
 by the gate that rejects them; DvTE true positives that the energy gate rejects; two-gate
 DFT false positives that DvTE does not predict; median and largest dG_EnT (DFT) of the
 false positives rejected by the energy gate.
 
-kcal/mol rounded to 2 decimals, MCC to 3.
+kcal/mol rounded to 2 decimals, fractions to 3.
 """
 
 import sys
@@ -63,7 +58,6 @@ GROUPS = ("short", "long")
 KC = "kcal mol-1"
 FP_COLUMNS = {"adiabatic_dft": ("adiabatic", "dft"), "dvte": ("dvte_2024", "dvte"),
               "two_gate_dft": ("twogate_lifetime", "dft")}
-TWO_GATE_7A = ("twogate_lifetime_r7A", "dft")
 
 
 def rounded(table):
@@ -85,19 +79,6 @@ def barrier_bins(y, short, exergonic, barrier):
             rows.append({"tau0_group": name, f"barrier_from / {KC}": lo, f"barrier_to / {KC}": hi,
                          "n_pairs": n, "n_quench": nq, "fraction_quench": nq / n if n else np.nan})
     return pd.DataFrame(rows)
-
-
-def constant_threshold(y, pcs, dG, barrier, t_7, lifetime_prediction, short):
-    """One row: the constant threshold, the MCC and the false positives on the short-lived
-    photocatalysts with it and with t_PC(tau0)."""
-    t = float(np.median(pd.Series(t_7).groupby(pcs).first()))
-    constant = (dG <= 0) & (barrier <= t)
-    row = {f"t_constant / {KC}": t,
-           "MCC_constant": scoring.metrics(y, constant)["MCC"],
-           "MCC_lifetime": scoring.metrics(y, lifetime_prediction)["MCC"],
-           "FP_short_constant": scoring.metrics(y[short], constant[short])["FP"],
-           "FP_short_lifetime": scoring.metrics(y[short], lifetime_prediction[short])["FP"]}
-    return row
 
 
 def group_table(y, pcs, short, t_pc, predicted, classes, gates):
@@ -138,21 +119,18 @@ def main():
     pcs = df[pairs.PC_NAME].to_numpy()
     short = df[pairs.TAU0].to_numpy(float) < SHORT_NS
     by_name = {c.name: c for c in crits}
-    predicted = {k: by_name[name].predict(y) for k, name in FP_COLUMNS.items()}
+    predicted = {k: by_name[name].prediction for k, name in FP_COLUMNS.items()}
 
     dG = pairs.driving_force(df, "dft")
     barrier = theory.marcus_barrier_asymmetric(dG, *theory.pair_lambdas(*pairs.lambdas(df, "dft")))
     tau = pairs.tau0_seconds(df)
     t_pc = theory.lifetime_barrier(tau, classification.K_SV_CRIT,
                                    theory.escape_over_frequency(pairs.contact_distances(df)))
-    t_7 = theory.lifetime_barrier(tau, classification.K_SV_CRIT, theory.escape_over_frequency())
     gates = gate(dG, predicted["two_gate_dft"])
 
-    row = constant_threshold(y, pcs, dG, barrier, t_7, by_name[TWO_GATE_7A].predict(y), short)
     groups = group_table(y, pcs, short, t_pc, predicted, classes, gates)
     tables = {"barrier_bins.csv": barrier_bins(y, short, dG <= 0, barrier),
               "groups.csv": groups,
-              "constant_threshold.csv": pd.DataFrame([row]),
               "dvte_false_positives.csv": dvte_table(y, classes, dG, predicted["dvte"],
                                                      predicted["two_gate_dft"], gates)}
     RESULTS.mkdir(parents=True, exist_ok=True)

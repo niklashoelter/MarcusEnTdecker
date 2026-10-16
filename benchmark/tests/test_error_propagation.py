@@ -71,12 +71,8 @@ def test_perturbed_reorganization_energies_keep_the_floor():
 
 def test_monte_carlo_is_deterministic(monkeypatch):
     monkeypatch.setattr(error_propagation, "N_DRAWS", 20)
-    monkeypatch.setattr(error_propagation, "SWEEP_SIGMAS", np.array([1.0]))
     data = error_propagation.Pairs(make_pairs())
-    first = error_propagation.monte_carlo(data)
-    second = error_propagation.monte_carlo(data)
-    for a, b in zip(first, second):
-        pd.testing.assert_frame_equal(a, b)
+    pd.testing.assert_frame_equal(error_propagation.monte_carlo(data), error_propagation.monte_carlo(data))
 
 
 def test_sensitivity_to_the_driving_force_is_bounded_by_one_over_rt_ln10():

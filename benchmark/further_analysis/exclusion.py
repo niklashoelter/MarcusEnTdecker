@@ -3,35 +3,27 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-The quenchers Q38 and Q31, which the benchmark leaves out, and the effect of leaving them out.
+The quenchers Q38 and Q31, which the benchmark leaves out.
 
 Reads   ../../data/exp_dataset.csv, ../../data/exp_dataset_ent.csv (also through pairs.py)
         ../../data/experimental_data_processed/stern_volmer_intensities.csv
 Writes  results/exclusion/evidence.csv      Q38 and Q31: pairs, outcomes, driving forces,
                                             Stern-Volmer constants, emission ratios and the
                                             predictions of the criteria on their scored pairs
-        results/exclusion/pairs.csv         every pair of Q38, Q31 and the N-O reagents Q19
-                                            and Q22 with the 27 photocatalysts
-        results/exclusion/correlations.csv  Spearman rho of K_SV with tau0 and with E_T(PC)
-                                            over the 27 photocatalysts
-        results/exclusion/scenarios.csv     metrics of the criteria with all pairs, without
-                                            Q38, without Q31 and without both
 
     uv run benchmark/further_analysis/exclusion.py
 
 Q38 and Q31 are pairs.LEFT_OUT_QUENCHERS. Here they are put back on loading, so that their
-pairs are scored like every other pair (PC22 stays left out); "without Q38 and Q31" is the
-benchmark set. The criteria are those of the benchmark table: adiabatic (DFT, ML), DvTE
-(p = 0.008, normal) and two-gate (DFT, ML; r from DFT sizes). None of them is tuned, so
-nothing is chosen again per scenario.
+pairs are scored like every other pair (PC22 stays left out). The criteria are those of
+the benchmark table: adiabatic (DFT, ML), DvTE (p = 0.008, normal) and two-gate (DFT, ML;
+r from DFT sizes).
 
 A pair is in the energy-transfer data set unless it quenches and electron transfer cannot
 be ruled out. The emission ratio I0/I is the mean intensity without quencher over the mean
 intensity at the highest quencher concentration of the plate. The ratio expected for
 k_q = K_Q_REFERENCE is 1 + K_Q_REFERENCE tau0 [Q]max. The two-gate rejections are split
 into the energy gate (dG_EnT > 0) and the barrier gate (exergonic, barrier above t_PC).
-The correlations use every photocatalyst, PC22 and the pairs outside the energy-transfer
-data set included; dG_EnT in pairs.csv is E_T(Q) - E_T(PC) for every pair (DFT).
+dG_EnT is E_T(Q) - E_T(PC) for every pair.
 """
 
 import sys
@@ -43,11 +35,9 @@ sys.path.insert(0, str(HERE.parent))
 
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
-from scipy import stats  # noqa: E402
 
 import classification  # noqa: E402
 import pairs  # noqa: E402
-import scoring  # noqa: E402
 import theory  # noqa: E402
 
 DATA = HERE.parent.parent / "data"
@@ -56,10 +46,7 @@ INTENSITIES = DATA / "experimental_data_processed" / "stern_volmer_intensities.c
 RESULTS = HERE / "results" / "exclusion"
 
 LEFT_OUT = ("Q38", "Q31")
-REFERENCE_QUENCHERS = ("Q19", "Q22")     # N-O reagents compared with Q31
 K_Q_REFERENCE = 1e9                      # M-1 s-1
-SCENARIOS = {"all pairs": (), "without Q38": ("Q38",), "without Q31": ("Q31",),
-             "without Q38 and Q31": ("Q38", "Q31")}
 CRITERIA = {
     "adiabatic, dft": (classification.candidates("adiabatic", "")[0], "dft"),
     "adiabatic, ml": (classification.candidates("adiabatic", "")[0], "ml"),
@@ -112,9 +99,9 @@ def predictions(df):
 
 
 def pair_table(screen, ent, ratios, df):
-    """Every pair of the left-out and reference quenchers with its status in the benchmark."""
+    """Every pair of the left-out quenchers with its status in the benchmark."""
     keys = [pairs.PC_NAME, pairs.Q_NAME]
-    t = screen[screen[pairs.Q_NAME].isin(LEFT_OUT + REFERENCE_QUENCHERS)].copy()
+    t = screen[screen[pairs.Q_NAME].isin(LEFT_OUT)].copy()
     t = t.merge(ratios, on=["pc_old_id", "quencher_id"], how="left", validate="1:1")
     pc_et = ent.groupby(pairs.PC_NAME)[pairs.PC_E_T].first()
     q_et = {s: ent.groupby(pairs.Q_NAME)[f"q_E_T_{s} / kcal mol-1"].first() for s in pairs.SOURCES}
@@ -170,38 +157,6 @@ def evidence(table):
     return pd.DataFrame(rows)
 
 
-def correlations(screen, ent):
-    """Spearman rho of K_SV with tau0 and with E_T(PC) over every photocatalyst."""
-    pc_et = ent.groupby(pairs.PC_NAME)[pairs.PC_E_T].first()
-    rows = []
-    for q in LEFT_OUT + REFERENCE_QUENCHERS:
-        t = screen[screen[pairs.Q_NAME] == q]
-        for label, x in (("tau0", t[pairs.TAU0]), ("E_T(PC)", t[pairs.PC_NAME].map(pc_et))):
-            ok = x.notna() & t[pairs.K_SV].notna()
-            r = stats.spearmanr(t.loc[ok, pairs.K_SV], x[ok])
-            rows.append({"quencher": q, "K_SV vs": label, "n_photocatalysts": int(ok.sum()),
-                         "spearman_rho": float(r.statistic), "p": float(r.pvalue)})
-    return pd.DataFrame(rows)
-
-
-def scenarios(df):
-    y = df[pairs.QUENCHES].to_numpy(bool)
-    pcs = df[pairs.PC_NAME].to_numpy()
-    scores = {name: classification.predict(df, setting, source) for name, (setting, source) in CRITERIA.items()}
-    rows = []
-    for scenario, dropped in SCENARIOS.items():
-        m = ~df[pairs.Q_NAME].isin(dropped).to_numpy()
-        both = pd.Series(y[m]).groupby(pcs[m]).agg(lambda v: 0 < v.sum() < len(v))
-        for name, (predicted, score) in scores.items():
-            metrics = scoring.metrics(y[m], predicted[m])
-            rows.append({"scenario": scenario, "criterion": name, "n": metrics["n"], "n_quench": int(y[m].sum()),
-                         "photocatalysts_both_outcomes": int(both.sum()),
-                         "accuracy": metrics["accuracy"], "MCC": metrics["MCC"],
-                         "AUC": scoring.auc(y[m], score[m]),
-                         "AUC_within_PC_pooled": scoring.auc_within(y[m], score[m], pcs[m])["pooled"]})
-    return pd.DataFrame(rows)
-
-
 def rounded(table):
     """kcal/mol to 2 decimals, rate constants to 3 significant figures, the rest to 3 decimals."""
     table = table.copy()
@@ -218,14 +173,10 @@ def main():
     ent = pd.read_csv(pairs.DATASET)
     df = scored_with_left_out()
     table = pair_table(screen, ent, emission_ratios(pd.read_csv(INTENSITIES)), df)
-    tables = {"evidence": evidence(table), "pairs": table, "correlations": correlations(screen, ent),
-              "scenarios": scenarios(df)}
+    t = rounded(evidence(table))
     RESULTS.mkdir(parents=True, exist_ok=True)
-    for name, t in tables.items():
-        rounded(t).to_csv(RESULTS / f"{name}.csv", index=False, lineterminator="\n")
-    print(rounded(tables["evidence"]).set_index("quencher").T.to_string(), "\n")
-    for name in ("correlations", "scenarios"):
-        print(rounded(tables[name]).to_string(index=False), "\n")
+    t.to_csv(RESULTS / "evidence.csv", index=False, lineterminator="\n")
+    print(t.set_index("quencher").T.to_string(), "\n")
     print(f"-> {RESULTS.relative_to(pairs.HERE.parent)}")
 
 

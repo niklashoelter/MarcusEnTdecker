@@ -8,7 +8,7 @@ Well intensities -> one Stern-Volmer fit per photocatalyst/quencher pair.
 Reads   ../experimental_data_processed/stern_volmer_intensities.csv
 Writes  ../experimental_data_processed/stern_volmer_fits.csv
 
-    uv run data/experimental_data_scripts/stern_volmer_fits.py [--fix-intercept]
+    uv run data/experimental_data_scripts/stern_volmer_fits.py
 
 I0/I is fitted against [Q] for 27 x 48 = 1296 pairs. Photocatalysts carry old ids.
 
@@ -18,9 +18,7 @@ sqrt(n) / (1 + MAE)^4, and may drop one outlier per range, found by Theil-Sen
 residuals. The [Q] = 0 point is always kept. The chosen points are refitted by ordinary
 least squares and by Theil-Sen, and the fit with the lower MAE is reported.
 
-Intercept. The fit has a free intercept. `--fix-intercept` fits I0/I = 1 + K_SV [Q]
-through (0, 1) instead, which changes every K_SV; that run writes
-stern_volmer_fits_fixed_intercept.csv beside the table and leaves the table alone.
+Intercept. The final fit has a free intercept.
 
 Label. `quenches` is 1 if the fit clears any rung of a ladder in which weaker quenching
 needs a straighter line: K_SV > 50 at r2 > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
@@ -37,7 +35,6 @@ import numpy as np
 
 IN = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "stern_volmer_intensities.csv"
 OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "stern_volmer_fits.csv"
-OUT_FIXED_INTERCEPT = OUT.with_name("stern_volmer_fits_fixed_intercept.csv")
 
 MIN_POINTS_FOR_FIT = 3
 R2_NO_QUENCHING = 0.50        # all-points r2 below this: no quenching trend
@@ -47,8 +44,6 @@ OUTLIER_IMPROVEMENT = 0.20    # an outlier must cut the MAE by this fraction to 
 # (K_SV above, r2 above); any one rung is enough. Checked from the highest K_SV down.
 LABEL_RUNGS = [(50.0, 0.75), (20.0, 0.80), (10.0, 0.90), (0.0, 0.99)]
 
-# Fit through (0, 1) instead of with a free intercept. Set for one run with --fix-intercept.
-FIX_INTERCEPT = False
 SIGFIGS = 6
 
 EPS = np.finfo(np.double).eps
@@ -76,21 +71,6 @@ def score_fn(residuals, n_points):
 
 
 # --- estimators -------------------------------------------------------------
-
-def ols_anchored(x, y):
-    """Least squares through (0, 1): I0/I = 1 + K_SV [Q]. Returns slope, 1.0, pred, r2.
-
-    r2 is taken against the mean of y, as in the free-intercept fit, and can be negative.
-    """
-    x = np.asarray(x, float)
-    y = np.asarray(y, float)
-    sxx = float(x @ x)
-    slope = float(x @ (y - 1.0)) / sxx if sxx else float("nan")
-    pred = 1.0 + slope * x
-    ss_res = float(((y - pred) ** 2).sum())
-    ss_tot = float(((y - y.mean()) ** 2).sum())
-    return slope, 1.0, pred, (1 - ss_res / ss_tot if ss_tot else float("nan"))
-
 
 def ols(x, y):
     """Ordinary least squares with a free intercept. Returns slope, intercept, pred, r2."""
@@ -154,7 +134,7 @@ def linear_fit(x, y, method="linear", force_intercept=False):
 
     force_intercept shifts y down by 1 before fitting and reports the intercept as 1.0.
     The estimator still fits its own intercept, so the line is not constrained through
-    (0, 1); use ols_anchored for that.
+    (0, 1).
     """
     x = np.asarray(x, float)
     y = np.asarray(y, float)
@@ -251,15 +231,9 @@ def analyse(conc, intensity):
     return chosen, note, conc, ratio
 
 
-def finalise(chosen, conc, ratio, fix_intercept=FIX_INTERCEPT):
-    """Refit the chosen points by OLS and Theil-Sen and keep the lower MAE.
-
-    With fix_intercept, only the fit through (0, 1) is done.
-    """
+def finalise(chosen, conc, ratio):
+    """Refit the chosen points by OLS and Theil-Sen and keep the lower MAE."""
     x, y = conc[chosen], ratio[chosen]
-    if fix_intercept:
-        slope, intercept, _, r2 = ols_anchored(x, y)
-        return slope, intercept, r2, "anchored"
     best = None
     best_mae = 100.0
     for method in ("linear", "theil-sen"):
@@ -291,11 +265,9 @@ def confidence(k_sv, r2, intercept, n_used, n_total, quenching):
     return "medium" if 25 < k_sv < 100 else "high"
 
 
-def main(fix_intercept=FIX_INTERCEPT):
+def main():
     if not IN.exists():
         sys.exit(f"{IN.name} not found; run stern_volmer_intensities.py first")
-    if fix_intercept:
-        print("fitting through (0, 1) instead of with a free intercept")
 
     pairs = defaultdict(list)
     for row in csv.DictReader(IN.open(encoding="utf-8")):
@@ -308,7 +280,7 @@ def main(fix_intercept=FIX_INTERCEPT):
     for pc_id, q_id in sorted(pairs):
         points = sorted(pairs[(pc_id, q_id)])
         chosen, note, conc, ratio = analyse([c for c, _ in points], [i for _, i in points])
-        slope, intercept, r2, method = finalise(chosen, conc, ratio, fix_intercept)
+        slope, intercept, r2, method = finalise(chosen, conc, ratio)
 
         # all-points fit, reported for comparison only
         slope_all, _, _, r2_all = ols(conc, ratio)
@@ -331,15 +303,14 @@ def main(fix_intercept=FIX_INTERCEPT):
             "note": note,
         })
 
-    out = OUT_FIXED_INTERCEPT if fix_intercept else OUT
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open("w", newline="", encoding="utf-8") as fh:
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    with OUT.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=COLUMNS)
         writer.writeheader()
         writer.writerows(rows)
 
     label = sum(1 for r in rows if r["quenches"])
-    print(f"{len(rows)} pairs -> {out.name}")
+    print(f"{len(rows)} pairs -> {OUT.name}")
     print(f"  quenches: {label} yes, {len(rows) - label} no")
     rungs = defaultdict(int)
     for r in rows:
@@ -356,4 +327,4 @@ def main(fix_intercept=FIX_INTERCEPT):
 
 
 if __name__ == "__main__":
-    main(fix_intercept=FIX_INTERCEPT or "--fix-intercept" in sys.argv[1:])
+    main()

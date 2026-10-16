@@ -1,5 +1,0 @@
-criterion,parameters,variant,held_out_by,MCC_all_pairs,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,settings_chosen
-marcus_barrier,dft,,quencher,0.409,855,307,220,256,72,0.658,0.583,0.81,0.538,0.678,0.355,2
-marcus_barrier,ml,,quencher,0.382,855,322,237,239,57,0.656,0.576,0.85,0.502,0.687,0.367,2
-marcus_barrier,dft,,photocatalyst,0.409,855,310,217,259,69,0.665,0.588,0.818,0.544,0.684,0.37,2
-marcus_barrier,ml,,photocatalyst,0.382,855,321,244,232,58,0.647,0.568,0.847,0.487,0.68,0.351,2

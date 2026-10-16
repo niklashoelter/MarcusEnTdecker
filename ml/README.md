@@ -15,6 +15,8 @@ training/           offline only, left out of the wheel; nothing else may import
   train.py          trains on a split, or on all data
   test_predictions.py   a checkpoint's predictions for the test set of its split
   evaluate.py       metrics from the test predictions, and the ensemble's member list
+  uncertainty_calibration.py   coverage of the test errors by the predicted uncertainty, and
+                    the error in its most and least certain deciles: uncertainty_calibration.csv
   hyperparameter_optimization.py   the Optuna search behind the hyperparameters
   build_dataset.py  Leon's training targets from raw DFT energies (the raw energies are not
                     in this repository; kept for the record and its test)

@@ -39,50 +39,24 @@ THE TESTS
                   from each rate are model-free and written once. One acceptor and two donors:
                   this is ONE independent ratio. The TXT rate is an estimate from a single
                   concentration; absolute barriers are descriptive only.
-    screen        the sensitiser screen on 7a (SI Table 1): reacts = lactam isolated under any
-                  reported condition. AUC of -barrier against AUC of -dG (the E_T screen) and of
-                  -lambda_forward. Passes when AUC(barrier) = 1; "beyond the E_T screen" only if
-                  AUC(barrier) > AUC(dG) in >= 10 of 12 runs. The literature donor E_T exists
-                  only for reacting donors, so no AUC is possible with it (written as NaN).
-                  One acceptor: this tests donor ordering only. Yields among positives are
-                  confounded by wavelength, solvent and time and are not used.
-    reference     descriptive: our 7a E_T and lambda_T1_S0 against the paper's B3LYP/6-31G
-                  adiabatic E_T and vertical-minus-adiabatic gap (= our lambda_T1_S0; the paper
-                  gives no lambda_S0_T1), and our donor E_T against the literature values.
     donor pair    descriptive (POST HOC, user request 2026-10-06): the same difference,
                   barrier(TXT -> s) - barrier(XT -> s), for 7a and every scope allene s, to show
                   whether the predicted XT/TXT difference is a property of the donor pair. Only
                   7a has a measured ratio.
-    scope         descriptive and declared non-evidentiary: barrier(XT -> substrate) across the
-                  scope and its Spearman rho with yield. The paper attributes the yields to the
-                  hydrogen-atom-transfer step, not to energy transfer.
 
 THE SERIES, AND WHAT IS EXCLUDED
-    Donors: the nine organic sensitisers of the screen. The two iridium complexes cannot be
-    encoded and the paper gives no lambda for them, so they are out of every test; the
-    no-catalyst entry is not a donor. Screen sensitivity (reported, never promoted): drop the
-    negatives whose every entry is flagged "degradation" (benzophenone, anthraquinone, 4CzIPN),
-    since a consumed sensitiser does not show that energy transfer failed; 2,7-Br2-TXT is then
-    the only negative. Scope: 7e (photoredox side reaction, per the paper) and 7o
-    (decomposition, no yield) are excluded as registered; the all-in numbers stand beside them.
-    7n gives a different triplet product and counts as reacting. The deuterated 7f-d1/d2 are
-    kept as the table has them, although the model is not isotope-aware.
+    Scope: 7e (photoredox side reaction, per the paper) and 7o (decomposition, no yield) are
+    flagged as excluded, as registered. The deuterated 7f-d1/d2 are kept as the table has
+    them, although the model is not isotope-aware.
 
 POST HOC
     kq      the barrier with the literature donor E_T; the Shapley split of ddG_ml into
             driving-force and reorganisation parts; the apparent Bronsted slope
             ddG / (dG_TXT - dG_XT) (0 or 1 under Sandros); the prefactor k_act exp(barrier/RT)
             implied by each rate; the predicted k_act ratio.
-    screen  AUCs without acetone, which was the solvent and so needs no favourable barrier.
-            Fac-Ir(ppy)3 with Sole-Daura's published parameters (their Ir-B) is evaluated in
-            the pair table as an illustration and kept out of every score.
 
-Writes   results/literature/bach_allene.csv           one row per donor-acceptor pair, model and estimate
-         results/literature/bach_kq_summary.csv       the k_q ratio test and its baselines per model and estimate
+Writes   results/literature/bach_kq_summary.csv       the k_q ratio test and its baselines per model and estimate
          results/literature/bach_kq_reference.csv     the model-free numbers: ddG_exp, band, Sandros straw man
-         results/literature/bach_screen_summary.csv   the screen AUCs per model and estimate
-         results/literature/bach_dft_reference.csv    7a and the donors against the paper's values
-         results/literature/bach_scope_summary.csv    the scope barriers and rho with yield, both subsets
          results/literature/bach_donor_pair.csv       barrier(TXT) - barrier(XT) for 7a and every scope allene
          results/literature/bach_marcus_curve.csv     deployed barrier of 7a vs driving force, beside the Sandros expectation
 """
@@ -91,8 +65,8 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import brentq
 
-from common import (ESTIMATES, RT, auc, barrier_asymmetric, literature, models, ours, pair_barrier,
-                    pair_lambdas, spearman, split_difference, write)
+from common import (ESTIMATES, RT, barrier_asymmetric, literature, models, ours, pair_barrier,
+                    pair_lambdas, split_difference, write)
 
 CASE = "bach_2026"
 ACCEPTOR = "7a"
@@ -101,7 +75,6 @@ K_DIFFUSION = 1.9e10            # M-1 s-1, MeCN, the paper's value (SI p.89, its
 BAND = 2.0                      # pass: ddG_ml within a factor of two of ddG_exp
 ROBUST = 10                     # of 12 runs
 SCOPE_EXCLUDED = {"7e": "photoredox side reaction (paper)", "7o": "decomposition, no yield"}
-ILLUSTRATION_PC = ("sole_daura_2024", "Ir-B")    # fac-Ir(ppy)3, post hoc
 
 
 def k_act(k_q):
@@ -121,7 +94,6 @@ def in_band(value, target):
 def main():
     lit = literature(CASE)
     preds = models(CASE)
-    some = next(iter(preds.values()))
 
     # ---------------------------------------------------------------- experiment, from the table
     kq = lit[lit.experiment == "kq"].set_index("pc_label")
@@ -130,20 +102,7 @@ def main():
     ddG_exp = RT * np.log(k_act(k_q[FAST]) / k_act(k_q[SLOW]))
     acceptor_lit = lit[lit.compound_id == ACCEPTOR].iloc[0]
 
-    screen = lit[(lit.experiment == "screen") & (lit.compound_id == ACCEPTOR)]
-    by_donor = screen.groupby("pc_label")
-    donors = [d for d in screen.pc_label.unique() if f"PC_{d}" in some.index]
-    not_encoded = [d for d in screen.pc_label.unique() if d not in donors]
-    best_yield = by_donor.yield_percent_exp.max()
-    reacts = {d: bool(best_yield[d] > 0) for d in donors}
-    degradation_only = {d: (not reacts[d]) and bool(by_donor.get_group(d).outcome.str.contains("degradation").all())
-                        for d in donors}
-
     scope = lit[lit.experiment == "scope"].drop_duplicates("compound_id").set_index("compound_id")
-
-    sd = literature(ILLUSTRATION_PC[0])
-    sd = sd[sd.pc_label == ILLUSTRATION_PC[1]].iloc[0]
-    illustration = {"E_T": sd.pc_E_T_lit, "lambda_S0_T1": sd.pc_lambda_S0_T1_lit, "lambda_T1_S0": sd.pc_lambda_T1_S0_lit}
 
     # ---------------------------------------------------------------- model-free reference
     E_single = brentq(lambda e: np.log(sandros(e - E_T_pc_lit[FAST]) / sandros(e - E_T_pc_lit[SLOW]))
@@ -170,40 +129,12 @@ def main():
     }
     write(pd.DataFrame([reference]), "bach_kq_reference.csv")
 
-    # ---------------------------------------------------------------- pairs
-    pairs, kq_rows, screen_rows, dft_rows, scope_rows, donor_pair = [], [], [], [], [], []
+    # ---------------------------------------------------------------- per model and estimate
+    kq_rows, donor_pair = [], []
     for model, pred in preds.items():
         for estimate in ESTIMATES:
             o = {c: ours(pred.loc[c], estimate) for c in pred.index}
             acc = o[ACCEPTOR]
-
-            def pair(pc, substrate, substrate_id, pc_label, pc_source, group, **extra):
-                forward, reverse = pair_lambdas(pc, substrate)
-                dG, barrier = pair_barrier(pc, substrate)
-                row = {"model": model, "estimate": estimate, "group": group, "pc_label": pc_label,
-                       "pc_source": pc_source, "substrate": substrate_id,
-                       "pc_E_T": pc["E_T"], "pc_lambda_S0_T1": pc["lambda_S0_T1"], "pc_lambda_T1_S0": pc["lambda_T1_S0"],
-                       "pc_E_T_lit": E_T_pc_lit.get(pc_label, np.nan),
-                       "E_T_ml": substrate["E_T"], "lambda_S0_T1_ml": substrate["lambda_S0_T1"],
-                       "lambda_T1_S0_ml": substrate["lambda_T1_S0"], "E_T_sd_ml": substrate["E_T_sd"],
-                       "lambda_S0_T1_sd_ml": substrate["lambda_S0_T1_sd"], "lambda_T1_S0_sd_ml": substrate["lambda_T1_S0_sd"],
-                       "dG_EnT_ml": dG, "lambda_forward_ml": forward, "lambda_reverse_ml": reverse, "barrier_ml": barrier}
-                row.update(extra)
-                pairs.append(row)
-                return row
-
-            # the screen on 7a (and the two k_q pairs inside it)
-            sc = []
-            for d in donors:
-                sc.append(pair(o[f"PC_{d}"], acc, ACCEPTOR, d, "ours", "screen",
-                               reacts_exp=reacts[d], best_yield_percent_exp=best_yield[d],
-                               degradation_only=degradation_only[d], k_q=k_q.get(d, np.nan)))
-            pair(illustration, acc, ACCEPTOR, "Ir(ppy)3", "Sole-Daura 2024 Ir-B (post hoc illustration)", "illustration")
-            # the scope with XT
-            for s in scope.index:
-                pair(o[f"PC_{FAST}"], o[s], s, FAST, "ours", "scope",
-                     yield_percent_exp=scope.at[s, "yield_percent_exp"], outcome_lit=scope.at[s, "outcome"],
-                     excluded=SCOPE_EXCLUDED.get(s, ""))
 
             # the XT/TXT difference for 7a and every scope allene (descriptive)
             for s_id in [ACCEPTOR] + [c for c in scope.index if c != ACCEPTOR]:
@@ -248,57 +179,8 @@ def main():
                 "posthoc_k_act_ratio_ml": np.exp(ddG / RT)})
             kq_rows.append(row)
 
-            # ------------------------------------------------ screen
-            g = pd.DataFrame(sc)
-            kept = g[~g.degradation_only]
-            no_acetone = g[g.pc_label != "acetone"]
-            lit_pc = g.dropna(subset=["pc_E_T_lit"])
-            r = {"model": model, "estimate": estimate, "n_react": int(g.reacts_exp.sum()), "n_not": int((~g.reacts_exp).sum()),
-                 "auc_barrier": auc(-g.barrier_ml, g.reacts_exp), "auc_dG": auc(-g.dG_EnT_ml, g.reacts_exp),
-                 "auc_lambda_forward": auc(-g.lambda_forward_ml, g.reacts_exp),
-                 "auc_dG_lit": auc(-(lit_pc.E_T_ml - lit_pc.pc_E_T_lit), lit_pc.reacts_exp)}
-            r["pass"] = r["auc_barrier"] == 1
-            r["barrier_beats_dG"] = r["auc_barrier"] > r["auc_dG"]
-            r.update({"n_not_without_degradation": int((~kept.reacts_exp).sum()),
-                      "auc_barrier_without_degradation": auc(-kept.barrier_ml, kept.reacts_exp),
-                      "auc_dG_without_degradation": auc(-kept.dG_EnT_ml, kept.reacts_exp),
-                      "posthoc_auc_barrier_without_acetone": auc(-no_acetone.barrier_ml, no_acetone.reacts_exp),
-                      "posthoc_auc_dG_without_acetone": auc(-no_acetone.dG_EnT_ml, no_acetone.reacts_exp),
-                      "excluded_donors": "; ".join(not_encoded)})
-            screen_rows.append(r)
-
-            # ------------------------------------------------ reference: 7a and donors against the paper
-            lit_donors = [d for d in donors if d in E_T_pc_lit.index]
-            dft_rows.append({
-                "model": model, "estimate": estimate,
-                "E_T_7a_ml": acc["E_T"], "E_T_7a_lit": acceptor_lit.E_T_lit, "E_T_7a_error": acc["E_T"] - acceptor_lit.E_T_lit,
-                "lambda_T1_S0_7a_ml": acc["lambda_T1_S0"], "lambda_T1_S0_7a_lit": acceptor_lit.lambda_T1_S0_lit,
-                "lambda_T1_S0_7a_error": acc["lambda_T1_S0"] - acceptor_lit.lambda_T1_S0_lit,
-                "lambda_S0_T1_7a_ml": acc["lambda_S0_T1"],
-                "E_T_7a_sd": acc["E_T_sd"], "lambda_S0_T1_7a_sd": acc["lambda_S0_T1_sd"], "lambda_T1_S0_7a_sd": acc["lambda_T1_S0_sd"],
-                "E_T_7a_pseudovertical_lit": acceptor_lit.E_T_pseudovert_lit, "E_T_7a_vertical_lit": acceptor_lit.E_T_vert_lit,
-                "pc_n_lit": len(lit_donors),
-                "pc_E_T_mae": float(np.mean([abs(o[f"PC_{d}"]["E_T"] - E_T_pc_lit[d]) for d in lit_donors]))})
-
-            # ------------------------------------------------ scope (non-evidentiary)
-            s = pd.DataFrame([p for p in pairs if p["model"] == model and p["estimate"] == estimate and p["group"] == "scope"])
-            for subset, t in (("as registered (7e, 7o out)", s[s.excluded == ""]), ("all with a yield", s)):
-                t = t.dropna(subset=["yield_percent_exp"])
-                rho_b, _, n = spearman(-t.barrier_ml, t.yield_percent_exp)
-                rho_d, _, _ = spearman(-t.dG_EnT_ml, t.yield_percent_exp)
-                scope_rows.append({"model": model, "estimate": estimate, "subset": subset, "n": n,
-                                   "barrier_min": t.barrier_ml.min(), "barrier_max": t.barrier_ml.max(),
-                                   "barrier_median": t.barrier_ml.median(), "barrier_sd": t.barrier_ml.std(),
-                                   "rho_barrier_yield": rho_b, "rho_dG_yield": rho_d})
-
-    write(pd.DataFrame(pairs), "bach_allene.csv")
     kq_table = pd.DataFrame(kq_rows)
     write(kq_table, "bach_kq_summary.csv")
-    screen_table = pd.DataFrame(screen_rows)
-    write(screen_table, "bach_screen_summary.csv")
-    write(pd.DataFrame(dft_rows), "bach_dft_reference.csv")
-    scope_table = pd.DataFrame(scope_rows)
-    write(scope_table, "bach_scope_summary.csv")
     write(pd.DataFrame(donor_pair), "bach_donor_pair.csv")
 
     # For a small explanatory panel: the deployed model's barrier for 7a as a function of the
@@ -326,18 +208,6 @@ def main():
     print(f"Sandros on the paper's DFT E_T: ddG {reference['ddG_sandros_dft_kq']:.2f} (k_q), "
           f"{reference['ddG_sandros_dft_k_act']:.2f} (k_act); apparent E_T(7a) {reference['E_T_7a_sandros_apparent_XT']:.2f} "
           f"from XT, {reference['E_T_7a_sandros_apparent_TXT']:.2f} from TXT")
-
-    print(f"\nscreen: {screen_table.n_react.iloc[0]} react, {screen_table.n_not.iloc[0]} do not; "
-          f"excluded {screen_table.excluded_donors.iloc[0]}")
-    print(screen_table.drop(columns=["excluded_donors", "n_react", "n_not", "n_not_without_degradation", "auc_dG_lit"])
-          .round(3).to_string(index=False))
-    print(f"AUC(barrier) = 1 in {int(screen_table['pass'].sum())}/{n}; barrier > dG in "
-          f"{int(screen_table.barrier_beats_dG.sum())}/{n} (beyond the E_T screen needs {ROBUST})")
-
-    print("\nscope (non-evidentiary): Spearman rho with yield, range over runs")
-    for subset, t in scope_table.groupby("subset", sort=False):
-        print(f"  {subset:28s} n {t.n.iloc[0]}: rho(-barrier) {t.rho_barrier_yield.min():.2f} to {t.rho_barrier_yield.max():.2f}; "
-              f"rho(-dG) {t.rho_dG_yield.min():.2f} to {t.rho_dG_yield.max():.2f}")
 
 
 if __name__ == "__main__":

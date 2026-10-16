@@ -8,9 +8,9 @@ Ma 2023: which functional groups survive energy-transfer catalysis?
     uv run benchmark/literature/ma_tolerance.py
 
 The paper reduces azaarenes by energy transfer and finds a long list of reducible pendant
-groups untouched. The question for us is a classification: do our predicted driving force and
+groups untouched. The question for us is whether our predicted driving force and
 reorganisation energy, combined in the barrier, put the reduced azaarenes below the tolerated
-groups? The triplet-energy screen alone -- exergonic means quenched -- is scored beside it.
+groups.
 
 CONVENTION
     The paper's barrier is symmetric on a single reorganisation energy, lambda_A(singlet) +
@@ -42,14 +42,13 @@ THE DFT REFERENCE
     recomputed and with the printed barriers.
 
 Writes   results/literature/ma_tolerance.csv           one row per compound, model and estimate
-         results/literature/ma_classification.csv      separation scores per model and estimate
          results/literature/ma_reference.csv           agreement with the paper's DFT
 """
 
 import numpy as np
 import pandas as pd
 
-from common import ESTIMATES, auc, barrier_symmetric, literature, models, ours, write
+from common import ESTIMATES, barrier_symmetric, literature, models, ours, write
 
 REDUCED = ["quinoline", "isoquinoline", "phenanthridine", "benzofquinoline", "47phenanthroline"]
 HAT = ["l", "anthracene", "phenanthrene"]
@@ -106,28 +105,6 @@ def main():
     table = pd.DataFrame(rows)
     write(table, "ma_tolerance.csv")
 
-    scores = []
-    for (model, estimate), t in table.groupby(["model", "estimate"], sort=False):
-        for arenes in ("separate", "counted as tolerated"):
-            s = t[t.group != "hat"] if arenes == "separate" else t
-            reactive = s.group == "reduced"
-            red, tol = s[reactive], s[~reactive]
-            scores.append({
-                "model": model, "estimate": estimate, "hat_arenes": arenes,
-                "n_reduced": len(red), "n_tolerated": len(tol),
-                # threshold-free: how often a reduced compound lies below a tolerated one
-                "auc_barrier": auc(-s.barrier_ml, reactive),
-                "auc_dG": auc(-s.dG_EnT_ml, reactive),
-                "margin_barrier": tol.barrier_ml.min() - red.barrier_ml.max(),
-                "lowest_tolerated": tol.loc[tol.barrier_ml.idxmin(), "label"],
-                # the triplet-energy screen: exergonic is called quenched
-                "E_T_screen_correct": int(((s.dG_EnT_ml < 0) == reactive).sum()),
-                "E_T_screen_wrong": ", ".join(s[(s.dG_EnT_ml < 0) != reactive].label),
-                "barrier_best_threshold_correct": max(int(((s.barrier_ml < th) == reactive).sum())
-                                                      for th in np.unique(s.barrier_ml) + 1e-9),
-                "n": len(s)})
-    write(pd.DataFrame(scores), "ma_classification.csv")
-
     ref = []
     for (model, estimate), t in table.groupby(["model", "estimate"], sort=False):
         has = t.barrier_lit.notna()
@@ -146,8 +123,6 @@ def main():
                         "excluded": ", ".join(t[has & ~sel].label)})
     write(pd.DataFrame(ref), "ma_reference.csv")
 
-    d = pd.DataFrame(scores)
-    print(d[(d.model == "deployed")].drop(columns=["model"]).to_string(index=False))
     print(pd.DataFrame(ref).query("model == 'deployed'").to_string(index=False))
 
 

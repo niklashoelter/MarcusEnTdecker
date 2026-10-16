@@ -11,14 +11,11 @@ Writes  results/gate_offset/sweep.csv          metrics of every criterion at eve
         results/gate_offset/optimum.csv        the c with the highest MCC, and the MCC at
                                                c = 0, at that c and at C_WINDOW
         results/gate_offset/heldout.csv        nested held-out MCC with c re-tuned without
-                                               the held-out photocatalyst or quencher
+                                               the held-out photocatalyst
         results/gate_offset/window_stats.csv   quenching fractions in C_WINDOW < dG <= 0,
                                                dG <= C_WINDOW and dG > 0
-        results/gate_offset/flipped_pairs.csv  every pair whose prediction changes between
-                                               c = 0 and c = C_WINDOW
-        results/gate_offset/flips_by_group.csv these changes by quencher class
-        results/gate_offset/drop_pc.csv        MCC at c = 0 and C_WINDOW and the optimum c
-                                               with one photocatalyst left out
+        results/gate_offset/flips_by_group.csv the pairs whose prediction changes between
+                                               c = 0 and c = C_WINDOW, by quencher class
 
     uv run benchmark/further_analysis/gate_offset.py
 
@@ -34,9 +31,8 @@ classification.py, so the AUCs do not depend on c except for two_gate.
 
 The optimum c is the grid value with the highest MCC, the middle one on a tie
 (scoring.best_setting_from_scores), on C_GRID (-5 to +2 kcal/mol in steps of 0.1). Held
-out: for each photocatalyst (LOPCO) or quencher (LOQO) in turn, c is chosen on the other
-pairs and applied to the held-out pairs; the pooled held-out predictions are scored once.
-drop_pc.csv scores all pairs without one photocatalyst, with nothing re-tuned but c_best.
+out (LOPCO): for each photocatalyst in turn, c is chosen on the other pairs and applied
+to the held-out pairs; the pooled held-out predictions are scored once.
 """
 
 import sys
@@ -63,7 +59,6 @@ DVTE = ("0.008", "normal")
 CRITERIA = (("adiabatic", "dft"), ("adiabatic", "ml"), ("dvte", "dft"),
             ("two_gate", "dft"), ("two_gate", "ml"))
 FLIP_CRITERIA = (("two_gate", "dft"), ("two_gate", "ml"), ("adiabatic", "dft"))
-DROP_PC_CRITERIA = (("two_gate", "dft"), ("two_gate", "ml"), ("adiabatic", "dft"), ("dvte", "dft"))
 
 
 class Offsets:
@@ -154,23 +149,22 @@ def held_out_predictions(o: Offsets, key, groups):
 
 
 def held_out(o: Offsets):
-    schemes = {"LOPCO": o.df[pairs.PC_NAME].to_numpy(), "LOQO": o.df[pairs.Q_NAME].to_numpy()}
+    groups = o.df[pairs.PC_NAME].to_numpy()
     rows = []
     for key in CRITERIA:
         at_zero = o.metrics(*o.predict(*key, 0.0))
-        for scheme, groups in schemes.items():
-            predicted, score, chosen = held_out_predictions(o, key, groups)
-            m = o.metrics(predicted, score)
-            rows.append({"criterion": key[0], "parameters": key[1], "scheme": scheme,
-                         "MCC_c0": at_zero["MCC"], "MCC_heldout": m["MCC"],
-                         "gain_MCC": m["MCC"] - at_zero["MCC"],
-                         "accuracy_c0": at_zero["accuracy"], "accuracy_heldout": m["accuracy"],
-                         "gain_accuracy": m["accuracy"] - at_zero["accuracy"],
-                         "AUC_within_PC_pooled_c0": at_zero["AUC_within_PC_pooled"],
-                         "AUC_within_PC_pooled_heldout": m["AUC_within_PC_pooled"],
-                         "c_chosen_min / kcal mol-1": chosen.min(),
-                         "c_chosen_median / kcal mol-1": np.median(chosen),
-                         "c_chosen_max / kcal mol-1": chosen.max(), "n_folds": len(chosen)})
+        predicted, score, chosen = held_out_predictions(o, key, groups)
+        m = o.metrics(predicted, score)
+        rows.append({"criterion": key[0], "parameters": key[1], "scheme": "LOPCO",
+                     "MCC_c0": at_zero["MCC"], "MCC_heldout": m["MCC"],
+                     "gain_MCC": m["MCC"] - at_zero["MCC"],
+                     "accuracy_c0": at_zero["accuracy"], "accuracy_heldout": m["accuracy"],
+                     "gain_accuracy": m["accuracy"] - at_zero["accuracy"],
+                     "AUC_within_PC_pooled_c0": at_zero["AUC_within_PC_pooled"],
+                     "AUC_within_PC_pooled_heldout": m["AUC_within_PC_pooled"],
+                     "c_chosen_min / kcal mol-1": chosen.min(),
+                     "c_chosen_median / kcal mol-1": np.median(chosen),
+                     "c_chosen_max / kcal mol-1": chosen.max(), "n_folds": len(chosen)})
     return pd.DataFrame(rows)
 
 
@@ -195,22 +189,14 @@ def window_stats(o: Offsets):
 
 
 def flips(o: Offsets, quencher_class):
-    """(every changed pair, the changes by quencher class) between c = 0 and C_WINDOW."""
+    """The changes between c = 0 and C_WINDOW by quencher class."""
     zero, window = index_of(0.0), index_of(C_WINDOW)
     classes = o.df[pairs.Q_NAME].map(quencher_class).to_numpy()
-    changed_pairs, by_class = [], []
+    by_class = []
     for key in FLIP_CRITERIA:
         before, after = o.grid[key][zero], o.grid[key][window]
         flip = before != after
         to_correct, to_wrong = flip & (after == o.y), flip & (after != o.y)
-        for i in np.flatnonzero(flip):
-            changed_pairs.append({
-                "criterion": key[0], "parameters": key[1], "pc": o.df[pairs.PC_NAME].iat[i],
-                "quencher": o.df[pairs.Q_NAME].iat[i], "quencher_class": classes[i],
-                "quenches": int(o.y[i]),
-                "direction": ("FP->TN" if to_correct[i] and not o.y[i]
-                              else "TP->FN" if to_wrong[i] else "other"),
-                pairs.K_SV: o.df[pairs.K_SV].iat[i], pairs.TAU0: o.df[pairs.TAU0].iat[i]})
         table = pd.DataFrame({"quencher_class": classes, "flip": flip, "FP_to_TN": to_correct,
                               "TP_to_FN": to_wrong})
         grouped = table.groupby("quencher_class")
@@ -223,23 +209,7 @@ def flips(o: Offsets, quencher_class):
         counts.insert(0, "parameters", key[1])
         counts.insert(0, "criterion", key[0])
         by_class.append(counts)
-    return pd.DataFrame(changed_pairs), pd.concat(by_class, ignore_index=True)
-
-
-def drop_pc(o: Offsets):
-    zero, window = index_of(0.0), index_of(C_WINDOW)
-    photocatalysts = o.df[pairs.PC_NAME].to_numpy()
-    rows = []
-    for key in DROP_PC_CRITERIA:
-        for dropped in ["none", *pd.unique(photocatalysts)]:
-            weights = (photocatalysts != dropped).astype(float)
-            mcc = mcc_weighted(o.y, o.grid[key], weights)
-            best = scoring.best_setting_from_scores(mcc)
-            rows.append({"criterion": key[0], "parameters": key[1], "dropped": dropped,
-                         "n_pairs": int(weights.sum()), "MCC_c0": mcc[zero],
-                         "MCC_c_window": mcc[window], "gain_c_window": mcc[window] - mcc[zero],
-                         "c_best / kcal mol-1": C_GRID[best], "gain_best": mcc[best] - mcc[zero]})
-    return pd.DataFrame(rows)
+    return pd.concat(by_class, ignore_index=True)
 
 
 def read_quencher_classes():
@@ -255,10 +225,8 @@ def main():
     unclassified = sorted(set(o.df[pairs.Q_NAME]) - set(quencher_class.dropna().index))
     if unclassified:
         raise KeyError(f"no quencher class for {', '.join(unclassified)} in {QUENCHER_CLASSES.name}")
-    changed_pairs, by_class = flips(o, quencher_class)
     tables = {"sweep.csv": sweep(o), "optimum.csv": optimum(o), "heldout.csv": held_out(o),
-              "window_stats.csv": window_stats(o), "flipped_pairs.csv": changed_pairs,
-              "flips_by_group.csv": by_class, "drop_pc.csv": drop_pc(o)}
+              "window_stats.csv": window_stats(o), "flips_by_group.csv": flips(o, quencher_class)}
 
     RESULTS.mkdir(parents=True, exist_ok=True)
     for name, table in tables.items():
@@ -268,7 +236,7 @@ def main():
              "MCC_c_window"]
     print(tables["optimum.csv"][shown].round(3).to_string(index=False))
     print()
-    print(tables["heldout.csv"][["criterion", "parameters", "scheme", "MCC_heldout",
+    print(tables["heldout.csv"][["criterion", "parameters", "MCC_heldout",
                                  "c_chosen_median / kcal mol-1"]].round(3).to_string(index=False))
     print(f"\n-> {RESULTS.relative_to(pairs.HERE.parent)}")
 

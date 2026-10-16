@@ -1,3 +1,0 @@
-quencher,photocatalysts,with k_q > 0,quenching,"E_T,Q dft / kcal mol-1","min E_T,PC of quenching pairs / kcal mol-1",min driving force of quenching pairs / kcal mol-1,FP adiabatic dft,FN adiabatic dft,FP dvte,FN dvte,FP two_gate dft,FN two_gate dft,FP two_gate ml,FN two_gate ml,median excess barrier of two_gate dft misses / kcal mol-1,Spearman rho dft,rank of rho dft among quencher series,median bias dft / decades,Spearman rho ml,median bias ml / decades
-Q41,26,21,16,51.45,60.55,9.1,8,0,0,1,0,7,0,1,0.42,0.819,1,-1.431,0.819,-0.339
-Q2,26,19,16,52.17,60.55,8.38,8,0,3,0,0,1,0,1,0.91,0.765,6,-0.949,0.765,-0.671

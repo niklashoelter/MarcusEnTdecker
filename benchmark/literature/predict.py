@@ -31,8 +31,7 @@ from rdkit import Chem
 
 from common import DATA, PROPERTIES, REPO, column, write
 
-CASES = ("ma_2023", "sole_daura_2024", "leonori_2025", "gilmour_2020", "bach_2026", "booker_milburn_2020",
-         "paton_2024")
+CASES = ("ma_2023", "sole_daura_2024", "leonori_2025", "bach_2026", "paton_2024")
 HEADS = {"E_T": 0, "lambda_S0_T1": 1, "lambda_T1_S0": 2}   # order of the model's graph targets
 
 

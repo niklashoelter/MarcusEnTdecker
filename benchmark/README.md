@@ -38,9 +38,9 @@ benchmark/
 │   │   ├── settings.csv    every DFT setting of every criterion
 │   │   └── best.csv        best DFT setting per criterion, and the same setting with ML
 │   ├── cost/
+│   ├── entdecker_1/    E_T, timings and adiabatic scores of EnTdecker 1.0, results only
 │   └── literature/     predictions and comparison tables of the literature benchmark
 └── further_analysis/   variants and diagnostics beyond the benchmark table
-    ├── labels/         the analyses of the Stern–Volmer labels
     └── results/
 ```
 
@@ -139,44 +139,64 @@ DFT and DvTE: wall time × cores from `quencher_timings.csv` (MD trajectories fr
 reports). ML: process CPU time from `quencher_timings_ml.csv`, measured on one machine with
 the deployed model. Written with four significant figures.
 
+## EnTdecker 1.0
+
+`results/entdecker_1/` holds what the two models of EnTdecker 1.0 (Schlosser et al., JACS
+2024) give on the benchmark quenchers, for comparison with the model of this work. The run
+itself is not part of the repository and not a stage of `reproduce.py`; only its results are:
+- `quencher_E_T.csv`: E_T of every quencher from the triplet-energy model, and per model
+  whether it processed the quencher, with the reason where it did not (`triplet_note`,
+  `spin_note`). A spin result counts as processed only if the decoded SMILES is the input.
+- `quencher_timings.csv`: inference timings in the columns of
+  `../data/computational_data_processed/quencher_timings_ml.csv`, with a leading `model`
+  column: `triplet`, `spin`, and `sum`, the two added row by row. The header lines give the
+  machine, the package versions, the checkpoints and the code commits.
+- `adiabatic.csv`: the `adiabatic` criterion with these quencher E_T, in the columns of
+  `classification/best.csv` (`parameters` = `entdecker`).
+
+**Models.** The published checkpoints from Zenodo (10.5281/zenodo.10391170), with the code of
+github.com/le-schlo/EnTdecker: `triplet_energy.pt`, the chemprop D-MPNN, through the
+prediction path of `Models/triplet_energy/chemprop/eval.py`; `spin_population.pt`, the
+transformer for the spin populations (EasyChemML), through the model and tokenizer calls of
+`Models/spin_population/eval.py` with greedy decoding, on the CPU instead of the GPU that
+script asks for.
+
+**Timing.** As for `quencher_timings_ml.csv` and on the same machine: import, checkpoint load
+and first call once, then each quencher in a call of its own and all quenchers in one call,
+with the model loaded; process CPU time over all threads. chemprop writes its predictions
+file on every call, and that write is timed with it. The two models ran in separate
+processes, and the spin model with fewer warm-up rounds and repeats; the header gives the
+protocol of each.
+
+**Scoring.** ΔG_EnT is formed from the unrounded prediction and the DFT E_T of the
+photocatalyst and rounded like the dataset's, and scored with the functions of
+`classification.py` on the pairs `pairs.py` scores. The row belongs to the scored pairs at
+the time of the run; `reproduce.py` does not rescore it.
+
 ## Further analysis
 
-Each script writes to `further_analysis/results/<script>/`; the scripts in `labels/`
-write to `further_analysis/results/labels/noise/`, `robust/` and `linear/`. Besides the
-dataset, some read `../data/computational_data_processed/quencher_geometry_S0_T1.csv`,
-`molecular_extent.csv` or `reorganization_modes.csv`, the Stern–Volmer tables in
+Each script writes to `further_analysis/results/<script>/`. Besides the dataset, some read
+`../data/computational_data_processed/quencher_geometry_S0_T1.csv` or
+`reorganization_modes.csv`, the Stern–Volmer tables in
 `../data/experimental_data_processed/`, or the quencher classes written by
 `quencher_classes.py`, which therefore runs first; each docstring names its inputs.
 
 | script | contents |
 |---|---|
-| `influence.py` | metrics with each quencher or photocatalyst removed, at the benchmark settings |
-| `held_out.py` | leave-one-quencher-out and leave-one-photocatalyst-out scores of the tuned criteria |
 | `within_groups.py` | metrics and AUC within each photocatalyst and within each quencher |
-| `adiabatic_variants.py` | margin E_T(PC) ≥ E_T(Q) + m, m = 0–3 kcal/mol; cutoff on the ML uncertainty of E_T(Q) |
-| `barrier_variants.py` | barrier criteria for every barrier model, with and without ΔG_EnT ≤ 0, and with a threshold of 5 kcal/mol |
 | `rate_predictions.py` | log₁₀ k for every pair and source: full scheme at r_PC + r_Q and at 7 Å, irreversible, Sandros; parity with the measured k_q, and of a constant predictor; nothing fitted |
 | `quencher_classes.py` | the 48 quenchers as rigid, flexible or dissociative, from structure and the S0→T1 geometry change (`quencher_geometry_S0_T1.csv`); λ_T1_S0 = 20 kcal/mol as a cross-check; ambiguous assignments flagged |
-| `metrics_extended.py` | per-pair table for the figures; full metrics of every criterion (PR AUC, within-PC, LOQO/LOPCO, PC-only baseline, plain-λ), confusion counts, metrics per quencher class including flexible and dissociative |
-| `bootstrap.py` | two-way cluster bootstrap over photocatalysts and quenchers (2000 replicates, fixed seed): intervals of MCC, ROC AUC and within-PC AUC; paired differences with P(Δ > 0); ML − DFT |
-| `lifetimes.py` | quenching fraction by barrier bin for τ₀ < 1 µs and ≥ 1 µs; short-lived photocatalysts; the criterion at 7 Å against one constant threshold; DvTE false positives rejected, by gate and quencher class |
-| `figure_tables.py` | per-quencher and per-photocatalyst tables of the scored pairs; cost per quencher of each method over the 46 scored quenchers with the metrics it enables; t_PC against τ₀ (median, min and max contact distance, 7 Å, k_−d/ν = 0.25) |
-| `contact_distance.py` | the criterion with r = r_PC + r_Q from van der Waals volumes or molecular extents, or fixed r = 4–12 Å; distribution of r; shift of t_PC per Å |
-| `gate_offset.py` | first gate moved to ΔG ≤ c (DvTE − E_T(PC) ≤ c), c = −5…+2 kcal/mol: optimum, held-out c (nested LOPCO/LOQO), the window −1.5 < ΔG ≤ 0, changed pairs by quencher class, one photocatalyst left out |
+| `metrics_extended.py` | per-pair table for the figures; full metrics of every criterion (PR AUC, within-PC), metrics per quencher class including flexible and dissociative |
+| `lifetimes.py` | quenching fraction by barrier bin for τ₀ < 1 µs and ≥ 1 µs; short-lived photocatalysts; DvTE false positives rejected, by gate and quencher class |
+| `figure_tables.py` | per-quencher and per-photocatalyst tables of the scored pairs; cost per quencher of each method over the scored quenchers with the metrics it enables |
+| `contact_distance.py` | the criterion with r = r_PC + r_Q from van der Waals volumes, or fixed r = 4–12 Å; distribution of r; shift of t_PC per Å |
+| `gate_offset.py` | first gate moved to ΔG ≤ c (DvTE − E_T(PC) ≤ c), c = −5…+2 kcal/mol: optimum, held-out c (nested LOPCO), the window −1.5 < ΔG ≤ 0, changed pairs by quencher class |
 | `error_propagation.py` | Monte Carlo errors in the computed parameters (per molecule, 1000 draws) through the classification and the predicted log₁₀ k_q; local sensitivity of log₁₀ k_q to E_T(Q) and λ |
 | `mlj.py` | Marcus–Levich–Jortner rates from the mode-resolved λ (`reorganization_modes.csv`; split at 3 k_BT, one quantum mode): rate parity, MLJ criteria against two-gate (bootstrap ΔMCC), k_−d/ν = 0.25, one variant with tuned classical λ (LOQO/LOPCO) |
-| `kinetics_series.py` | Spearman ρ of predicted against measured log₁₀ k_q within photocatalyst and quencher series (k_q > 0, ≥ 5 pairs); Q41 and Q2 across all photocatalysts |
-| `exclusion.py` | Q38 and Q31: outcomes, ΔG, K_SV, I₀/I and gate rejections; K_SV against τ₀ and E_T(PC); metrics with and without each quencher |
+| `exclusion.py` | Q38 and Q31: outcomes, ΔG, K_SV, I₀/I and gate rejections |
 | `anharmonicity.py` | skewness and tail of the DvTE gap distributions (trajectory bootstrap), skewness against the signed error, ΔG shifted by the tail, crossing position, torsional instead of harmonic curves |
-| `dvte_reorganization.py` | DvTE − E_T against λ, four-point Gaussian estimate of DvTE, symmetric against asymmetric barrier, position of the Youden and Sandros boundaries, literature E_T(PC) (`../data/literature_benchmark/photocatalyst_triplet_energies.csv`) |
-| `ml_vs_dft.py` | the criterion with ML against DFT quencher parameters: overlap with the training set, per-quencher deviations and change in correct predictions, parameter swaps, DFT fallback by uncertainty; needs RDKit |
-| `kdet_threshold.py` | the criterion with each photocatalyst's K_det (floor 200 M⁻¹ for PC25–27) instead of K_SV,crit = 10 M⁻¹, under three label sets; t_PC per photocatalyst |
-| `labels/s1_noise_model.py` … `s5_profile_g.py` | s1 noise model of the plate reads; s2 K_SV posteriors, empirical null and K_det per photocatalyst; s3 power of the concentration ladder; s4 label confidence, metrics under label uncertainty, noise in the rate parity, censored rate likelihood; s5 profile of its slope g |
-| `labels/robust_fits.py`, `robust_labels.py` | K_SV from 13 estimators and labels from each; blank-well noise test, with CV₀ the MAD-SD of the blank wells, each divided by its plate's median blank |
-| `labels/linear_shapes.py`, `linear_variants.py`, `linear_downstream.py` | shapes of the Stern–Volmer curves; linear-range and artifact variants, background, drift and failed wells; their metrics |
-
-The label analyses never change the labels of the dataset; their variants enter the metrics
-only.
+| `dvte_reorganization.py` | DvTE − E_T against λ, four-point Gaussian estimate of DvTE, symmetric against asymmetric barrier, position of the Youden and Sandros boundaries |
+| `ml_vs_dft.py` | the criterion with ML against DFT quencher parameters: per-quencher deviations and change in correct predictions |
 
 ## Literature
 
@@ -196,10 +216,9 @@ uv run --extra ml python benchmark/literature/ma_tolerance.py
 |---|---|
 | `ma_tolerance.py` | Ma 2023: functional-group tolerance of the azaarene reduction |
 | `sole_daura_ez.py` | Solé-Daura 2024: E/Z isomerization |
-| `gilmour_ez.py` | Gilmour 2020: β-boryl acrylates |
+| `sole_daura_tx.py` | Solé-Daura 2024: the same with thioxanthone from one source at a time (paper DFT, our OPC library DFT, our prediction) |
 | `leonori_ranking.py` | Leonori 2025: nitroarene photocatalysts |
 | `bach_allene.py` | Bach 2026: allene amides |
-| `booker_milburn_sensitisers.py` | Booker-Milburn 2020: thioxanthone sensitizers |
 | `paton_dvte.py` | Paton 2024: DvTE against the predicted reorganization energies |
 
 Each script's docstring names the tables it writes.

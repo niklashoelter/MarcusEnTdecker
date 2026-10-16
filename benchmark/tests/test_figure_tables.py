@@ -3,13 +3,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "further_analysis"))
 
-import classification  # noqa: E402
 import figure_tables as ft  # noqa: E402
-import theory  # noqa: E402
 
 
 def test_complex_class_from_the_name():
@@ -28,16 +25,6 @@ def test_numbered_orders_by_the_number():
 def test_quartiles():
     s = ft.quartiles(pd.Series([1.0, 2.0, 3.0, 4.0, 5.0]), "x")
     assert (s["x_median"], s["x_q25"], s["x_q75"], s["x_IQR"], s["x_mean"]) == (3.0, 2.0, 4.0, 2.0, 3.0)
-
-
-def test_lifetime_curve_models_and_values():
-    t = ft.lifetime_curve(np.array([7.5, 8.0, 10.0]))
-    assert len(t) == 5 * len(ft.TAU_GRID_NS)
-    assert list(t.drop_duplicates("model")["role"]) == ["main", "range", "range", "secondary", "SI"]
-    main = t[t.role == "main"]
-    expected = theory.lifetime_barrier(1e-6, classification.K_SV_CRIT, theory.escape_over_frequency(8.0))
-    at_1us = main.iloc[np.argmin(np.abs(main["tau0 / ns"] - 1000.0))]
-    assert at_1us["t_PC / kcal mol-1"] == pytest.approx(expected, abs=0.005)
 
 
 def test_cost_table_pairs_methods_with_the_criteria_they_enable():

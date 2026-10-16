@@ -6,19 +6,16 @@
 The contact distance r in the lifetime threshold of the two_gate criterion.
 
 Reads   ../../data/exp_dataset_ent.csv (through pairs.py)
-        ../../data/computational_data_processed/molecular_extent.csv
-Writes  results/contact_distance/pair_distances.csv      r_PC, r_Q and r_PC + r_Q of every
-                                                         scored pair, from the van der Waals
-                                                         volume and from the molecular extent
-        results/contact_distance/r_ij_distribution.csv   their distribution over the scored
-                                                         pairs and over the molecules, and
-                                                         the shift of t_PC against r = 7 A
+Writes  results/contact_distance/r_ij_distribution.csv   the distribution of r_PC + r_Q over
+                                                         the scored pairs and of r_PC and
+                                                         r_Q over the molecules, and the
+                                                         shift of t_PC against r = 7 A
         results/contact_distance/dt_pc_per_angstrom.csv  K_A, k_-d/nu, the shift and slope
                                                          of t_PC and its range over the
                                                          photocatalysts, for r = 4-12 A
         results/contact_distance/metrics_r.csv           two_gate metrics with r = 7 A, the
-                                                         per-pair r of either radius, and a
-                                                         fixed r from 4 to 12 A
+                                                         per-pair r, and a fixed r from 4 to
+                                                         12 A
 
     uv run benchmark/further_analysis/contact_distance.py
 
@@ -26,11 +23,9 @@ The lifetime threshold is t_PC = RT ln((k_d tau0 / K_SV,crit - 1) / (k_-d/nu)) w
 k_-d/nu = (k_d / K_A) / (k_B T / h) and K_A = 4 pi N_A r^3 / 3 (theory.lifetime_barrier),
 so t_PC = const(tau0) + 3 RT ln r and dt_PC/dr = 3RT/r.
 
-Two radii per molecule, both from the S0 DFT geometry with Bondi van der Waals radii:
-  volume   the radius of the sphere with the molecule's van der Waals volume, as in the
-           dataset (pairs.PC_RADIUS, pairs.Q_RADIUS); r_PC + r_Q is pairs.CONTACT
-  extent   half the largest atom-atom extent including the van der Waals radii,
-           max_ij (d_ij + R_i + R_j) / 2, from molecular_extent.csv
+The radius of a molecule is that of the sphere with its van der Waals volume (S0 DFT
+geometry, Bondi radii), as in the dataset (pairs.PC_RADIUS, pairs.Q_RADIUS); r_PC + r_Q
+is pairs.CONTACT.
 
 two_gate: dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC(tau0, r), K_SV,crit = 10 M-1,
 as in classification.py, with the continuous score t_PC - barrier for AUC. Quencher
@@ -52,25 +47,15 @@ import scoring  # noqa: E402
 import theory  # noqa: E402
 
 RESULTS = HERE / "results" / "contact_distance"
-EXTENT = pairs.HERE.parent / "data" / "computational_data_processed" / "molecular_extent.csv"
 
 R_REFERENCE = theory.CONTACT_DISTANCE                       # A
 R_GRID = np.round(np.arange(4.0, 12.0001, 0.5), 2)          # A
-RADII = {"volume": "vdW volume spheres", "extent": "extent (half max distance + vdW)"}
-
-
-def extent_radii(df):
-    """(r_PC, r_Q) from the molecular extent, as arrays over the rows of df."""
-    table = pd.read_csv(EXTENT)
-    by_kind = {kind: part.set_index("id")["r_extent / A"] for kind, part in table.groupby("kind")}
-    return (df["pc_old_id"].map(by_kind["photocatalyst"]).to_numpy(float),
-            df[pairs.Q_ID].map(by_kind["quencher"]).to_numpy(float))
+VOLUME = "vdW volume spheres"
 
 
 def radii(df):
-    """{radius: (r_PC, r_Q)} for both radius definitions."""
-    return {"volume": (df[pairs.PC_RADIUS].to_numpy(float), df[pairs.Q_RADIUS].to_numpy(float)),
-            "extent": extent_radii(df)}
+    """(r_PC, r_Q) from the van der Waals volume, as arrays over the rows of df."""
+    return df[pairs.PC_RADIUS].to_numpy(float), df[pairs.Q_RADIUS].to_numpy(float)
 
 
 def threshold_shift(r):
@@ -91,30 +76,19 @@ def two_gate(df, source, r):
             np.where(exergonic, margin, margin - classification.ENDERGONIC_OFFSET))
 
 
-def pair_distances(df, r):
-    out = pd.DataFrame({"pc": df[pairs.PC_NAME], "quencher": df[pairs.Q_NAME],
-                        "quenches": df[pairs.QUENCHES].astype(int)})
-    for name, (r_pc, r_q) in r.items():
-        out[f"r_PC_{name} / A"] = r_pc
-        out[f"r_Q_{name} / A"] = r_q
-        out[f"r_ij_{name} / A"] = r_pc + r_q
-    return out
-
-
 def distribution(df, r):
-    rows = []
-    for name, (r_pc, r_q) in r.items():
-        values = r_pc + r_q
-        shift = threshold_shift(values)
-        rows.append({"definition": RADII[name], "n": len(values), **_quantiles(values),
-                     "fraction below 7 A": float((values < R_REFERENCE).mean()),
-                     "dt_PC vs 7 A median / kcal mol-1": float(np.median(shift)),
-                     "dt_PC vs 7 A min / kcal mol-1": float(shift.min()),
-                     "dt_PC vs 7 A max / kcal mol-1": float(shift.max())})
-        for part, values_, ids in (("r_PC", r_pc, df[pairs.PC_NAME]), ("r_Q", r_q, df[pairs.Q_NAME])):
-            per_molecule = pd.Series(values_, index=ids.to_numpy()).groupby(level=0).first()
-            rows.append({"definition": f"{RADII[name]}: {part} (per molecule)", "n": len(per_molecule),
-                         **_quantiles(per_molecule.to_numpy())})
+    r_pc, r_q = r
+    values = r_pc + r_q
+    shift = threshold_shift(values)
+    rows = [{"definition": VOLUME, "n": len(values), **_quantiles(values),
+             "fraction below 7 A": float((values < R_REFERENCE).mean()),
+             "dt_PC vs 7 A median / kcal mol-1": float(np.median(shift)),
+             "dt_PC vs 7 A min / kcal mol-1": float(shift.min()),
+             "dt_PC vs 7 A max / kcal mol-1": float(shift.max())}]
+    for part, values_, ids in (("r_PC", r_pc, df[pairs.PC_NAME]), ("r_Q", r_q, df[pairs.Q_NAME])):
+        per_molecule = pd.Series(values_, index=ids.to_numpy()).groupby(level=0).first()
+        rows.append({"definition": f"{VOLUME}: {part} (per molecule)", "n": len(per_molecule),
+                     **_quantiles(per_molecule.to_numpy())})
     return pd.DataFrame(rows)
 
 
@@ -156,10 +130,8 @@ def metrics(df, r):
     rows = []
     for source in pairs.SOURCES:
         rows.append(row("fixed", f"{R_REFERENCE:g}", source, R_REFERENCE))
-        for name, (r_pc, r_q) in r.items():
-            r_ij = r_pc + r_q
-            rows.append(row(f"per pair r_PC + r_Q, {RADII[name]}", f"{np.median(r_ij):.2f} (median)",
-                            source, r_ij))
+        r_ij = r[0] + r[1]
+        rows.append(row(f"per pair r_PC + r_Q, {VOLUME}", f"{np.median(r_ij):.2f} (median)", source, r_ij))
         rows += [row("sweep", f"{d:g}", source, float(d)) for d in R_GRID]
     return pd.DataFrame(rows)
 
@@ -167,13 +139,10 @@ def metrics(df, r):
 def main():
     df = pairs.scored(pairs.load())
     r = radii(df)
-    if any(np.isnan(r_pc).any() or np.isnan(r_q).any() for r_pc, r_q in r.values()):
-        raise ValueError(f"a scored pair has no radius; run data/computational_data_scripts/"
-                         f"molecular_extent.py to write {EXTENT.name}")
+    if np.isnan(r[0]).any() or np.isnan(r[1]).any():
+        raise ValueError("a scored pair has no radius")
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    pair_distances(df, r).round(2).to_csv(RESULTS / "pair_distances.csv", index=False,
-                                          lineterminator="\n")
     dist = distribution(df, r)
     dist.round(2).to_csv(RESULTS / "r_ij_distribution.csv", index=False, lineterminator="\n")
     per_angstrom = threshold_per_angstrom(df)

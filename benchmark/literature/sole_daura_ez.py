@@ -19,9 +19,8 @@ convention (positive: E is sensitised more slowly and accumulates).
 
 CONVENTION
     Asymmetric form (the paper's eq. 4), unscaled. Substrates are ours. Photocatalysts are the
-    paper's -- iridium and ruthenium cannot be encoded -- with the experimental E_T for all
-    seven. Thioxanthone is organic, so its pairs are also run with our own TX prediction
-    (`pc_source` = "ours"), as a sensitivity check.
+    paper's -- iridium cannot be encoded -- with the experimental E_T (`pc_source` = "paper").
+    The paper's ruthenium catalyst has no experimental barrier and is left out.
 
 THE SERIES
     Substrates 1-3, each with an experimental barrier for E and Z. Substrate 3 was measured
@@ -34,7 +33,7 @@ THE SERIES
     from ddG, assuming the twisted triplet decays equally to E and Z (the paper's assumption):
     [Z]/[E] = k_E/k_Z = exp(-ddG/RT).
 
-Writes   results/literature/sole_daura_ez.csv        one row per pair, model, estimate and PC source
+Writes   results/literature/sole_daura_ez.csv        one row per pair, model and estimate
          results/literature/sole_daura_ez_signs.csv  one row per E/Z group: ddG, its split, sign
          results/literature/sole_daura_pss.csv       photostationary Z share with TX
          results/literature/sole_daura_parity.csv    absolute barriers against experiment, with nulls
@@ -47,15 +46,13 @@ from common import (ESTIMATES, PROPERTIES, RT, barrier_asymmetric, barrier_symme
                     models, ours, pair_lambdas, split_difference, write)
 
 EXCLUDED_SUBSTRATE = "4"
+LEFT_OUT_PC = "Ru"
 DRAWS = 20000
 RNG = np.random.default_rng(20261006)
 
 
-def pc_of(pair, pred, source):
-    """Photocatalyst properties: the paper's, or our prediction for thioxanthone."""
-    if source == "ours":
-        o = ours(pred.loc[f"PC_{pair.pc_label}"])
-        return {"E_T": pair.pc_E_T_lit, "lambda_S0_T1": o["lambda_S0_T1"], "lambda_T1_S0": o["lambda_T1_S0"]}
+def pc_of(pair):
+    """The paper's photocatalyst properties."""
     return {"E_T": pair.pc_E_T_lit, "lambda_S0_T1": pair.pc_lambda_S0_T1_lit,
             "lambda_T1_S0": pair.pc_lambda_T1_S0_lit}
 
@@ -67,28 +64,26 @@ def terms(pc, substrate):
 
 def main():
     lit = literature("sole_daura_2024")
+    lit = lit[lit.pc_label != LEFT_OUT_PC].reset_index(drop=True)
     lit["substrate"] = lit.compound_id.str[:-1]
     preds = models("sole_daura_2024")
 
     rows = []
     for model, pred in preds.items():
         for estimate in ESTIMATES:
-            for source in ("paper", "ours"):
-                for _, pair in lit.iterrows():
-                    if source == "ours" and f"PC_{pair.pc_label}" not in pred.index:
-                        continue
-                    sub = ours(pred.loc[pair.compound_id], estimate)
-                    dG, forward, reverse = terms(pc_of(pair, pred, source), sub)
-                    rows.append({"model": model, "estimate": estimate, "pc_source": source,
-                                 "substrate": pair.substrate, "isomer": pair.isomer,
-                                 "compound_id": pair.compound_id, "pc_label": pair.pc_label,
-                                 "E_T_ml": sub["E_T"], "lambda_S0_T1_ml": sub["lambda_S0_T1"],
-                                 "lambda_T1_S0_ml": sub["lambda_T1_S0"],
-                                 "dG_EnT_ml": dG, "dG_EnT_lit": pair.dG_EnT_lit, "lambda_forward_ml": forward, "lambda_reverse_ml": reverse,
-                                 "barrier_ml": barrier_asymmetric(dG, forward, reverse),
-                                 "barrier_ml_symmetric": float(barrier_symmetric(dG, (forward + reverse) / 2)),
-                                 "barrier_asym_lit": pair.barrier_asym_lit, "barrier_exp": pair.barrier_exp,
-                                 "diffusion_controlled": pair.substrate == EXCLUDED_SUBSTRATE})
+            for _, pair in lit.iterrows():
+                sub = ours(pred.loc[pair.compound_id], estimate)
+                dG, forward, reverse = terms(pc_of(pair), sub)
+                rows.append({"model": model, "estimate": estimate, "pc_source": "paper",
+                             "substrate": pair.substrate, "isomer": pair.isomer,
+                             "compound_id": pair.compound_id, "pc_label": pair.pc_label,
+                             "E_T_ml": sub["E_T"], "lambda_S0_T1_ml": sub["lambda_S0_T1"],
+                             "lambda_T1_S0_ml": sub["lambda_T1_S0"],
+                             "dG_EnT_ml": dG, "dG_EnT_lit": pair.dG_EnT_lit, "lambda_forward_ml": forward, "lambda_reverse_ml": reverse,
+                             "barrier_ml": barrier_asymmetric(dG, forward, reverse),
+                             "barrier_ml_symmetric": float(barrier_symmetric(dG, (forward + reverse) / 2)),
+                             "barrier_asym_lit": pair.barrier_asym_lit, "barrier_exp": pair.barrier_exp,
+                             "diffusion_controlled": pair.substrate == EXCLUDED_SUBSTRATE})
     table = pd.DataFrame(rows)
     write(table, "sole_daura_ez.csv")
 
@@ -121,7 +116,7 @@ def main():
     p_sign = {}
     for (substrate, pc_label), g in lit[lit.barrier_exp.notna()].groupby(["substrate", "pc_label"]):
         e, z = g[g.isomer == "E"].iloc[0], g[g.isomer == "Z"].iloc[0]
-        pc = pc_of(e, pred, "paper")
+        pc = pc_of(e)
         draws = []
         for r in (e, z):
             o = ours(pred.loc[r.compound_id])
@@ -145,20 +140,17 @@ def main():
                     "z_percent_exp": exp_row.pss_z_percent_exp, "z_percent_calc_lit": exp_row.pss_z_percent_calc_lit})
     write(pd.DataFrame(pss), "sole_daura_pss.csv")
 
-    # Absolute barriers, SI only, with the nulls a referee asks for: the same catalysts with one
-    # made-up substrate (E_T 50, lambdas 50/30) or the mean of our substrates in place of each.
+    # Absolute barriers, SI only, with the null a referee asks for: the same catalysts with one
+    # made-up substrate (E_T 50, lambdas 50/30) in place of each.
     parity = []
-    scored = table[~table.diffusion_controlled & table.barrier_exp.notna() & (table.pc_source == "paper")]
+    scored = table[~table.diffusion_controlled & table.barrier_exp.notna()]
+    null = {"E_T": 50.0, "lambda_S0_T1": 50.0, "lambda_T1_S0": 30.0}
     for (model, estimate), t in scored.groupby(["model", "estimate"], sort=False):
         pairs = lit[lit.barrier_exp.notna() & (lit.substrate != EXCLUDED_SUBSTRATE)]
-        mean_sub = t[["E_T_ml", "lambda_S0_T1_ml", "lambda_T1_S0_ml"]].mean()
-        nulls = {"constant substrate (E_T 50, lambda 50/30)": {"E_T": 50.0, "lambda_S0_T1": 50.0, "lambda_T1_S0": 30.0},
-                 "mean of our substrates": {"E_T": mean_sub.E_T_ml, "lambda_S0_T1": mean_sub.lambda_S0_T1_ml,
-                                            "lambda_T1_S0": mean_sub.lambda_T1_S0_ml}}
-        candidates = {"ours, asymmetric": t.barrier_ml.to_numpy(), "ours, symmetric": t.barrier_ml_symmetric.to_numpy(),
-                      "paper DFT, asymmetric": t.barrier_asym_lit.to_numpy()}
-        for name, sub in nulls.items():
-            candidates[name] = np.array([barrier_asymmetric(*terms(pc_of(p, None, "paper"), sub)) for _, p in pairs.iterrows()])
+        candidates = {"ours, asymmetric": t.barrier_ml.to_numpy(),
+                      "paper DFT, asymmetric": t.barrier_asym_lit.to_numpy(),
+                      "constant substrate (E_T 50, lambda 50/30)":
+                          np.array([barrier_asymmetric(*terms(pc_of(p), null)) for _, p in pairs.iterrows()])}
         tx = (t.pc_label == "TX").to_numpy()
         for name, b in candidates.items():
             for subset, sel in (("all 16 pairs", np.ones(len(t), bool)), ("TX pairs only (substrate varies)", tx)):
@@ -170,7 +162,7 @@ def main():
                                "mean_signed_error": float((b[sel] - y).mean())})
     write(pd.DataFrame(parity), "sole_daura_parity.csv")
 
-    s = signs[(signs.pc_source == "paper") & ~signs.diffusion_controlled & signs.ddG_exp.notna()]
+    s = signs[~signs.diffusion_controlled & signs.ddG_exp.notna()]
     tally = (s.groupby(["substrate", "estimate"]).agg(models_correct=("sign_correct_ml", "sum"), groups=("sign_correct_ml", "size")))
     print(tally.to_string())
 
