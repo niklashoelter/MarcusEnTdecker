@@ -11,61 +11,12 @@ file skips; the dependency test beside it does not, because it only reads source
 
 from __future__ import annotations
 
-import sys
-import types
-
 import pytest
 
 pytest.importorskip("fastapi", reason="needs the webapp extra: uv sync --extra webapp")
 pytest.importorskip("httpx", reason="fastapi.testclient is built on httpx")
 
-
-class _Stub:
-    """Stands in for `ml.prediction.predict` and counts the calls it never gets."""
-
-    def __init__(self):
-        self.calls = 0
-
-    def __call__(self, smiles_list):
-        self.calls += 1
-        raise AssertionError("the smoke test must not run a forward pass")
-
-
-@pytest.fixture(scope="module")
-def stub():
-    return _Stub()
-
-
-@pytest.fixture(scope="module")
-def client(stub):
-    """The app with the model stubbed out, and no lifespan.
-
-    `ml.prediction` is replaced in `sys.modules` before `webapp.app` is imported, so
-    the checkpoint is never loaded and torch is never asked for a forward pass. The
-    client is used outside a `with` block on purpose: entering one would run the
-    lifespan, whose whole job is to pre-warm the model.
-    """
-    from fastapi.testclient import TestClient
-
-    fake = types.ModuleType("ml.prediction")
-    fake.predict = stub
-
-    saved = {name: sys.modules[name] for name in ("ml.prediction", "webapp.app")
-             if name in sys.modules}
-    sys.modules["ml.prediction"] = fake
-    sys.modules.pop("webapp.app", None)
-
-    import ml
-
-    ml.prediction = fake
-    try:
-        from webapp.app import app
-
-        yield TestClient(app)
-    finally:
-        sys.modules.pop("webapp.app", None)
-        sys.modules.pop("ml.prediction", None)
-        sys.modules.update(saved)
+# The `client` and `stub` fixtures (the app with the model stubbed out) are in conftest.py.
 
 
 def test_index_renders(client):
@@ -89,8 +40,46 @@ def test_photocatalyst_api_answers(client):
     photocatalysts = response.json()["photocatalysts"]
     assert photocatalysts, "the packaged photocatalysts.csv came back empty"
     first = photocatalysts[0]
-    assert {"name", "E_T_adiabatic", "lamda_S_T", "lamda_T_S"} <= set(first)
-    assert isinstance(first["E_T_adiabatic"], float)
+    assert {"id", "name", "E_T", "lambda_S0_T1", "lambda_T1_S0"} <= set(first)
+    assert isinstance(first["E_T"], float)
+    assert not any("lamda" in key for key in first), "the old lambda names are back"
+
+
+def test_the_library_is_the_screened_photocatalysts_and_the_organic_ones(client):
+    """PC1-PC27, the photocatalysts of the screen, then OPC1-OPC8, offered only here."""
+    ids = [pc["id"] for pc in client.get("/api/photocatalysts").json()["photocatalysts"]]
+    assert ids == [f"PC{n}" for n in range(1, 28)] + [f"OPC{n}" for n in range(1, 9)]
+
+
+def test_only_the_screened_photocatalysts_carry_lifetime_and_potentials(client):
+    """tau0 was measured and the potentials computed for the screened ones only."""
+    for pc in client.get("/api/photocatalysts").json()["photocatalysts"]:
+        values = (pc["tau0_ns"], pc["E_PCplus_PCstar"], pc["E_PCstar_PCminus"])
+        if pc["id"].startswith("OPC"):
+            assert values == (None, None, None), pc["id"]
+            assert pc["smiles"], f"{pc['id']} has no SMILES to draw it from"
+        else:
+            assert all(isinstance(v, float) for v in values), pc["id"]
+            assert pc["E_PCplus_PCstar"] < pc["E_PCstar_PCminus"], pc["id"]
+            assert pc["smiles"] == "", f"{pc['id']}: the metal complexes carry no SMILES"
+
+
+def test_every_photocatalyst_is_drawn_or_named(client):
+    """A drawing or a SMILES gives a structure; neither gives a 404 the page turns into the
+    compound name, never a 500."""
+    for pc in client.get("/api/photocatalysts").json()["photocatalysts"]:
+        response = client.post("/api/structure", json={"smiles": pc["smiles"], "name": pc["id"]})
+        if pc["structure_image"]:
+            assert response.headers["content-type"] == "image/png", pc["id"]
+        elif pc["smiles"]:
+            assert response.headers["content-type"].startswith("image/svg"), pc["id"]
+        else:
+            assert response.status_code == 404, pc["id"]
+
+
+def test_the_structure_name_is_an_id_not_a_path(client):
+    response = client.post("/api/structure", json={"smiles": "", "name": "../photocatalysts"})
+    assert response.status_code == 404
 
 
 def test_photocatalysts_carry_their_measured_lifetime(client):
@@ -101,8 +90,27 @@ def test_photocatalysts_carry_their_measured_lifetime(client):
     assert all(t is None or t > 0 for t in lifetimes.values())
 
 
-PAIR = {"pc_adiabatic_E_T": 65.7, "pc_lambda_S_T": 10.3, "pc_lambda_T_S": 8.3,
-        "quencher_E_T": 58.0, "quencher_lambda_S_T": 9.0, "quencher_lambda_T_S": 7.0}
+PAIR = {"pc_adiabatic_E_T": 65.7, "pc_lambda_S0_T1": 10.3, "pc_lambda_T1_S0": 8.3,
+        "quencher_E_T": 58.0, "quencher_lambda_S0_T1": 9.0, "quencher_lambda_T1_S0": 7.0}
+
+
+def test_marcus_pairs_the_lambdas_as_ml_energy_does(client):
+    """lambda_forward = lambda_T1_S0(PC) + lambda_S0_T1(Q): the route hands each surface to
+    the argument of ml.energy that holds it."""
+    from ml.energy.marcus_ent import _compute_marcus_core
+
+    expected = _compute_marcus_core(65.7, 10.3, 8.3, 58.0, 9.0, 7.0)
+    result = client.post("/api/marcus/compute", json=PAIR).json()
+    assert result["dG_activation"] == pytest.approx(expected[1])
+    swapped = {**PAIR, "pc_lambda_S0_T1": 8.3, "pc_lambda_T1_S0": 10.3}
+    assert client.post("/api/marcus/compute", json=swapped).json()["dG_activation"] != (
+        pytest.approx(expected[1]))
+
+
+def test_marcus_refuses_the_old_lambda_names(client):
+    old = {"pc_adiabatic_E_T": 65.7, "pc_lambda_S_T": 10.3, "pc_lambda_T_S": 8.3,
+           "quencher_E_T": 58.0, "quencher_lambda_S_T": 9.0, "quencher_lambda_T_S": 7.0}
+    assert client.post("/api/marcus/compute", json=old).status_code == 422
 
 
 def test_marcus_without_lifetime_gives_the_barrier_only(client):

@@ -28,8 +28,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 # Directories excluded from the walk: the test suites themselves, which name the
-# forbidden packages and paths for a living.
-EXCLUDED = {("ml", "tests"), ("webapp", "tests")}
+# forbidden packages and paths for a living, and webapp/scripts, the offline generator of
+# the packaged photocatalyst table, which reads data/ by design. It is no package (no
+# __init__.py, so it is neither installed nor importable as webapp.scripts), and
+# test_the_generator_stays_outside_the_package below holds it to that.
+EXCLUDED = {("ml", "tests"), ("webapp", "tests"), ("webapp", "scripts")}
 
 FORBIDDEN_PACKAGES = ("data", "benchmark")
 
@@ -188,4 +191,19 @@ def test_no_package_reads_data_or_benchmark(path):
         f"{path.relative_to(ROOT).as_posix()} names {offending}, which reaches into "
         f"data/ or benchmark/. Package resources belong inside the package and are "
         f"read with importlib.resources -- see ml/prediction.py."
+    )
+
+
+def test_the_generator_stays_outside_the_package():
+    """webapp/scripts reads data/, so it may be neither a package nor imported by one."""
+    assert not (ROOT / "webapp" / "scripts" / "__init__.py").exists(), (
+        "webapp/scripts has become a package; it would be installed and break the rule above")
+    offending = {path.relative_to(ROOT).as_posix(): sorted(
+                     name for name in _imported_modules(_tree(path))
+                     if name.startswith("webapp.scripts") or name == "build_photocatalysts")
+                 for path in RUNTIME_MODULES}
+    offending = {k: v for k, v in offending.items() if v}
+    assert not offending, (
+        f"{offending} import the offline generator of data/photocatalysts.csv. The "
+        f"application reads the table, never the generator."
     )

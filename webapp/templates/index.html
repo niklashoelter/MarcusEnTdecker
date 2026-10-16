@@ -596,30 +596,30 @@
                                             </div>
                                             <div>
                                                 <div class="leading-tight mb-2 h-10 flex flex-col justify-end">
-                                                    <span class="font-bold text-lg text-[var(--text-heading)]"><i>E</i><sub>red</sub><sup>*</sup></span>
-                                                    <span class="text-[var(--text-muted)] opacity-60 text-[10px]">(V)</span>
+                                                    <span class="font-bold text-lg text-[var(--text-heading)]" title="Excited-state potential E(PC*/PC−), DFT: the triplet as an oxidant"><i>E</i><sub>PC*/PC<sup>−</sup></sub></span>
+                                                    <span class="text-[var(--text-muted)] opacity-60 text-[10px]">(V vs SCE)</span>
                                                 </div>
-                                                <div id="pc-info-ered" class="font-bold text-[var(--text-heading)] text-lg">-</div>
+                                                <div id="pc-info-e-oxidant" class="font-bold text-[var(--text-heading)] text-lg">-</div>
                                             </div>
                                             <div>
                                                 <div class="leading-tight mb-2 h-10 flex flex-col justify-end">
-                                                    <span class="font-bold text-lg text-[var(--text-heading)]"><i>E</i><sub>ox</sub><sup>*</sup></span>
-                                                    <span class="text-[var(--text-muted)] opacity-60 text-[10px]">(V)</span>
+                                                    <span class="font-bold text-lg text-[var(--text-heading)]" title="Excited-state potential E(PC+/PC*), DFT: the triplet as a reductant"><i>E</i><sub>PC<sup>+</sup>/PC*</sub></span>
+                                                    <span class="text-[var(--text-muted)] opacity-60 text-[10px]">(V vs SCE)</span>
                                                 </div>
-                                                <div id="pc-info-eox" class="font-bold text-[var(--text-heading)] text-lg">-</div>
+                                                <div id="pc-info-e-reductant" class="font-bold text-[var(--text-heading)] text-lg">-</div>
                                             </div>
                                         </div>
                                         <div class="grid grid-cols-2 col-span-2 gap-8 pt-2">
                                             <div>
                                                 <div class="leading-tight mb-2 flex flex-col items-center">
-                                                    <span class="font-bold text-base text-[var(--text-heading)]"><i>λ</i><sub>S→T</sub></span>
+                                                    <span class="font-bold text-base text-[var(--text-heading)]"><i>λ</i><sub>S<sub>0</sub>-T<sub>1</sub></sub></span>
                                                     <span class="pc-unit-label text-[var(--text-muted)] opacity-60 text-[10px]"></span>
                                                 </div>
                                                 <div id="pc-info-lst" class="font-bold text-[var(--text-heading)] text-lg">-</div>
                                             </div>
                                             <div>
                                                 <div class="leading-tight mb-2 flex flex-col items-center">
-                                                    <span class="font-bold text-base text-[var(--text-heading)]"><i>λ</i><sub>T→S</sub></span>
+                                                    <span class="font-bold text-base text-[var(--text-heading)]"><i>λ</i><sub>T<sub>1</sub>-S<sub>0</sub></sub></span>
                                                     <span class="pc-unit-label text-[var(--text-muted)] opacity-60 text-[10px]"></span>
                                                 </div>
                                                 <div id="pc-info-lts" class="font-bold text-[var(--text-heading)] text-lg">-</div>
@@ -632,7 +632,7 @@
                         <div id="marcus-pc-struct" class="mb-3 w-full h-[150px] flex items-center justify-center bg-[#ffffff] border border-[var(--border-color)] rounded overflow-hidden shadow-sm"></div>
                         <select id="pc-select" class="input-sleek py-2" onchange="fillPcTau0(); runMarcusAnalysis()"></select>
                         <div class="flex items-center gap-2 mt-2">
-                            <label for="pc-tau0" class="text-sm font-medium text-[var(--text-muted)] whitespace-nowrap" title="Excited-state lifetime of the photocatalyst; needed for the two-gate verdict"><i>τ</i><sub>0</sub> (ns)</label>
+                            <label for="pc-tau0" class="text-sm font-medium text-[var(--text-muted)] whitespace-nowrap" title="Excited-state lifetime of the photocatalyst, prefilled where it was measured; needed for the two-gate verdict"><i>τ</i><sub>0</sub> (ns)</label>
                             <input id="pc-tau0" type="number" min="0" step="any" placeholder="optional" class="input-sleek py-2" onchange="runMarcusAnalysis()">
                         </div>
                     </div>
@@ -676,7 +676,7 @@
         window.pcData = []; // Store photocatalyst data
 
         // Fetch structures asynchronously (Global)
-        async function fetchStructure(smiles, elemId, name = "") {
+        async function fetchStructure(smiles, elemId, name = "", fallback = "") {
             try {
                 const el = document.getElementById(elemId);
                 if(!el) return;
@@ -700,6 +700,8 @@
                             svgOpt.style.height = '100%';
                         }
                     }
+                } else if (res.status === 404 && fallback) {
+                    el.innerHTML = `<span class="text-sm text-gray-500 px-2 text-center">${fallback}</span>`;
                 } else {
                     el.innerHTML = '<span class="text-xs text-red-500">Error</span>';
                 }
@@ -824,8 +826,8 @@
         function prefetchInitialPlots() {
             const vars = [
                 {valKey: 'triplet_energy_adiabatic', name: 'Triplet energy (adiabatic)'},
-                {valKey: 'lamda_S_T', name: 'Reorganization Energy (S→T)'},
-                {valKey: 'lamda_T_S', name: 'Reorganization Energy (T→S)'}
+                {valKey: 'lamda_S_T', name: 'Reorganization energy λ(S0-T1)'},
+                {valKey: 'lamda_T_S', name: 'Reorganization energy λ(T1-S0)'}
             ];
             window.appData.forEach(row => {
                 vars.forEach(v => prefetchModePlot(row, v.valKey, v.name));
@@ -1134,8 +1136,8 @@
                     <th style="width: 130px;"></th>
                     <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('smiles')">SMILES ${getSortIcon('smiles')}</th>
                     <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('triplet_energy_adiabatic')"><i>E</i><sub>T</sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('triplet_energy_adiabatic')}</th>
-                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('lamda_S_T')"><i>λ</i><sub>S→T</sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('lamda_S_T')}</th>
-                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('lamda_T_S')"><i>λ</i><sub>T→S</sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('lamda_T_S')}</th>
+                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('lamda_S_T')"><i>λ</i><sub>S<sub>0</sub>-T<sub>1</sub></sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('lamda_S_T')}</th>
+                    <th class="cursor-pointer hover:text-[#0ea5e9] transition-colors py-3" onclick="handleSort('lamda_T_S')"><i>λ</i><sub>T<sub>1</sub>-S<sub>0</sub></sub> <span class="text-xs opacity-50">(${selectedUnit})</span> ${getSortIcon('lamda_T_S')}</th>
                     <th style="width: 48px;"></th>
                 </tr>
             `;
@@ -1192,8 +1194,8 @@
                         <span style="word-break: break-all; font-family: ui-monospace, monospace; font-size: 0.85rem;" class="text-[var(--text-main)]">${row.smiles}</span>
                     </td>
                     <td>${cellVal(row._originalIdx, row, 'triplet_energy_adiabatic', 'Triplet energy (adiabatic)')}</td>
-                    <td>${cellVal(row._originalIdx, row, 'lamda_S_T', 'Reorganization Energy (S→T)')}</td>
-                    <td>${cellVal(row._originalIdx, row, 'lamda_T_S', 'Reorganization Energy (T→S)')}</td>
+                    <td>${cellVal(row._originalIdx, row, 'lamda_S_T', 'Reorganization energy λ(S0-T1)')}</td>
+                    <td>${cellVal(row._originalIdx, row, 'lamda_T_S', 'Reorganization energy λ(T1-S0)')}</td>
                     <td class="pr-6 text-right">
                         <svg id="chevron-${row._originalIdx}" class="w-5 h-5 text-[var(--text-muted)] inline-block transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </td>
@@ -1263,7 +1265,7 @@
                     window.pcData.forEach((pc, i) => {
                         const opt = document.createElement('option');
                         opt.value = i;
-                        opt.innerText = pc.name;
+                        opt.innerText = `${pc.id}: ${pc.name}`;
                         pcSelect.appendChild(opt);
                     });
                     fillPcTau0();
@@ -1328,13 +1330,14 @@
             });
 
             // Convert and update energy values
-            document.getElementById('pc-info-et').innerText = convertEnergy(pcVal.E_T_adiabatic, unit).toFixed(2);
-            document.getElementById('pc-info-lst').innerText = convertEnergy(pcVal.lamda_S_T, unit).toFixed(2);
-            document.getElementById('pc-info-lts').innerText = convertEnergy(pcVal.lamda_T_S, unit).toFixed(2);
+            document.getElementById('pc-info-et').innerText = convertEnergy(pcVal.E_T, unit).toFixed(2);
+            document.getElementById('pc-info-lst').innerText = convertEnergy(pcVal.lambda_S0_T1, unit).toFixed(2);
+            document.getElementById('pc-info-lts').innerText = convertEnergy(pcVal.lambda_T1_S0, unit).toFixed(2);
 
-            // Redox potentials remain in Volts
-            document.getElementById('pc-info-ered').innerText = pcVal.E_red !== null && pcVal.E_red !== undefined ? parseFloat(pcVal.E_red).toFixed(2) : "N/A";
-            document.getElementById('pc-info-eox').innerText = pcVal.E_ox !== null && pcVal.E_ox !== undefined ? parseFloat(pcVal.E_ox).toFixed(2) : "N/A";
+            // Excited-state potentials stay in V vs SCE; not computed for the organic photocatalysts
+            const volts = v => v !== null && v !== undefined ? parseFloat(v).toFixed(2) : "N/A";
+            document.getElementById('pc-info-e-oxidant').innerText = volts(pcVal.E_PCstar_PCminus);
+            document.getElementById('pc-info-e-reductant').innerText = volts(pcVal.E_PCplus_PCstar);
         }
 
         function closeMarcusTheory(e) {
@@ -1357,7 +1360,7 @@
             const qStructEl = document.getElementById('marcus-quencher-struct');
 
             pcStructEl.innerHTML = '<div class="spinner border-t-[#6366f1] w-4 h-4 border-2"></div>';
-            fetchStructure(pcVal.smiles || "", 'marcus-pc-struct', pcVal.name);
+            fetchStructure(pcVal.smiles || "", 'marcus-pc-struct', pcVal.id, pcVal.name);
 
             if (!document.getElementById('pc-info-panel').classList.contains('hidden')) {
                 updatePcInfoDisplay();
@@ -1369,12 +1372,13 @@
             }
 
             const reqBody = {
-                pc_adiabatic_E_T: convertEnergy(pcVal.E_T_adiabatic, unit),
-                pc_lambda_S_T: convertEnergy(pcVal.lamda_S_T, unit),
-                pc_lambda_T_S: convertEnergy(pcVal.lamda_T_S, unit),
+                pc_adiabatic_E_T: convertEnergy(pcVal.E_T, unit),
+                pc_lambda_S0_T1: convertEnergy(pcVal.lambda_S0_T1, unit),
+                pc_lambda_T1_S0: convertEnergy(pcVal.lambda_T1_S0, unit),
                 quencher_E_T: convertEnergy(qVal.triplet_energy_adiabatic, unit),
-                quencher_lambda_S_T: convertEnergy(qVal.lamda_S_T, unit),
-                quencher_lambda_T_S: convertEnergy(qVal.lamda_T_S, unit),
+                // ml.prediction keeps its own keys: lamda_S_T is the S0 surface, lamda_T_S the T1 surface
+                quencher_lambda_S0_T1: convertEnergy(qVal.lamda_S_T, unit),
+                quencher_lambda_T1_S0: convertEnergy(qVal.lamda_T_S, unit),
                 unit: unit
             };
             const tau0 = parseFloat(document.getElementById('pc-tau0').value);

@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
-import pandas as pd
 from pathlib import Path
 import io
 from fastapi.responses import Response
@@ -17,7 +16,7 @@ from ml.prediction import predict
 from webapp.smiles_utils import is_valid_smiles, canonicalize_smiles, is_single_fragment_smiles
 from webapp.plots.spin_population import visualize_density_interactive
 from webapp.plots.plot_modes import plot_mode_distribution_single
-from webapp.photocatalysts import list_photocatalyst_names, get_photocatalyst_row
+from webapp.photocatalysts import photocatalysts, structure_image
 from ml.energy import marcus_ent, two_gate
 from webapp.plots import marcus_plot
 import matplotlib.pyplot as plt
@@ -142,22 +141,15 @@ class StructureRequest(BaseModel):
 
 @app.post("/api/structure")
 def api_structure(request: StructureRequest):
+    if not request.smiles.strip() and (not request.name or structure_image(request.name) is None):
+        raise HTTPException(status_code=404, detail="No structure available")
     try:
-        # Check for pre-drawn structure image if name is provided
+        # A photocatalyst is drawn from its packaged image where it has one; `name` is its
+        # id, looked up in the table and never used as a path.
         if request.name:
-            import importlib.resources as ir
-            
-            # Since names contain underscores (e.g. Ir_ppy3), preserve alphanumeric, space, -, and _
-            safe_name = "".join(c for c in request.name if c.isalnum() or c in (" ", "-", "_")).strip()
-            if safe_name:
-                # Look in 'pc_structures' inside the packaged data directory
-                try:
-                    img_path = ir.files("webapp.data").joinpath("pc_structures", f"{safe_name}.png")
-                    if img_path.is_file():
-                        return Response(content=img_path.read_bytes(), media_type="image/png")
-                except Exception:
-                    pass
-
+            image = structure_image(request.name)
+            if image is not None:
+                return Response(content=image, media_type="image/png")
         from rdkit import Chem
         from rdkit.Chem.Draw import rdMolDraw2D
         mol = Chem.MolFromSmiles(request.smiles)
@@ -188,39 +180,21 @@ def api_structure(request: StructureRequest):
 
 @app.get("/api/photocatalysts")
 def api_photocatalysts():
-    names = list_photocatalyst_names()
-    pcs = []
-    for n in names:
-        row = get_photocatalyst_row(n)
-        s = row.get("photocatalyst_smiles", "")
-        
-        # handle missing values for E_red / E_ox safely
-        e_red = row.get("E_red")
-        e_ox = row.get("E_ox")
-        e_red_val = float(e_red) if not pd.isna(e_red) else None
-        e_ox_val = float(e_ox) if not pd.isna(e_ox) else None
-        tau0 = row.get("tau0_ns")
-        tau0_val = float(tau0) if tau0 is not None and not pd.isna(tau0) else None
-
-        pcs.append({
-            "name": n,
-            "E_T_adiabatic": float(row["E_T_adiabatic"]),
-            "lamda_S_T": float(row["lamda_S_T"]),
-            "lamda_T_S": float(row["lamda_T_S"]),
-            "E_red": e_red_val,
-            "E_ox": e_ox_val,
-            "tau0_ns": tau0_val,
-            "smiles": str(s) if str(s).lower() != "nan" and s else ""
-        })
-    return {"photocatalysts": pcs}
+    """The photocatalyst library: DFT E_T, lambda_S0_T1 and lambda_T1_S0 in kcal/mol, the
+    DFT excited-state potentials in V vs SCE and the measured tau0 in ns (None where absent)."""
+    return {"photocatalysts": photocatalysts()}
 
 class MarcusRequest(BaseModel):
+    """A pair, in `unit`. lambda_S0_T1 is the S0 surface at the T1 geometry, lambda_T1_S0
+    the T1 surface at the S0 geometry; ml.energy.marcus_ent pairs them into
+    lambda_forward = lambda_T1_S0(PC) + lambda_S0_T1(Q) and
+    lambda_reverse = lambda_S0_T1(PC) + lambda_T1_S0(Q)."""
     pc_adiabatic_E_T: float
-    pc_lambda_S_T: float
-    pc_lambda_T_S: float
+    pc_lambda_S0_T1: float
+    pc_lambda_T1_S0: float
     quencher_E_T: float
-    quencher_lambda_S_T: float
-    quencher_lambda_T_S: float
+    quencher_lambda_S0_T1: float
+    quencher_lambda_T1_S0: float
     unit: str = "kcal/mol"
     theme: str = "light"
     pc_tau0_ns: Optional[float] = None
@@ -233,11 +207,11 @@ KCAL_PER_UNIT = {"kcal/mol": 1.0, "kJ/mol": 1 / 4.184, "eV": 23.060548868,
 def api_marcus_compute(request: MarcusRequest):
     dG, dG_act_fwd, dG_act_bwd = marcus_ent.calculate_driving_force_and_barrier(
         pc_adiabatic_E_T=request.pc_adiabatic_E_T,
-        pc_lambda_S_T=request.pc_lambda_S_T,
-        pc_lambda_T_S=request.pc_lambda_T_S,
+        pc_lambda_S_T=request.pc_lambda_S0_T1,
+        pc_lambda_T_S=request.pc_lambda_T1_S0,
         quencher_E_T=request.quencher_E_T,
-        quencher_lambda_S_T=request.quencher_lambda_S_T,
-        quencher_lambda_T_S=request.quencher_lambda_T_S,
+        quencher_lambda_S_T=request.quencher_lambda_S0_T1,
+        quencher_lambda_T_S=request.quencher_lambda_T1_S0,
         symmetric_approx=False,
     )
     # The two-gate verdict needs the photocatalyst lifetime; without it, the barrier only.
@@ -264,11 +238,11 @@ def api_marcus_plot(request: MarcusRequest):
     try:
         res = marcus_plot.plot_reaction_coordinate(
             pc_adiabatic_E_T=request.pc_adiabatic_E_T,
-            pc_lambda_S_T=request.pc_lambda_S_T,
-            pc_lambda_T_S=request.pc_lambda_T_S,
+            pc_lambda_S0_T1=request.pc_lambda_S0_T1,
+            pc_lambda_T1_S0=request.pc_lambda_T1_S0,
             quencher_E_T=request.quencher_E_T,
-            quencher_lambda_S_T=request.quencher_lambda_S_T,
-            quencher_lambda_T_S=request.quencher_lambda_T_S,
+            quencher_lambda_S0_T1=request.quencher_lambda_S0_T1,
+            quencher_lambda_T1_S0=request.quencher_lambda_T1_S0,
             unit=request.unit,
             theme=request.theme,
         )

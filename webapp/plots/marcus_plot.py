@@ -9,11 +9,11 @@ from ml.energy.marcus_ent import _compute_marcus_core
 
 def plot_reaction_coordinate(
     pc_adiabatic_E_T: float,
-    pc_lambda_S_T: float,
-    pc_lambda_T_S: float,
+    pc_lambda_S0_T1: float,
+    pc_lambda_T1_S0: float,
     quencher_E_T: float,
-    quencher_lambda_S_T: float,
-    quencher_lambda_T_S: float,
+    quencher_lambda_S0_T1: float,
+    quencher_lambda_T1_S0: float,
     unit: str = "kcal/mol",
     *,
     theme: str = "light",
@@ -39,11 +39,11 @@ def plot_reaction_coordinate(
         reason,
     ) = _compute_marcus_core(
         pc_adiabatic_E_T,
-        pc_lambda_S_T,
-        pc_lambda_T_S,
+        pc_lambda_S0_T1,
+        pc_lambda_T1_S0,
         quencher_E_T,
-        quencher_lambda_S_T,
-        quencher_lambda_T_S,
+        quencher_lambda_S0_T1,
+        quencher_lambda_T1_S0,
         symmetric_approx=False,
     )
 
