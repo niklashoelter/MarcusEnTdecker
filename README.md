@@ -1,5 +1,11 @@
 # MarcusEnTdecker
 
+[![Python](https://img.shields.io/badge/python-%E2%89%A53.12-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Paper](https://img.shields.io/badge/paper-to%20follow-lightgrey)](#publication)
+[![Zenodo](https://img.shields.io/badge/Zenodo-data%20to%20follow-lightgrey?logo=zenodo&logoColor=white)](#publication)
+[![ioChem-BD](https://img.shields.io/badge/ioChem--BD-DFT%20to%20follow-lightgrey)](#publication)
+[![Web app](https://img.shields.io/badge/web%20app-EnTdecker-2ea44f)](https://entdecker.uni-muenster.de)
+
 This repository accompanies our paper *A Hybrid Machine Learning and Marcus Theory Approach
 for Triplet Energy Transfer* (citation to follow).
 
@@ -94,6 +100,18 @@ else from the committed tables. To also rerun the extraction, unpack the Zenodo 
 place its two raw folders in `data/`.
 
 Tests: `uv run --extra webapp --group dev pytest`.
+
+## Publication
+
+*A Hybrid Machine Learning and Marcus Theory Approach for Triplet Energy Transfer*,
+in preparation. DOI and citation to follow.
+
+- Paper: DOI to follow
+- Data and archived code: Zenodo, DOI to follow
+- DFT calculations: ioChem-BD, link to follow
+- Web application: https://entdecker.uni-muenster.de
+
+If you use this code or data, please cite the paper.
 
 ## Credits
 
