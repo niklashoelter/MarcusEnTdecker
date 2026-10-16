@@ -1,0 +1,17 @@
+name: Mirror to AK Glorius Group Repo
+on:
+  push:
+    branches: [ "main", "master", "gh-pages" ]
+jobs:
+    mirror:
+        runs-on: ubuntu-latest
+        if: github.repository == 'niklashoelter/MarcusEnTdecker'
+        name: mirror
+        steps:
+          - uses: actions/checkout@v4
+            with:
+              fetch-depth: 0
+          - name: Push to Mirror
+            run: |
+              git config --unset-all http.https://github.com/.extraheader
+              git push --mirror https://oauth2:${{ secrets.MARCUSENTDECKER_MIRROR_GROUP_REPO_TOKEN }}@github.com/GloriusGroup/MarcusEnTdecker.git
