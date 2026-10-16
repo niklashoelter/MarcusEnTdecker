@@ -227,7 +227,6 @@ def main():
         Every pair that does not quench is kept. A pair that quenches is kept only if every
         channel of single-electron transfer with a measured quencher potential is more
         than 0.25 V uphill.
-        PC numbers are new ids; pc_old_id is the id in the raw files.
     """)
 
     quenching = sum(r["quenches"] == "1" for r in rows)

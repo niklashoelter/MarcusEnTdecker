@@ -10,7 +10,7 @@ with the calculated properties joined on, is `exp_dataset_ent.csv`, the input to
 data/
 ├── experimental_data_raw/           instrument files, plus the tables derived from them
 │   ├── pc_emission/                 emission scans
-│   ├── pc_tcspc/                    PC<n>.txt/.FL, one trace each -> lifetimes_tcspc.csv
+│   ├── pc_tcspc/                    PC<old id>.txt/.FL, one trace each -> lifetimes_tcspc.csv
 │   ├── quencher_absorption/         absorption scans -> absorption_extinction.csv
 │   ├── quencher_cyclic_voltammetry/ measured data/ (voltammograms), redox potentials in three tables
 │   └── stern_volmer/                plate reads, pipetting maps -> plate_reader_filters.csv
@@ -20,7 +20,7 @@ data/
 │   ├── stern_volmer_intensities.csv
 │   └── stern_volmer_fits.csv
 ├── computational_data_raw/          ORCA/Milo jobs (Zenodo, not in git), plus derived tables
-│   ├── photocatalysts/              PC_<n>/{S0,T1,ox,red,conf}/ -> photocatalyst_dft.csv
+│   ├── photocatalysts_new_ids/      PC<n>/{S0,T1,ox,red,conf}/ -> photocatalyst_dft.csv
 │   ├── organophotocatalysts/        OPC<n>/{S0,T1}/ -> organophotocatalyst_dft.csv
 │   ├── quencher_adiabatic_DFT/      Q<n>/{S0,T1,ox,red}/ -> quencher_dft.csv
 │   └── quencher_adiabatic_DvTE/     MD trajectories -> quencher_dvte.csv, _samples.csv.gz,
@@ -83,11 +83,10 @@ Methods notes). Three scripts are not part of it:
 
 ## Photocatalyst ids
 
-Raw files and extraction scripts use the old id from the screen (`PC10_QBatch1.csv`,
-`pc_tcspc/PC4.txt`). New ids, PC1–PC27, enter at the processed stage: the photocatalyst
-workbooks carry `old_id` and `new_id`, `exp_dataset` carries `pc_old_id` and `pc_new_id`,
-and everything downstream uses the new id. Old PC7, PC26, PC30 and PC31 are not in the
-data.
+Every table and job folder uses the new id, PC1–PC27 (`new_id`, `pc_new_id`). The raw
+experimental files keep the old id of the screen in their names and pipetting maps
+(`stern_volmer/PC10_QBatch1.csv`, `pc_tcspc/PC4.txt`); their scripts map it to the new id
+on reading. `compound_identification.xlsx` is the only table with both ids.
 
 ## Compound identity
 
@@ -110,7 +109,7 @@ One row per photocatalyst–quencher pair, every combination, sorted by `pc_new_
 `censored`. The xlsx holds the same table in the workbook
 layout.
 
-PC22 (old PC24) is included; the theory benchmark excludes it (see SI).
+PC22 is included; the theory benchmark excludes it (see SI).
 
 `quenches` is 1 if the Stern–Volmer fit meets any one of these thresholds:
 K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
@@ -147,7 +146,7 @@ A value missing from its source table is left empty here; nothing is filled in.
 ## Methods notes
 
 **Stern–Volmer wavelengths** are the filter pairs in the plate-reader export headers,
-collected with their bandwidths in `stern_volmer/plate_reader_filters.csv`. Old PC1 and
+collected with their bandwidths in `stern_volmer/plate_reader_filters.csv`. PC1 and
 PC3 were read with saved protocols that name no filters; their wavelengths come from the
 screen's photocatalyst sheet.
 
@@ -159,7 +158,7 @@ has a bound column (`>` or `<` where the value is a limit) and a free-text `comm
 
 **Photocatalyst lifetimes** come from one TCSPC trace per photocatalyst. τ0 and its error
 are the value and standard error of a single-exponential fit, started after the pulse.
-Old PC4 is fitted from 1500 ns to skip a fast early component (`FIT_START_NS` in
+PC4 is fitted from 1500 ns to skip a fast early component (`FIT_START_NS` in
 `lifetimes_tcspc.py`).
 
 **Reorganization energies** are named `lambda_<surface>_<geometry>`: the energy of one
@@ -239,8 +238,8 @@ lines.
 state folder, `Q<n>/<state>/`, holds the geometry optimisation (`opt`), the single point
 at that geometry (`sp`) and the vertical single points of the other states
 (`sp_vert_<kind>`); the lowest-energy conformer is kept. A photocatalyst state folder,
-`PC_<n>/<state>/`, holds the optimisation and the vertical single points
-(`sp_vert_<state>`), and `PC_<n>/conf/` the conformer search. An organophotocatalyst
+`PC<n>/<state>/`, holds the optimisation and the vertical single points
+(`sp_vert_<state>`), and `PC<n>/conf/` the conformer search. An organophotocatalyst
 folder, `OPC<n>/{S0,T1}/`, is laid out the same way. In Q17 S0, `opt_output.out`
 (the thermal correction) and `sp_output.out` come from two runs of the same conformer; in
 Q18 S0, the reduced-state vertical single point comes from a second run.

@@ -24,9 +24,8 @@ Only measured values are included. The energy-transfer subset, with calculated
 properties and driving forces, is built by build_exp_dataset_ent.py.
 
 Photocatalysts
-    `pc_new_id` (1-27) is used downstream, `pc_old_id` is the id in the raw files, and
-    `pc_name` is PC<new_id>. All 27 are included. PC22 (old PC24) is excluded by the theory
-    benchmark (see SI), but kept here.
+    `pc_new_id` (1-27), `pc_name` is PC<new_id>. All 27 are included. PC22 is excluded by
+    the theory benchmark (see SI), but kept here.
 """
 
 import csv
@@ -38,7 +37,7 @@ sys.path.insert(0, str(DATA))
 
 from openpyxl import load_workbook  # noqa: E402
 
-from compound_identification import NEW_ID  # noqa: E402
+from compound_identification import PHOTOCATALYSTS  # noqa: E402
 from properties_workbook import Block, Column, write_workbook  # noqa: E402
 
 EXPERIMENTAL = DATA / "experimental_data_processed"
@@ -53,10 +52,7 @@ SIGFIGS = 6
 # (block, [(column, description, source)]) in table order.
 LAYOUT = [
     ("Identity", [
-        ("pc_new_id", "Photocatalyst id used in the paper, 1-27.",
-         "photocatalyst_properties_exp.xlsx: new_id"),
-        ("pc_old_id", "Photocatalyst id in the raw files.",
-         "photocatalyst_properties_exp.xlsx: old_id"),
+        ("pc_new_id", "Photocatalyst id, 1-27.", "photocatalyst_properties_exp.xlsx: new_id"),
         ("pc_name", "PC<pc_new_id>.", "computed here"),
         ("quencher_id", "Quencher number.", "quencher_properties_exp.xlsx"),
         ("quencher_name", "Q<n>.", "quencher_properties_exp.xlsx"),
@@ -111,15 +107,15 @@ def main():
     if not fits_path.exists():
         sys.exit(f"missing input: {fits_path}\nrun the data stage first")
 
-    pc_exp = load(EXPERIMENTAL / "photocatalyst_properties_exp.xlsx", "old_id")
+    pc_exp = load(EXPERIMENTAL / "photocatalyst_properties_exp.xlsx", "new_id")
     q_exp = load(EXPERIMENTAL / "quencher_properties_exp.xlsx", "quencher_id")
 
     rows = []
     with fits_path.open(encoding="utf-8", newline="") as fh:
         for fit in csv.DictReader(fh):
-            pc_id, q_id = int(fit["pc_old_id"]), int(fit["quencher_id"])
-            if pc_id not in NEW_ID:
-                sys.exit(f"Stern-Volmer fits for old PC{pc_id}, which is not in the data")
+            pc_id, q_id = int(fit["pc_new_id"]), int(fit["quencher_id"])
+            if pc_id not in PHOTOCATALYSTS:
+                sys.exit(f"Stern-Volmer fits for PC{pc_id}, which is not in the data")
             pce, qe = pc_exp.get(pc_id), q_exp.get(q_id)
 
             tau0 = number(pce, "tau0 / ns")
@@ -129,9 +125,8 @@ def main():
             quenches = fit["quenches"] == "1"
 
             rows.append({
-                "pc_new_id": NEW_ID[pc_id],
-                "pc_old_id": pc_id,
-                "pc_name": f"PC{NEW_ID[pc_id]}",
+                "pc_new_id": pc_id,
+                "pc_name": f"PC{pc_id}",
                 "quencher_id": q_id,
                 "quencher_name": (qe or {}).get("quencher_name", ""),
                 "K_SV / M-1": sig(k_sv),
@@ -155,8 +150,7 @@ def main():
         One row per photocatalyst-quencher pair, sorted by pc_new_id then quencher_id.
         Built by data/build_exp_dataset.py; exp_dataset.csv holds the same table.
         Measured values and labels only. exp_dataset_ent adds calculated properties.
-        PC numbers are new ids; pc_old_id is the id in the raw files.
-        PC22 (old PC24) is included; the theory benchmark excludes it (see SI).
+        PC22 is included; the theory benchmark excludes it (see SI).
     """)
 
     n_pc = len({r["pc_new_id"] for r in rows})

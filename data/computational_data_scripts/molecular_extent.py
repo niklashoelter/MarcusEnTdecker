@@ -5,7 +5,7 @@
 """
 Molecular extent radii of the photocatalysts and quenchers.
 
-Reads   ../computational_data_raw/photocatalysts/PC_<n>/S0/opt_geometry.xyz
+Reads   ../computational_data_raw/photocatalysts_new_ids/PC<n>/S0/opt_geometry.xyz
         ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/S0/opt_geometry.xyz
         ../compound_identification.xlsx   (photocatalyst and quencher ids)
 Writes  ../computational_data_processed/molecular_extent.csv
@@ -22,8 +22,8 @@ with d_ij the distance of the nuclei in the optimised S0 geometry and R the Bond
 photocatalyst_dft.py and quencher_dft.py, for which the benchmark compares the contact
 distance r_PC + r_Q.
 
-Photocatalysts are numbered by old id; those excluded from the data are skipped
-(../compound_identification.py). The radius is rounded to 2 decimals in A when written.
+Photocatalysts are numbered by new id. The radius is rounded to 2 decimals in A when
+written.
 """
 
 import csv
@@ -38,7 +38,7 @@ OUT = DATA / "computational_data_processed" / "molecular_extent.csv"
 DECIMALS = 2                    # A
 
 sys.path.insert(0, str(DATA))
-from compound_identification import IN_DATA, QUENCHERS  # noqa: E402
+from compound_identification import PHOTOCATALYSTS, QUENCHERS  # noqa: E402
 from molecular_size import BONDI, read_xyz  # noqa: E402
 
 COLUMNS = ["kind", "id", "n_atoms", "r_extent / A"]
@@ -54,8 +54,9 @@ def extent_radius(elements, xyz) -> float:
 def geometries():
     """(kind, id, path of the S0 geometry) of every photocatalyst in the data and every
     quencher."""
-    for old_id in sorted(IN_DATA):
-        yield "photocatalyst", old_id, RAW / "photocatalysts" / f"PC_{old_id}" / "S0" / "opt_geometry.xyz"
+    for pc_id in sorted(PHOTOCATALYSTS):
+        yield ("photocatalyst", pc_id,
+               RAW / "photocatalysts_new_ids" / f"PC{pc_id}" / "S0" / "opt_geometry.xyz")
     for quencher_id in sorted(QUENCHERS):
         yield ("quencher", quencher_id,
                RAW / "quencher_adiabatic_DFT" / f"Q{quencher_id}" / "S0" / "opt_geometry.xyz")

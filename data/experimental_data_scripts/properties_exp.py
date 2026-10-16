@@ -31,7 +31,7 @@ from pathlib import Path
 DATA = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(DATA))
 
-from compound_identification import NEW_ID, PHOTOCATALYSTS, QUENCHERS  # noqa: E402
+from compound_identification import PHOTOCATALYSTS, QUENCHERS  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
 RAW = DATA / "experimental_data_raw"
@@ -65,49 +65,46 @@ def identity(header, table, sheet, name, description):
 
 
 def photocatalysts():
-    tau0 = read_table(TAU0, "pc_id")
+    tau0 = read_table(TAU0, "pc_new_id")
     # One row per batch. All batches of a photocatalyst use the same filter pair
     # (checked in stern_volmer_intensities.py), so the last row per id is used.
-    filters = read_table(FILTERS, "pc_old_id")
+    filters = read_table(FILTERS, "pc_new_id")
 
     for name, table in (("lifetimes", tau0), ("filters", filters)):
-        if set(table) != set(NEW_ID):
+        if set(table) != set(PHOTOCATALYSTS):
             sys.exit(f"photocatalyst {name} disagree with {IDENTIFICATION}: "
-                     f"{sorted(set(table) ^ set(NEW_ID))}")
+                     f"{sorted(set(table) ^ set(PHOTOCATALYSTS))}")
 
     def col(header, table, path, name, description):
         return Column(header, description, src(path, name), field(table, name))
 
     blocks = [
         Block("Identity", [
-            Column("new_id", "PC number used downstream and in the paper, 1-27.",
-                   f"{IDENTIFICATION}: Photocatalysts/new_id", lambda i: NEW_ID[i]),
-            Column("old_id", "PC number during the screen, used by the raw files.",
-                   f"{IDENTIFICATION}: Photocatalysts/old_id", lambda i: i),
+            Column("new_id", "PC number, 1-27.",
+                   f"{IDENTIFICATION}: Photocatalysts/new_id", lambda i: i),
             identity("compound", PHOTOCATALYSTS, "Photocatalysts", "name", "Compound."),
         ]),
         Block("Stern-Volmer screen", [
             col("excitation / nm", filters, FILTERS, "excitation_nm",
                 "Excitation filter centre in the Stern-Volmer screen, from the plate export "
-                "(old PC1 and PC3: from the photocatalyst sheet)."),
+                "(PC1 and PC3: from the photocatalyst sheet)."),
             col("emission / nm", filters, FILTERS, "emission_nm",
                 "Emission filter centre in the Stern-Volmer screen, from the plate export "
-                "(old PC1 and PC3: from the photocatalyst sheet)."),
+                "(PC1 and PC3: from the photocatalyst sheet)."),
         ]),
         Block("Excited-state lifetime, TCSPC in MeCN under Ar", [
             col("tau0 / ns", tau0, TAU0, "tau0_ns",
-                "Unquenched lifetime, single-exponential fit of pc_tcspc/PC<n>.txt."),
+                "Unquenched lifetime, single-exponential fit of the TCSPC trace."),
             col("tau0_err / ns", tau0, TAU0, "tau0_err_ns", "Standard error of that fit."),
             col("tau0_note", tau0, TAU0, "note", "Deviation from the standard fit window."),
         ]),
     ]
     note = """
-        One row per photocatalyst in the screen, sorted by new_id. The raw files use old_id;
-        the mapping is data/compound_identification.xlsx. new_id 22 (old 24) is kept here and excluded
-        by the theory benchmark (see SI).
+        One row per photocatalyst in the screen, sorted by new_id. PC22 is kept here and
+        excluded by the theory benchmark (see SI).
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
-    return sorted(NEW_ID, key=NEW_ID.get), blocks, note
+    return sorted(PHOTOCATALYSTS), blocks, note
 
 
 def quenchers():

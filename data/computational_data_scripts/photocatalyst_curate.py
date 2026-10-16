@@ -7,9 +7,11 @@ Curate the photocatalyst ORCA jobs into the raw-data layout.
 
     uv run data/computational_data_scripts/photocatalyst_curate.py <source_dir>
 
-`source_dir` is the job tree as run, PC_<n>/<job>/output.out (31 photocatalysts, not in
-this repository). The script builds the deposit under
-`../computational_data_raw/photocatalysts/` from it as PC_<n>/<state>/<stem>_output.out.
+`source_dir` is the job tree as run, PC_<old id>/<job>/output.out (31 photocatalysts, not
+in this repository). The script builds the deposit under
+`../computational_data_raw/photocatalysts_new_ids/` from it as
+PC<new id>/<state>/<stem>_output.out, with the old -> new id map of
+../compound_identification.xlsx.
 
 Jobs kept
     Eleven jobs per photocatalyst, mapped by LAYOUT below. Every energy used downstream
@@ -24,7 +26,7 @@ Files added
     script writes `<stem>_input.inp` (the echoed input) and `<stem>_geometry.xyz` (the last
     CARTESIAN COORDINATES block) beside `<stem>_output.out`.
 
-Photocatalysts excluded from the data are not deposited (../compound_identification.py).
+Photocatalysts without a new id are not deposited.
 """
 
 from __future__ import annotations
@@ -35,16 +37,13 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts"
+OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts_new_ids"
 
 # Output directories written by this script and cleared on a re-run.
-RE_PC = re.compile(r"PC_\d+")
+RE_PC = re.compile(r"PC\d+")
 
-# Photocatalysts excluded from the data.
 sys.path.insert(0, str(ROOT))
-from compound_identification import CROSSED_OUT  # noqa: E402
-
-EXCLUDED = set(CROSSED_OUT)
+from compound_identification import NEW_ID  # noqa: E402
 
 # source job directory -> (state directory, file stem)
 #
@@ -131,13 +130,13 @@ def main():
 
     pc_dirs = sorted(
         (d for d in source.iterdir() if d.is_dir() and d.name.startswith("PC_")
-         and int(d.name.split("_")[1]) not in EXCLUDED),
-        key=lambda d: int(d.name.split("_")[1]),
+         and int(d.name.split("_")[1]) in NEW_ID),
+        key=lambda d: NEW_ID[int(d.name.split("_")[1])],
     )
     if not pc_dirs:
         sys.exit(f"no PC_<n> directories under {source}")
 
-    # Remove only the PC_<n> trees. Other files in the output folder are not written
+    # Remove only the PC<n> trees. Other files in the output folder are not written
     # here and are left in place.
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     for existing in OUT_ROOT.iterdir():
@@ -151,7 +150,7 @@ def main():
     kept = omitted = failed = 0
 
     for pc_dir in pc_dirs:
-        pc = pc_dir.name
+        pc = f"PC{NEW_ID[int(pc_dir.name.split('_')[1])]}"
         print(f"  {pc} ...", flush=True)
         for job_dir in sorted(pc_dir.iterdir()):
             if not job_dir.is_dir():
@@ -185,7 +184,8 @@ def main():
 
     size = sum(f.stat().st_size for f in OUT_ROOT.rglob("*") if f.is_file())
     print(f"\n{len(pc_dirs)} photocatalysts")
-    print(f"  kept     {kept} jobs -> computational_data_raw/photocatalysts  ({size / 1e6:.0f} MB)")
+    print(f"  kept     {kept} jobs -> {OUT_ROOT.relative_to(ROOT).as_posix()}  "
+          f"({size / 1e6:.0f} MB)")
     print(f"  omitted  {omitted} jobs not in LAYOUT (suffixed runs)")
     if failed:
         print(f"  WARNING  {failed} kept jobs did not terminate normally")
@@ -194,7 +194,7 @@ def main():
     for pc_dir in pc_dirs:
         missing = sorted(expected - {d.name for d in pc_dir.iterdir() if d.is_dir()})
         if missing:
-            print(f"  {pc_dir.name}: no {', '.join(missing)}")
+            print(f"  PC{NEW_ID[int(pc_dir.name.split('_')[1])]}: no {', '.join(missing)}")
 
 
 if __name__ == "__main__":

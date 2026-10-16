@@ -5,7 +5,7 @@
 """
 Computational tables -> one property workbook per compound class.
 
-Reads   ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
+Reads   ../computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv
         ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
         ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
         ../compound_identification.xlsx   (ids, names, SMILES)
@@ -27,7 +27,7 @@ from pathlib import Path
 DATA = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(DATA))
 
-from compound_identification import NEW_ID, PHOTOCATALYSTS, QUENCHERS  # noqa: E402
+from compound_identification import PHOTOCATALYSTS, QUENCHERS  # noqa: E402
 from properties_workbook import Block, Column, field, read_table, write_workbook  # noqa: E402
 
 RAW = DATA / "computational_data_raw"
@@ -35,7 +35,7 @@ OUT_DIR = DATA / "computational_data_processed"
 PC_OUT = OUT_DIR / "photocatalyst_properties_calc.xlsx"
 Q_OUT = OUT_DIR / "quencher_properties_calc.xlsx"
 
-PC_DFT = RAW / "photocatalysts" / "photocatalyst_dft.csv"
+PC_DFT = RAW / "photocatalysts_new_ids" / "photocatalyst_dft.csv"
 Q_DFT = RAW / "quencher_adiabatic_DFT" / "quencher_dft.csv"
 Q_DVTE = RAW / "quencher_adiabatic_DvTE" / "quencher_dvte.csv"
 
@@ -65,10 +65,10 @@ def identity(header, table, sheet, name, description):
 
 
 def photocatalysts():
-    dft = read_table(PC_DFT, "pc_id")
-    if set(dft) != set(NEW_ID):
+    dft = read_table(PC_DFT, "pc_new_id")
+    if set(dft) != set(PHOTOCATALYSTS):
         sys.exit(f"photocatalyst DFT disagree with {IDENTIFICATION}: "
-                 f"{sorted(set(dft) ^ set(NEW_ID))}")
+                 f"{sorted(set(dft) ^ set(PHOTOCATALYSTS))}")
 
     def col(header, name, description, table=dft, path=PC_DFT):
         return Column(header, description, src(path, name), field(table, name))
@@ -78,10 +78,7 @@ def photocatalysts():
                ("S0", "Dminus"), ("Dminus", "S0")]
     blocks = [
         Block("Identity", [
-            Column("new_id", "PC number used downstream and in the paper, 1-27.",
-                   f"{IDENTIFICATION}: Photocatalysts/new_id", lambda i: NEW_ID[i]),
-            Column("old_id", "PC number during the screen, used by the raw files.",
-                   src(PC_DFT, "pc_id"), lambda i: i),
+            Column("new_id", "PC number, 1-27.", src(PC_DFT, "pc_new_id"), lambda i: i),
             identity("compound", PHOTOCATALYSTS, "Photocatalysts", "name",
                      "Compound."),
         ]),
@@ -110,12 +107,13 @@ def photocatalysts():
         ]),
     ]
     note = """
-        One row per photocatalyst in the screen, sorted by new_id; the raw files use old_id.
+        One row per photocatalyst in the screen, sorted by new_id.
         Every value is computed from the ORCA outputs. Total energies, Gibbs corrections and
-        frequency checks are in computational_data_raw/photocatalysts/photocatalyst_dft.csv.
+        frequency checks are in
+        computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv.
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
-    return sorted(dft, key=NEW_ID.get), blocks, note
+    return sorted(dft), blocks, note
 
 
 def quenchers():

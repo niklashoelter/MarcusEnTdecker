@@ -6,10 +6,10 @@
 Photocatalyst triplet energies, reorganization energies, excited-state potentials and
 molecular radii.
 
-Reads   ../computational_data_raw/photocatalysts/PC_<n>/{S0,T1,ox,red}/*_output.out
-        ../computational_data_raw/photocatalysts/PC_<n>/S0/opt_geometry.xyz
+Reads   ../computational_data_raw/photocatalysts_new_ids/PC<n>/{S0,T1,ox,red}/*_output.out
+        ../computational_data_raw/photocatalysts_new_ids/PC<n>/S0/opt_geometry.xyz
         ../compound_identification.xlsx   (photocatalyst ids)
-Writes  ../computational_data_raw/photocatalysts/photocatalyst_dft.csv
+Writes  ../computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv
 
     uv run data/computational_data_scripts/photocatalyst_dft.py
 
@@ -34,8 +34,8 @@ radius_S0 is the radius in A of the sphere with the van der Waals volume of the 
 S0 geometry (../molecular_size.py). The benchmark takes r_PC + r_Q as the contact distance
 of a pair.
 
-Photocatalysts are numbered by old id. Those excluded from the data are skipped
-(../compound_identification.py).
+Photocatalysts are numbered by new id; folders of photocatalysts not in
+../compound_identification.xlsx are skipped.
 
 Values in kcal/mol and V are computed from the full-precision energies and rounded to 2
 decimals when written, the radius to 2 decimals in A. Energies in Hartree are copied as
@@ -49,7 +49,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RAW = ROOT / "computational_data_raw" / "photocatalysts"
+RAW = ROOT / "computational_data_raw" / "photocatalysts_new_ids"
 OUT = RAW / "photocatalyst_dft.csv"
 
 HARTREE_KCAL = 627.509
@@ -57,9 +57,8 @@ FARADAY_KCAL_V = 23.061
 SCE_ABSOLUTE_V = 4.42
 DECIMALS = 2                    # for kcal/mol, V and A
 
-# Old ids of the photocatalysts in the data.
 sys.path.insert(0, str(ROOT))
-from compound_identification import IN_DATA  # noqa: E402
+from compound_identification import PHOTOCATALYSTS  # noqa: E402
 from molecular_size import radius  # noqa: E402
 
 # state directory, file stem -> the key it is stored under
@@ -79,7 +78,7 @@ JOBS = {
 OPTIMIZATIONS = ("E_S0", "E_T1", "E_ox", "E_red")
 
 COLUMNS = [
-    "pc_id", "n_atoms", "charge",
+    "pc_new_id", "n_atoms", "charge",
     "E_T / kcal mol-1",
     "lambda_S0_T1 / kcal mol-1", "lambda_T1_S0 / kcal mol-1",
     "lambda_S0_Dplus / kcal mol-1", "lambda_Dplus_S0 / kcal mol-1",
@@ -140,15 +139,15 @@ def main():
     if not RAW.is_dir():
         sys.exit(f"missing input: {RAW}\nthe raw job files are not in git; fetch the deposit")
 
-    pc_dirs = sorted((p for p in RAW.glob("PC_*")
-                      if int(p.name.split("_")[1]) in IN_DATA),
-                     key=lambda p: int(p.name.split("_")[1]))
+    pc_dirs = sorted((p for p in RAW.glob("PC*")
+                      if p.name[2:].isdigit() and int(p.name[2:]) in PHOTOCATALYSTS),
+                     key=lambda p: int(p.name[2:]))
     if not pc_dirs:
-        sys.exit(f"no PC_<n> directories under {RAW}")
+        sys.exit(f"no PC<n> directories under {RAW}")
 
     rows = []
     for pc_dir in pc_dirs:
-        pc_id = int(pc_dir.name.split("_")[1])
+        pc_id = int(pc_dir.name[2:])
         printed, gibbs, imag, charge = {}, {}, {}, None
         n_jobs = 0
         for key, (state, stem) in JOBS.items():
@@ -190,7 +189,7 @@ def main():
             notes.append(f"imaginary frequencies in {', '.join(where)}")
 
         rows.append({
-            "pc_id": pc_id,
+            "pc_new_id": pc_id,
             "n_atoms": count_atoms(pc_dir / "S0" / "opt_geometry.xyz") or "",
             "charge": blank(charge),
             "E_T / kcal mol-1": rounded(e_t),
@@ -224,7 +223,7 @@ def main():
     print(f"  E_T on {len(e_t)}: {min(e_t):.1f} to {max(e_t):.1f} kcal/mol")
     for r in rows:
         if r["n_jobs"] < len(JOBS) or not r["minimum_confirmed"]:
-            print(f"  PC_{r['pc_id']}: {r['n_jobs']}/{len(JOBS)} jobs -- {r['note']}")
+            print(f"  PC{r['pc_new_id']}: {r['n_jobs']}/{len(JOBS)} jobs -- {r['note']}")
 
 
 if __name__ == "__main__":

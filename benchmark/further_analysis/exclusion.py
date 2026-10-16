@@ -75,9 +75,9 @@ def scored_with_left_out():
 def emission_ratios(intensities):
     """I0/I at the highest quencher concentration of every pair, and that concentration."""
     rows = []
-    for (pc, q), t in intensities.groupby(["pc_old_id", "quencher_id"]):
+    for (pc, q), t in intensities.groupby(["pc_new_id", "quencher_id"]):
         c_max = t.quencher_conc_M.max()
-        rows.append({"pc_old_id": pc, "quencher_id": q, "conc_max / mM": c_max * 1e3,
+        rows.append({"pc_new_id": pc, "quencher_id": q, "conc_max / mM": c_max * 1e3,
                      "I0_over_I_at_max": t.loc[t.quencher_conc_M == 0, "intensity_au"].mean()
                      / t.loc[t.quencher_conc_M == c_max, "intensity_au"].mean()})
     return pd.DataFrame(rows)
@@ -102,7 +102,7 @@ def pair_table(screen, ent, ratios, df):
     """Every pair of the left-out quenchers with its status in the benchmark."""
     keys = [pairs.PC_NAME, pairs.Q_NAME]
     t = screen[screen[pairs.Q_NAME].isin(LEFT_OUT)].copy()
-    t = t.merge(ratios, on=["pc_old_id", "quencher_id"], how="left", validate="1:1")
+    t = t.merge(ratios, on=["pc_new_id", "quencher_id"], how="left", validate="1:1")
     pc_et = ent.groupby(pairs.PC_NAME)[pairs.PC_E_T].first()
     q_et = {s: ent.groupby(pairs.Q_NAME)[f"q_E_T_{s} / kcal mol-1"].first() for s in pairs.SOURCES}
     t[pairs.PC_E_T] = t[pairs.PC_NAME].map(pc_et)

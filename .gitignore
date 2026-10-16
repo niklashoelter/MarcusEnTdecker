@@ -3,9 +3,9 @@ data/computational_data_raw/*
 
 # Except the tables the extraction scripts write next to the jobs they read, which the
 # property workbooks in computational_data_processed/ are assembled from.
-!data/computational_data_raw/photocatalysts/
-data/computational_data_raw/photocatalysts/*
-!data/computational_data_raw/photocatalysts/photocatalyst_dft.csv
+!data/computational_data_raw/photocatalysts_new_ids/
+data/computational_data_raw/photocatalysts_new_ids/*
+!data/computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv
 !data/computational_data_raw/organophotocatalysts/
 data/computational_data_raw/organophotocatalysts/*
 !data/computational_data_raw/organophotocatalysts/organophotocatalyst_dft.csv

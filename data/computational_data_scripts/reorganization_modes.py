@@ -5,7 +5,7 @@
 """
 Reorganization energies of the photocatalysts and quenchers resolved into normal modes.
 
-Reads   ../computational_data_raw/photocatalysts/PC_<n>/{S0,T1}/opt_geometry.xyz, opt_output.out
+Reads   ../computational_data_raw/photocatalysts_new_ids/PC<n>/{S0,T1}/opt_geometry.xyz, opt_output.out
         ../computational_data_raw/quencher_adiabatic_DFT/Q<n>/{S0,T1}/opt_geometry.xyz, opt_output.out
 Writes  ../computational_data_processed/reorganization_modes.csv
 
@@ -30,7 +30,7 @@ Per molecule, surface and displacement the table gives the sum of the lambda_j a
 the modes split at 3 k_B T at 298.15 K (621.7 cm-1), the fraction of the sum in the modes
 below the cut (classical) and the lambda-weighted mean frequency of the modes at or above it
 (quantum). The sum is rounded to 2 decimals in kcal/mol when written, the fraction to 6
-decimals and the frequency to 2 decimals in cm-1.
+decimals and the frequency to 2 decimals in cm-1. Photocatalysts are numbered by new id.
 """
 
 import csv
@@ -288,8 +288,9 @@ def split(freqs, lam):
 
 def molecules():
     """(kind, id, folder) of every photocatalyst and quencher with DFT jobs."""
-    jobs = [("photocatalyst", int(d.name.split("_")[1]), d)
-            for d in (RAW / "photocatalysts").glob("PC_*") if d.is_dir()]
+    jobs = [("photocatalyst", int(d.name[2:]), d)
+            for d in (RAW / "photocatalysts_new_ids").glob("PC*")
+            if d.is_dir() and d.name[2:].isdigit()]
     jobs += [("quencher", int(d.name[1:]), d)
              for d in (RAW / "quencher_adiabatic_DFT").glob("Q*") if d.is_dir()]
     return sorted(jobs, key=lambda job: (job[0], job[1]))

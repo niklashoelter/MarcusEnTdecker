@@ -10,7 +10,7 @@ Writes  ../experimental_data_processed/stern_volmer_fits.csv
 
     uv run data/experimental_data_scripts/stern_volmer_fits.py
 
-I0/I is fitted against [Q] for 27 x 48 = 1296 pairs. Photocatalysts carry old ids.
+I0/I is fitted against [Q] for 27 x 48 = 1296 pairs.
 
 Point selection. If the all-points fit has a negative slope or r2 > 0.995, all points
 are used. Otherwise the script scans the first n points (n >= 3), scores each range as
@@ -49,7 +49,7 @@ SIGFIGS = 6
 EPS = np.finfo(np.double).eps
 
 COLUMNS = [
-    "pc_old_id", "quencher_id", "K_SV", "intercept", "r2", "num_points", "n_measured",
+    "pc_new_id", "quencher_id", "K_SV", "intercept", "r2", "num_points", "n_measured",
     "K_SV_all_points", "r2_all_points",
     "quenches", "rung", "fit_method", "confidence", "note",
 ]
@@ -271,7 +271,7 @@ def main():
 
     pairs = defaultdict(list)
     for row in csv.DictReader(IN.open(encoding="utf-8")):
-        pairs[(int(row["pc_old_id"]), int(row["quencher_id"]))].append((
+        pairs[(int(row["pc_new_id"]), int(row["quencher_id"]))].append((
             float(row["quencher_conc_M"]),
             float(row["intensity_au"]) if row["intensity_au"] else float("nan"),
         ))
@@ -287,7 +287,7 @@ def main():
         carried = rung(slope, r2)
         quenching = bool(carried)
         rows.append({
-            "pc_old_id": pc_id,
+            "pc_new_id": pc_id,
             "quencher_id": q_id,
             "K_SV": sig(slope),
             "intercept": sig(intercept),

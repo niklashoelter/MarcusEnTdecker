@@ -13,12 +13,12 @@ Writes  ../experimental_data_processed/stern_volmer_intensities.csv
 
     uv run data/experimental_data_scripts/stern_volmer_intensities.py
 
-81 batches x 96 wells = 7776 rows. The raw files use old photocatalyst ids
-(`pc_old_id`); see ../compound_identification.py.
+81 batches x 96 wells = 7776 rows. The raw files and pipetting maps use the old
+photocatalyst ids; they are mapped to `pc_new_id` on reading (../compound_identification.py).
 
 Excitation and emission wavelengths are taken from the export header, e.g.
 `Mode name; FI: Ex: 425-8 Em: 620-50` (centre-bandwidth, nm). The wavelengths in the
-pipetting maps are planning values and are not read. Old PC1 ("FI: Ir-F") and old PC3
+pipetting maps are planning values and are not read. PC1 ("FI: Ir-F") and PC3
 ("FI: Ir(ppy)3") were read with saved protocols whose export names no filters; their
 settings are in PROTOCOL_WAVELENGTHS.
 """
@@ -29,6 +29,9 @@ import re
 import statistics
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from compound_identification import NEW_ID  # noqa: E402
 
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "stern_volmer"
 OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "stern_volmer_intensities.csv"
@@ -50,17 +53,17 @@ MODE = re.compile(r"Ex:\s*(\d+)-(\d+)\s*Em:\s*(\d+)-(\d+)")
 # are reported for the methods only and are not used in the analysis.
 PROTOCOL_WAVELENGTHS = {
     # mode name: (excitation, excitation bandwidth, emission, emission bandwidth) / nm
-    "FI: Ir-F": (425, 8, 475, 20),        # old PC1
-    "FI: Ir(ppy)3": (425, 8, 520, 20),    # old PC3
+    "FI: Ir-F": (425, 8, 475, 20),        # PC1
+    "FI: Ir(ppy)3": (425, 8, 520, 20),    # PC3
 }
 
 COLUMNS = [
-    "batch", "well", "pc_old_id", "quencher_id",
+    "batch", "well", "pc_new_id", "quencher_id",
     "excitation_nm", "emission_nm", "quencher_conc_M", "intensity_au",
     "n_reads_total", "n_reads_used", "n_saturated", "n_deviant",
 ]
 FILTER_COLUMNS = [
-    "batch", "pc_old_id", "mode_name",
+    "batch", "pc_new_id", "mode_name",
     "excitation_nm", "excitation_bandwidth_nm", "emission_nm", "emission_bandwidth_nm",
     "source",
 ]
@@ -73,6 +76,14 @@ def sig(x, n=CONC_SIGFIGS):
     if x == 0:
         return 0.0
     return float(f"{x:.{n}g}")
+
+
+def new_id(label):
+    """New photocatalyst id of a pipetting-map label PC<old id>."""
+    old = int(re.fullmatch(r"PC(\d+)", label).group(1))
+    if old not in NEW_ID:
+        raise ValueError(f"pipetting map names old PC{old}, which is not in the data")
+    return NEW_ID[old]
 
 
 def well_sort_key(w):
@@ -198,11 +209,10 @@ def main():
         wells = maps[plate]
         reads_by_well, filters = read_plate(RAW / f"{plate}.csv")
         layout = layouts[batch_number(plate)]
-        pc_ids = {int(re.fullmatch(r"PC(\d+)", w["photocatalyst"]["compound"]).group(1))
-                  for w in wells.values()}
+        pc_ids = {new_id(w["photocatalyst"]["compound"]) for w in wells.values()}
         if len(pc_ids) != 1:
             raise ValueError(f"{plate}: more than one photocatalyst on the plate: {pc_ids}")
-        filter_rows.append({"batch": plate, "pc_old_id": next(iter(pc_ids)), **filters})
+        filter_rows.append({"batch": plate, "pc_new_id": next(iter(pc_ids)), **filters})
 
         missing = set(wells) - set(reads_by_well)
         if missing:
@@ -222,7 +232,7 @@ def main():
             rows.append({
                 "batch": plate,
                 "well": well,
-                "pc_old_id": int(re.fullmatch(r"PC(\d+)", pc["compound"]).group(1)),
+                "pc_new_id": new_id(pc["compound"]),
                 "quencher_id": quencher_id,
                 "excitation_nm": filters["excitation_nm"],
                 "emission_nm": filters["emission_nm"],
@@ -246,7 +256,7 @@ def main():
 
     per_pc = {}
     for f in filter_rows:
-        per_pc.setdefault(f["pc_old_id"], set()).add((f["excitation_nm"], f["emission_nm"]))
+        per_pc.setdefault(f["pc_new_id"], set()).add((f["excitation_nm"], f["emission_nm"]))
     mixed = {pc: pairs for pc, pairs in per_pc.items() if len(pairs) > 1}
     if mixed:
         sys.exit(f"batches of one photocatalyst were read with different filters: {mixed}")

@@ -1,16 +1,13 @@
 """
 Compound ids, names, SMILES and molar masses.
 
-Reads compound_identification.xlsx next to this file, which has one sheet per compound
-class. All other scripts refer to compounds by id and look them up here.
+Reads compound_identification.xlsx next to this file, one sheet per compound class.
 
-Photocatalysts have two ids. Raw files and intermediate tables use the old id from the
-screen (stern_volmer/PC10_QBatch1.csv, pc_tcspc/PC4.txt,
-computational_data_raw/photocatalysts/PC_4/). The new id, PC1-PC27, enters at the
-processed stage: properties_exp.py and properties_calc.py write `old_id` and `new_id`
-into the workbooks, and build_exp_dataset.py carries both into exp_dataset.
+Photocatalysts are keyed by their new id, PC1-PC27. The raw experimental files keep the
+old id of the screen (stern_volmer/PC10_QBatch1.csv, pc_tcspc/PC4.txt, the pipetting
+maps); their readers map it to the new id with NEW_ID. No other table carries old ids.
 
-Not a pipeline stage. Uses the standard library only, so importing it adds no dependency.
+Not a pipeline stage. Standard library only.
 """
 
 import re
@@ -62,28 +59,17 @@ def _sheets(path):
 
 _BOOK = _sheets(WORKBOOK)
 
-# old id -> {"new_id", "old_id", "name", "M / g mol-1"}, in new-id order
-PHOTOCATALYSTS = {int(r["old_id"]): r for r in sorted(_BOOK["Photocatalysts"],
+# new id -> {"new_id", "old_id", "name", "M / g mol-1"}
+PHOTOCATALYSTS = {int(r["new_id"]): r for r in sorted(_BOOK["Photocatalysts"],
                                                        key=lambda r: r["new_id"])}
 # quencher id -> {"quencher_id", "name", "smiles", "M / g mol-1"}
 QUENCHERS = {int(r["quencher_id"]): r for r in sorted(_BOOK["Quenchers"],
                                                       key=lambda r: r["quencher_id"])}
 
-NEW_ID = {old: int(r["new_id"]) for old, r in PHOTOCATALYSTS.items()}
-# Old ids of the photocatalysts in the data.
-IN_DATA = frozenset(NEW_ID)
+# old id (raw experimental files and job trees) -> new id
+NEW_ID = {int(r["old_id"]): new for new, r in PHOTOCATALYSTS.items()}
 
-# Old ids of photocatalysts that are not in the data. photocatalyst_curate.py skips
-# their job folders.
-CROSSED_OUT = {
-    7: "iPr-TXT",
-    26: "[Ir(dFppy)2(MeCN)2]PF6",
-    30: "[Ir(p-F-pmb)3]",
-    31: "[Ir(pmi)3]",
-}
-
-assert not set(NEW_ID) & set(CROSSED_OUT), "a crossed-out id is also in the data"
-
-assert sorted(NEW_ID.values()) == list(range(1, len(NEW_ID) + 1)), "new ids must be 1..n"
+assert sorted(PHOTOCATALYSTS) == list(range(1, len(PHOTOCATALYSTS) + 1)), "new ids must be 1..n"
+assert len(NEW_ID) == len(PHOTOCATALYSTS), "old ids must be unique"
 assert sorted(QUENCHERS) == list(range(1, len(QUENCHERS) + 1)), "quencher ids must be 1..n"
 assert all(r["name"] and r["smiles"] for r in QUENCHERS.values()), "quencher without identity"

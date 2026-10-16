@@ -129,7 +129,7 @@ def molecule_split(modes, four_point):
 def four_point_lambdas(dataset):
     """Four-point lambda of every molecule in the dataset, as (kind, id, surface) rows."""
     rows = []
-    for kind, key, prefix in (("photocatalyst", "pc_old_id", "pc"), ("quencher", pairs.Q_ID, "q")):
+    for kind, key, prefix in (("photocatalyst", "pc_new_id", "pc"), ("quencher", pairs.Q_ID, "q")):
         first = dataset.groupby(key).first()
         for surface, geometry in (("S0", "T1"), ("T1", "S0")):
             column = f"{prefix}_lambda_{surface}_{geometry}_dft / kcal mol-1"
@@ -148,7 +148,7 @@ def inputs(df, source, split, medians):
     def get(kind, ids, surface, column):
         return split.loc[[(kind, int(i), surface) for i in ids], column].to_numpy(float)
 
-    pc_ids, q_ids = df["pc_old_id"].to_numpy(int), df[pairs.Q_ID].to_numpy(int)
+    pc_ids, q_ids = df["pc_new_id"].to_numpy(int), df[pairs.Q_ID].to_numpy(int)
     f_pc_s0 = get("photocatalyst", pc_ids, "S0", "classical_fraction")
     w_pc_s0 = get("photocatalyst", pc_ids, "S0", "quantum_frequency")
     f_pc_t1 = get("photocatalyst", pc_ids, "T1", "classical_fraction")

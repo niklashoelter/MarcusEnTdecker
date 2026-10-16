@@ -5,18 +5,19 @@
 """
 TCSPC decay traces -> excited-state lifetime tau0 of each photocatalyst.
 
-Reads   ../experimental_data_raw/pc_tcspc/PC<n>.txt   tab-separated, header block then
-                                                    time (ns) vs counts, 2048 channels
-Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv
+Reads   ../experimental_data_raw/pc_tcspc/PC<old id>.txt   tab-separated, header block then
+                                                         time (ns) vs counts, 2048 channels
+        ../compound_identification.xlsx   (old -> new photocatalyst id)
+Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv   keyed by pc_new_id
 
     uv run data/experimental_data_scripts/lifetimes_tcspc.py
 
 One trace per photocatalyst (MeCN, Ar, 10 uM, 3 mL). The background is the median of
 the trace tail. The decay is fitted with a single exponential with 1/y weights; tau0
-and its error are the fitted value and standard error. The instrument export `PC<n>.FL`
-is stored beside each trace.
+and its error are the fitted value and standard error. The instrument export
+`PC<old id>.FL` is stored beside each trace.
 
-The fit starts at the first channel after the pulse at or below 1000 counts. For old PC4
+The fit starts at the first channel after the pulse at or below 1000 counts. For PC4
 it starts at 1500 ns on the instrument time axis instead (FIT_START_NS), so that its fast
 early component is excluded and only the long-lived decay is fitted.
 """
@@ -28,6 +29,9 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from compound_identification import NEW_ID  # noqa: E402
+
 RAW = Path(__file__).resolve().parent.parent / "experimental_data_raw" / "pc_tcspc"
 OUT = RAW / "lifetimes_tcspc.csv"
 
@@ -37,14 +41,14 @@ PULSE_END_FRACTION = 0.5              # fallback: pulse is over below this fract
 STABILIZATION_POINTS = 4              # ... and once this many consecutive channels are non-rising
 MIN_FIT_POINTS = 15                   # fewer usable channels than this and the trace is not fitted
 MIN_SPAN_IN_LIFETIMES = 5             # the fit window must span this many lifetimes
-# pc_id -> fit start time (ns, instrument axis) used instead of the count threshold
+# new id -> fit start time (ns, instrument axis) used instead of the count threshold
 FIT_START_NS = {4: 1500.0}
 TAU_GRID_POINTS = 320
 TAU_REFINE_POINTS = 200
 SIGFIGS = 6
 
 COLUMNS = [
-    "pc_id", "tau0_ns", "tau0_err_ns", "amplitude",
+    "pc_new_id", "tau0_ns", "tau0_err_ns", "amplitude",
     "background_counts", "pulse_channel", "fit_channel_start", "fit_channel_end",
     "fit_start_ns", "fit_end_ns", "n_fit_points", "span_ns", "note",
 ]
@@ -230,21 +234,24 @@ def main():
     stray = [f.name for f in files if not re.fullmatch(r"PC\d+", f.stem)]
     if stray:
         sys.exit(f"traces must be named PC<n>.txt: {stray}")
-    files.sort(key=lambda f: int(f.stem[2:]))
+    unknown = [f.name for f in files if int(f.stem[2:]) not in NEW_ID]
+    if unknown:
+        sys.exit(f"traces of photocatalysts not in the data: {unknown}")
+    files.sort(key=lambda f: NEW_ID[int(f.stem[2:])])
 
     rows, problems = [], []
     for f in files:
-        pc_id = int(f.stem[2:])
+        pc_id = NEW_ID[int(f.stem[2:])]
         time_ns, counts = read_trace(f)
         r = analyse(time_ns, counts, FIT_START_NS.get(pc_id))
         tau, span = r.get("tau_ns"), r.get("span_ns")
         if tau is None:
-            problems.append(f"{f.stem}: {r.get('note', 'not fitted')}")
+            problems.append(f"PC{pc_id}: {r.get('note', 'not fitted')}")
         elif span < MIN_SPAN_IN_LIFETIMES * tau:
-            problems.append(f"{f.stem}: the window spans {span / tau:.1f} lifetimes, "
+            problems.append(f"PC{pc_id}: the window spans {span / tau:.1f} lifetimes, "
                             f"fewer than {MIN_SPAN_IN_LIFETIMES}")
         rows.append({
-            "pc_id": pc_id,
+            "pc_new_id": pc_id,
             "tau0_ns": sig(tau),
             "tau0_err_ns": sig(r.get("tau_stderr_ns")),
             "amplitude": sig(r.get("amplitude")),
@@ -270,7 +277,7 @@ def main():
     print(f"{len(rows)} photocatalysts -> {OUT.name}")
     for r in rows:
         if r["note"]:
-            print(f"  PC{r['pc_id']}: {r['note']}")
+            print(f"  PC{r['pc_new_id']}: {r['note']}")
 
 
 if __name__ == "__main__":
