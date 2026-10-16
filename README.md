@@ -89,7 +89,7 @@ folder beside the instrument files or jobs they were derived from.
 ## Reproducing
 
 ```
-uv run reproduce.py            # the data, benchmark and further_analysis stages, in dependency order
+uv run reproduce.py            # the data, benchmark, further_analysis and webapp stages, in dependency order
 uv run reproduce.py data       # just one stage
 ```
 
