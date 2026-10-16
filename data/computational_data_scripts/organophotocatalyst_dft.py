@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = []
+# dependencies = ["rdkit==2025.9.4"]
 # ///
 """
 Organophotocatalyst triplet energies and reorganization energies.
@@ -14,6 +14,8 @@ Level of theory: wB97X-D4/def2-TZVP (optimisation, frequencies) // def2-TZVPP, d
 CPCM(acetonitrile), no ZORA. Per state: `opt_output.out` (optimisation + frequencies, last
 single point in def2-TZVPP) and `sp_vert_<state>_output.out` (other state at this geometry).
 
+    smiles       from the optimised S0 geometry (bond orders from connectivity, neutral
+                 resonance form)
     E_T          ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.509
     lambda_X_Y   (E_X at the Y geometry - E_X) * 627.509     electronic only
 
@@ -26,6 +28,9 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
+
+from rdkit import Chem, RDLogger
+from rdkit.Chem import rdDetermineBonds
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "computational_data_raw" / "organophotocatalysts"
@@ -56,7 +61,7 @@ JOBS = {
 OPTIMIZATIONS = ("E_S0", "E_T1")
 
 COLUMNS = [
-    "opc_id", "name", "n_atoms", "charge",
+    "opc_id", "name", "smiles", "n_atoms", "charge",
     "E_T / kcal mol-1", "lambda_S0_T1 / kcal mol-1", "lambda_T1_S0 / kcal mol-1",
     "E_S0 / Ha", "E_T1 / Ha", "E_T1_at_S0geom / Ha", "E_S0_at_T1geom / Ha",
     "G_corr_S0 / Ha", "G_corr_T1 / Ha",
@@ -83,6 +88,24 @@ def scan(path):
     return energy, gibbs, n_imag, charge
 
 
+def smiles_from_geometry(xyz: Path) -> str:
+    """Canonical SMILES of a neutral closed-shell molecule from its xyz geometry."""
+    mol = Chem.MolFromXYZBlock(xyz.read_text())
+    if mol is None:
+        raise ValueError(f"{xyz} is not a readable xyz file")
+    rdDetermineBonds.DetermineBonds(mol, charge=0)
+    if any(atom.GetFormalCharge() for atom in mol.GetAtoms()):
+        # e.g. a thioxanthone assigned as the S+/O- form; take the neutral resonance form
+        forms = Chem.ResonanceMolSupplier(mol, Chem.KEKULE_ALL | Chem.ALLOW_CHARGE_SEPARATION)
+        neutral = [form for form in forms
+                   if not any(atom.GetFormalCharge() for atom in form.GetAtoms())]
+        if not neutral:
+            raise ValueError(f"{xyz}: no neutral bond assignment")
+        mol = Chem.Mol(neutral[0])
+        Chem.SanitizeMol(mol)
+    return Chem.MolToSmiles(Chem.RemoveHs(mol))
+
+
 def count_atoms(path):
     if not path.exists():
         return None
@@ -100,6 +123,7 @@ def rounded(x):
 
 
 def main():
+    RDLogger.DisableLog("rdApp.*")
     if not RAW.is_dir():
         sys.exit(f"missing input: {RAW}\nthe raw job files are not in git; fetch the deposit")
 
@@ -149,6 +173,7 @@ def main():
         rows.append({
             "opc_id": opc_id,
             "name": NAMES[opc_id],
+            "smiles": smiles_from_geometry(opc_dir / "S0" / "opt_geometry.xyz"),
             "n_atoms": count_atoms(opc_dir / "S0" / "opt_geometry.xyz") or "",
             "charge": blank(charge),
             "E_T / kcal mol-1": rounded(e_t),

@@ -9,9 +9,7 @@ Reads   ../../data/compound_identification.xlsx                              PC 
         ../../data/computational_data_processed/photocatalyst_properties_calc.xlsx
                                                      E_T, both lambda, excited-state potentials
         ../../data/computational_data_processed/organophotocatalyst_dft.csv
-                                                     OPC names, E_T and both lambda
-        ../../data/computational_data_raw/organophotocatalysts/OPC<n>/S0/opt_geometry.xyz
-                                                     OPC SMILES
+                                                     OPC names, SMILES, E_T and both lambda
         ../data/pc_structures/<id>.png                reports missing drawings
 Writes  ../data/photocatalysts.csv
 
@@ -25,9 +23,7 @@ One row per photocatalyst: screened PC<n> (by new_id), then organic OPC<n>.
     E_PCplus_PCstar, E_PCstar_PCminus   DFT excited-state potentials (V vs SCE), E(PC+/PC*) and
                                         E(PC*/PC-); none for the OPCs
 
-Values rounded to 2 decimals. Metal complexes have no SMILES. OPC SMILES from the
-optimised S0 geometry (bond orders from connectivity, neutral resonance form).
-Not part of the package.
+Values rounded to 2 decimals. Metal complexes have no SMILES. Not part of the package.
 """
 
 from __future__ import annotations
@@ -38,14 +34,12 @@ from pathlib import Path
 
 import pandas as pd
 from rdkit import Chem, RDLogger
-from rdkit.Chem import rdDetermineBonds
 
 WEBAPP = Path(__file__).resolve().parent.parent
 ROOT = WEBAPP.parent
 DATA = ROOT / "data"
 IDENTIFICATION = DATA / "compound_identification.xlsx"
 CALC = DATA / "computational_data_processed" / "photocatalyst_properties_calc.xlsx"
-OPC_DIR = DATA / "computational_data_raw" / "organophotocatalysts"
 OPC_TABLE = DATA / "computational_data_processed" / "organophotocatalyst_dft.csv"
 IMAGES = WEBAPP / "data" / "pc_structures"
 OUT = WEBAPP / "data" / "photocatalysts.csv"
@@ -71,24 +65,6 @@ def read_workbook(path: Path) -> pd.DataFrame:
     return df.loc[:, ~df.columns.astype(str).str.startswith("Unnamed")]
 
 
-def smiles_from_geometry(xyz: Path) -> str:
-    """Canonical SMILES of a neutral closed-shell molecule from its xyz geometry."""
-    mol = Chem.MolFromXYZBlock(xyz.read_text())
-    if mol is None:
-        raise ValueError(f"{xyz} is not a readable xyz file")
-    rdDetermineBonds.DetermineBonds(mol, charge=0)
-    if any(atom.GetFormalCharge() for atom in mol.GetAtoms()):
-        # e.g. a thioxanthone assigned as the S+/O- form; take the neutral resonance form
-        forms = Chem.ResonanceMolSupplier(mol, Chem.KEKULE_ALL | Chem.ALLOW_CHARGE_SEPARATION)
-        neutral = [form for form in forms
-                   if not any(atom.GetFormalCharge() for atom in form.GetAtoms())]
-        if not neutral:
-            raise ValueError(f"{xyz}: no neutral bond assignment")
-        mol = Chem.Mol(neutral[0])
-        Chem.SanitizeMol(mol)
-    return Chem.MolToSmiles(Chem.RemoveHs(mol))
-
-
 def screened() -> list[dict]:
     names = pd.read_excel(IDENTIFICATION, sheet_name="Photocatalysts").set_index("new_id")["name"]
     calc = read_workbook(CALC).set_index("new_id")
@@ -112,7 +88,7 @@ def organic() -> list[dict]:
     rows = []
     for _, opc in table.iterrows():
         pc_id = f"OPC{int(opc['opc_id'])}"
-        smiles = smiles_from_geometry(OPC_DIR / pc_id / "S0" / "opt_geometry.xyz")
+        smiles = opc["smiles"]
         atoms = Chem.AddHs(Chem.MolFromSmiles(smiles)).GetNumAtoms()
         if atoms != int(opc["n_atoms"]):
             raise ValueError(f"{pc_id}: {atoms} atoms in the SMILES, {opc['n_atoms']} in the table")
