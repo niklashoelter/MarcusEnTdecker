@@ -54,7 +54,6 @@ data/
 ├── literature_benchmark/            published tables of the literature benchmark, one CSV
 │                                    per study (the PDFs beside them are not in git), and
 │                                    photocatalyst_triplet_energies.csv
-├── tests/                           pytest tests of molecular_size.py and molecular_extent.py
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
 ├── molecular_size.py                molecular radius from a DFT geometry, used by the
