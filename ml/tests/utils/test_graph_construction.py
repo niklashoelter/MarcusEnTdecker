@@ -5,20 +5,7 @@ def test_smiles_to_graph_methane():
     smiles = "C"
     data = smiles_to_graph(smiles)
 
-    # Methane structure: C with 4 H. Implicit H are usually part of node features or implicit.
-    # rdkit MolFromSmiles("C") gives 1 atom if implicit H.
-    # Let's check node features.
-
-    # one_hot_encode features length:
-    # atomic_num: 14 values
-    # degree: 6
-    # formal_charge: 5
-    # hybridization: 5
-    # num_hs: 5
-    # chiral_tag: 3
-    # aromatic: 1
-    # mass: 1
-    # total: 14+6+5+5+5+3+1+1 = 40 (approx, need to check exact implementation)
+    # implicit H: 1 node
 
     assert data.x.shape[0] == 1 # 1 Carbon atom
     assert data.edge_index.shape[1] == 0 # No bonds between heavy atoms

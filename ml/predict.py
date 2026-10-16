@@ -1,5 +1,5 @@
 """
-Python API for predicting triplet energy transfer rates from structure alone.
+Python API for triplet energy transfer rates from structure.
 
     from ml.predict import RatePredictor, photocatalyst_properties
 
@@ -14,71 +14,27 @@ Python API for predicting triplet energy transfer rates from structure alone.
     result.two_gate         dG <= 0 and dG_barrier <= t_PC; None without tau0
     result.uncertainty      from the mixture density network
 
-`ml.cli` wraps these same calls as the `ent-ml` command.
+`ml.cli` wraps these calls as the `ent-ml` command.
 
-WHAT IT COMPOSES
-    Nothing here re-implements the model or the theory. Both come from the `ml`
-    package alongside this file, and this module is the seam between them:
+    ml.prediction.predict(smiles)   graph -> E_T, lambda_S_T, lambda_T_S
+    ml.energy.marcus_ent            properties -> dG, dG barrier
+    ml.energy.two_gate              tau0 -> t_PC, two-gate verdict, k_-d/nu
+    RatePredictor._encounter_rate   barrier -> k
 
-        ml.prediction.predict(smiles)              graph -> E_T, lambda_S_T, lambda_T_S
-        ml.energy.marcus_ent                       properties -> dG, dG barrier
-        ml.energy.two_gate                         tau0 -> t_PC, two-gate verdict, k_-d/nu
-        encounter-complex rate (below)             barrier -> k
-
-    Keeping the barrier in `ml.energy` means the web application and this API compute
-    it the same way. Only the last step is written here,
-    because `ml.energy` stops at the barrier and does not combine it with diffusion.
-
-THE RATE EXPRESSION
-
+Rate:
     k_EnT = k_diff / (1 + exp(dG/RT) + (k_-d/nu) * exp(dG_barrier/RT))
+    k_-d = k_diff / K_A, K_A the Eigen encounter constant at contact distance 7 A,
+    nu = k_B T / h. The Eyring rate of the barrier is returned as `k_eyring`.
 
-    with k_-d = k_diff / K_A, K_A the Eigen encounter constant at the contact distance
-    7 A, and nu = k_B T / h (ml.energy.two_gate.escape_over_frequency, the same
-    constants as t_PC). The three terms are diffusion, thermodynamic back-reaction and
-    the activation barrier. It reduces to k_diff when transfer is fast and strongly exergonic, which
-    is the physically right ceiling -- a bimolecular rate cannot exceed the rate at
-    which the two molecules meet. A bare Eyring rate has no such ceiling and will
-    happily return 1e14 M-1 s-1, so it is offered as `k_eyring` for comparison but is
-    not what `k_ent` reports.
+Two-gate: True when dG <= 0 and dG_barrier <= t_PC, the barrier at which k * tau0 reaches
+K_SV,crit = 10 M-1. Needs `tau0_ns` (`tau0 / ns` column of the table); otherwise
+`t_pc_kcal` and `two_gate` are None.
 
-THE TWO-GATE VERDICT
-    `two_gate` is True when dG <= 0 and the barrier is at most t_PC, the barrier at which
-    k * tau0 reaches K_SV,crit = 10 M-1 (ml.energy.two_gate, contact distance 7 A). It
-    needs the measured lifetime tau0 of the photocatalyst, `tau0_ns` of its properties,
-    read from a `tau0 / ns` column of the photocatalyst table when there is one. Without
-    tau0, `t_pc_kcal` and `two_gate` are None.
-
-THE MODEL CANNOT SEE THE PHOTOCATALYSTS
-    Its element vocabulary is H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I. Iridium
-    (77) and ruthenium (44) are not in it, and encoding one raises `UnknownAtomError`
-    rather than returning a poor answer -- which is the right behaviour, but it means
-    none of the 27 screened photocatalysts can be passed to it as a structure: all are
-    Ir or Ru complexes.
-
-    This is a property of the training set, not a defect: the model was trained on
-    organic triplet sensitizers. So a pair is predicted from two different sources,
-    and the API takes them as two different kinds of argument:
-
-        the quencher       a SMILES -> the model         (organic, in the vocabulary)
-        the photocatalyst  its DFT properties            (a metal complex)
-
-    `photocatalyst_properties(source, pc_id)` builds that second kind of argument from a
-    table the caller supplies: one row per photocatalyst, selected by its `new_id`. This
-    package ships no such table and does not know where one lives -- that is the
-    caller's business. Passing a metal complex as a SMILES will fail, loudly, and that
-    is deliberate -- silently falling back to something else would hide which half of
-    each prediction is a model output.
-
-    Both arguments accept either form, so an organic photocatalyst can still be given
-    as a SMILES and a quencher can be given as measured properties.
-
-MIXING A MODEL PREDICTION WITH A CALCULATION
-    A rate from this API is therefore a hybrid: a DFT triplet energy for one partner
-    and a predicted one for the other. The two carry different errors. `uncertainty`
-    reports only what the model estimates, because a DFT number arrives without one,
-    and `uncertainty_covers` says which partners it accounts for. Do not read it as a
-    total.
+Element vocabulary: H, B, C, N, O, F, Si, P, S, Cl, Se, Br, Sn, I; Ir and Ru raise
+`UnknownAtomError`. A metal-complex photocatalyst is passed as DFT properties,
+`photocatalyst_properties(source, pc_id)`. Each partner is a SMILES (model) or
+`MolecularProperties` (used as given). `uncertainty` covers only the model-predicted
+partners, named in `uncertainty_covers`.
 """
 
 from __future__ import annotations
@@ -90,20 +46,20 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Sequence, Union
 
-# Row 1 of a property workbook names the column blocks; the headers are on row 2.
+# Property workbooks: headers on row 2.
 WORKBOOK_HEADER_ROW = 2
 
-#: What a photocatalyst row has to carry, beyond `new_id`, to yield a prediction.
+#: Required photocatalyst columns besides `new_id`.
 PC_COLUMNS = ("E_T / kcal mol-1", "lambda_S0_T1 / kcal mol-1",
               "lambda_T1_S0 / kcal mol-1")
 
-#: An optional photocatalyst column: the excited-state lifetime, for the two-gate verdict.
+#: Optional photocatalyst column: excited-state lifetime, for the two-gate verdict.
 PC_TAU0 = "tau0 / ns"
 
 # Gas constant in kcal mol-1 K-1.
 R_KCAL = 1.987204259e-3
 
-# Acetonitrile diffusion limit, M-1 s-1. A solvent property, not a fitted parameter.
+# Acetonitrile diffusion limit, M-1 s-1.
 K_DIFF_ACETONITRILE = 2.0e10
 
 DEFAULT_TEMPERATURE_K = 298.15
@@ -117,15 +73,13 @@ class MolecularProperties:
     E_T: float
     lambda_S_T: float
     lambda_T_S: float
-    # None where the properties came from a calculation rather than the model. A DFT
-    # number arrives without an uncertainty, and inventing a 0.0 for it would make a
-    # hybrid prediction look better determined than it is.
+    # Uncertainties: None for DFT properties.
     E_T_uncertainty: float | None = None
     lambda_S_T_uncertainty: float | None = None
     lambda_T_S_uncertainty: float | None = None
     spin_density: list[float] = field(default_factory=list)
     source: str = "model"
-    # The measured excited-state lifetime of a photocatalyst, ns; None when unknown.
+    # Measured excited-state lifetime of a photocatalyst, ns; None when unknown.
     tau0_ns: float | None = None
 
 
@@ -134,7 +88,7 @@ Partner = Union[str, "MolecularProperties"]
 
 
 def _rows(source: Any) -> list[dict]:
-    """A photocatalyst table as row dicts, in whichever form the caller supplied it."""
+    """A photocatalyst table as a list of row dicts."""
     if source is None:
         raise ValueError(
             "photocatalyst_properties needs a photocatalyst table: a path to an .xlsx "
@@ -170,20 +124,13 @@ def _rows(source: Any) -> list[dict]:
 
 def photocatalyst_properties(source: Any = None,
                              pc_id: int | str | None = None) -> MolecularProperties:
-    """DFT properties for one photocatalyst, in the form `predict` takes.
+    """DFT properties of one photocatalyst, as `MolecularProperties`.
 
-    The model cannot encode iridium or ruthenium, so this is how a metal-complex
-    photocatalyst enters a prediction: from a table the caller supplies. `source` is a
-    path to an .xlsx or .csv, a pandas DataFrame, a mapping of id to row, or a single
-    row as a mapping. `pc_id` picks the row by its `new_id`, and may be left out when
-    the table holds exactly one row.
-
-    The two reorganization energies map across by surface: the table's `lambda_S0_T1`
-    (E_S0 at the T1 geometry minus E_S0 at its own) is the model's `lambda_S_T`, and
-    `lambda_T1_S0` (E_T1 at the S0 geometry minus E_T1 at its own) its `lambda_T_S`.
-    A `tau0 / ns` column, where present and filled, becomes `tau0_ns`.
-    An .xlsx is read with its headers on row 2, as the property workbooks in `data/`
-    have them.
+    `source`: path to an .xlsx (headers on row 2) or .csv, a DataFrame, a mapping id -> row,
+    or one row. `pc_id`: the row's `new_id`; optional for a one-row table.
+    `lambda_S0_T1` (E_S0 at the T1 geometry - E_S0) -> `lambda_S_T`,
+    `lambda_T1_S0` (E_T1 at the S0 geometry - E_T1) -> `lambda_T_S`,
+    `tau0 / ns` (optional) -> `tau0_ns`.
     """
     rows = _rows(source)
 
@@ -252,14 +199,10 @@ class RatePrediction:
 
 
 class RatePredictor:
-    """Predicts energy transfer rate constants for photocatalyst-quencher pairs.
+    """EnT rate constants for photocatalyst-quencher pairs.
 
-    The model is loaded once, on the first prediction, and reused. Properties are
-    cached per structure, so screening many quenchers against one photocatalyst costs
-    one forward pass for the photocatalyst rather than one per pair.
-
-    With `ensemble=True` the properties come from `ml.ensemble`, the five random-split
-    models combined, instead of the single deployed model.
+    The model loads on the first prediction; properties are cached per SMILES.
+    `ensemble=True`: properties from `ml.ensemble`.
     """
 
     def __init__(
@@ -276,10 +219,7 @@ class RatePredictor:
     # -- properties -------------------------------------------------------------
 
     def properties(self, smiles: Sequence[str]) -> list[MolecularProperties]:
-        """Predict E_T and both reorganization energies for each structure.
-
-        Every structure not already cached is sent to the model in a single batch.
-        """
+        """E_T and both reorganization energies per SMILES; uncached ones in one batch."""
         wanted = list(smiles)
         missing = [s for s in dict.fromkeys(wanted) if s not in self._cache]
 
@@ -308,21 +248,11 @@ class RatePredictor:
     # -- rates ------------------------------------------------------------------
 
     def predict(self, photocatalyst: Partner, quencher: Partner) -> RatePrediction:
-        """Predict the rate constant for one pair.
-
-        Each partner is either a SMILES, which the model is asked about, or a
-        `MolecularProperties`, which is used as given. A metal-complex photocatalyst
-        has to be the second kind -- see `photocatalyst_properties`.
-        """
+        """Rate constant for one pair; each partner a SMILES or `MolecularProperties`."""
         return self.predict_many([(photocatalyst, quencher)])[0]
 
     def predict_many(self, pairs: Iterable[tuple[Partner, Partner]]) -> list[RatePrediction]:
-        """Predict rate constants for many pairs, with one model pass per structure.
-
-        Only the partners given as SMILES reach the model, and each distinct one
-        reaches it once. Screening 48 quenchers against one photocatalyst whose
-        properties are already known therefore costs 48 forward passes, not 49.
-        """
+        """Rate constants for many pairs; each distinct SMILES is predicted once."""
         pairs = list(pairs)
         if not pairs:
             return []
@@ -355,9 +285,7 @@ class RatePredictor:
         t_pc = (None if pc.tau0_ns is None
                 else lifetime_barrier(pc.tau0_ns, temperature=self.temperature))
 
-        # Only the partners the model spoke about contribute. Combining an estimated
-        # uncertainty with an absent one by treating the absent one as zero would
-        # understate the spread on every hybrid prediction.
+        # E_T uncertainties of the model-predicted partners, summed in quadrature.
         estimated = [(name, p.E_T_uncertainty) for name, p in
                      (("photocatalyst", pc), ("quencher", q))
                      if p.E_T_uncertainty is not None]
@@ -376,9 +304,7 @@ class RatePredictor:
             two_gate=None if t_pc is None else two_gate_quenches(dG, barrier, t_pc),
             uncertainty=uncertainty,
             uncertainty_covers=covers,
-            # calculate_driving_force_and_barrier falls back to the symmetric form
-            # when the parabolas do not intersect. It reports that by printing, not
-            # by returning, so it is re-derived here from the same condition.
+            # symmetric fallback of calculate_driving_force_and_barrier (no intersection)
             symmetric_approximation=self._is_symmetric(pc, q),
             photocatalyst_properties=pc,
             quencher_properties=q,
@@ -393,8 +319,7 @@ class RatePredictor:
                                                k_diff=self.k_diff)
 
         def bounded_exp(x):
-            # Both terms only ever increase the denominator, so a saturated exponent
-            # drives the rate to zero, which is the correct limit.
+            # exponent capped at 700
             return math.exp(min(x / rt, 700.0))
 
         denominator = 1.0 + bounded_exp(dG) + escape_over_nu * bounded_exp(barrier)
@@ -402,8 +327,7 @@ class RatePredictor:
 
     @staticmethod
     def _is_symmetric(pc: MolecularProperties, q: MolecularProperties) -> bool:
-        """Whether ml.energy.marcus_ent would have fallen back to the symmetric
-        approximation."""
+        """Whether ml.energy.marcus_ent uses the symmetric approximation."""
         forward = pc.lambda_T_S + q.lambda_S_T
         reverse = pc.lambda_S_T + q.lambda_T_S
         dG = q.E_T - pc.E_T

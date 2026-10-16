@@ -32,9 +32,7 @@ def test_moleculedataset_graph_only(mock_smiles_to_graph_func):
     assert len(dataset) == 2
     data = dataset[0]
     assert hasattr(data, 'y')
-    # graph_targets[0] is array([1.0]). tensor(array([1.0])) -> shape (1,).
-    # In code: y = current_g_t. if ndim==0 -> unsqueeze. if ndim==1 -> unsqueeze.
-    # So if graph_targets[0] is (1,), current_g_t is (1,). unsqueeze -> (1, 1).
+    # (1,) target -> y of shape (1, 1)
     assert data.y.shape == (1, 1)
     assert data.y.item() == 1.0
 
@@ -86,12 +84,10 @@ def test_moleculedataset_node_only(mock_smiles_to_graph_func):
 
     assert len(dataset) == 1
     data = dataset[0]
-    # In node only mode, data.y is node targets?
-    # Code: if not self.has_graph_targets: data.y = data.node_y
+    # node-only: data.y = data.node_y
     assert torch.allclose(data.y, torch.tensor([0.1, 0.2]).unsqueeze(1))
 
-    assert hasattr(data, 'y') # For node-only, y is node target
-    # node_y is preserved for compatibility with model training/inference
+    assert hasattr(data, 'y')
     if hasattr(data, 'node_y'):
         assert torch.allclose(data.y, data.node_y)
 

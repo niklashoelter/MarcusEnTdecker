@@ -7,8 +7,7 @@ from torch_geometric.nn import global_add_pool
 
 class GraphMDN(nn.Module):
     """
-    A modular graph neural network model with a Mixture Density Network head.
-    It can use different graph encoders like D-MPNN, GAT or MPNN.
+    Graph encoder with Mixture Density Network heads (graph- and/or node-level).
     """
 
     def __init__(self,
@@ -98,7 +97,7 @@ class GraphMDN(nn.Module):
             'mpnn': MPNN,
             'gin': GIN,
             'base_transformer': BaseGraphTransformer,
-            'transformer_v2': GraphTransformer, #legacy naming
+            'transformer_v2': GraphTransformer, # alias of 'transformer'
             'transformer': GraphTransformer,
             'gps': GraphGPS
         }
@@ -149,10 +148,7 @@ class GraphMDN(nn.Module):
             edge_input_dim = data.edge_attr.size(1) if data.edge_attr is not None else 0
             self._initialize(node_input_dim, edge_input_dim)
 
-        # Always get node embeddings first
-        # Exception: if ONLY graph tasks and we trust encoder pooling.
-        # But we unified encoders to support return_node_embeddings.
-        # To reuse code, let's just get node embeddings and pool ourselves.
+        # Node embeddings; graph head uses their sum pool
 
         node_embeddings = self.encoder(data, return_node_embeddings=True)
 

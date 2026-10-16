@@ -3,23 +3,16 @@ How well the predicted uncertainty describes the error, from the test prediction
 
 Reads   ml/results/<split>/test_predictions_graph.csv   for each split asked for (default random_42)
 Writes  ml/results/uncertainty_calibration.csv          per split and molecular target:
-            within_1_sigma, within_2_sigma        the fraction of test molecules whose absolute
-                                                  error is below one and two times the
-                                                  predicted uncertainty sigma_pred
+            within_1_sigma, within_2_sigma        fraction of test molecules with
+                                                  |error| < 1 and 2 sigma_pred
             median_abs_error_most_certain_decile, median_abs_error_least_certain_decile
-                                                  the median absolute error of the tenth of the
-                                                  test molecules with the smallest and with the
-                                                  largest sigma_pred
+                                                  median |error| in the decile of smallest
+                                                  and largest sigma_pred
 
     uv run --extra ml python -m ml.training.uncertainty_calibration [split ...]
 
-Written for this repository; it reads the committed test predictions only. The deciles are
-cut at the quantiles of sigma_pred and are closed on both sides, as the median line of the
-error-against-uncertainty panel of the SI draws them. The MAE after discarding the least
-certain predictions is not here: it is `uncertainty_filtering.csv` of `evaluate.py`.
-
-Values in kcal/mol are written with two decimals, fractions with three, all computed from
-full precision.
+Written for this repository. Deciles: cut at the quantiles of sigma_pred, closed on both
+sides. Rounding: kcal/mol 2 decimals, fractions 3.
 """
 
 import argparse

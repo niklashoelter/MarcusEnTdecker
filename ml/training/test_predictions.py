@@ -3,18 +3,16 @@ Test-set predictions of a trained checkpoint.
 
 Reads   ml/results/<split>/model.pt              the checkpoint trained on that split
         ml/data/splits/<split>.csv, ml/data/training_dataset_full.csv
-Writes  ml/results/<split>/test_predictions_graph.csv   one row per test molecule
-        ml/results/<split>/test_predictions_node.csv    one row per atom of a test molecule
+Writes  ml/results/<split>/test_predictions_graph.csv   one row per test molecule: idx, smiles,
+                                                         <target>_target, _pred, _uncertainty
+        ml/results/<split>/test_predictions_node.csv    one row per atom of a test molecule:
+                                                         idx, atom, spin_population_*
 
     uv run --extra ml python -m ml.training.test_predictions random_42 random_101 ...
 
-`train.py` writes the same two files at the end of a run. Adapted from Leon Schlosser's
+Adapted from Leon Schlosser's
 playground/thesis/model/gps/get_preds.py and the output block of
-playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py:
-the columns are those of the training script (`<target>_target`, `_pred`, `_uncertainty`).
-One change: his per-atom file labelled only its first rows with a molecule `idx`, so each
-atom row here carries its molecule's `idx` and its position in the molecule. The values
-are unaffected.
+playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py.
 """
 
 import argparse

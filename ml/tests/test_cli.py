@@ -1,8 +1,5 @@
-"""The `ent-ml` command: what it parses, what it prints, and how it fails.
-
-Every case but the last stubs the forward pass -- the model is exercised once, at the
-bottom, and the rest is argument handling and output shape.
-"""
+"""Tests of the `ent-ml` command: parsing, output and errors. All but the last test stub
+the forward pass."""
 
 import json
 import math

@@ -34,7 +34,6 @@ class BaseGraphTransformer(nn.Module):
         for layer in self.layers:
             x = layer(x, edge_index, edge_attr=edge_attr)
             x = F.relu(x)
-            # TransformerConv applies dropout internally, but we can add layer dropout
             x = F.dropout(x, p=self.dropout, training=self.training)
 
         if return_node_embeddings:
@@ -46,8 +45,7 @@ class BaseGraphTransformer(nn.Module):
 
 class GraphTransformer(nn.Module):
     """
-    Graph Transformer Network V2.
-    Incorporates Residual Connections, LayerNorm, and Feed-Forward Networks
+    Graph Transformer with residual connections, LayerNorm and feed-forward blocks.
     """
     def __init__(self, node_features, edge_features, hidden_size, num_heads=4, depth=3, dropout=0.1, **kwargs):
         super(GraphTransformer, self).__init__()
@@ -57,7 +55,7 @@ class GraphTransformer(nn.Module):
 
         self.node_embedding = nn.Linear(node_features, hidden_size)
 
-        # Linear projection for edge features to match SimG style preprocessing
+        # Edge feature projection
         self.edge_embedding = nn.Linear(edge_features, edge_features)
 
         self.layers = nn.ModuleList()
@@ -91,9 +89,6 @@ class GraphTransformer(nn.Module):
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
 
         x = F.relu(self.node_embedding(x))
-        # Optional: Project edges if needed, though TransformerConv handles edge_dim.
-        # But we can nonlinearize them first if we wanted.
-        # For now, we pass them directly as TransformerConv expects.
 
         for layer, norm1, ffn, norm2 in zip(self.layers, self.norms1, self.ffns, self.norms2):
             # --- Sub-Layer 1: Attention ---

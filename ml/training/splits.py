@@ -8,19 +8,15 @@ Writes  ml/data/splits/random_<seed>.csv   80:10:10 random split, one per seed
     uv sync --extra ml
     uv run --extra ml python -m ml.training.splits
 
-Each split file has one row per molecule, in the order of the dataset, with the columns
-`idx` (the dataset's own id) and `split` (train, val or test). Row i of a split file is
-row i of the dataset, so `read_split` returns positional indices that can be passed
-straight to `create_dataloaders`.
+Split file: one row per molecule in dataset order, columns `idx`, `split` (train/val/test).
 
 Both procedures are Leon Schlosser's, taken from his training scripts:
 
-- random: `train_test_split` takes 20 % out of the dataset with the seed, and a second
-  `train_test_split` with the same seed halves that into validation and test
+- random: `train_test_split` (test_size 0.2, the seed), then a second one with the same seed
+  halves that into val and test
   (playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py).
-- out-of-sample: every molecule that contains a styryl motif (SMARTS `c1ccc(cc1)C=C`) is
-  the test set; the others, in dataset order, are shuffled with Python's `random` seeded
-  with 42, and the first 80 % train, the rest validate
+- out-of-sample: molecules matching SMARTS `c1ccc(cc1)C=C` are the test set; the rest, in
+  dataset order, shuffled with `random.Random(42)`, first 80 % train, rest val
   (playground/thesis/model/oos/train.py).
 """
 

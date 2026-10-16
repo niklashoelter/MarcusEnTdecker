@@ -13,9 +13,8 @@ of the rate expression
     t_PC = RT ln((k_d tau0 / K_SV,crit - 1) / (k_-d/nu))
 
 with k_-d = k_d / K_A, K_A = 4 pi N_A r^3 / 3 the Eigen encounter constant at the contact
-distance r = 7 A, and nu = k_B T / h. tau0 is the measured excited-state lifetime of the
-photocatalyst; without it there is no verdict, only the barrier. escape_over_frequency
-gives k_-d/nu, also the prefactor of the rate constant in ml.predict.
+distance r = 7 A, and nu = k_B T / h. tau0: measured excited-state lifetime of the
+photocatalyst. escape_over_frequency gives k_-d/nu.
 """
 
 from __future__ import annotations

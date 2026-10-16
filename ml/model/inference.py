@@ -1,4 +1,4 @@
-# Aliases the pre-rename module paths so the pickled DualScaler in model_final_old.pt resolves.
+# Registers the `pyrates` aliases model_final_old.pt needs to unpickle.
 from ml.model import checkpoint as _checkpoint  # noqa: F401
 
 import numpy as np
@@ -126,9 +126,9 @@ def build_model(checkpoint, device, smiles, batch_size=48):
         walk_length=checkpoint['model_config']['walk_length']
     )
 
-    if len(smiles) == 1: #Workaround for lazy initialization
+    if len(smiles) == 1: # lazy init needs a batch of >= 2
         init_smiles = list(smiles)
-        init_smiles.append(smiles[0]) #Duplicate the single SMILES to create a batch of 2
+        init_smiles.append(smiles[0])
     else:
         init_smiles = smiles
 
@@ -149,7 +149,7 @@ def get_predictions(smiles: list,
                     mode: str = 'mixture_mean' #other option max_mode
                     ):
     '''
-    Function to get predictions from a trained model.
+    Predictions of a trained checkpoint for a list of SMILES.
 
     :param smiles: List of SMILES strings for which to get predictions.
     :param model_path: Path to the trained model checkpoint, e.g. ml/data/model_final.pt.

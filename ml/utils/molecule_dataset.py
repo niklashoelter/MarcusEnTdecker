@@ -104,14 +104,14 @@ class MoleculeDataset(Dataset):
 
         if self.has_node_targets:
              data.node_y = self.node_targets[idx]
-             # If no graph targets, use node targets as primary y (e.g. for loss functions expecting data.y)
+             # node targets as y when there are no graph targets
              if not self.has_graph_targets:
                  data.y = data.node_y
 
         return data
 
 def collate_fn(batch):
-    # Use PyG's own batching which handles attributes
+    # PyG batching
     return Batch.from_data_list(batch)
 
 def create_dataloaders(smiles_list,
@@ -126,7 +126,7 @@ def create_dataloaders(smiles_list,
                        graph_targets=None,
                        **kwargs):
     '''
-    Create dataloaders for training, validation, and testing. and scale targets using StandardScaler.
+    Train/val/test dataloaders; targets standardised with StandardScaler fit on the training split.
     '''
     if train_idx is None or val_idx is None or test_idx is None:
          raise ValueError("train_idx, val_idx, and test_idx must be provided.")
@@ -198,7 +198,7 @@ def create_dataloaders(smiles_list,
               for x in n_train_orig:
                   u = start_unwrap(x)
                   if isinstance(u, list): u = np.column_stack(u)
-                  # if u is already array (atoms, tasks), fine.
+                  # arrays: (atoms, tasks)
                   all_train_vals.append(u)
 
               if len(all_train_vals) > 0:

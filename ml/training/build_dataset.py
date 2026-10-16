@@ -9,9 +9,7 @@ class DataLoader:
         datapath: Path
     ):
         '''
-        Provide a path to the dataset CSV file.
-        The DataLoader will read the data and compute the target columns based on the specified input columns.
-        The computed target columns will be added to the DataFrame and can be accessed using the show_columns() method.
+        Read the dataset CSV at `datapath`.
         '''
         self.input_data = pd.read_csv(datapath).copy()
         self.column_names = self.input_data.columns.tolist()
@@ -30,23 +28,16 @@ class DataLoader:
         filter_limits: Optional[Dict[str, Tuple[Optional[float], Optional[float]]]] = None
     ) -> pd.DataFrame:
         '''
+        Compute the target columns (kcal/mol) from the raw energies (Hartree).
 
-        :param Eh_to_kcal: Conversion factor from Hartree to kcal/mol. Default is 627.50962.
-        :param gibbs_singlet_column: Name of the column containing Gibbs free energy for the singlet state (Gibbs_S).
-        :param gibbs_triplet_column: Name of the column containing Gibbs free energy for the triplet state (Gibbs_T).
-        :param energy_singlet_singlet_column: Name of the column containing energy for the singlet geometry in the singlet state (E_S_geometry_S_energy).
-        :param energy_triplet_triplet_column: Name of the column containing energy for the triplet geometry in the triplet state (E_T_geometry_T_energy).
-        :param energy_triplet_singlet_column: Name of the column containing energy for the triplet geometry in the singlet state (E_T_geometry_S_energy).
-        :param energy_singlet_triplet_column: Name of the column containing energy for the singlet geometry in the triplet state (E_S_geometry_T_energy).
-        :param target_columns: List of target columns to compute. Supported values are: adiabatic_energy, lambda_acceptor_singlet, lambda_donor_triplet, vertical_excitation, vertical_emission.
-        :param filter_limits: Dictionary where keys are column names and values are tuples of (min_value, max_value).
-                              Use None for no limit on that side. Default filters:
-                              - spin_population: (0, None) - discard values < 0
-                              - adiabatic_energy: (15, 120) - keep only between 15 and 120 kcal/mol
-                              - lambda_acceptor_singlet: (0, None) - discard values < 0
-                              - lambda_donor_triplet: (0, None) - discard values < 0
-                              Set to empty dict {} to disable filtering.
-        :return: DataFrame with the computed target columns added.
+        :param Eh_to_kcal: Hartree to kcal/mol.
+        :param gibbs_singlet_column, gibbs_triplet_column: Gibbs corrections of S0 and T1.
+        :param energy_X_Y_column: energy of state Y at the geometry of state X.
+        :param target_columns: any of adiabatic_energy, lambda_acceptor_singlet,
+            lambda_donor_triplet, vertical_excitation, vertical_emission.
+        :param filter_limits: {column: (min, max)}, None = open side. None: adiabatic_energy
+            in [15, 120] kcal/mol, lambdas >= 0. {} disables filtering.
+        :return: DataFrame with the target columns.
         '''
 
         self.target_columns = target_columns
@@ -63,23 +54,23 @@ class DataLoader:
                 continue
 
             if col == 'adiabatic_energy':
-                # Adiabatic energy: ΔE_adiabatic = (Gibbs_T + E_T_geometry_T) - (Gibbs_S + E_S_geometry_S)
+                # E_T = (Gibbs_T + E_T_geometry_T) - (Gibbs_S + E_S_geometry_S)
                 self.input_data['adiabatic_energy'] = ((gibbs_t + et) - (gibbs_s + es)) * Eh_to_kcal
 
             elif col == 'lambda_acceptor_singlet':
-                # λ_acceptor_singlet = lambda_S0_T1 (S0 surface): E_S0 at the T1 geometry minus E_S0 at its own, E_T_geometry_S - E_S_geometry_S
+                # lambda_S0_T1 = E_T_geometry_S - E_S_geometry_S (S0 surface)
                 self.input_data['lambda_acceptor_singlet'] = (self.input_data[energy_triplet_singlet_column] - self.input_data[energy_singlet_singlet_column]) * Eh_to_kcal
 
             elif col == 'lambda_donor_triplet':
-                # λ_donor_triplet = lambda_T1_S0 (T1 surface): E_T1 at the S0 geometry minus E_T1 at its own, E_S_geometry_T - E_T_geometry_T
+                # lambda_T1_S0 = E_S_geometry_T - E_T_geometry_T (T1 surface)
                 self.input_data['lambda_donor_triplet'] = (self.input_data[energy_singlet_triplet_column] - self.input_data[energy_triplet_triplet_column]) * Eh_to_kcal
 
             elif col == 'vertical_excitation':
-                # Vertical excitation energy: ΔE_vertical_excitation = E_S_geometry_T - E_S_geometry_S (corresponds to vertical excitation from S0 to T1)
+                # vertical S0 -> T1 excitation = E_S_geometry_T - E_S_geometry_S
                 self.input_data['vertical_excitation'] = (self.input_data[energy_singlet_triplet_column] - self.input_data[energy_singlet_singlet_column]) * Eh_to_kcal
 
             elif col == 'vertical_emission':
-                # Vertical emission energy: ΔE_vertical_emission = E_T_geometry_T - E_T_geometry_S (corresponds to vertical emission from T1 to S0)
+                # vertical T1 -> S0 emission = E_T_geometry_T - E_T_geometry_S
                 self.input_data['vertical_emission'] = (self.input_data[energy_triplet_triplet_column] - self.input_data[energy_triplet_singlet_column]) * Eh_to_kcal
 
             else:
@@ -111,18 +102,11 @@ class DataLoader:
         inplace: bool = True
     ) -> pd.DataFrame:
         '''
-        Filter the dataset based on specified limits for each column.
-        Rows where values fall outside the specified limits are discarded.
+        Drop rows outside the limits.
 
-        :param limits: Dictionary where keys are column names and values are tuples of (min_value, max_value).
-                       Use None for no limit on that side.
-                       Example: {
-                           'spin_population': (0, None),  # Keep only >= 0
-                           'adiabatic_energy': (15, 120),  # Keep only between 15 and 120 kcal/mol
-                           'lambda_acceptor_singlet': (0, None),  # Keep only >= 0
-                           'lambda_donor_triplet': (0, None)  # Keep only >= 0
-                       }
-        :param inplace: If True, modify self.input_data. If False, return a filtered copy.
+        :param limits: {column: (min, max)}, None = open side; for spin_population every
+            atom must lie within.
+        :param inplace: modify self.input_data, else return a filtered copy.
         :return: Filtered DataFrame.
         '''
         if limits is None:

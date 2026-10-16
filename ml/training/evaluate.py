@@ -3,27 +3,25 @@ Metrics of the validation runs, from their test predictions.
 
 Reads   ml/results/<split>/test_predictions_{graph,node}.csv   for every split that has them
         ml/results/random_<seed>/model.pt                     for their md5 sums
-Writes  ml/results/metrics.csv                  per split and target
-        ml/results/metrics_random_splits.csv    mean and SD over the random splits
-        ml/results/uncertainty_filtering.csv    metrics on the test molecules whose predicted
-                                                uncertainty is at most a threshold, mean and
-                                                SD over the random splits
-        ml/results/ensemble_members.csv         the five random-split checkpoints with their
-                                                md5 sums: the members of ml.ensemble
+Writes  ml/results/metrics.csv                  MAE, RMSE, R² per split and target
+        ml/results/metrics_random_splits.csv    mean and population SD over the random splits
+        ml/results/uncertainty_filtering.csv    metrics on the test predictions with
+                                                uncertainty <= threshold, mean and SD over
+                                                the random splits
+        ml/results/ensemble_members.csv         random-split checkpoints with md5 sums
+                                                (members of ml.ensemble)
 
     uv run --extra ml python -m ml.training.evaluate
 
-Adapted from Leon Schlosser's evaluation scripts, without their plotting:
-playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/eval.py
-(MAE, RMSE, R² per target; mean ± SD over splits with numpy's population SD),
-playground/thesis/model/gps/eval_fivefold.py (the spin population, pooled over all test
-atoms; R² of the absolute error against the predicted uncertainty) and
-playground/thesis/model/gps/uncertainty_curve.py (thresholds: 20 evenly spaced from the 60 %
-quantile to the maximum of the uncertainties pooled over the random splits; a threshold
-keeping fewer than two predictions gives no metrics).
+Spin population: pooled over all test atoms. r2_abs_error_vs_uncertainty: R² of |error|
+against the predicted uncertainty. Thresholds: 20 evenly spaced from the 60 % quantile to the
+maximum of the uncertainties pooled over the random splits; < 2 kept predictions give NaN.
+Rounding: kcal/mol 2 decimals, unitless 3.
 
-Values in kcal/mol are written with two decimals, unitless ones (R², spin population) with
-three, all computed from full precision.
+Adapted from Leon Schlosser's evaluation scripts, without their plotting:
+playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/eval.py,
+playground/thesis/model/gps/eval_fivefold.py and
+playground/thesis/model/gps/uncertainty_curve.py.
 """
 
 import argparse
@@ -133,8 +131,7 @@ def rounded(table):
 
 
 def evaluate():
-    """Write the three metric tables and the ensemble's members; the five random splits
-    must be there."""
+    """Write the three metric tables and the ensemble members; needs all random splits."""
     metrics = split_metrics(SPLITS)
     found = set(metrics["split"]) if not metrics.empty else set()
     missing_random = [s for s in RANDOM_SPLITS if s not in found]

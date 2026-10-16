@@ -92,12 +92,8 @@ def get_bond_features(bond):
 
 def smiles_to_graph(smiles, use_explicit_hydrogens=False, use_stereochemistry=True):
     """
-    Converts a SMILES string to a graph representation suitable for a directed MPNN.
-
-    The graph includes an index `rev_edge_index` that maps each directed edge
-    to its reverse edge, which is crucial for the message passing phase in D-MPNNs.
-
-    Includes one-hot encoded atom and bond features including stereochemistry.
+    SMILES -> PyG Data with one-hot atom/bond features (incl. stereochemistry) and
+    `rev_edge_index`, the index of each directed edge's reverse edge.
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:

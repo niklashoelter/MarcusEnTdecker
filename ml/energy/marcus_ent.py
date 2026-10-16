@@ -37,7 +37,6 @@ def _compute_marcus_core(
     lambda_reverse = pc_lambda_S_T + quencher_lambda_T_S
 
     reason = ""
-    # Expression from the original calculate_driving_force_and_barrier
     root_arg = lambda_forward * lambda_reverse + ((lambda_forward - lambda_reverse) * dG)
     auto_symmetric = root_arg < 0 or abs(lambda_forward - lambda_reverse) < 1e-10
 
@@ -58,8 +57,7 @@ def _compute_marcus_core(
         else:
             dG_activation = (lambda_rxn + dG) ** 2 / (4 * lambda_rxn)
 
-    # The backward barrier is the same crossing point seen from the product minimum,
-    # which sits at dG: dG_activation - dG, for exergonic and endergonic pairs alike.
+    # Backward barrier from the product minimum at dG
     dG_activation_backward = dG_activation - dG
     return (
         dG,
@@ -81,15 +79,11 @@ def calculate_driving_force_and_barrier(
     quencher_lambda_T_S: float,
     symmetric_approx: bool = False,
 ) -> Tuple[float, float, float]:
-    """Calculate thermodynamic driving force and barrier heights for EnT.
+    """Driving force dG and forward/backward Marcus barriers for EnT.
 
-    In ``symmetric_approx`` mode, uses the symmetric approximation for the
-    reorganization energy (geometric mean of forward and reverse
-    reorganization energies).
-
-    If the product and reactant parabolas do not intersect properly
-    (negative square-root argument or nearly identical reorganization
-    energies), the symmetric approximation is applied automatically.
+    ``symmetric_approx``: lambda = sqrt(lambda_forward * lambda_reverse); applied
+    automatically when the parabolas do not intersect (negative root argument) or
+    lambda_forward ~= lambda_reverse.
     """
 
     (
@@ -111,7 +105,7 @@ def calculate_driving_force_and_barrier(
     )
 
     if symmetric_flag and not symmetric_approx:
-        # Only warn if the user did not explicitly request symmetric_approx=True
+        # warn only for the automatic fallback
         print(
             "Warning: Product and reactant parabolas do not intersect properly. Using symmetric approximation.",
             f"Reason: {reason}",

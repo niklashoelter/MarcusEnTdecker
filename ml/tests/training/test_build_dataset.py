@@ -27,7 +27,6 @@ def sample_csv():
     })
 
     # Save to temp file
-    # We use delete=False to keep file openable by DataLoader, then remove it
     try:
         tmp = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
         df.to_csv(tmp.name, index=False)
@@ -205,11 +204,6 @@ def test_filter_limits_lambda_donor_triplet(sample_csv):
     Row 2: -0.05 -> -31.4 kcal/mol
     """
     loader = DataLoader(sample_csv)
-
-    # By default, compute_targets uses default limits if filter_limits is None.
-    # Default for lambda_donor_triplet is (0, None).
-    # Since all are negative in sample_csv, all should be filtered out if using default?
-    # Let's test explicit filter first.
 
     # Explicit filter: Keep [-40, -20]. Should keep all.
     df = loader.compute_targets(

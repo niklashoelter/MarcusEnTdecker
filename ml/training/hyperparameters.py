@@ -1,13 +1,9 @@
 """
-The hyperparameters of the graph MDN.
-
-They are trial 55 of Leon Schlosser's Optuna search, the trial with the lowest validation
-loss, at the precision Optuna recorded; all trials are in
-ml/results/hyperparameter_optimization/optuna_results.csv. Everything else about training
-lives in train.py.
+Hyperparameters of the graph MDN: trial 55 (lowest validation loss) of Leon Schlosser's
+Optuna search, ml/results/hyperparameter_optimization/optuna_results.csv.
 """
 
-#: The name the checkpoints record under `hyperparameters`.
+#: Recorded in checkpoints under `hyperparameters`.
 NAME = "trial_55"
 
 HYPERPARAMETERS = {

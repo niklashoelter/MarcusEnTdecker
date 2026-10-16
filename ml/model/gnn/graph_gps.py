@@ -28,7 +28,7 @@ class GraphGPS(torch_nn.Module):
     """
     Graph GPS Encoder.
     Combines local MPNN (GINEConv) with global attention (Transformer/Performer).
-    Consumes graph.rwse as positional encoding — added by dataset, ignored by other encoders.
+    Positional encodings: graph.rwse (nodes), graph.rrwp_edge (edges).
     """
     def __init__(self, node_features: int, edge_features: int, hidden_size: int,
                  walk_length: int = 10,

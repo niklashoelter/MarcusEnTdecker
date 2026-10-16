@@ -124,7 +124,7 @@ def compute_loss(model, outputs, batch):
         return result
 
     else:
-        # No weighting needed if only one type of output is present, just compute the corresponding loss
+        # single output type: no weighting
         if model.num_graph_tasks > 0 and model.num_node_tasks == 0:
             mu, sigma, pi = outputs
             loss = mdn_loss(mu, sigma, pi, batch.y)  # equivalent to mdn_loss_per_sample(...).mean() for graph-level loss

@@ -6,7 +6,6 @@ from torch_geometric.nn import GINEConv, global_add_pool
 class GIN(nn.Module):
     """
     Graph Isomorphism Network (GIN) with Edge Features (GINEConv).
-    Known for high expressiveness in graph regression tasks.
     """
     def __init__(self, node_features, edge_features, hidden_size, depth=3, dropout=0.1, **kwargs):
         super(GIN, self).__init__()
@@ -17,7 +16,7 @@ class GIN(nn.Module):
         # Initial embedding
         self.node_embedding = nn.Linear(node_features, hidden_size)
 
-        # Edge embedding needed because GINEConv expects edge_attr to match node dim
+        # GINEConv needs edge_attr in the node dim
         self.edge_embedding = nn.Linear(edge_features, hidden_size)
 
         self.layers = nn.ModuleList()
@@ -39,7 +38,6 @@ class GIN(nn.Module):
         edge_attr = F.relu(self.edge_embedding(edge_attr)) # Project edges to hidden_dim
 
         for layer in self.layers:
-            # GINEConv needs edge_attr to have same dim as x, hence the embedding above
             x = layer(x, edge_index, edge_attr=edge_attr)
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)

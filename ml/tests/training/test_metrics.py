@@ -31,8 +31,6 @@ def test_top_k_jaccard_similarity_partial():
 
     y_pred = np.array([0.1, 0.9, 0.1, 0.9])
     # Top 2 indices: 1, 3 (values 0.9, 0.9)
-    # Note: argsort stability might matter for ties.
-    # y_pred argsort: [0, 2, 1, 3] or similar. Last 2: 1, 3.
 
     # Intersection: {3} -> size 1
     # Union: {1, 2, 3} -> size 3

@@ -12,26 +12,16 @@ Writes  ml/results/<split>/model.pt                     the checkpoint with the 
     uv run --extra ml python -m ml.training.train random_42 [random_101 ...] [--device cuda:0]
     uv run --extra ml python -m ml.training.train full [--device cuda:0]
 
-A finished model.pt is never overwritten; while a run is going, its best checkpoint is kept
-as model.pt.partial and renamed when it ends.
+An existing model.pt is not overwritten; the best checkpoint of a running job is
+model.pt.partial.
+
+AdamW, linear warmup then cosine schedule, early stopping on the validation loss;
+hyperparameters from hyperparameters.py. Python, numpy and torch are seeded with the split's
+seed (42 for oos_styryl and `full`); GPU runs are not bit-reproducible. `full`: all molecules,
+no early stopping, epochs = median best epoch of the five random-split runs, last epoch kept.
 
 Leon Schlosser's training script for the model in ml/data/model_final_old.pt,
 playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py.
-Its settings, model, optimizer, learning-rate schedule, early stopping and checkpoint are
-unchanged. What differs: the hyperparameters come from hyperparameters.py; the data
-come from ml/data/training_dataset_full.csv, the output of his `DataLoader.compute_targets` on
-the original dataset, instead of recomputing it from the raw energies; the split comes from
-ml/data/splits/ instead of being drawn here (the same draw, see splits.py); the plots and the
-copies of the split data are not written; the final test predictions are written by
-test_predictions.py from the saved best checkpoint, which is the model his script reloads for
-that step; and the checkpoint also records its hyperparameters, split and seed.
-
-Added for this repository, not in his script:
-- Seeding. Python, numpy and torch are seeded with the split's seed (42 for the out-of-sample
-  split and for `full`). GPU kernels are not deterministic, so a rerun is close, not identical.
-- `full`: trains on every molecule. With no validation set there is no early stopping; the
-  run lasts as many epochs as the median best epoch of the five random-split runs, with
-  the same warmup and a cosine schedule over that length, and keeps the last epoch.
 """
 
 import argparse

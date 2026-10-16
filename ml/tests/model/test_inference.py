@@ -98,9 +98,7 @@ def test_predict_graph_only(mock_loader, mock_model_graph_only):
     scaler = MockDualScaler() # Has both but model only returns graph
     device = 'cpu'
 
-    # Since model returns tuple of 3 tensors, inference assumes single head.
-    # It checks size to determine if graph or node.
-    # Graph output size 2 == num_graphs. so it detects graph.
+    # single head; output size == num_graphs -> graph-level
 
     result = predict(mock_model_graph_only, mock_loader, device, scaler, mode='mixture_mean')
 

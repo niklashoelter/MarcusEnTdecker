@@ -85,7 +85,6 @@ def test_graph_mdn_forward_mpnn():
 
 def test_graph_mdn_forward_gat():
     feature_dim = 10
-    # GAT typically doesn't use edge features unless specified, but let's check basic run
     model = GraphMDN(
         encoder_type='gat',
         node_hidden_dim=32,

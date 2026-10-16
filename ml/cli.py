@@ -3,14 +3,11 @@
     ent-ml predict SMILES ...   triplet energy and both reorganization energies
     ent-ml rate --quencher ...  driving force, Marcus barrier and k_EnT for one pair, and
                                 the two-gate verdict when the photocatalyst's tau0 is known
-    ent-ml info                 which checkpoint is loaded, and what it can encode
+    ent-ml info                 loaded checkpoint and its element vocabulary
 
-`predict` and `rate` take `--ensemble` to use the five random-split models together
-(ml.ensemble) instead of the single deployed checkpoint.
-
-Reads SMILES from the command line or from a file, and the photocatalyst table from a
-path the caller gives -- this package ships neither. Writes a table, CSV or JSON, to
-stdout or to `--out`. Torch is imported only where it is needed, so `--help` is free.
+`--ensemble` (predict, rate): the five random-split models (ml.ensemble).
+Reads SMILES (arguments or file) and a photocatalyst table (path). Writes a table, CSV or
+JSON to stdout or `--out`.
 """
 
 from __future__ import annotations
@@ -29,7 +26,7 @@ from ml.predict import RatePredictor, photocatalyst_properties
 
 
 def _valid(smiles: list[str]) -> list[str]:
-    """The structures, refused before the model is loaded if any is not a SMILES."""
+    """The SMILES unchanged; ValueError if any does not parse."""
     from rdkit import Chem
 
     unparsed = [s for s in smiles if Chem.MolFromSmiles(s) is None]
@@ -39,7 +36,7 @@ def _valid(smiles: list[str]) -> list[str]:
 
 
 def _quiet_model():
-    """Loading the checkpoint prints progress; keep it off the output stream."""
+    """Redirect stdout (checkpoint loading output) to stderr."""
     return contextlib.redirect_stdout(sys.stderr)
 
 
@@ -52,7 +49,7 @@ def _emit(rows: list[dict], fmt: str, out: str | None) -> None:
         text = json.dumps(rows, indent=2)
     elif fmt == "csv":
         buffer = io.StringIO()
-        # csv defaults to CRLF; the one newline convention keeps --out and stdout equal.
+        # LF line endings
         writer = csv.DictWriter(buffer, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
@@ -99,7 +96,7 @@ def _predict(args) -> None:
 
 
 def _ensemble_rows(smiles: list[str]) -> list[dict]:
-    """The rows of `predict`, from the ensemble, with the spread between its members."""
+    """Rows of `predict` from the ensemble, plus the members' spread."""
     from ml.ensemble import predict as ensemble_predict
 
     with _quiet_model():
@@ -153,7 +150,7 @@ def _info(args) -> None:
                        ("seed", "seed"), ("epoch", "epoch"), ("val_loss", "val loss")):
         value = checkpoint.get(key)
         if value is None or (isinstance(value, float) and math.isnan(value)):
-            continue  # the full-data model has no validation set, so no val loss
+            continue  # full-data model: no val loss
         print(f"{label:<11} {value}")
     print("elements    " + " ".join(elements.GetElementSymbol(z)
                                     for z in ATOM_FEATURES["atomic_num"]))
@@ -200,7 +197,7 @@ def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     try:
         args.run(args)
-    except KeyError as exc:  # its str() would quote the message
+    except KeyError as exc:
         sys.exit(f"ent-ml: {exc.args[0]}")
     except (OSError, ValueError) as exc:
         sys.exit(f"ent-ml: {exc}")

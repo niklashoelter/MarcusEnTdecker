@@ -10,27 +10,18 @@ The five random-split models as one ensemble.
     ent-ml predict --ensemble SMILES ...
     ent-ml rate --ensemble --quencher SMILES --photocatalysts TABLE
 
-Written for this repository, not taken from Leon Schlosser's code. The members are the
-checkpoints ml/training/train.py writes for the five random splits,
-ml/results/random_<seed>/model.pt, as ml/results/ensemble_members.csv lists them with their
-md5 sums; a member whose file no longer matches its sum is refused.
+Written for this repository, not taken from Leon Schlosser's code. Members:
+ml/results/random_<seed>/model.pt, listed with md5 sums in ml/results/ensemble_members.csv;
+a member whose md5 does not match is refused. Not in the installed package; outside a
+checkout, pass `checkpoints=`.
 
-HOW THE MEMBERS ARE COMBINED
-    Each member predicts, per target, a mixture of Gaussians. The ensemble's prediction is
-    the equal-weight mixture of the members' mixtures: its components are all members'
-    components, each weight divided by the number of members M. Its mean is the average of
-    the members' means m_i, and its uncertainty is that mixture's standard deviation by the
-    law of total variance, the same quantity a single model reports (s_i):
+Equal-weight mixture of the M members' Gaussian mixtures (weights / M), with member mean m_i
+and SD s_i:
 
-        mean = (1/M) sum_i m_i
-        var  = (1/M) sum_i s_i^2  +  (1/M) sum_i (m_i - mean)^2
+    mean = (1/M) sum_i m_i
+    var  = (1/M) sum_i s_i^2  +  (1/M) sum_i (m_i - mean)^2
 
-    For one member this is that member's prediction exactly. The second term alone, as a
-    standard deviation, is reported as `<target>_model_spread`: the part of the uncertainty
-    that comes from the members disagreeing.
-
-The member checkpoints are in the repository but not in the installed package, which ships
-only model_final.pt; outside a checkout, pass `checkpoints=`.
+`<target>_model_spread` is the square root of the second term.
 """
 
 from __future__ import annotations
@@ -56,7 +47,7 @@ def md5(path: Path) -> str:
 
 
 def default_checkpoints() -> list[Path]:
-    """The members ml/results/ensemble_members.csv lists, each checked against its md5 sum."""
+    """Checkpoints listed in ml/results/ensemble_members.csv, md5-checked."""
     import csv
 
     if not MEMBERS.exists():
@@ -164,7 +155,7 @@ _default_lock = threading.Lock()
 
 def predict(smiles: Iterable[str], checkpoints: Iterable[str | Path] | None = None,
             device: str = "cpu"):
-    """Predict with the ensemble; the default one, of the random-split models, is reused."""
+    """Predict with the ensemble; the default (random-split) ensemble is cached."""
     global _default
     if checkpoints is not None:
         return Ensemble(checkpoints, device).predict(smiles)

@@ -32,9 +32,7 @@ def mdn_loss_per_sample(mu, sigma, pi, target):
 
 def calibration_loss(mu, sigma, pi, target):
     """
-    Encourages correlation between predicted uncertainty and actual error.
-    Minimizes MSE(|error|, uncertainty), so the model learns to predict
-    high uncertainty when the error is large and low uncertainty when accurate.
+    Calibration loss: MSE(|error|, uncertainty) of the mixture mean.
 
     Args:
         mu: Mean values [batch_size, output_dim, n_components]
@@ -46,7 +44,7 @@ def calibration_loss(mu, sigma, pi, target):
         Scalar calibration loss
     """
     mean, uncertainty = compute_mixture_mean(mu, sigma, pi)
-    abs_error = torch.abs(target - mean.detach())  # detach mean so gradients only calibrate uncertainty
+    abs_error = torch.abs(target - mean.detach())  # gradients only through the uncertainty
     return torch.mean((abs_error - uncertainty) ** 2)
 
 
@@ -62,11 +60,7 @@ def calibration_loss_per_sample(mu, sigma, pi, target):
 
 def sharpness_penalty(mu, sigma, pi, target):
     """
-    Asymmetric penalty for overconfident predictions: penalizes cases where
-    the predicted uncertainty is smaller than the actual error.
-    Underconfident (conservative) predictions are not penalized.
-
-    L = mean(max(0, |error| - uncertainty)^2)
+    Overconfidence penalty: L = mean(max(0, |error| - uncertainty)^2).
 
     Args:
         mu: Mean values [batch_size, output_dim, n_components]

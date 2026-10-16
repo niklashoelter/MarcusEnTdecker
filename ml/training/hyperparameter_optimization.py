@@ -7,17 +7,10 @@ Writes  ml/results/hyperparameter_optimization/optuna_results.csv   one row per 
     uv sync --extra ml
     uv run --extra ml python -m ml.training.hyperparameter_optimization
 
-Kept for completeness and reproducibility; it is not part of training or evaluating a model.
-ml/results/hyperparameter_optimization/optuna_results.csv holds the study as Leon Schlosser
-ran it, and hyperparameters.py takes its best trial, 55; running this again replaces that
-file.
+Objective: lowest validation loss of a trial; median pruner. Running it overwrites
+optuna_results.csv, whose trial 55 hyperparameters.py holds.
 
-Leon's script, playground/hyperparameters/new_data/gps_ogdata_newmodel/opt.py. The search
-space, trial count, epochs per trial, learning-rate schedule, pruner and objective (the
-lowest validation loss of a trial) are unchanged. What differs: the data come from
-ml/data/training_dataset_full.csv instead of being recomputed from the raw energies, the
-split is random_42 from ml/data/splits/ (the split his script drew with seed 42), and the
-per-trial plots are not written.
+Leon's script, playground/hyperparameters/new_data/gps_ogdata_newmodel/opt.py.
 """
 
 from pathlib import Path
@@ -59,7 +52,7 @@ def objective(trial):
     # ------------------ Hyperparameters to Optimize ------------------
 
     # 1. Transformer Encoder Hyperparameters
-    # Note: hidden_dim must be divisible by num_heads for the implementation in Encoders.py
+    # hidden_dim must be divisible by num_heads
     num_heads = trial.suggest_categorical('num_heads', [2, 4, 8])
     base_hidden_dim = trial.suggest_categorical('base_node_hidden_dim', [32, 64, 128])
     # Ensure divisible by heads by multiplying

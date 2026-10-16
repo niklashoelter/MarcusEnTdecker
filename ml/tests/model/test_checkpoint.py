@@ -1,4 +1,4 @@
-"""Leon's checkpoint predates the package rename; make sure it still unpickles."""
+"""model_final_old.pt (Leon's checkpoint) unpickles via the `pyrates` aliases."""
 
 import importlib.resources as ir
 from pathlib import Path

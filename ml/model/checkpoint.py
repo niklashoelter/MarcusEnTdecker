@@ -1,10 +1,5 @@
-"""Let the checkpoint unpickle after the rename.
-
-model_final_old.pt, Leon Schlosser's checkpoint, was saved when this package was called
-`pyrates`, and torch.load resolves the pickled `DualScaler` by its dotted path. Aliasing the
-old path onto the new module keeps that file byte-identical instead of re-saving it. The
-checkpoints trained in this repository need no alias.
-"""
+"""Alias the `pyrates` module paths so the pickled `DualScaler` in model_final_old.pt
+(Leon Schlosser's checkpoint) resolves on torch.load."""
 
 import sys
 import types
