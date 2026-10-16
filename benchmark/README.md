@@ -142,8 +142,8 @@ the deployed model. Written with four significant figures.
 ## EnTdecker 1.0
 
 `results/entdecker_1/` holds what the two models of EnTdecker 1.0 (Schlosser et al., JACS
-2024) give on the benchmark quenchers, for comparison with the model of this work. The run
-itself is not part of the repository and not a stage of `reproduce.py`; only its results are:
+2024) give on the benchmark quenchers, for comparison with the model of this work. The model
+run itself is not part of the repository; only its results are:
 - `quencher_E_T.csv`: E_T of every quencher from the triplet-energy model, and per model
   whether it processed the quencher, with the reason where it did not (`triplet_note`,
   `spin_note`). A spin result counts as processed only if the decoded SMILES is the input.
@@ -152,7 +152,7 @@ itself is not part of the repository and not a stage of `reproduce.py`; only its
   column: `triplet`, `spin`, and `sum`, the two added row by row. The header lines give the
   machine, the package versions, the checkpoints and the code commits.
 - `adiabatic.csv`: the `adiabatic` criterion with these quencher E_T, in the columns of
-  `classification/best.csv` (`parameters` = `entdecker`).
+  `classification/best.csv` (`parameters` = `entdecker`), written by `entdecker_1.py`.
 
 **Models.** The published checkpoints from Zenodo (10.5281/zenodo.10391170), with the code of
 github.com/le-schlo/EnTdecker: `triplet_energy.pt`, the chemprop D-MPNN, through the
@@ -168,10 +168,9 @@ file on every call, and that write is timed with it. The two models ran in separ
 processes, and the spin model with fewer warm-up rounds and repeats; the header gives the
 protocol of each.
 
-**Scoring.** ΔG_EnT is formed from the unrounded prediction and the DFT E_T of the
-photocatalyst and rounded like the dataset's, and scored with the functions of
-`classification.py` on the pairs `pairs.py` scores. The row belongs to the scored pairs at
-the time of the run; `reproduce.py` does not rescore it.
+**Scoring.** `entdecker_1.py`, a stage of `reproduce.py` after `classification.py`, forms
+ΔG_EnT from these E_T and the DFT E_T of the photocatalyst, rounds it like the dataset's,
+and scores it with the functions of `classification.py` on the pairs `pairs.py` scores.
 
 ## Further analysis
 

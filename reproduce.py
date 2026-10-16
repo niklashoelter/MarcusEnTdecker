@@ -87,6 +87,7 @@ PIPELINE = [
      "data/experimental_data_processed/stern_volmer_fits.csv"),
     ("data", "data/build_exp_dataset_ent.py", "data/exp_dataset.csv"),
     ("benchmark", "benchmark/classification.py", "data/exp_dataset_ent.csv"),
+    ("benchmark", "benchmark/entdecker_1.py", "benchmark/results/entdecker_1/quencher_E_T.csv"),
     ("benchmark", "benchmark/cost.py", "data/computational_data_processed/quencher_timings_ml.csv"),
     *[("further_analysis", f"benchmark/further_analysis/{name}.py", "data/exp_dataset_ent.csv")
       for name in ("within_groups", "rate_predictions")],
