@@ -1,121 +1,73 @@
 model,estimate,barriers,subset,n,pearson_r,mae_barrier,mean_signed_error
 deployed,mean,"ours, asymmetric",all 16 pairs,16,0.8801269348181298,1.18,-1.18
 deployed,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.6728754031561394,1.17,-1.17
-deployed,mean,"ours, symmetric",all 16 pairs,16,0.8877250499810346,0.83,0.49
-deployed,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.9412638452261004,0.94,0.72
 deployed,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 deployed,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 deployed,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 deployed,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-deployed,mean,mean of our substrates,all 16 pairs,16,0.7964920028436971,1.19,-1.16
-deployed,mean,mean of our substrates,TX pairs only (substrate varies),6,,1.11,-1.11
 deployed,mode,"ours, asymmetric",all 16 pairs,16,0.8647961318994065,1.11,-1.08
 deployed,mode,"ours, asymmetric",TX pairs only (substrate varies),6,0.6086987105823382,1.12,-1.12
-deployed,mode,"ours, symmetric",all 16 pairs,16,0.8776197124663515,0.88,0.55
-deployed,mode,"ours, symmetric",TX pairs only (substrate varies),6,0.9161666836647415,0.97,0.75
 deployed,mode,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 deployed,mode,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 deployed,mode,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 deployed,mode,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-deployed,mode,mean of our substrates,all 16 pairs,16,0.7968747235069827,1.11,-1.07
-deployed,mode,mean of our substrates,TX pairs only (substrate varies),6,,1.02,-1.01
 random_42,mean,"ours, asymmetric",all 16 pairs,16,0.88400376859703,0.99,-0.9
 random_42,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.5753901269938857,0.94,-0.79
-random_42,mean,"ours, symmetric",all 16 pairs,16,0.9232686064130322,0.95,0.91
-random_42,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.8707311927565295,1.2,1.2
 random_42,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_42,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_42,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_42,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_42,mean,mean of our substrates,all 16 pairs,16,0.7974457170747106,0.98,-0.87
-random_42,mean,mean of our substrates,TX pairs only (substrate varies),6,,0.93,-0.84
 random_42,mode,"ours, asymmetric",all 16 pairs,16,0.8934978407516462,1.06,-1.03
 random_42,mode,"ours, asymmetric",TX pairs only (substrate varies),6,0.6477797242704333,0.97,-0.92
-random_42,mode,"ours, symmetric",all 16 pairs,16,0.91695264351464,0.91,0.84
-random_42,mode,"ours, symmetric",TX pairs only (substrate varies),6,0.8697538144257808,1.14,1.14
 random_42,mode,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_42,mode,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_42,mode,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_42,mode,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_42,mode,mean of our substrates,all 16 pairs,16,0.7968821022897782,1.08,-1.01
-random_42,mode,mean of our substrates,TX pairs only (substrate varies),6,,1.0,-0.98
 random_101,mean,"ours, asymmetric",all 16 pairs,16,0.8796880326420002,1.09,-1.08
 random_101,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.5249327907256328,1.19,-1.16
-random_101,mean,"ours, symmetric",all 16 pairs,16,0.8969529161708759,0.94,0.77
-random_101,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.8074042801076076,1.11,0.87
 random_101,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_101,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_101,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_101,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_101,mean,mean of our substrates,all 16 pairs,16,0.7967134918032436,1.11,-1.07
-random_101,mean,mean of our substrates,TX pairs only (substrate varies),6,,1.03,-1.03
 random_101,mode,"ours, asymmetric",all 16 pairs,16,0.8802620837748294,1.1,-1.09
 random_101,mode,"ours, asymmetric",TX pairs only (substrate varies),6,0.5350535873774054,1.19,-1.17
-random_101,mode,"ours, symmetric",all 16 pairs,16,0.896622202415255,0.94,0.77
-random_101,mode,"ours, symmetric",TX pairs only (substrate varies),6,0.806969322365135,1.11,0.88
 random_101,mode,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_101,mode,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_101,mode,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_101,mode,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_101,mode,mean of our substrates,all 16 pairs,16,0.7966637492923175,1.12,-1.07
-random_101,mode,mean of our substrates,TX pairs only (substrate varies),6,,1.04,-1.04
 random_143,mean,"ours, asymmetric",all 16 pairs,16,0.8450221770595366,1.02,-0.91
 random_143,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.21554096213815352,1.23,-1.09
-random_143,mean,"ours, symmetric",all 16 pairs,16,0.896106650167418,1.17,1.11
-random_143,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.7601468425077945,1.34,1.18
 random_143,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_143,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_143,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_143,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_143,mean,mean of our substrates,all 16 pairs,16,0.7971516048047839,0.99,-0.88
-random_143,mean,mean of our substrates,TX pairs only (substrate varies),6,,0.94,-0.86
 random_143,mode,"ours, asymmetric",all 16 pairs,16,0.8713004951730408,1.13,-1.11
 random_143,mode,"ours, asymmetric",TX pairs only (substrate varies),6,0.4384270666022962,1.26,-1.21
-random_143,mode,"ours, symmetric",all 16 pairs,16,0.9118419079318411,1.02,0.96
-random_143,mode,"ours, symmetric",TX pairs only (substrate varies),6,0.8780907038244758,1.16,1.09
 random_143,mode,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_143,mode,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_143,mode,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_143,mode,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_143,mode,mean of our substrates,all 16 pairs,16,0.7962763605577747,1.13,-1.08
-random_143,mode,mean of our substrates,TX pairs only (substrate varies),6,,1.05,-1.05
 random_404,mean,"ours, asymmetric",all 16 pairs,16,0.8428233270753417,1.3,-1.3
 random_404,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.4312722812362498,1.26,-1.26
-random_404,mean,"ours, symmetric",all 16 pairs,16,0.8442240676896211,0.99,0.62
-random_404,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.8072500157327441,1.14,0.77
 random_404,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_404,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_404,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_404,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_404,mean,mean of our substrates,all 16 pairs,16,0.7952037153002546,1.3,-1.29
-random_404,mean,mean of our substrates,TX pairs only (substrate varies),6,,1.23,-1.23
 random_404,mode,"ours, asymmetric",all 16 pairs,16,0.8432756113034274,1.31,-1.31
 random_404,mode,"ours, asymmetric",TX pairs only (substrate varies),6,0.4621578224359402,1.27,-1.27
-random_404,mode,"ours, symmetric",all 16 pairs,16,0.8428608741623024,0.99,0.62
-random_404,mode,"ours, symmetric",TX pairs only (substrate varies),6,0.8140301385207385,1.14,0.77
 random_404,mode,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_404,mode,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_404,mode,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_404,mode,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_404,mode,mean of our substrates,all 16 pairs,16,0.7951312241654237,1.31,-1.3
-random_404,mode,mean of our substrates,TX pairs only (substrate varies),6,,1.24,-1.24
 random_666,mean,"ours, asymmetric",all 16 pairs,16,0.8306998870232938,1.04,-0.96
 random_666,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.12254642752613941,1.24,-1.11
-random_666,mean,"ours, symmetric",all 16 pairs,16,0.8777678483297068,0.9,0.68
-random_666,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.6749022158861412,1.04,0.69
 random_666,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_666,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_666,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_666,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_666,mean,mean of our substrates,all 16 pairs,16,0.797721968408887,1.03,-0.94
-random_666,mean,mean of our substrates,TX pairs only (substrate varies),6,,0.96,-0.9
 random_666,mode,"ours, asymmetric",all 16 pairs,16,0.835236773425925,1.11,-1.08
 random_666,mode,"ours, asymmetric",TX pairs only (substrate varies),6,0.18030149675139642,1.23,-1.23
-random_666,mode,"ours, symmetric",all 16 pairs,16,0.8757682776761306,0.87,0.61
-random_666,mode,"ours, symmetric",TX pairs only (substrate varies),6,0.7342733041745921,1.0,0.63
 random_666,mode,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
 random_666,mode,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
 random_666,mode,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
 random_666,mode,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
-random_666,mode,mean of our substrates,all 16 pairs,16,0.7972083747556676,1.12,-1.07
-random_666,mode,mean of our substrates,TX pairs only (substrate varies),6,,1.03,-1.03

@@ -1,5 +1,5 @@
 parameters,pairs,median |dlog k / dE_T(Q)| / dec per kcal,q90 |dlog k / dE_T(Q)|,max |dlog k / dE_T(Q)|,theoretical max 1/(RT ln10),median |dlog k / dlog lambda_Q|,kcal per decade (RT ln10)
-dft,quenching,0.296,0.395,0.733,0.733,7.682,1.36
-dft,all,0.357,0.699,0.733,0.733,6.986,1.36
-ml,quenching,0.289,0.417,0.733,0.733,5.02,1.36
-ml,all,0.368,0.712,0.739,0.733,4.693,1.36
+dft,quenching,0.292,0.393,0.733,0.733,7.437,1.36
+dft,all,0.356,0.698,0.733,0.733,6.914,1.36
+ml,quenching,0.287,0.414,0.733,0.733,4.906,1.36
+ml,all,0.367,0.711,0.739,0.733,4.673,1.36

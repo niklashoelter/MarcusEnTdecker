@@ -1,2 +1,2 @@
 criterion,parameters,quenchers,n_quenchers,spearman_rho,p
-two_gate,dft,"scored, non-dissociative",42,-0.406,0.008
+two_gate,dft,"scored, non-dissociative",42,-0.407,0.007

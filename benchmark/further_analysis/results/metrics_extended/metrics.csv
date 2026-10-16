@@ -1,11 +1,8 @@
-criterion,source,role,label,n_free,setting,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,ROC_AUC,PR_AUC,AUC_within_PC_median,AUC_within_PC_pooled,MCC_within_PC_median,n_PC_both_classes,MCC_LOQO,MCC_LOPCO,accuracy_LOQO,accuracy_LOPCO
-adiabatic,dft,shown,adiabatic dG_EnT <= 0,0,,855,331,201,275,48,0.709,0.622,0.873,0.578,0.727,0.462,0.798,0.747,0.721,0.699,0.31,22,0.462,0.462,0.709,0.709
-adiabatic,ml,shown,adiabatic dG_EnT <= 0,0,,855,322,186,290,57,0.716,0.634,0.85,0.609,0.726,0.464,0.801,0.758,0.735,0.7,0.209,22,0.464,0.464,0.716,0.716
-dvte_2024,dvte,shown,"DvTE 2024 (p = 0.008, normal quantile): E_T(PC) >= DvTE",0,,855,303,124,352,76,0.766,0.71,0.799,0.739,0.752,0.535,0.858,0.863,0.785,0.757,0.282,22,0.535,0.535,0.766,0.766
-twogate_lifetime,dft,shown,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r_PC + r_Q)",0,,855,307,93,383,72,0.807,0.768,0.81,0.805,0.788,0.612,0.851,0.833,0.804,0.754,0.428,22,0.612,0.612,0.807,0.807
-twogate_lifetime,ml,shown,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r_PC + r_Q)",0,,855,316,128,348,63,0.777,0.712,0.834,0.731,0.768,0.562,0.829,0.804,0.692,0.678,0.321,22,0.562,0.562,0.777,0.777
-twogate_lifetime_r7A,dft,secondary,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r = 7 A)",0,,855,297,84,392,82,0.806,0.78,0.784,0.824,0.782,0.607,0.851,0.831,0.806,0.753,0.412,22,0.607,0.607,0.806,0.806
-twogate_lifetime_r7A,ml,secondary,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r = 7 A)",0,,855,308,120,356,71,0.777,0.72,0.813,0.748,0.763,0.557,0.828,0.803,0.692,0.675,0.303,22,0.557,0.557,0.777,0.777
-pc_only,-,PC-only baseline,PC-only rule E_T(PC) >= c (c tuned),1,c = 61.91 kcal/mol,855,306,106,370,73,0.791,0.743,0.807,0.777,0.774,0.581,0.833,0.753,0.5,0.5,0.0,22,0.581,0.574,0.791,0.781
-benchmark_raw_lambda,dft,benchmark reference,"benchmark sym Marcus barrier, raw lambda (t tuned)",1,t = 8.50 kcal/mol,855,304,188,288,75,0.692,0.618,0.802,0.605,0.698,0.409,0.777,0.752,0.673,0.673,0.19,22,0.355,0.37,0.658,0.665
-benchmark_raw_lambda,ml,benchmark reference,"benchmark sym Marcus barrier, raw lambda (t tuned)",1,t = 8.50 kcal/mol,855,313,215,261,66,0.671,0.593,0.826,0.548,0.69,0.382,0.763,0.733,0.653,0.64,0.151,22,0.367,0.351,0.656,0.647
+criterion,source,role,label,n_free,setting,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,ROC_AUC,PR_AUC,AUC_within_PC_median,AUC_within_PC_pooled,MCC_within_PC_median,n_PC_both_classes
+adiabatic,dft,shown,adiabatic dG_EnT <= 0,0,,868,344,201,275,48,0.713,0.631,0.878,0.578,0.734,0.469,0.804,0.762,0.721,0.699,0.31,22
+adiabatic,ml,shown,adiabatic dG_EnT <= 0,0,,868,333,186,290,59,0.718,0.642,0.849,0.609,0.731,0.466,0.804,0.77,0.735,0.7,0.209,22
+dvte_2024,dvte,shown,"DvTE 2024 (p = 0.008, normal quantile): E_T(PC) >= DvTE",0,,868,315,124,352,77,0.768,0.718,0.804,0.739,0.758,0.541,0.862,0.87,0.785,0.757,0.282,22
+twogate_lifetime,dft,shown,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r_PC + r_Q)",0,,868,320,93,383,72,0.81,0.775,0.816,0.805,0.795,0.619,0.856,0.843,0.804,0.754,0.428,22
+twogate_lifetime,ml,shown,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r_PC + r_Q)",0,,868,327,128,348,65,0.778,0.719,0.834,0.731,0.772,0.563,0.832,0.815,0.692,0.678,0.321,22
+twogate_lifetime_r7A,dft,secondary,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r = 7 A)",0,,868,309,84,392,83,0.808,0.786,0.788,0.824,0.787,0.612,0.855,0.841,0.806,0.753,0.412,22
+twogate_lifetime_r7A,ml,secondary,"two-gate: dG_EnT <= 0 and asym barrier <= t_PC(tau0, r = 7 A)",0,,868,319,120,356,73,0.778,0.727,0.814,0.748,0.768,0.559,0.831,0.814,0.692,0.675,0.303,22

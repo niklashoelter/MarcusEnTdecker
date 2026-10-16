@@ -1,33 +1,29 @@
 criterion,source,role,quencher_class,n,n_quench,TP,FP,TN,FN,specificity,recall,MCC,accuracy
-adiabatic,dft,shown,rigid,602,255,208,91,256,47,0.738,0.816,0.547,0.771
-adiabatic,dft,shown,flexible,207,112,111,81,14,1,0.147,0.991,0.266,0.604
-adiabatic,dft,shown,dissociative,46,12,12,29,5,0,0.147,1.0,0.207,0.37
-adiabatic,dft,shown,flexible + dissociative,253,124,123,110,19,1,0.147,0.992,0.258,0.561
-adiabatic,ml,shown,rigid,602,255,211,106,241,44,0.695,0.827,0.517,0.751
-adiabatic,ml,shown,flexible,207,112,111,80,15,1,0.158,0.991,0.278,0.609
-adiabatic,ml,shown,dissociative,46,12,0,0,34,12,1.0,0.0,0.0,0.739
-adiabatic,ml,shown,flexible + dissociative,253,124,111,80,49,13,0.38,0.895,0.32,0.632
-dvte_2024,dvte,shown,rigid,602,255,205,101,246,50,0.709,0.804,0.507,0.749
-dvte_2024,dvte,shown,flexible,207,112,98,23,72,14,0.758,0.875,0.64,0.821
-dvte_2024,dvte,shown,dissociative,46,12,0,0,34,12,1.0,0.0,0.0,0.739
-dvte_2024,dvte,shown,flexible + dissociative,253,124,98,23,106,26,0.822,0.79,0.612,0.806
-twogate_lifetime,dft,shown,rigid,602,255,204,76,271,51,0.781,0.8,0.576,0.789
-twogate_lifetime,dft,shown,flexible,207,112,100,16,79,12,0.832,0.893,0.727,0.865
-twogate_lifetime,dft,shown,dissociative,46,12,3,1,33,9,0.971,0.25,0.344,0.783
-twogate_lifetime,dft,shown,flexible + dissociative,253,124,103,17,112,21,0.868,0.831,0.7,0.85
-twogate_lifetime,ml,shown,rigid,602,255,209,101,246,46,0.709,0.82,0.523,0.756
-twogate_lifetime,ml,shown,flexible,207,112,107,27,68,5,0.716,0.955,0.7,0.845
-twogate_lifetime,ml,shown,dissociative,46,12,0,0,34,12,1.0,0.0,0.0,0.739
-twogate_lifetime,ml,shown,flexible + dissociative,253,124,107,27,102,17,0.791,0.863,0.655,0.826
-twogate_lifetime_r7A,dft,secondary,rigid,602,255,199,69,278,56,0.801,0.78,0.578,0.792
-twogate_lifetime_r7A,dft,secondary,flexible,207,112,95,14,81,17,0.853,0.848,0.699,0.85
-twogate_lifetime_r7A,dft,secondary,dissociative,46,12,3,1,33,9,0.971,0.25,0.344,0.783
-twogate_lifetime_r7A,dft,secondary,flexible + dissociative,253,124,98,15,114,26,0.884,0.79,0.678,0.838
-twogate_lifetime_r7A,ml,secondary,rigid,602,255,205,100,247,50,0.712,0.804,0.51,0.751
-twogate_lifetime_r7A,ml,secondary,flexible,207,112,103,20,75,9,0.789,0.92,0.72,0.86
-twogate_lifetime_r7A,ml,secondary,dissociative,46,12,0,0,34,12,1.0,0.0,0.0,0.739
-twogate_lifetime_r7A,ml,secondary,flexible + dissociative,253,124,103,20,109,21,0.845,0.831,0.676,0.838
-pc_only,-,PC-only baseline,rigid,602,255,211,78,269,44,0.775,0.827,0.596,0.797
-pc_only,-,PC-only baseline,flexible,207,112,87,18,77,25,0.811,0.777,0.585,0.792
-pc_only,-,PC-only baseline,dissociative,46,12,8,10,24,4,0.706,0.667,0.335,0.696
-pc_only,-,PC-only baseline,flexible + dissociative,253,124,95,28,101,29,0.783,0.766,0.549,0.775
+adiabatic,dft,shown,rigid,609,262,215,91,256,47,0.738,0.821,0.553,0.773
+adiabatic,dft,shown,flexible,211,116,115,81,14,1,0.147,0.991,0.269,0.611
+adiabatic,dft,shown,dissociative,48,14,14,29,5,0,0.147,1.0,0.219,0.396
+adiabatic,dft,shown,flexible + dissociative,259,130,129,110,19,1,0.147,0.992,0.261,0.571
+adiabatic,ml,shown,rigid,609,262,218,106,241,44,0.695,0.832,0.523,0.754
+adiabatic,ml,shown,flexible,211,116,115,80,15,1,0.158,0.991,0.281,0.616
+adiabatic,ml,shown,dissociative,48,14,0,0,34,14,1.0,0.0,0.0,0.708
+adiabatic,ml,shown,flexible + dissociative,259,130,115,80,49,15,0.38,0.885,0.307,0.633
+dvte_2024,dvte,shown,rigid,609,262,212,101,246,50,0.709,0.809,0.513,0.752
+dvte_2024,dvte,shown,flexible,211,116,102,23,72,14,0.758,0.879,0.645,0.825
+dvte_2024,dvte,shown,dissociative,48,14,1,0,34,13,1.0,0.071,0.227,0.729
+dvte_2024,dvte,shown,flexible + dissociative,259,130,103,23,106,27,0.822,0.792,0.614,0.807
+twogate_lifetime,dft,shown,rigid,609,262,211,76,271,51,0.781,0.805,0.582,0.791
+twogate_lifetime,dft,shown,flexible,211,116,104,16,79,12,0.832,0.897,0.731,0.867
+twogate_lifetime,dft,shown,dissociative,48,14,5,1,33,9,0.971,0.357,0.45,0.792
+twogate_lifetime,dft,shown,flexible + dissociative,259,130,109,17,112,21,0.868,0.838,0.707,0.853
+twogate_lifetime,ml,shown,rigid,609,262,216,101,246,46,0.709,0.824,0.529,0.759
+twogate_lifetime,ml,shown,flexible,211,116,111,27,68,5,0.716,0.957,0.704,0.848
+twogate_lifetime,ml,shown,dissociative,48,14,0,0,34,14,1.0,0.0,0.0,0.708
+twogate_lifetime,ml,shown,flexible + dissociative,259,130,111,27,102,19,0.791,0.854,0.646,0.822
+twogate_lifetime_r7A,dft,secondary,rigid,609,262,206,69,278,56,0.801,0.786,0.584,0.795
+twogate_lifetime_r7A,dft,secondary,flexible,211,116,99,14,81,17,0.853,0.853,0.704,0.853
+twogate_lifetime_r7A,dft,secondary,dissociative,48,14,4,1,33,10,0.971,0.286,0.381,0.771
+twogate_lifetime_r7A,dft,secondary,flexible + dissociative,259,130,103,15,114,27,0.884,0.792,0.679,0.838
+twogate_lifetime_r7A,ml,secondary,rigid,609,262,212,100,247,50,0.712,0.809,0.516,0.754
+twogate_lifetime_r7A,ml,secondary,flexible,211,116,107,20,75,9,0.789,0.922,0.724,0.863
+twogate_lifetime_r7A,ml,secondary,dissociative,48,14,0,0,34,14,1.0,0.0,0.0,0.708
+twogate_lifetime_r7A,ml,secondary,flexible + dissociative,259,130,107,20,109,23,0.845,0.823,0.668,0.834

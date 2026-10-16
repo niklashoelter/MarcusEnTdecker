@@ -23,10 +23,10 @@ photocatalyst,6,S0,internal,159,0,7.46,0.135449,1410.65
 photocatalyst,6,S0,cartesian,159,0,7.17,0.140088,1420.63
 photocatalyst,6,T1,internal,159,0,7.25,0.151175,1431.84
 photocatalyst,6,T1,cartesian,159,0,7.51,0.152773,1417.94
-photocatalyst,8,S0,internal,267,0,17.06,0.218104,1348.86
-photocatalyst,8,S0,cartesian,267,0,43.74,0.154363,1405.75
-photocatalyst,8,T1,internal,267,0,15.95,0.420116,1248.93
-photocatalyst,8,T1,cartesian,267,0,71.22,0.092185,1205.61
+photocatalyst,8,S0,internal,267,0,17.98,0.219134,1365.89
+photocatalyst,8,S0,cartesian,267,0,180.86,0.047958,896.83
+photocatalyst,8,T1,internal,267,0,15.31,0.337834,1222.15
+photocatalyst,8,T1,cartesian,267,0,187.22,0.032081,861.81
 photocatalyst,9,S0,internal,204,0,10.27,0.487193,1301.70
 photocatalyst,9,S0,cartesian,204,0,13.52,0.507743,1394.81
 photocatalyst,9,T1,internal,204,0,19.96,0.305254,1106.64

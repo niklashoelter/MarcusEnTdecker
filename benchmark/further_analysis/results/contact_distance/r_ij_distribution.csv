@@ -1,7 +1,4 @@
 definition,n,min / A,q05 / A,q25 / A,median / A,q75 / A,q95 / A,max / A,mean / A,fraction below 7 A,dt_PC vs 7 A median / kcal mol-1,dt_PC vs 7 A min / kcal mol-1,dt_PC vs 7 A max / kcal mol-1
-vdW volume spheres,855,7.45,7.83,8.19,8.45,8.75,9.35,10.12,8.5,0.0,0.33,0.11,0.66
+vdW volume spheres,868,7.45,7.84,8.19,8.46,8.76,9.35,10.12,8.5,0.0,0.34,0.11,0.66
 vdW volume spheres: r_PC (per molecule),26,4.61,4.74,5.0,5.24,5.37,5.61,5.84,5.2,,,,
 vdW volume spheres: r_Q (per molecule),46,2.84,2.93,3.12,3.26,3.46,3.95,4.28,3.33,,,,
-extent (half max distance + vdW),855,10.26,11.72,12.68,13.23,14.08,15.53,17.05,13.42,0.0,1.13,0.68,1.58
-extent (half max distance + vdW): r_PC (per molecule),26,6.37,7.11,7.8,8.19,8.27,8.76,9.35,7.98,,,,
-extent (half max distance + vdW): r_Q (per molecule),46,3.89,4.44,4.84,5.38,5.87,7.13,7.7,5.49,,,,
