@@ -67,11 +67,11 @@ class DataLoader:
                 self.input_data['adiabatic_energy'] = ((gibbs_t + et) - (gibbs_s + es)) * Eh_to_kcal
 
             elif col == 'lambda_acceptor_singlet':
-                # Lambda for acceptor going from singlet to triplet: λ_acceptor_singlet = E_T_geometry_S - E_S_geometry_S (corresponds to forward EnT process)
+                # λ_acceptor_singlet = lambda_S0_T1 (S0 surface): E_S0 at the T1 geometry minus E_S0 at its own, E_T_geometry_S - E_S_geometry_S
                 self.input_data['lambda_acceptor_singlet'] = (self.input_data[energy_triplet_singlet_column] - self.input_data[energy_singlet_singlet_column]) * Eh_to_kcal
 
             elif col == 'lambda_donor_triplet':
-                # Lambda for donor from triplet to singlet: λ_donor_triplet = E_S_geometry_T - E_T_geometry_T (corresponds to back EnT process)
+                # λ_donor_triplet = lambda_T1_S0 (T1 surface): E_T1 at the S0 geometry minus E_T1 at its own, E_S_geometry_T - E_T_geometry_T
                 self.input_data['lambda_donor_triplet'] = (self.input_data[energy_singlet_triplet_column] - self.input_data[energy_triplet_triplet_column]) * Eh_to_kcal
 
             elif col == 'vertical_excitation':

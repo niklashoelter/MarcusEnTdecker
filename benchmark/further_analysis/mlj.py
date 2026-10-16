@@ -30,16 +30,16 @@ a classical part (modes below) and a quantum part at the lambda-weighted frequen
 modes above (reorganization_modes.csv). The internal-coordinate projection is used where its
 sum lies within 30% of the four-point lambda, else the Cartesian one where that does; for
 the remaining molecules, and for the ML quencher lambdas, the median split of the reliable
-molecules of the same kind and surface is taken. Forward (PC on S0, Q on T1): lambda_v =
-quantum parts of lambda_S0_T1(PC) and lambda_T1_S0(Q), hw their lambda-weighted frequency,
-lambda_s,f = lambda_f - lambda_v. Reverse: lambda_s,r = classical parts of lambda_T1_S0(PC)
-and lambda_S0_T1(Q). Classical parts are floored at 0.05 kcal/mol.
+molecules of the same kind and surface is taken. Reverse (product state, PC on S0, Q on
+T1): lambda_v = quantum parts of lambda_S0_T1(PC) and lambda_T1_S0(Q), hw their
+lambda-weighted frequency, lambda_s,r = lambda_r - lambda_v. Forward: lambda_s,f = classical
+parts of lambda_T1_S0(PC) and lambda_S0_T1(Q). Classical parts are floored at 0.05 kcal/mol.
 
 Franck-Condon factor of one quantum mode with Huang-Rhys factor S = lambda_v / hw:
 
     F = sum_n exp(-S) S^n / n!  exp(-B(dG + n hw) / RT)
 
-with B the symmetric barrier (dG + lambda_s,f)^2 / (4 lambda_s,f) or the asymmetric barrier
+with B the symmetric barrier (dG + lambda_s,r)^2 / (4 lambda_s,r) or the asymmetric barrier
 of theory.marcus_barrier_asymmetric with lambda_s,f and lambda_s,r. For S = 0 the asymmetric
 form is exp(-barrier/RT) of the two-gate criterion. F takes the place of exp(-barrier/RT)
 in the rate law,
@@ -165,8 +165,8 @@ def inputs(df, source, split, medians):
     hw = (lv_pc * w_pc_s0 + lv_q * w_q_t1) / np.where(lam_v > 0, lam_v, 1.0) * KCAL_PER_CM
     return {"dG": dG, "forward": forward, "reverse": reverse,
             "geometric": np.sqrt(forward * reverse),
-            "ls_f": np.maximum(forward - lam_v, LAMBDA_FLOOR),
-            "ls_r": np.maximum(f_pc_t1 * pc_t1_s0 + f_q_s0 * q_s0_t1, LAMBDA_FLOOR),
+            "ls_f": np.maximum(f_pc_t1 * pc_t1_s0 + f_q_s0 * q_s0_t1, LAMBDA_FLOOR),
+            "ls_r": np.maximum(reverse - lam_v, LAMBDA_FLOOR),
             "lam_v": lam_v, "hw": hw,
             "barrier": theory.marcus_barrier_asymmetric(dG, forward, reverse)}
 
@@ -182,7 +182,7 @@ def log_fc(dG, ls_f, ls_r, lam_v, hw, line_shape, n_channels=N_CHANNELS):
                           np.where(n == 0, 0.0, -np.inf))
     E = dG[None, :] + n * hw[None, :]
     if line_shape == "symmetric":
-        B = (E + ls_f[None, :]) ** 2 / (4 * ls_f[None, :])
+        B = (E + ls_r[None, :]) ** 2 / (4 * ls_r[None, :])
     elif line_shape == "asymmetric":
         B = theory.marcus_barrier_asymmetric(E, np.broadcast_to(ls_f, E.shape),
                                              np.broadcast_to(ls_r, E.shape))
@@ -359,7 +359,7 @@ def summary_table(df, I, ratios, t_pc):
         ("median lambda_v / kcal mol-1", np.median(I["lam_v"]), 2),
         ("median hw / cm-1", np.median(I["hw"] / KCAL_PER_CM), 0),
         ("median S", np.median(I["lam_v"] / I["hw"]), 2),
-        ("median lambda_s,f / kcal mol-1", np.median(I["ls_f"]), 2),
+        ("median lambda_s,r / kcal mol-1", np.median(I["ls_r"]), 2),
         ("median log10 of 0.25 over the Eyring k_-d/nu / decades",
          np.median(np.log10(ESCAPE_OVER_NU_LOW / ratios["Eyring"])), 3),
         ("median log10 of F (symmetric) over exp(-barrier/RT), quenching pairs / decades",

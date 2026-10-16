@@ -26,10 +26,10 @@ BARRIERS = ("marcus_symmetric", "marcus_asymmetric")
 def pair_lambdas(pc_s0_t1, pc_t1_s0, q_s0_t1, q_t1_s0):
     """(lambda_forward, lambda_reverse) of PC(T1) + Q(S0) -> PC(S0) + Q(T1).
 
-    Forward: the product state (PC on S0, Q on T1) at the reactant geometries, relative
-    to its minimum. Reverse: the reactant state at the product geometries.
+    Forward: the reactant state (PC on T1, Q on S0) at the product geometries, relative
+    to its minimum. Reverse: the product state at the reactant geometries.
     """
-    return pc_s0_t1 + q_t1_s0, pc_t1_s0 + q_s0_t1
+    return pc_t1_s0 + q_s0_t1, pc_s0_t1 + q_t1_s0
 
 
 def geometric_mean(lambda_forward, lambda_reverse):
@@ -46,19 +46,19 @@ def marcus_barrier_asymmetric(dG, lambda_forward, lambda_reverse):
     """Crossing of two parabolas of different curvature.
 
     Along x (reactant minimum at 0, product minimum at 1) the reactant surface is
-    lambda_r x^2 and the product surface dG + lambda_f (x - 1)^2. The barrier is
-    lambda_r x^2 at their crossing. Where they do not cross, or lambda_f = lambda_r, the
+    lambda_f x^2 and the product surface dG + lambda_r (x - 1)^2. The barrier is
+    lambda_f x^2 at their crossing. Where they do not cross, or lambda_f = lambda_r, the
     symmetric barrier with the geometric-mean lambda is returned.
     """
     dG = np.asarray(dG, float)
     lf = np.asarray(lambda_forward, float)
     lr = np.asarray(lambda_reverse, float)
 
-    radicand = lf * lr + (lr - lf) * dG
-    crossing = (radicand >= 0) & ~np.isclose(lf, lr)
-    x = (np.sqrt(np.where(crossing, radicand, 0.0)) - lf) / np.where(crossing, lr - lf, 1.0)
+    radicand = lf * lr + (lf - lr) * dG
+    crossing = (radicand >= 0) & ~np.isclose(lr, lf)
+    x = (np.sqrt(np.where(crossing, radicand, 0.0)) - lr) / np.where(crossing, lf - lr, 1.0)
     symmetric = marcus_barrier_symmetric(dG, geometric_mean(lf, lr))
-    return np.where(crossing, lr * x ** 2, symmetric)
+    return np.where(crossing, lf * x ** 2, symmetric)
 
 
 def barrier(model, dG, lambda_forward, lambda_reverse):

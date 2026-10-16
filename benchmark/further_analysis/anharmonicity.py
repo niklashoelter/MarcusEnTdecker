@@ -185,10 +185,10 @@ def quencher_groups(df, shape):
 
 def crossing_point(dG, forward, reverse):
     """x of the crossing of the two asymmetric parabolas; symmetric crossing where none exists."""
-    rad = forward * reverse + (reverse - forward) * dG
-    cross = (rad >= 0) & ~np.isclose(forward, reverse)
-    return np.where(cross, (np.sqrt(np.clip(rad, 0, None)) - forward) / np.where(cross, reverse - forward, 1.0),
-                    (1 + dG / forward) / 2)
+    rad = forward * reverse + (forward - reverse) * dG
+    cross = (rad >= 0) & ~np.isclose(reverse, forward)
+    return np.where(cross, (np.sqrt(np.clip(rad, 0, None)) - reverse) / np.where(cross, forward - reverse, 1.0),
+                    (1 + dG / reverse) / 2)
 
 
 def crossing(df, shape):

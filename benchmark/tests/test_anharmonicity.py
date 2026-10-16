@@ -56,9 +56,9 @@ def test_gap_shape_flags_a_long_low_tail_and_is_deterministic(monkeypatch):
 
 def test_crossing_point_gives_the_asymmetric_barrier():
     dG = np.array([-10.0, -3.0, 0.0, 2.0])
-    lf, lr = np.array([20.0, 30.0, 25.0, 40.0]), np.array([60.0, 15.0, 50.0, 30.0])
+    lf, lr = np.array([60.0, 15.0, 50.0, 30.0]), np.array([20.0, 30.0, 25.0, 40.0])
     x = anharmonicity.crossing_point(dG, lf, lr)
-    assert lr * x ** 2 == pytest.approx(theory.marcus_barrier_asymmetric(dG, lf, lr))
+    assert lf * x ** 2 == pytest.approx(theory.marcus_barrier_asymmetric(dG, lf, lr))
 
 
 def test_torsional_curves_without_weight_reproduce_the_harmonic_barrier():

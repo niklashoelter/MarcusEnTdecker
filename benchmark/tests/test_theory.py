@@ -4,10 +4,10 @@ import pytest
 import theory
 
 
-def test_pair_lambdas_take_the_surface_each_partner_ends_on():
+def test_pair_lambdas_take_the_reactant_state_forward_and_the_product_state_reverse():
     forward, reverse = theory.pair_lambdas(pc_s0_t1=1.0, pc_t1_s0=2.0, q_s0_t1=10.0, q_t1_s0=20.0)
-    assert forward == 21.0
-    assert reverse == 12.0
+    assert forward == 12.0
+    assert reverse == 21.0
 
 
 def test_symmetric_barrier_is_quarter_lambda_at_zero_driving_force():
@@ -24,20 +24,20 @@ def test_asymmetric_barrier_equals_symmetric_for_equal_lambdas():
         theory.marcus_barrier_symmetric(dG, 20.0))
 
 
-def test_asymmetric_barrier_vanishes_when_driving_force_equals_forward_lambda():
-    assert theory.marcus_barrier_asymmetric(-10.0, 10.0, 30.0) == pytest.approx(0.0, abs=1e-12)
+def test_asymmetric_barrier_vanishes_when_driving_force_equals_reverse_lambda():
+    assert theory.marcus_barrier_asymmetric(-10.0, 30.0, 10.0) == pytest.approx(0.0, abs=1e-12)
 
 
 def test_asymmetric_barrier_lies_where_the_two_parabolas_cross():
-    dG, lf, lr = -4.0, 12.0, 30.0
+    dG, lf, lr = -4.0, 30.0, 12.0
     barrier = theory.marcus_barrier_asymmetric(dG, lf, lr)
-    x = np.sqrt(barrier / lr)                     # reactant surface lr * x**2
-    assert lr * x ** 2 == pytest.approx(dG + lf * (x - 1.0) ** 2)
+    x = np.sqrt(barrier / lf)                     # reactant surface lf * x**2
+    assert lf * x ** 2 == pytest.approx(dG + lr * (x - 1.0) ** 2)
     assert 0.0 < x < 1.0
 
 
 def test_asymmetric_barrier_falls_back_to_symmetric_without_a_crossing():
-    dG, lf, lr = 60.0, 30.0, 10.0                 # lf * lr + (lr - lf) * dG < 0
+    dG, lf, lr = 60.0, 10.0, 30.0                 # lf * lr + (lf - lr) * dG < 0
     assert theory.marcus_barrier_asymmetric(dG, lf, lr) == pytest.approx(
         theory.marcus_barrier_symmetric(dG, np.sqrt(lf * lr)))
 

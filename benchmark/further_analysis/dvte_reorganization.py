@@ -34,8 +34,8 @@ correlation.
 Scored pairs. Two-gate is the benchmark criterion (r from DFT sizes); its symmetric form
 uses the symmetric barrier with the geometric-mean lambda, and the variant without the
 energy gate requires only barrier <= t_PC. The pair reorganization energies are
-lambda_f = lambda_S0-T1(PC) + lambda_T1-S0(Q) and lambda_r = lambda_T1-S0(PC) +
-lambda_S0-T1(Q). The Youden threshold c is the value of the rule dG_EnT <= c with the
+lambda_f = lambda_T1-S0(PC) + lambda_S0-T1(Q) and lambda_r = lambda_S0-T1(PC) +
+lambda_T1-S0(Q). The Youden threshold c is the value of the rule dG_EnT <= c with the
 largest TPR - FPR (middle of ties; candidates between consecutive dG_EnT values); per
 photocatalyst only where it has at least MIN_EACH pairs of each outcome. The Sandros onset
 is dG_EnT = RT ln(k_d tau0 / K_SV,crit - 1).
@@ -169,7 +169,7 @@ def barrier_forms(df, classes):
         cls = df[pairs.Q_NAME].map(classes).to_numpy()
         only_a, only_s = pa & ~ps, ps & ~pa
         row = {"parameters": source, "n_exergonic": int(exo.sum()),
-               "rho_barrier_difference_vs_lambda_r_minus_lambda_f": stats.spearmanr(diff[exo], (reverse - forward)[exo])[0],
+               "rho_barrier_difference_vs_lambda_forward_minus_lambda_reverse": stats.spearmanr(diff[exo], (forward - reverse)[exo])[0],
                "rho_barrier_difference_vs_lambda_S0_T1_Q": stats.spearmanr(diff[exo], q_s0_t1[exo])[0]}
         for c in ("rigid", "flexible", "dissociative"):
             inside = exo & (cls == c)
@@ -181,7 +181,7 @@ def barrier_forms(df, classes):
                 "AUC_within_PC_pooled_symmetric": scoring.auc_within(y, ss, g)["pooled"],
                 "pairs_inverted": int(np.sum(-dG > theory.geometric_mean(forward, reverse))),
                 "min_lambda_plus_dG / kcal mol-1": float(np.min(theory.geometric_mean(forward, reverse) + dG)),
-                "min_lambda_f_plus_dG / kcal mol-1": float(np.min(forward + dG))}
+                "min_lambda_reverse_plus_dG / kcal mol-1": float(np.min(reverse + dG))}
         rows.append(row)
         if source == "dft":
             per_quencher = (pd.DataFrame({"quencher": df[pairs.Q_NAME], "admitted_only_asymmetric": only_a,
