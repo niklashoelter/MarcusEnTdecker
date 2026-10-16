@@ -25,8 +25,8 @@ properties and driving forces, is built by build_exp_dataset_ent.py.
 
 Photocatalysts
     `pc_new_id` (1-27) is used downstream, `pc_old_id` is the id in the raw files, and
-    `pc_name` is PC<new_id>. All 27 are included. PC22 (old PC24) had too weak an emission
-    and is dropped by the theory benchmark, but kept here.
+    `pc_name` is PC<new_id>. All 27 are included. PC22 (old PC24) is excluded by the theory
+    benchmark (see SI), but kept here.
 """
 
 import csv
@@ -156,7 +156,7 @@ def main():
         Built by data/build_exp_dataset.py; exp_dataset.csv holds the same table.
         Measured values and labels only. exp_dataset_ent adds calculated properties.
         PC numbers are new ids; pc_old_id is the id in the raw files.
-        PC22 (old PC24) is included although its emission was too weak.
+        PC22 (old PC24) is included; the theory benchmark excludes it (see SI).
     """)
 
     n_pc = len({r["pc_new_id"] for r in rows})

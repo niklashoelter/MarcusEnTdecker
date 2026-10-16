@@ -51,9 +51,8 @@ benchmark/
 - **Quenching pairs:** kept only if every single-electron-transfer channel with a
   measured quencher potential is more than 0.25 V uphill.
 
-`pairs.py` leaves out PC22 on loading, because its emission is too weak for Stern–Volmer
-analysis, and the quenchers Q31 (only unreliable limits for its potentials, so electron transfer
-is not ruled out) and Q38 (1,3-butadiene, no pair quenches), and scores a pair only if every input of every criterion is present, so all
+`pairs.py` leaves out PC22 and the quenchers Q31 and Q38 on loading (excluded, see SI),
+and scores a pair only if every input of every criterion is present, so all
 criteria are scored on the same pairs.
 
 ## Classification

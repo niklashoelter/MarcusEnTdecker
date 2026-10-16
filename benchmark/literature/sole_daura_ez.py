@@ -20,14 +20,13 @@ convention (positive: E is sensitised more slowly and accumulates).
 CONVENTION
     Asymmetric form (the paper's eq. 4), unscaled. Substrates are ours. Photocatalysts are the
     paper's -- iridium cannot be encoded -- with the experimental E_T (`pc_source` = "paper").
-    The paper's ruthenium catalyst has no experimental barrier and is left out.
+    The paper's ruthenium catalyst is excluded (see SI).
 
 THE SERIES
     Substrates 1-3, each with an experimental barrier for E and Z. Substrate 3 was measured
     against six catalysts, but it is one substrate: the sign test counts substrates, and the
-    catalyst series is reported as a consistency check. Substrate 4 is excluded on the
-    authors' own argument -- it is diffusion-controlled, so its barriers carry no energy-
-    transfer information -- and stays in the pair table, flagged.
+    catalyst series is reported as a consistency check. Substrate 4 is excluded (see SI) and
+    stays in the pair table, flagged.
 
     The symmetric form is computed alongside. The photostationary Z share with TX is predicted
     from ddG, assuming the twisted triplet decays equally to E and Z (the paper's assumption):

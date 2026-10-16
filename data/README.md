@@ -110,8 +110,7 @@ One row per photocatalyst–quencher pair, every combination, sorted by `pc_new_
 `censored`. The xlsx holds the same table in the workbook
 layout.
 
-PC22 (old PC24) is included although its emission is too weak for Stern–Volmer
-analysis; the theory benchmark drops it.
+PC22 (old PC24) is included; the theory benchmark excludes it (see SI).
 
 `quenches` is 1 if the Stern–Volmer fit meets any one of these thresholds:
 K_SV > 50 at r² > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.

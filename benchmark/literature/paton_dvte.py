@@ -15,8 +15,7 @@ above the triplet minimum -- which is what lambda_T1_S0 measures. The table carr
 paper's two triplet energies beside our predicted E_T and both reorganisation energies; the
 figure reads the disagreement and its correlations from it.
 
-Cyclohexyl azide has no adiabatic value in the paper (its triplet loses N2), so it is kept
-in the table and left out of every comparison downstream.
+Cyclohexyl azide is kept in the table and excluded from every comparison downstream (see SI).
 
 Writes paton_dvte_analysis.csv. Predictions come from predict.py (case "paton_2024").
 """

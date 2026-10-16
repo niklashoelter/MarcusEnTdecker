@@ -30,10 +30,9 @@ THE GROUPS, FROM THE REACTION OUTCOME
 THE DFT REFERENCE
     Agreement with the paper's driving forces (its printed dG_EnT) and barriers. Two problems in
     the published table are handled separately, each by a rule fixed on the table alone:
-    reference_excluded      the free-base E_T implied by the paper's own Gibbs energies (SI
-                            Table S9) exceeds 90 kcal/mol (4,7-phenanthroline, thiophene c,
-                            iodobenzene d: 101-104), far above the related chromophores of the
-                            same study; these rows are left out of every reference statistic.
+    reference_excluded      the paper's free-base E_T exceeds 90 kcal/mol (4,7-phenanthroline,
+                            thiophene c, iodobenzene d): excluded from every reference statistic
+                            (see SI).
     lambda_total_inconsistent  the printed lambda_total is not lambda_S0_T1 + 6.5 (a, g, i),
                             so the printed barrier cannot be reproduced from the paper's own
                             components. Their E_T are plausible; the barrier is recomputed from

@@ -103,8 +103,8 @@ def photocatalysts():
     ]
     note = """
         One row per photocatalyst in the screen, sorted by new_id. The raw files use old_id;
-        the mapping is data/compound_identification.xlsx. new_id 22 (old 24) is kept here and dropped
-        by the theory benchmark: its emission was too weak.
+        the mapping is data/compound_identification.xlsx. new_id 22 (old 24) is kept here and excluded
+        by the theory benchmark (see SI).
         Read with pandas as: pd.read_excel(path, header=1), then drop the 'Unnamed' columns.
     """
     return sorted(NEW_ID, key=NEW_ID.get), blocks, note

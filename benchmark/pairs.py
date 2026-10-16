@@ -42,11 +42,8 @@ SOURCES = ("dft", "ml")
 DVTE_P = ("0.005", "0.008", "0.01", "0.015")
 DVTE_KINDS = ("normal", "kde")
 
-LEFT_OUT = {"PC22": "emission too weak for Stern-Volmer analysis"}
-LEFT_OUT_QUENCHERS = {
-    "Q31": "no CV wave, its potential limits are unreliable (decomposition on the electrode): SET not ruled out",
-    "Q38": "1,3-butadiene: no pair quenches, not even strongly downhill (stock likely evaporated)",
-}
+LEFT_OUT = {"PC22": "excluded (see SI)"}
+LEFT_OUT_QUENCHERS = {"Q31": "excluded (see SI)", "Q38": "excluded (see SI)"}
 
 
 def q_lambda_s0_t1(source):

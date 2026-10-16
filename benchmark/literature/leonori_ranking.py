@@ -22,12 +22,8 @@ against 27, measured by two methods, each converted to an experimental barrier b
 equation as Sole-Daura did), and the one measured E/Z pair (N24 with (E)- and (Z)-1).
 
 EXCLUDED
-    The 24 h cycloaddition yields (13 catalysts): every descriptor that correlates with them
-    does so by separating the two triplet classes (a bare class label does as well), so they
-    carry no trend information.
-    The Z share of (E)-1 after 5 min (the paper's Fig. 2b), which the paper reads as a threshold
-    at dE_TT = 0: as a threshold on our quantities, the class-marking E_T reproduces it better
-    than lambda_T1_S0 or the barrier, so it is not used.
+    The 24 h cycloaddition yields (13 catalysts) and the Z share of (E)-1 after 5 min (the
+    paper's Fig. 2b): excluded (see SI).
 
 Lifetime is a confound the paper cannot remove either: most 3n,pi* catalysts have picosecond
 triplets, which no barrier can rescue.

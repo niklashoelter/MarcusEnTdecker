@@ -45,9 +45,8 @@ THE TESTS
                   7a has a measured ratio.
 
 THE SERIES, AND WHAT IS EXCLUDED
-    Scope: 7e (photoredox side reaction, per the paper) and 7o (decomposition, no yield) are
-    flagged as excluded, as registered. The deuterated 7f-d1/d2 are kept as the table has
-    them, although the model is not isotope-aware.
+    Scope: 7e and 7o are flagged as excluded (see SI). The deuterated 7f-d1/d2 are kept as
+    the table has them.
 
 POST HOC
     kq      the barrier with the literature donor E_T; the Shapley split of ddG_ml into
@@ -74,7 +73,7 @@ FAST, SLOW = "XT", "TXT"
 K_DIFFUSION = 1.9e10            # M-1 s-1, MeCN, the paper's value (SI p.89, its ref 62)
 BAND = 2.0                      # pass: ddG_ml within a factor of two of ddG_exp
 ROBUST = 10                     # of 12 runs
-SCOPE_EXCLUDED = {"7e": "photoredox side reaction (paper)", "7o": "decomposition, no yield"}
+SCOPE_EXCLUDED = {"7e": "excluded (see SI)", "7o": "excluded (see SI)"}
 
 
 def k_act(k_q):
