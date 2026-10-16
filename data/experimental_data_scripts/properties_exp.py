@@ -15,13 +15,8 @@ Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
 
     uv run data/experimental_data_scripts/properties_exp.py
 
-Collects the measured properties of each compound from the per-measurement tables in
-the raw folders and writes them in blocks (see ../properties_workbook.py). No values are
-computed here; redox potentials are rounded to 2 decimals. The workbooks are read by
-../build_exp_dataset.py, and the quencher workbook also by ../build_exp_dataset_ent.py for
-the redox potentials and bound flags.
-The redox table is joined from the hand-edited literature and measured tables by
-quencher_redox_potentials.py.
+Values copied from the raw-folder tables (layout: ../properties_workbook.py); redox
+potentials rounded to 2 decimals.
 """
 
 import csv
@@ -66,8 +61,7 @@ def identity(header, table, sheet, name, description):
 
 def photocatalysts():
     tau0 = read_table(TAU0, "pc_new_id")
-    # One row per batch. All batches of a photocatalyst use the same filter pair
-    # (checked in stern_volmer_intensities.py), so the last row per id is used.
+    # One row per batch, one filter pair per photocatalyst; the last row per id is used.
     filters = read_table(FILTERS, "pc_new_id")
 
     for name, table in (("lifetimes", tau0), ("filters", filters)):

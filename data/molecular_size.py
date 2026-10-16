@@ -1,13 +1,8 @@
 """
 Molecular radius from a DFT geometry, for the contact distance r_PC + r_Q of a pair.
 
-The van der Waals volume is the volume of the union of atomic spheres with Bondi radii
-(BONDI; Ir and Ru, which have no Bondi value, are given one by hand), counted on a cubic
-grid of spacing GRID. The radius is that of the sphere with the same volume,
-r = (3V / 4 pi)^(1/3).
-
-Not a pipeline stage; imported by `quencher_dft.py` and `photocatalyst_dft.py`, which
-write the radius of the S0 geometry beside the other DFT properties.
+V = volume of the union of atomic spheres with Bondi radii (BONDI; Ir and Ru set by hand)
+on a cubic grid of spacing GRID; r = (3V / 4 pi)^(1/3).
 """
 
 from pathlib import Path

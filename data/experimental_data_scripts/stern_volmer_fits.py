@@ -10,19 +10,15 @@ Writes  ../experimental_data_processed/stern_volmer_fits.csv
 
     uv run data/experimental_data_scripts/stern_volmer_fits.py
 
-I0/I is fitted against [Q] for 27 x 48 = 1296 pairs.
+I0/I against [Q] per pair.
 
-Point selection. If the all-points fit has a negative slope or r2 > 0.995, all points
-are used. Otherwise the script scans the first n points (n >= 3), scores each range as
-sqrt(n) / (1 + MAE)^4, and may drop one outlier per range, found by Theil-Sen
-residuals. The [Q] = 0 point is always kept. The chosen points are refitted by ordinary
-least squares and by Theil-Sen, and the fit with the lower MAE is reported.
+Points: all if the all-points fit has a negative slope or r2 > 0.995; otherwise the first
+n points (n >= 3) with the best score sqrt(n) / (1 + MAE)^4, at most one Theil-Sen
+outlier dropped per range, [Q] = 0 always kept. Final fit: OLS or Theil-Sen (lower MAE),
+free intercept.
 
-Intercept. The final fit has a free intercept.
-
-Label. `quenches` is 1 if the fit clears any rung of a ladder in which weaker quenching
-needs a straighter line: K_SV > 50 at r2 > 0.75, > 20 at 0.80, > 10 at 0.90, > 0 at 0.99.
-`rung` gives the rung. No fit with r2 <= 0.75 is labelled quenching.
+`quenches` = 1 if the fit clears any rung: K_SV > 50 at r2 > 0.75, > 20 at 0.80, > 10 at
+0.90, > 0 at 0.99. `rung` gives the rung.
 """
 
 import csv
@@ -38,7 +34,7 @@ OUT = Path(__file__).resolve().parent.parent / "experimental_data_processed" / "
 
 MIN_POINTS_FOR_FIT = 3
 R2_NO_QUENCHING = 0.50        # all-points r2 below this: no quenching trend
-R2_GOOD_CORRELATION = 0.995   # all-points r2 above this: nothing to gain from scanning
+R2_GOOD_CORRELATION = 0.995   # all-points r2 above this: no range scan
 OUTLIER_IMPROVEMENT = 0.20    # an outlier must cut the MAE by this fraction to qualify
 
 # (K_SV above, r2 above); any one rung is enough. Checked from the highest K_SV down.
@@ -66,7 +62,7 @@ def mae(residuals):
 
 
 def score_fn(residuals, n_points):
-    """Range score: favours longer ranges and penalises residuals steeply."""
+    """Range score sqrt(n) / (1 + MAE)^4."""
     return n_points ** 0.5 / (1.0 + mae(residuals)) ** 4
 
 
@@ -132,9 +128,7 @@ def theil_sen(x, y):
 def linear_fit(x, y, method="linear", force_intercept=False):
     """Returns slope, intercept, residuals, r2.
 
-    force_intercept shifts y down by 1 before fitting and reports the intercept as 1.0.
-    The estimator still fits its own intercept, so the line is not constrained through
-    (0, 1).
+    force_intercept: fit y - 1 (free intercept) and report the intercept as 1.0.
     """
     x = np.asarray(x, float)
     y = np.asarray(y, float)
@@ -159,12 +153,8 @@ def linear_fit(x, y, method="linear", force_intercept=False):
 # --- the analysis -----------------------------------------------------------
 
 def exclude_outlier_theil_sen(x, y, min_datapoints, improvement_threshold):
-    """Find the point with the largest Theil-Sen residual.
-
-    Returns the arrays without that point, and its index if dropping it lowers the MAE
-    by at least improvement_threshold (else None). The trimmed arrays are returned in
-    both cases, so a range is always scored without its worst point.
-    """
+    """Arrays without the point of largest Theil-Sen residual, and its index if dropping
+    it lowers the MAE by at least improvement_threshold (else None)."""
     x = np.asarray(x, float)
     y = np.asarray(y, float)
     n = x.size
@@ -282,7 +272,7 @@ def main():
         chosen, note, conc, ratio = analyse([c for c, _ in points], [i for _, i in points])
         slope, intercept, r2, method = finalise(chosen, conc, ratio)
 
-        # all-points fit, reported for comparison only
+        # all-points fit
         slope_all, _, _, r2_all = ols(conc, ratio)
         carried = rung(slope, r2)
         quenching = bool(carried)

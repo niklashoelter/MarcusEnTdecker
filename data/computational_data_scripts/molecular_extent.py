@@ -12,18 +12,10 @@ Writes  ../computational_data_processed/molecular_extent.csv
 
     uv run data/computational_data_scripts/molecular_extent.py
 
-The extent radius of a molecule is half its largest atom-atom extent including the van
-der Waals radii of the two atoms,
-
     r_extent = max_ij (d_ij + R_i + R_j) / 2
 
-with d_ij the distance of the nuclei in the optimised S0 geometry and R the Bondi radii of
-../molecular_size.py. It is an alternative to the volume-equivalent radius radius_S0 of
-photocatalyst_dft.py and quencher_dft.py, for which the benchmark compares the contact
-distance r_PC + r_Q.
-
-Photocatalysts are numbered by new id. The radius is rounded to 2 decimals in A when
-written.
+d_ij: internuclear distance in the optimised S0 geometry; R: Bondi radii (../molecular_size.py).
+Photocatalysts by new id. r_extent in A, rounded to 2 decimals when written.
 """
 
 import csv
@@ -52,8 +44,7 @@ def extent_radius(elements, xyz) -> float:
 
 
 def geometries():
-    """(kind, id, path of the S0 geometry) of every photocatalyst in the data and every
-    quencher."""
+    """(kind, id, S0 geometry path) of every photocatalyst and quencher."""
     for pc_id in sorted(PHOTOCATALYSTS):
         yield ("photocatalyst", pc_id,
                RAW / "photocatalysts_new_ids" / f"PC{pc_id}" / "S0" / "opt_geometry.xyz")

@@ -13,33 +13,22 @@ Writes  ../computational_data_raw/photocatalysts_new_ids/photocatalyst_dft.csv
 
     uv run data/computational_data_scripts/photocatalyst_dft.py
 
-Each state folder holds the optimisation with frequencies (`opt_output.out`) and the
-vertical single points of the other states at that geometry (`sp_vert_<state>_output.out`).
-E is the electronic energy, G the Gibbs correction G-E(el):
+Per state: `opt_output.out` (optimisation + frequencies) and `sp_vert_<state>_output.out`
+(other states at this geometry). E electronic energy, G Gibbs correction G-E(el):
 
     E_T                ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.509
     lambda_X_Y         (E_X at the Y geometry - E_X) * 627.509     electronic only
     dG_ox_ES           ((E_ox + G_ox) - (E_T1 + G_T1)) * 627.509   PC* -> PC+
     dG_red_ES          ((E_red + G_red) - (E_T1 + G_T1)) * 627.509  PC* -> PC-
-    E_PCstar_PCminus   -dG_red_ES / 23.061 - 4.42
-    E_PCplus_PCstar     dG_ox_ES / 23.061 - 4.42
+    E_PCstar_PCminus   -dG_red_ES / 23.061 - 4.42                   V vs SCE
+    E_PCplus_PCstar     dG_ox_ES / 23.061 - 4.42                    V vs SCE
 
-Reorganization energies are named lambda_<surface>_<geometry>: `lambda_S0_T1` is the
-singlet surface at the T1 geometry, `lambda_T1_S0` the triplet surface at the S0 geometry.
-Dplus and Dminus are the one-electron oxidized and reduced states, the `ox` and `red`
-folders. Potentials are named by their couple: E(PC*/PC-) measures how strong an oxidant
-the triplet is.
+lambda_<surface>_<geometry>, e.g. lambda_S0_T1 = S0 surface at the T1 geometry. Dplus/Dminus:
+one-electron oxidized/reduced states (`ox`/`red`). radius_S0: radius in A of the sphere with
+the van der Waals volume of the S0 geometry (../molecular_size.py).
 
-radius_S0 is the radius in A of the sphere with the van der Waals volume of the optimised
-S0 geometry (../molecular_size.py). The benchmark takes r_PC + r_Q as the contact distance
-of a pair.
-
-Photocatalysts are numbered by new id; folders of photocatalysts not in
-../compound_identification.xlsx are skipped.
-
-Values in kcal/mol and V are computed from the full-precision energies and rounded to 2
-decimals when written, the radius to 2 decimals in A. Energies in Hartree are copied as
-ORCA prints them.
+Photocatalysts by new id; folders not in ../compound_identification.xlsx are skipped.
+kcal/mol, V and A rounded to 2 decimals when written; Hartree as printed by ORCA.
 """
 
 from __future__ import annotations
@@ -97,12 +86,8 @@ COLUMNS = [
 
 
 def scan(path):
-    """Electronic energy (string as printed), Gibbs correction, imaginary modes, charge.
-
-    The optimizations are compound jobs that end with a single point in the larger TZVPP
-    basis on the converged geometry, so the last FINAL SINGLE POINT ENERGY is used. The
-    Gibbs correction comes from the frequency step in the smaller basis.
-    """
+    """Electronic energy (last FINAL SINGLE POINT ENERGY, as printed), Gibbs correction
+    (frequency step), number of imaginary modes, charge."""
     energy = gibbs = None
     n_imag = 0
     charge = None

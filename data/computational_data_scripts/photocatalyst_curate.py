@@ -7,26 +7,14 @@ Curate the photocatalyst ORCA jobs into the raw-data layout.
 
     uv run data/computational_data_scripts/photocatalyst_curate.py <source_dir>
 
-`source_dir` is the job tree as run, PC_<old id>/<job>/output.out (31 photocatalysts, not
-in this repository). The script builds the deposit under
-`../computational_data_raw/photocatalysts_new_ids/` from it as
-PC<new id>/<state>/<stem>_output.out, with the old -> new id map of
-../compound_identification.xlsx.
+Reads   <source_dir>/PC_<old id>/<job>/output.out   (job tree, not in this repository)
+        ../compound_identification.xlsx           (old -> new id)
+Writes  ../computational_data_raw/photocatalysts_new_ids/PC<new id>/<state>/
+            <stem>_output.out, <stem>_input.inp (echoed input),
+            <stem>_geometry.xyz (last CARTESIAN COORDINATES block)
 
-Jobs kept
-    Eleven jobs per photocatalyst, mapped by LAYOUT below. Every energy used downstream
-    comes from these plain jobs. The suffixed runs are other attempts at the same quantity
-    and are left out: `_uks` (unrestricted repeat), `_m06` (M06-2X/def2-TZVP), `_lanl`
-    (no ZORA), `_tddft` (TD-DFT triplet), `_slightlyold` and `_depr` (superseded).
-    `conf` holds no energy but is kept: it is the GOAT/XTB2 conformer search that gave the
-    starting geometry.
-
-Files added
-    ORCA echoes its input and prints the geometry at every step. From each output the
-    script writes `<stem>_input.inp` (the echoed input) and `<stem>_geometry.xyz` (the last
-    CARTESIAN COORDINATES block) beside `<stem>_output.out`.
-
-Photocatalysts without a new id are not deposited.
+Only the jobs in LAYOUT are copied (suffixed runs are omitted); `conf` is the GOAT/XTB2
+conformer search. Photocatalysts without a new id are skipped.
 """
 
 from __future__ import annotations
@@ -39,17 +27,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT_ROOT = ROOT / "computational_data_raw" / "photocatalysts_new_ids"
 
-# Output directories written by this script and cleared on a re-run.
+# Output directories cleared on a re-run.
 RE_PC = re.compile(r"PC\d+")
 
 sys.path.insert(0, str(ROOT))
 from compound_identification import NEW_ID  # noqa: E402
 
-# source job directory -> (state directory, file stem)
-#
-# As for the quenchers, a state directory holds its own optimisation and the single
-# points taken at that geometry: `S_geometry_T_energy` (T1 energy at the S0 geometry)
-# becomes `S0/sp_vert_T1`, `ox_geometry_S_energy` becomes `ox/sp_vert_S0`.
+# source job directory -> (state directory, file stem); a state directory holds its
+# optimisation and the vertical single points at that geometry.
 LAYOUT = {
     "conf": ("conf", "goat"),
     "singlet_opt": ("S0", "opt"),
@@ -136,8 +121,7 @@ def main():
     if not pc_dirs:
         sys.exit(f"no PC_<n> directories under {source}")
 
-    # Remove only the PC<n> trees. Other files in the output folder are not written
-    # here and are left in place.
+    # Remove only the PC<n> trees.
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     for existing in OUT_ROOT.iterdir():
         if existing.is_dir() and RE_PC.fullmatch(existing.name):
@@ -179,7 +163,7 @@ def main():
                     "\n".join(inp) + "\n", encoding="utf-8", newline="\n")
             if coords:
                 write_xyz(dest / f"{stem}_geometry.xyz", coords, f"{pc} {state} {stem}")
-            # Scratch outputs such as `output_tmp.out` and `input_atom<n>.out` are not copied.
+            # Scratch outputs (`output_tmp.out`, `input_atom<n>.out`) are not copied.
             kept += 1
 
     size = sum(f.stat().st_size for f in OUT_ROOT.rglob("*") if f.is_file())

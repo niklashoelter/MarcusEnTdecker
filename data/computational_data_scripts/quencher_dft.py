@@ -12,12 +12,11 @@ Writes  ../computational_data_raw/quencher_adiabatic_DFT/quencher_dft.csv
 
     uv run data/computational_data_scripts/quencher_dft.py
 
-Each of the 48 quenchers has four states, S0, T1, ox and red. A state folder holds the
-optimisation with frequencies (`opt_output.out`, thermal correction G-E(el)), the single
-point at that geometry (`sp_output.out`) and the vertical single points of the other
-states at that geometry (`sp_vert_<kind>_output.out`). Each state is the lowest-energy
-conformer. In Q17/S0, `opt_output.out` and `sp_output.out` come from two runs of the same
-conformer; in Q18/S0, `sp_vert_red_output.out` comes from a second run.
+States S0, T1, ox, red (lowest-energy conformer each). Per state: `opt_output.out`
+(optimisation + frequencies, G-E(el)), `sp_output.out` (single point) and
+`sp_vert_<kind>_output.out` (other states at this geometry). In Q17/S0, `opt_output.out` and
+`sp_output.out` are two runs of the same conformer; Q18/S0 `sp_vert_red_output.out` is a
+second run.
 
     E_combined   E(sp) + G-E(el)(opt)
     E_T          E_combined(T1) - E_combined(S0)
@@ -27,17 +26,11 @@ conformer; in Q18/S0, `sp_vert_red_output.out` comes from a second run.
     E_Red vs SCE  -dG_Red / 23.061 - 4.42
     Hartree to kcal/mol: x 627.509
 
-Reorganization energies are named lambda_<surface>_<geometry>: lambda_S0_T1 is E_S0 at the
-T1 geometry minus E_S0 at its own. Dplus and Dminus are the one-electron oxidized and
-reduced states, the `ox` and `red` folders.
+lambda_<surface>_<geometry>, e.g. lambda_S0_T1 = E_S0 at the T1 geometry - E_S0. Dplus/Dminus:
+one-electron oxidized/reduced states (`ox`/`red`). radius_S0: radius in A of the sphere with
+the van der Waals volume of the S0 geometry (../molecular_size.py).
 
-radius_S0 is the radius in A of the sphere with the van der Waals volume of the optimised
-S0 geometry (../molecular_size.py). The benchmark takes r_PC + r_Q as the contact distance
-of a pair.
-
-Every value is computed from the full-precision energies, potentials from the unrounded
-free energies, and rounded to 2 decimals in kcal/mol and V when written; the radius is
-rounded to 2 decimals in A.
+Computed from full-precision energies; kcal/mol, V and A rounded to 2 decimals when written.
 """
 
 import csv
@@ -52,7 +45,7 @@ OUT = OUT_DIR / "quencher_dft.csv"
 
 H_TO_KCAL = 627.509          # Hartree -> kcal/mol
 F_KCAL_PER_V = 23.061        # Faraday constant, kcal mol-1 V-1
-# Absolute SCE potential in V, E = dG/F - 4.42. Same value as in photocatalyst_dft.py.
+# Absolute SCE potential in V, E = dG/F - 4.42.
 SHE_TO_SCE = 4.42
 DECIMALS = 2                 # for kcal/mol, V and A
 

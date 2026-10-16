@@ -16,30 +16,19 @@ Writes  exp_dataset_ent.csv     input to ../benchmark/
 
     uv run data/build_exp_dataset_ent.py
 
-Which pairs
-    Every pair that does not quench is kept. A pair that quenches is kept only if
-    single-electron transfer is ruled out: every channel with a measured quencher
-    potential is more than 0.25 V uphill.
+Pairs: every non-quenching pair; a quenching pair only if every SET channel with a
+measured quencher potential is more than 0.25 V uphill (a limit E_ox > x, E_red < x
+counts only if the limit itself is past 0.25 V):
 
-        oxidation of the quencher by PC*   dE_SET_ox  = E_ox(Q) - E(PC*/PC-)
-        reduction of the quencher by PC*   dE_SET_red = E(PC+/PC*) - E_red(Q)
+    oxidation of the quencher by PC*   dE_SET_ox  = E_ox(Q) - E(PC*/PC-)
+    reduction of the quencher by PC*   dE_SET_red = E(PC+/PC*) - E_red(Q)
 
-    Quencher potentials are measured; photocatalyst excited-state potentials are
-    calculated. A measured limit (E_ox > x, E_red < x) makes the channel at least that far
-    uphill, so it rules the channel out only if the limit itself is past 0.25 V.
-
-Properties
-    Photocatalyst E_T and lambda are DFT. The molecular radii of photocatalyst and quencher
-    are from their S0 DFT geometries; the benchmark adds them to the contact distance of a
-    pair. Quencher DvTE is the distribution of vertical singlet-triplet gaps from MD: its
-    mean, standard deviation and p-quantiles, both from a normal distribution and from a
-    KDE. Quencher E_T and lambda are given from DFT and
-    as predicted by the ML model, with the model's uncertainty; the model covers organic molecules only, so there are
-    no predicted photocatalyst values. dG_EnT = E_T(Q) - E_T(PC). A value the source does
-    not have stays blank.
-
-Values in kcal/mol, V and A are written to 2 decimals. The SET differences are rounded the
-same way before they are compared with 0.25 V.
+Quencher potentials measured, photocatalyst excited-state potentials DFT.
+Photocatalyst E_T, lambda and radius (S0) from DFT; quencher E_T, lambda and radius from
+DFT, E_T and lambda also from ML with uncertainty; quencher DvTE (vertical S-T gaps from
+MD): mean, SD, p-quantiles of a normal distribution and of a KDE.
+dG_EnT = E_T(Q) - E_T(PC). Missing values blank.
+kcal/mol, V and A to 2 decimals; SET differences rounded before the 0.25 V comparison.
 """
 
 import csv

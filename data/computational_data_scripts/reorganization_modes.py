@@ -11,26 +11,22 @@ Writes  ../computational_data_processed/reorganization_modes.csv
 
     uv run data/computational_data_scripts/reorganization_modes.py
 
-For a molecule on surface X (S0 or T1) with the other minimum at Y, the displacement Y - X
-is projected onto the normal modes of X from its frequency calculation, Q_j = L_j . dx,
-and each mode carries lambda_j = omega_j^2 Q_j^2 / 2. Surface S0 gives lambda_S0_T1 (the S0
-surface at the T1 geometry), surface T1 gives lambda_T1_S0. Two displacements are used:
+Surface X (S0 or T1), other minimum Y: the displacement Y - X is projected onto the normal
+modes of X, Q_j = L_j . dx, lambda_j = omega_j^2 Q_j^2 / 2. Surface S0 gives lambda_S0_T1,
+surface T1 gives lambda_T1_S0.
 
-    internal    the change of the redundant internal coordinates (bonds, angles and
-                dihedrals, dihedral changes wrapped to (-pi, pi]) mapped to mass-weighted
-                Cartesian displacements, dx = pinv(B M^-1/2) dq, with B the Wilson matrix
-                at X (numerical derivatives)
-    cartesian   the mass-weighted Cartesian difference after a mass-weighted Kabsch
-                superposition of Y on X
+    internal    redundant internal coordinates (bonds, angles, dihedrals; dihedral changes
+                wrapped to (-pi, pi]), dx = pinv(B M^-1/2) dq, B the numerical Wilson
+                matrix at X
+    cartesian   mass-weighted Cartesian difference after mass-weighted Kabsch superposition
+                of Y on X
 
-Of the symmetry-equivalent versions of Y (as given, its mirror image, and permutations of
-equal elements that keep the bond graph), the one with the smallest internal sum is used.
+Y is taken as the symmetry-equivalent version (as given, mirror image, element permutations
+keeping the bond graph) with the smallest internal sum.
 
-Per molecule, surface and displacement the table gives the sum of the lambda_j and, with
-the modes split at 3 k_B T at 298.15 K (621.7 cm-1), the fraction of the sum in the modes
-below the cut (classical) and the lambda-weighted mean frequency of the modes at or above it
-(quantum). The sum is rounded to 2 decimals in kcal/mol when written, the fraction to 6
-decimals and the frequency to 2 decimals in cm-1. Photocatalysts are numbered by new id.
+Columns: sum of lambda_j (kcal/mol, 2 decimals); with the cut at 3 k_B T, 298.15 K (621.7
+cm-1), the fraction of the sum below the cut (classical, 6 decimals) and the lambda-weighted
+mean frequency at or above it (quantum, cm-1, 2 decimals). Photocatalysts by new id.
 """
 
 import csv
@@ -216,8 +212,8 @@ def graph(elements, G):
 
 
 def candidates(elements, X, Y, m):
-    """Y, its mirror image, and permutations of equal elements (assignment after Kabsch)
-    of either that keep the bond graph of X."""
+    """Y, its mirror image, and element permutations of either (assignment after Kabsch)
+    that keep the bond graph of X."""
     out = [("identity", Y), ("mirror", Y * np.array([1.0, 1.0, -1.0]))]
     gX = graph(elements, X)
     el = np.array(elements)

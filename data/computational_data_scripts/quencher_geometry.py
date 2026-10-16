@@ -12,9 +12,8 @@ Writes  ../computational_data_processed/quencher_geometry_S0_T1.csv
 
     uv run data/computational_data_scripts/quencher_geometry.py
 
-The bonds are those of the S0 geometry (RDKit connectivity from the coordinates); the
-bond orders come from the SMILES (`note` says where that fails, and every bond then
-counts as single). Atoms are labelled by element and 0-based index in the .xyz file.
+Bonds: RDKit connectivity of the S0 geometry; bond orders from the SMILES (if that fails,
+all bonds single and `note` set). Atoms labelled by element and 0-based .xyz index.
 
     max_stretch_pct       largest relative change of an S0 bond length in T1, in %
                           (signed; the bond with the largest absolute change), with the
@@ -25,14 +24,12 @@ counts as single). Atoms are labelled by element and 0-based index in the .xyz f
                           another heavy neighbour, bond in any_bond
     rmsd_heavy            heavy-atom RMSD between S0 and T1 after Kabsch alignment, in A
 
-Deviation from coplanarity about a bond i-j: for every pair of substituents p of i and
-s of j, the dihedral p-i-j-s folded to 0-90 degrees (min(|t|, 180 - |t|)); the median
-over the pairs, at the S0 and at the T1 geometry. The change is the absolute difference
-of the two medians. For dtors_double_deg every substituent counts, for
-dtors_any_heavy_deg only heavy ones, so that methyl rotors do not enter. The labels give
-the two medians, S0 -> T1.
+Deviation from coplanarity about i-j: median over substituent pairs (p of i, s of j) of the
+dihedral p-i-j-s folded to 0-90 degrees, min(|t|, 180 - |t|). Change = |median(T1) -
+median(S0)|; all substituents for dtors_double_deg, heavy ones only for dtors_any_heavy_deg.
+Labels give the two medians, S0 -> T1.
 
-Percentages and angles are rounded to 1 decimal, the RMSD to 3 decimals in A.
+Percentages and angles rounded to 1 decimal, RMSD to 3 decimals in A.
 """
 
 import csv

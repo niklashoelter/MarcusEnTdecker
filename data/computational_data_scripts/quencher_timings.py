@@ -15,41 +15,33 @@ Writes  ../computational_data_processed/quencher_timings.csv
 
     uv run data/computational_data_scripts/quencher_timings.py
 
-One row per job in quencher_timings.csv, except the vertical single points of the DvTE
-trajectories, which are summed per quencher, trajectory and multiplicity. Their per-output
-table is quencher_timings_vertical_sp.csv.gz.
+One row per job in quencher_timings.csv; DvTE vertical single points summed per quencher,
+trajectory and multiplicity (per output: quencher_timings_vertical_sp.csv.gz).
 
-    dft <state> <job>     ORCA, `<job>_output.out`. Wall time from `TOTAL RUN TIME`, summed
-                          when a file holds several runs; cores from `%pal nprocs`.
-    dvte opt_freq         Gaussian optimisation and frequencies, two linked jobs in
-                          `g16.log`. Wall time is the sum of `Elapsed time`, program CPU
-                          time the sum of `Job cpu time`; cores from `%nproc`.
-    dvte md               Milo trajectory. Its Gaussian logs are not kept, so wall time and
-                          cores come from the Slurm job report `milo_q<n>_md_<k>.out`.
+    dft <state> <job>     ORCA `<job>_output.out`: wall from `TOTAL RUN TIME` (summed over
+                          runs in a file), cores from `%pal nprocs`.
+    dvte opt_freq         Gaussian `g16.log` (two linked jobs): wall = sum of `Elapsed time`,
+                          program CPU = sum of `Job cpu time`, cores from `%nproc`.
+    dvte md               Milo trajectory: wall and cores from the Slurm report
+                          `milo_q<n>_md_<k>.out`.
     dvte sp singlet/triplet
-                          ORCA single points `output_1.out` / `output_3.out` at every
-                          sampled step (step_5 ... step_1000), read from the archive as a
-                          stream. Only outputs with a `TOTAL RUN TIME` are summed.
-    dvte sp failed        Steps where an output is missing (the Slurm job hit its time
-                          limit before the outputs were copied back) or ended without a
-                          run time (ORCA error termination). Their cost is the step's Slurm
-                          wall time minus the ORCA-timed output of the same step, if any.
+                          ORCA `output_1.out` / `output_3.out` at step_5 ... step_1000 (from
+                          the archive); only outputs with `TOTAL RUN TIME` are summed.
+    dvte sp failed        Steps with an output missing or without run time: Slurm wall of
+                          the step minus its ORCA-timed output, if any.
 
     cpu / h               wall / s x cores / 3600
     program_cpu / h       Gaussian's own `Job cpu time`
 
-Where a job has both a program timing and a Slurm report (`output.dat`), the timing is the
-program's and the Slurm wall time and cores are recorded next to it. One Slurm report per
-DvTE step covers both ORCA runs of that step, so it is compared with their sum, and only
-for steps where both have a run time. Slurm reports whole seconds and its wall time also
-covers copying files to and from the node. A job is flagged when
+Timing is the program's; Slurm wall and cores (`output.dat`) are recorded next to it. A DvTE
+step's Slurm report is compared with the sum of both ORCA runs (only if both are timed).
+Flagged when
 
-    slurm wall - program wall  <  -SLURM_BELOW_S      Slurm shorter than the program
-    slurm wall - program wall  >  SLURM_ABOVE_S       Slurm longer than copy overhead
+    slurm wall - program wall  <  -SLURM_BELOW_S
+    slurm wall - program wall  >  SLURM_ABOVE_S
     slurm cores  !=  program cores
 
-The flag names which of these apply. MD jobs have no program timing (source = slurm) and
-are not cross-checked. Expected but absent DFT and Gaussian jobs are rows without a timing,
+MD jobs (source = slurm) are not cross-checked. Absent DFT/Gaussian jobs: rows without timing,
 counted in n_missing; Q10 and Q11 have no `red` jobs.
 """
 
@@ -146,10 +138,9 @@ def slurm_seconds(text):
 def parse_slurm(text):
     """Slurm job report -> {wall_s, cores, state, cpu_s, n_reports}, or None.
 
-    Two layouts occur: the `JOB REPORT` block (`Job Wall-clock time`, `Nodes`,
-    `Cores per node`, `State`) and the `SLURM JOB STATISTICS` block (`WallTime`,
-    `Allocated CPUs`). The last report in the file is used. Without a `State` field, a
-    slurmstepd cancellation line gives the state, e.g. CANCELLED DUE TO TIME LIMIT.
+    Layouts: `JOB REPORT` (`Job Wall-clock time`, `Nodes`, `Cores per node`, `State`) and
+    `SLURM JOB STATISTICS` (`WallTime`, `Allocated CPUs`). Last report used; without
+    `State`, the slurmstepd CANCELLED line gives the state.
     """
     if isinstance(text, bytes):
         text = text.decode("utf-8", errors="replace")
@@ -437,9 +428,8 @@ def step_table(ids, steps):
 def step_rows(step_table_rows):
     """quencher_timings.csv rows for the vertical single points, per trajectory.
 
-    `dvte sp singlet` and `dvte sp triplet` sum the ORCA-timed outputs. `dvte sp failed`
-    sums, over the steps with an output that is missing or has no run time, the Slurm
-    wall time of the step minus the ORCA-timed outputs of that step.
+    singlet/triplet: sum of ORCA-timed outputs. failed: sum over incomplete steps of
+    (step Slurm wall - ORCA-timed outputs of the step).
     """
     groups = defaultdict(list)
     for r in step_table_rows:
@@ -602,7 +592,7 @@ def main():
         writer = csv.DictWriter(fh, fieldnames=COLUMNS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
-    # mtime=0 and an empty filename make the gzip file identical between runs.
+    # mtime=0, empty filename: reproducible gzip.
     with open(OUT_STEPS, "wb") as raw, \
             gzip.GzipFile(fileobj=raw, mode="wb", mtime=0, filename="") as gz, \
             io.TextIOWrapper(gz, encoding="utf-8", newline="") as fh:

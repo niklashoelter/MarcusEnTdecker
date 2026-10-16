@@ -12,14 +12,11 @@ Writes  ../experimental_data_raw/pc_tcspc/lifetimes_tcspc.csv   keyed by pc_new_
 
     uv run data/experimental_data_scripts/lifetimes_tcspc.py
 
-One trace per photocatalyst (MeCN, Ar, 10 uM, 3 mL). The background is the median of
-the trace tail. The decay is fitted with a single exponential with 1/y weights; tau0
-and its error are the fitted value and standard error. The instrument export
-`PC<old id>.FL` is stored beside each trace.
-
-The fit starts at the first channel after the pulse at or below 1000 counts. For PC4
-it starts at 1500 ns on the instrument time axis instead (FIT_START_NS), so that its fast
-early component is excluded and only the long-lived decay is fitted.
+One trace per photocatalyst (MeCN, Ar, 10 uM, 3 mL); instrument export `PC<old id>.FL`
+beside each trace. Background: median of the trace tail. Single-exponential fit with 1/y
+weights; tau0 and its error are the fitted value and standard error. The fit starts at
+the first post-pulse channel at or below 1000 counts, or at FIT_START_NS (PC4: 1500 ns,
+long-lived component only).
 """
 
 import csv

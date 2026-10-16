@@ -1,5 +1,5 @@
 """
-Inference time of the graph MDN for the 48 quenchers, through `ml.prediction.predict`.
+Inference time of the graph MDN for the quenchers, through `ml.prediction.predict`.
 
 Reads   ../compound_identification.xlsx                (ids, SMILES)
         ../../ml/data/model_final.pt                   (the trained checkpoint)
@@ -8,29 +8,20 @@ Writes  ../computational_data_processed/quencher_timings_ml.csv
     uv sync --extra ml
     uv run --extra ml python data/computational_data_scripts/quencher_ml_timing.py
 
-Runs on the CPU, the device `ml.prediction` uses. Wall time is `time.perf_counter`, CPU
-time `time.process_time`, which sums over all threads of the process. The output starts
-with `# key: value` lines recording the machine and versions; read it with
+CPU. Wall time `time.perf_counter`, CPU time `time.process_time` (all threads; ticks of
+15.625 ms on Windows). Output starts with `# key: value` lines (machine, versions); read with
 `pd.read_csv(path, comment="#")`.
 
-    import            importing ml.prediction and its dependencies (torch, rdkit, ...)
+    import            importing ml.prediction and its dependencies
     checkpoint load   torch.load of model_final.pt, timed inside the first call
-    first call        the first predict call, one SMILES (Q1): checkpoint load, model
-                      construction, lazy initialisation and the first prediction
-    individual        one predict call per quencher with that SMILES alone, REPEATS times,
-                      after WARMUP_ROUNDS untimed rounds over all quenchers
-    batch             one predict call with all 48 SMILES, REPEATS times, after one
-                      untimed batch call
+    first call        first predict call, one SMILES (Q1), including model loading
+    individual        one predict call per quencher, REPEATS times, after WARMUP_ROUNDS
+                      untimed rounds
+    batch             one predict call with all SMILES, REPEATS times, after one untimed call
 
-The first call is the per-molecule time including model loading; the individual calls are
-the per-molecule time with the model already loaded.
-
-Individual and batch rows hold the median over the repeats, with the fastest and
-slowest repeat. Batch rows also give the median divided by the number of molecules.
-`time.process_time` advances in ticks (15.625 ms on Windows), so single calls get a
-quantised CPU median; `cpu_mean / s` is the mean over the repeats.
-Every call goes through the whole API: SMILES to graph with positional encodings, the
-forward pass and the DataFrame of results. The model's console output is discarded.
+Individual/batch rows: median, min and max wall over the repeats; `cpu_mean / s` mean CPU;
+batch per-molecule = median / n_molecules. Each call: SMILES -> graph, forward pass,
+DataFrame; stdout discarded.
 """
 
 import contextlib

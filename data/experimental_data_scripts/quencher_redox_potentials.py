@@ -12,15 +12,11 @@ Writes  ../experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_pote
 
     uv run data/experimental_data_scripts/quencher_redox_potentials.py
 
-The potentials are read by hand from the voltammograms in `measured data/`, or taken from
-the literature, and entered in one of the two input files. Both have the columns of the
-output: quencher_id, E_Ox_vs_SCE_V, E_Ox_bound, E_Red_vs_SCE_V, E_Red_bound, source,
-comment. `quencher_redox_measured.csv` holds the quenchers measured in this lab (source
-`CV`); `quencher_redox_literature.csv` holds the others (source a DOI, or `estimated`).
-
-Every quencher appears in exactly one of the two files. The script stops if a quencher is
-in both, in neither, or not in compound_identification.xlsx. A bound is `>` on E_Ox and
-`<` on E_Red, and needs a value. Values are copied as written, sorted by quencher id.
+Inputs and output share the columns quencher_id, E_Ox_vs_SCE_V, E_Ox_bound,
+E_Red_vs_SCE_V, E_Red_bound, source, comment. Measured: source `CV`, read by hand from the
+voltammograms in `measured data/`; literature: source a DOI or `estimated`. Each quencher
+in exactly one file. Bound: `>` on E_Ox, `<` on E_Red, with a value. Values copied as
+written, sorted by quencher id.
 """
 
 import csv

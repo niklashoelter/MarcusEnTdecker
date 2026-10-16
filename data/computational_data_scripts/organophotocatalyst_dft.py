@@ -10,22 +10,15 @@ Writes  ../computational_data_raw/organophotocatalysts/organophotocatalyst_dft.c
 
     uv run data/computational_data_scripts/organophotocatalyst_dft.py
 
-A separate library of organic photocatalysts. It has no measured pairs and is not read by
-build_exp_dataset_ent.py or the benchmark. The level of theory is wB97X-D4 / def2-TZVP
-(optimisation and frequencies) // def2-TZVPP, def2/J, CPCM(acetonitrile), without ZORA.
-
-Each state folder holds the optimisation with frequencies (`opt_output.out`), a compound job
-whose last single point is in def2-TZVPP, and the vertical single point of the other state at
-that geometry (`sp_vert_<state>_output.out`). The definitions are those of the photocatalysts
-(photocatalyst_dft.py):
+Level of theory: wB97X-D4/def2-TZVP (optimisation, frequencies) // def2-TZVPP, def2/J,
+CPCM(acetonitrile), no ZORA. Per state: `opt_output.out` (optimisation + frequencies, last
+single point in def2-TZVPP) and `sp_vert_<state>_output.out` (other state at this geometry).
 
     E_T          ((E_T1 + G_T1) - (E_S0 + G_S0)) * 627.509
     lambda_X_Y   (E_X at the Y geometry - E_X) * 627.509     electronic only
 
-There are no oxidized or reduced states, so no excited-state potentials.
-
-Values in kcal/mol are computed from the full-precision energies and rounded to 2 decimals
-when written. Energies in Hartree are copied as ORCA prints them.
+kcal/mol from full-precision energies, rounded to 2 decimals when written; Hartree as printed
+by ORCA.
 """
 
 from __future__ import annotations
@@ -72,12 +65,8 @@ COLUMNS = [
 
 
 def scan(path):
-    """Electronic energy (string as printed), Gibbs correction, imaginary modes, charge.
-
-    The optimizations are compound jobs that end with a single point in the larger TZVPP
-    basis on the converged geometry, so the last FINAL SINGLE POINT ENERGY is used. The
-    Gibbs correction comes from the frequency step in the smaller basis.
-    """
+    """Electronic energy (last FINAL SINGLE POINT ENERGY, as printed), Gibbs correction
+    (frequency step, def2-TZVP), number of imaginary modes, charge."""
     energy = gibbs = None
     n_imag = 0
     charge = None

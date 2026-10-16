@@ -11,22 +11,16 @@ Writes  ../computational_data_raw/quencher_adiabatic_DvTE/quencher_dvte.csv
 
     uv run data/computational_data_scripts/quencher_dvte.py
 
-At every sampled step, ORCA was run on the same geometry as singlet (`output_1.out`) and
-triplet (`output_3.out`). The vertical gap is the difference of their final single point
-energies, x 627.509 kcal/mol per Hartree. All steps of all trajectories of a quencher form
-its distribution.
+Per step (`milo_q<n>/md_<n>/step_<n>/`, inside the tar.xz, read as a stream): singlet
+(`output_1.out`) and triplet (`output_3.out`) single points at the same geometry.
 
-The per-step folders `milo_q<n>/md_<n>/step_<n>/` exist only inside the tar.xz; the
-unpacked `Milo_MD/` tree holds the trajectory jobs. The archive is read as a stream
-without unpacking, which takes a while for 3.4 GB. The per-step gaps are written to
-quencher_dvte_samples.csv.gz.
-
-    dvte_mu, dvte_std   mean and standard deviation of the gaps
+    gap                 (E_triplet - E_singlet) * 627.509, kcal/mol
+    dvte_mu, dvte_std   mean and standard deviation of all gaps of a quencher
     dvte_<p>            p-quantile of a normal distribution, mu + Phi^-1(p) * std
     dvte_<p>_kde        p-quantile of a Gaussian KDE of the gaps, bandwidth by Scott's rule
 
-The statistics are computed from the unrounded gaps. Gaps and statistics are written in
-kcal/mol to 2 decimals, the single point energies in Hartree as ORCA prints them.
+Statistics from unrounded gaps; kcal/mol rounded to 2 decimals when written, Hartree as
+printed by ORCA.
 """
 
 import csv
@@ -176,7 +170,7 @@ def main():
         writer = csv.DictWriter(fh, fieldnames=COLUMNS)
         writer.writeheader()
         writer.writerows(rows)
-    # mtime=0 and an empty filename make the gzip file identical between runs.
+    # mtime=0, empty filename: reproducible gzip.
     with open(OUT_SAMPLES, "wb") as raw, \
             gzip.GzipFile(fileobj=raw, mode="wb", mtime=0, filename="") as gz, \
             io.TextIOWrapper(gz, encoding="utf-8", newline="") as fh:

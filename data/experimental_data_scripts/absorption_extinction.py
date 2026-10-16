@@ -9,14 +9,11 @@ Reads   ../experimental_data_raw/quencher_absorption/
         2025-12-22 10-53-28 Absorption_Scan_360_650_56well_published.csv
         quenchers_deepwell.xlsx     plate map: quencher, well, stock concentration
 Writes  ../experimental_data_raw/quencher_absorption/absorption_extinction.csv
-        (48 quenchers, 18 wavelengths)
 
     uv run data/experimental_data_scripts/absorption_extinction.py
 
-Absorbances are scaled from the 5.846 mm well depth to a 10 mm path, blanked against the
-mean of the solvent wells in column 7, and divided by the stock concentration. The values
-are what an inner-filter correction would need; the reported Stern-Volmer constants are
-not corrected.
+epsilon = (A * 10 mm / 5.846 mm - mean A of the solvent wells, column 7) / c_stock.
+Stern-Volmer constants are not inner-filter corrected.
 """
 
 import csv
@@ -59,12 +56,9 @@ def normalise_well(value):
 
 
 def read_scan(path):
-    """Return well -> {wavelength_nm: mean absorbance} and the relative spread (%).
+    """well -> {wavelength_nm: mean absorbance}, and the relative spread (%) of repeat reads.
 
-    Reads both plate-reader export formats: comma-delimited with a `Content` column, or
-    semicolon-delimited with decimal commas. The delimiter is taken from the header row,
-    and data start at the first numeric wavelength label. Repeat reads of a wavelength
-    are averaged.
+    Comma-delimited or semicolon-delimited (decimal commas) plate-reader exports.
     """
     try:
         lines = path.read_text(encoding="utf-8").splitlines()

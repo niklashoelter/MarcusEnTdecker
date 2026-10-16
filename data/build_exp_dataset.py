@@ -14,18 +14,9 @@ Writes  exp_dataset.csv     input to build_exp_dataset_ent.py
 
     uv run data/build_exp_dataset.py
 
-Labels
-    `quenches` is taken from stern_volmer_fits.csv. It is set on K_SV, since a cutoff on
-    k_q would shift with tau0. k_q = K_SV / tau0.
-    A pair that does not quench is left-censored: `censored = 1`, and its fitted K_SV is
-    kept.
-
-Only measured values are included. The energy-transfer subset, with calculated
-properties and driving forces, is built by build_exp_dataset_ent.py.
-
-Photocatalysts
-    `pc_new_id` (1-27), `pc_name` is PC<new_id>. All 27 are included. PC22 is excluded by
-    the theory benchmark (see SI), but kept here.
+Measured values only. `quenches` from stern_volmer_fits.csv; k_q = K_SV / tau0.
+Non-quenching pairs are left-censored (`censored = 1`), fitted K_SV kept.
+PC22 is kept here; the theory benchmark excludes it (see SI).
 """
 
 import csv

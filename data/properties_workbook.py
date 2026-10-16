@@ -7,18 +7,9 @@ The layout shared by the five property workbooks.
     computational_data_processed/quencher_properties_calc.xlsx
     computational_data_processed/quencher_properties_ml.xlsx
 
-One row per compound. Columns are grouped in blocks (identity first, then one block per
-property), separated by an empty column. Row 1 names the blocks, row 2 holds the headers
-as `quantity / unit`. The `Column key` sheet gives each column's unit, description and
-the table it was taken from.
-
-Values are copied from the intermediate tables in the raw folders; nothing is computed
-here. For the ml workbook, `Taken from` names the model checkpoint and output field.
-
-Timestamps are fixed, so rebuilding from unchanged data gives identical files.
-
-Not a pipeline stage; imported by `properties_exp.py`, `properties_calc.py` and
-`quencher_ml.py`.
+One row per compound. Columns grouped in blocks (identity first), separated by an empty
+column. Row 1: block names; row 2: headers as `quantity / unit`. Sheet `Column key`:
+unit, description and source table of each column. Timestamps are fixed.
 """
 
 from __future__ import annotations

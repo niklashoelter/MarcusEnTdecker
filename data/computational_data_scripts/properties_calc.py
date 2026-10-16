@@ -14,11 +14,8 @@ Writes  ../computational_data_processed/photocatalyst_properties_calc.xlsx
 
     uv run data/computational_data_scripts/properties_calc.py
 
-Collects the computed properties of each compound. The extraction scripts write their
-full tables into the raw folders beside the jobs. These tables are in git, so this script
-runs without the job deposit. It selects columns and lays them out in blocks
-(../properties_workbook.py); no value is computed here. Compound names come from
-compound_identification.xlsx, as in the experimental workbooks.
+Selects columns of the extraction tables and lays them out in blocks
+(../properties_workbook.py); no value is computed here. Names from compound_identification.xlsx.
 """
 
 import sys
@@ -45,10 +42,10 @@ DVTE_CUTOFFS = ["0.005", "0.008", "0.01", "0.015"]
 
 IDENTIFICATION = "compound_identification.xlsx"
 
-# Reorganization energies are lambda_<surface>_<geometry> in both workbooks.
+# lambda_<surface>_<geometry> in both workbooks.
 LAMBDA_STATES = "Dplus and Dminus are the one-electron oxidized and reduced states."
 
-# The molecular radius, the same description in both workbooks.
+# Molecular radius description, both workbooks.
 RADIUS = ("Radius of the sphere with the van der Waals volume of the optimised S0 geometry: "
           "union of atomic spheres with Bondi radii (Ir and Ru 2.00 A), counted on a 0.1 A "
           "grid. r_PC + r_Q is the contact distance of a pair in the benchmark.")
@@ -73,7 +70,7 @@ def photocatalysts():
     def col(header, name, description, table=dft, path=PC_DFT):
         return Column(header, description, src(path, name), field(table, name))
 
-    # lambda_<surface>_<geometry>, the same six names as the quencher workbook.
+    # lambda_<surface>_<geometry>
     lambdas = [("S0", "T1"), ("T1", "S0"), ("S0", "Dplus"), ("Dplus", "S0"),
                ("S0", "Dminus"), ("Dminus", "S0")]
     blocks = [

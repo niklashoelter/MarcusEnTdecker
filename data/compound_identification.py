@@ -3,11 +3,9 @@ Compound ids, names, SMILES and molar masses.
 
 Reads compound_identification.xlsx next to this file, one sheet per compound class.
 
-Photocatalysts are keyed by their new id, PC1-PC27. The raw experimental files keep the
-old id of the screen (stern_volmer/PC10_QBatch1.csv, pc_tcspc/PC4.txt, the pipetting
-maps); their readers map it to the new id with NEW_ID. No other table carries old ids.
-
-Not a pipeline stage. Standard library only.
+Photocatalysts are keyed by their new id. Raw experimental files keep the old id
+(stern_volmer/PC10_QBatch1.csv, pc_tcspc/PC4.txt, pipetting maps); their readers map it
+to the new id with NEW_ID. No other table carries old ids.
 """
 
 import re

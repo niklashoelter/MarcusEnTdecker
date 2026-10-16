@@ -10,15 +10,10 @@ Writes  ../computational_data_processed/quencher_properties_ml.xlsx
     uv sync --extra ml
     uv run --extra ml python data/computational_data_scripts/quencher_ml.py
 
-One row per quencher, with the same layout and headers as `quencher_properties_calc.xlsx`.
-Each predicted value comes with the network's uncertainty. Both are rounded to 2 decimals.
-The model's own field names for lambda_S0_T1 and lambda_T1_S0 are `lamda_S_T` and
-`lamda_T_S`.
-
-The script needs the `ml` package (torch, torch-geometric, rdkit) and the checkpoint
-ml/data/model_final.pt, so it is not a stage of `uv run reproduce.py data`. The workbook
-is in git. Per-atom spin densities and mixture parameters are not written;
-`ml.prediction.predict` returns both.
+One row per quencher, headers as in `quencher_properties_calc.xlsx`; each value with the
+network's uncertainty, both rounded to 2 decimals in kcal/mol. Model field names:
+lambda_S0_T1 = `lamda_S_T`, lambda_T1_S0 = `lamda_T_S`. Needs the `ml` extra; not a stage of
+`uv run reproduce.py data`.
 """
 
 import sys
@@ -90,7 +85,7 @@ def quenchers():
     if absent:
         sys.exit(f"no prediction returned for: {absent}")
 
-    # quencher id -> {column name: value}, the table the columns below read.
+    # quencher id -> {column name: value}
     table = {}
     for q in ordered:
         row = predictions[QUENCHERS[q]["smiles"]]
