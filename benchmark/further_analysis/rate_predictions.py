@@ -25,18 +25,15 @@ full (r = 7 A)    Marcus symmetric, Marcus asymmetric
 irreversible      Marcus symmetric, Marcus asymmetric
 sandros           none
 
-The full rate law takes k_-d/nu = (k_d/K_A)/(k_B T/h), with K_A the encounter constant at
-the contact distance r_PC + r_Q of each pair (pairs.CONTACT), as in the two_gate criterion,
-or at r = 7 A for every pair (theory.CONTACT_DISTANCE).
+Full rate law: k_-d/nu = (k_d/K_A)/(k_B T/h), K_A = encounter constant at r = r_PC + r_Q
+(pairs.CONTACT) or r = 7 A (theory.CONTACT_DISTANCE).
 
-Sources: DFT and ML quencher parameters; photocatalyst parameters are DFT. Nothing is
-fitted. For pairs that do not quench (`censored`), the measured k_q is an upper bound, not a
-rate.
+DFT and ML quencher parameters; photocatalyst parameters DFT; nothing fitted. Non-quenching
+pairs (`censored`): measured k_q is an upper bound.
 
-Parity: on the quenching pairs with k_q > 0, the median and RMSE of predicted minus
-measured log10 k_q, the MAE, Spearman rho, the fraction within one decade, and the standard
-deviation (ddof = 1) of the predicted and of the measured values. The constant predictor
-gives every pair the mean measured log10 k_q.
+Parity (quenching pairs, k_q > 0): median and RMSE of predicted - measured log10 k_q, MAE,
+Spearman rho, fraction within one decade, SD (ddof = 1) of predicted and measured.
+Constant predictor: mean measured log10 k_q.
 """
 
 import sys
@@ -124,7 +121,7 @@ def main():
     agreement = parity(df)
     RESULTS.mkdir(parents=True, exist_ok=True)
     df[PAIR_COLUMNS].rename_axis("pair").to_csv(RESULTS / "pairs.csv", lineterminator="\n")
-    # mtime 0 keeps the gzip header, and so the file, the same from run to run.
+    # mtime 0: byte-identical gzip output
     table.to_csv(RESULTS / "predictions.csv.gz", index=False, lineterminator="\n",
                  float_format="%.5g", compression={"method": "gzip", "mtime": 0})
     agreement.round(3).to_csv(RESULTS / "parity.csv", index=False, lineterminator="\n")

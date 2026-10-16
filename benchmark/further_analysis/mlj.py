@@ -25,41 +25,34 @@ Writes  results/mlj/metrics.csv       every criterion and source: confusion coun
 
     uv run benchmark/further_analysis/mlj.py
 
-Mode split. The reorganization energy of each molecule and surface is split at 3 k_B T into
-a classical part (modes below) and a quantum part at the lambda-weighted frequency of the
-modes above (reorganization_modes.csv). The internal-coordinate projection is used where its
-sum lies within 30% of the four-point lambda, else the Cartesian one where that does; for
-the remaining molecules, and for the ML quencher lambdas, the median split of the reliable
-molecules of the same kind and surface is taken. Reverse (product state, PC on S0, Q on
-T1): lambda_v = quantum parts of lambda_S0_T1(PC) and lambda_T1_S0(Q), hw their
-lambda-weighted frequency, lambda_s,r = lambda_r - lambda_v. Forward: lambda_s,f = classical
-parts of lambda_T1_S0(PC) and lambda_S0_T1(Q). Classical parts are floored at 0.05 kcal/mol.
+Mode split: lambda of each molecule and surface split at 3 k_B T into a classical part
+(modes below) and a quantum part at the lambda-weighted frequency of the modes above.
+Internal projection if its sum is within 30% of the four-point lambda, else Cartesian if
+so, else (and for ML quencher lambdas) the median split of the reliable molecules of the
+same kind and surface. Reverse (PC on S0, Q on T1): lambda_v = quantum parts of
+lambda_S0_T1(PC) and lambda_T1_S0(Q), hw their lambda-weighted frequency,
+lambda_s,r = lambda_r - lambda_v. Forward: lambda_s,f = classical parts of lambda_T1_S0(PC)
+and lambda_S0_T1(Q). Classical parts floored at 0.05 kcal/mol.
 
-Franck-Condon factor of one quantum mode with Huang-Rhys factor S = lambda_v / hw:
+Franck-Condon factor, one quantum mode, S = lambda_v / hw:
 
     F = sum_n exp(-S) S^n / n!  exp(-B(dG + n hw) / RT)
 
-with B the symmetric barrier (dG + lambda_s,r)^2 / (4 lambda_s,r) or the asymmetric barrier
-of theory.marcus_barrier_asymmetric with lambda_s,f and lambda_s,r. For S = 0 the asymmetric
-form is exp(-barrier/RT) of the two-gate criterion. F takes the place of exp(-barrier/RT)
-in the rate law,
+B symmetric, (dG + lambda_s,r)^2 / (4 lambda_s,r), or asymmetric (lambda_s,f, lambda_s,r);
+S = 0, asymmetric: F = exp(-barrier/RT). Rate law:
 
     k_q = k_d / (1 + exp(dG/RT) + (k_-d/nu) / F)
 
-with k_-d/nu = 0.25 or the Eyring value (k_d/K_A)/(k_B T/h) at the contact distance r_PC + r_Q
-of each pair. Decisions: k_q tau0 >= K_SV,crit = 10 M-1 (rate), the same and dG_EnT <= 0, or
-the effective barrier -RT ln F against the two-gate threshold t_PC and dG_EnT <= 0. The
-quantum mode is the projected one or fixed at 1200, 1500 or 1800 cm-1.
+k_-d/nu = 0.25 or Eyring (k_d/K_A)/(k_B T/h) at r_PC + r_Q. Decisions: k_q tau0 >= K_SV,crit =
+10 M-1 (rate); rate and dG_EnT <= 0; -RT ln F <= t_PC and dG_EnT <= 0. Quantum mode:
+projected or fixed at 1200, 1500, 1800 cm-1.
 
-Tuned variant: one classical lambda_s for all pairs (0.5 to 60 kcal/mol in steps of 0.5,
-capped at the geometric-mean pair lambda), the rest of that lambda in a quantum mode of
-1500 cm-1, symmetric line shape, k_-d/nu = 0.25, rate and dG_EnT <= 0. lambda_s is chosen
-by the highest MCC with DFT parameters on all pairs, and leaving out each quencher (LOQO)
-or photocatalyst (LOPCO) in turn; the ML row applies the DFT choice.
+Tuned variant: one classical lambda_s (TUNED_GRID, capped at the geometric-mean pair
+lambda), remainder in a 1500 cm-1 mode, symmetric, k_-d/nu = 0.25, rate and dG_EnT <= 0;
+lambda_s by highest MCC (DFT) on all pairs, LOQO and LOPCO; ML applies the DFT choice.
 
-dMCC: two-way cluster bootstrap over photocatalysts and quenchers, 2000 replicates, fixed
-seed; a pair is weighted by the number of copies of its photocatalyst times that of its
-quencher.
+dMCC: two-way cluster bootstrap over photocatalysts and quenchers, pair weight = copies of
+its PC x copies of its Q.
 """
 
 import sys
@@ -139,8 +132,7 @@ def four_point_lambdas(dataset):
 
 
 def inputs(df, source, split, medians):
-    """dG, pair lambdas and the MLJ split of every pair. Photocatalysts are DFT; ML quencher
-    lambdas are split with the medians of the reliable quenchers."""
+    """dG, pair lambdas and MLJ split per pair; ML quencher lambdas split by reliable-quencher medians."""
     dG = pairs.driving_force(df, source)
     pc_s0_t1, pc_t1_s0, q_s0_t1, q_t1_s0 = pairs.lambdas(df, source)
     forward, reverse = theory.pair_lambdas(pc_s0_t1, pc_t1_s0, q_s0_t1, q_t1_s0)

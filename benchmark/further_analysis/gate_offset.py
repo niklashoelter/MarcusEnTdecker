@@ -24,15 +24,13 @@ adiabatic   dG_EnT <= c           -
 dvte        DvTE - E_T(PC) <= c   -                  (DvTE p = 0.008, normal quantile)
 two_gate    dG_EnT <= c           asymmetric Marcus barrier <= t_PC, r = r_PC + r_Q
 
-c < 0 is stricter; c = 0 is the benchmark. Only the first gate moves: the barrier of
-two_gate is that of the unshifted dG_EnT. adiabatic and two_gate are scored with DFT and
-ML quencher parameters, dvte with DFT. The continuous scores are those of
-classification.py, so the AUCs do not depend on c except for two_gate.
+c = 0 is the benchmark. Only the first gate moves; the barrier uses the unshifted dG_EnT.
+adiabatic and two_gate with DFT and ML quencher parameters, dvte with DFT. Continuous
+scores as in classification.py.
 
-The optimum c is the grid value with the highest MCC, the middle one on a tie
-(scoring.best_setting_from_scores), on C_GRID (-5 to +2 kcal/mol in steps of 0.1). Held
-out (LOPCO): for each photocatalyst in turn, c is chosen on the other pairs and applied
-to the held-out pairs; the pooled held-out predictions are scored once.
+Optimum c: highest MCC on C_GRID, middle one on a tie (scoring.best_setting_from_scores).
+Held out (LOPCO): c chosen without each photocatalyst, applied to its pairs; pooled
+held-out predictions scored once.
 """
 
 import sys

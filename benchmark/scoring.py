@@ -9,11 +9,7 @@ from scipy.stats import rankdata
 
 
 def rounded(table):
-    """A result table as written: every float to three decimals, from full precision.
-
-    The metrics are unitless; the settings and energies in these tables carry no more
-    than three decimals to begin with, so rounding leaves them as they are.
-    """
+    """A result table as written: every float to three decimals."""
     return table.round(3)
 
 

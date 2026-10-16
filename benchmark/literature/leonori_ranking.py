@@ -7,26 +7,11 @@ Leonori 2025: nitroarene photocatalysts -- triplet character.
 
     uv run benchmark/literature/leonori_ranking.py
 
-The paper's claim is that a nitroarene's ability to sensitise is set by which triplet is
-lowest: the delocalised 3pi,pi* state works, the 3n,pi* state on the pyramidalised nitro group
-does not, because it must planarise before it can transfer its energy -- a reorganisation on
-the donor side. The question for us: does our predicted reorganisation energy, from one
-predicted triplet, recover the paper's two-state descriptor (dE_TT = E(3pi,pi*) - E(3n,pi*))
-and the triplet class? The catalyst's lambda_T1_S0 is the donor term of the forward barrier
-and is the one reported first; the other lambda, their sum and the barrier are given beside
-it. Both axes are computed, so this is a consistency check, and it is run at fixed E_T as
-well.
-
-Reported as well: the measured quenching constants (a table: four catalysts against (E)-1, one
-against 27, measured by two methods, each converted to an experimental barrier by the Eyring
-equation as Sole-Daura did), and the one measured E/Z pair (N24 with (E)- and (Z)-1).
-
-EXCLUDED
-    The 24 h cycloaddition yields (13 catalysts) and the Z share of (E)-1 after 5 min (the
-    paper's Fig. 2b): excluded (see SI).
-
-Lifetime is a confound the paper cannot remove either: most 3n,pi* catalysts have picosecond
-triplets, which no barrier can rescue.
+Predicted catalyst lambdas (lambda_T1_S0, lambda_S0_T1, sum) and barriers against the
+paper's triplet character (3pi,pi* or 3n,pi*) and dE_TT = E(3pi,pi*) - E(3n,pi*), also at
+fixed E_T (partial Spearman). Measured k_q converted to barriers by the Eyring equation;
+the E/Z pair N24 with (E)- and (Z)-1. 24 h yields and the Z share after 5 min excluded
+(see SI).
 
 Writes   results/literature/leonori_catalysts.csv     one row per catalyst, model and estimate
          results/literature/leonori_character.csv     lambda against triplet character
@@ -44,8 +29,7 @@ K_B, H_PLANCK, T = 1.380649e-23, 6.62607015e-34, 298.15
 
 
 def eyring_barrier(k):
-    """Experimental barrier from a bimolecular rate constant (M-1 s-1, 1 M standard state) by the
-    Eyring equation, as Sole-Daura derived theirs; a diffusion correction is negligible here."""
+    """Eyring barrier -RT ln(k h / (k_B T)) from k in M-1 s-1 (1 M standard state)."""
     return float(-RT * np.log(k * H_PLANCK / (K_B * T)))
 
 
@@ -77,7 +61,7 @@ def main():
                 row["barrier_ml_2E"] = pair_barrier(o[c], o["2E"])[1]
                 row["barrier_lit_2E"] = lit.at[c, "barrier_lit_2E"]
                 if pd.notna(lit.at[c, "lambda_T1_S0_lit"]):
-                    # our E_T and substrate, the paper's catalyst reorganisation energies
+                    # our E_T and substrate, the paper's catalyst lambdas
                     pc = {"E_T": o[c]["E_T"], "lambda_S0_T1": lit.at[c, "lambda_S0_T1_lit"],
                           "lambda_T1_S0": lit.at[c, "lambda_T1_S0_lit"]}
                     row["barrier_ml_2E_paper_pc_lambda"] = pair_barrier(pc, o["2E"])[1]

@@ -3,34 +3,18 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-Sole-Daura 2024 (experiments: Zaehringer, Wienhold, Gilmour, Kerzig 2023): which isomer is
-sensitised faster?
+Sole-Daura 2024 (experiments: Zaehringer, Wienhold, Gilmour, Kerzig 2023): E/Z
+sensitisation barriers.
 
     uv run benchmark/literature/sole_daura_ez.py
 
-Contra-thermodynamic E-to-Z isomerisation works because sensitisation destroys the
-stereochemical information: the twisted triplet decays to both isomers, so the isomer that is
-sensitised more slowly accumulates. The quantity that decides it is the barrier difference
-ddG = dG*(E) - dG*(Z), negative when Z accumulates. The test is its sign against the
-experimental barriers, per substrate, and which term carries it: the driving force or the
-reorganisation energy. Beside it, the triplet-energy-only reading: the difference of the two
-driving forces, ddG_EnT = dG_EnT(E) - dG_EnT(Z), ours and the paper's, on the same sign
-convention (positive: E is sensitised more slowly and accumulates).
-
-CONVENTION
-    Asymmetric form (the paper's eq. 4), unscaled. Substrates are ours. Photocatalysts are the
-    paper's -- iridium cannot be encoded -- with the experimental E_T (`pc_source` = "paper").
-    The paper's ruthenium catalyst is excluded (see SI).
-
-THE SERIES
-    Substrates 1-3, each with an experimental barrier for E and Z. Substrate 3 was measured
-    against six catalysts, but it is one substrate: the sign test counts substrates, and the
-    catalyst series is reported as a consistency check. Substrate 4 is excluded (see SI) and
-    stays in the pair table, flagged.
-
-    The symmetric form is computed alongside. The photostationary Z share with TX is predicted
-    from ddG, assuming the twisted triplet decays equally to E and Z (the paper's assumption):
-    [Z]/[E] = k_E/k_Z = exp(-ddG/RT).
+ddG = dG*(E) - dG*(Z) (negative: Z accumulates), its sign against experiment per substrate
+and its Shapley split into driving-force and reorganisation parts; also
+ddG_EnT = dG_EnT(E) - dG_EnT(Z), ours and the paper's, and the symmetric form.
+Asymmetric form (the paper's eq. 4), unscaled. Substrates ours; photocatalysts the paper's
+with the experimental E_T (`pc_source` = "paper"). Ru catalyst and substrate 4 excluded
+(see SI; substrate 4 flagged in the pair table).
+Photostationary state with TX: [Z]/[E] = k_E/k_Z = exp(-ddG/RT).
 
 Writes   results/literature/sole_daura_ez.csv        one row per pair, model and estimate
          results/literature/sole_daura_ez_signs.csv  one row per E/Z group: ddG, its split, sign
@@ -101,16 +85,15 @@ def main():
                "ddG_exp": exp, "ddG_lit": e.barrier_asym_lit - z.barrier_asym_lit,
                "ddG_ml": full, "ddG_ml_dG_part": dg_part, "ddG_ml_lambda_part": lam_part,
                "ddG_ml_symmetric": e.barrier_ml_symmetric - z.barrier_ml_symmetric,
-               # the triplet-energy-only reading: the more exergonic isomer is sensitised faster
+               # triplet-energy-only difference
                "ddG_EnT_ml": e.dG_EnT_ml - z.dG_EnT_ml, "ddG_EnT_lit": e.dG_EnT_lit - z.dG_EnT_lit}
         for name in ("ml", "ml_symmetric", "lit", "EnT_ml", "EnT_lit"):
             row[f"sign_correct_{name}"] = (None if pd.isna(exp) else bool(np.sign(row[f"ddG_{name}"]) == np.sign(exp)))
         signs.append(row)
     signs = pd.DataFrame(signs)
 
-    # Probability of the deployed model's sign under its own predicted uncertainty: every
-    # property of both isomers drawn independently from its predicted spread, which ignores
-    # the correlation between the E and Z errors and is therefore pessimistic.
+    # Probability of the correct sign: every property of both isomers drawn independently
+    # from the deployed model's predicted spread.
     pred = preds["deployed"]
     p_sign = {}
     for (substrate, pc_label), g in lit[lit.barrier_exp.notna()].groupby(["substrate", "pc_label"]):
@@ -139,8 +122,8 @@ def main():
                     "z_percent_exp": exp_row.pss_z_percent_exp, "z_percent_calc_lit": exp_row.pss_z_percent_calc_lit})
     write(pd.DataFrame(pss), "sole_daura_pss.csv")
 
-    # Absolute barriers, SI only, with the null a referee asks for: the same catalysts with one
-    # made-up substrate (E_T 50, lambdas 50/30) in place of each.
+    # Absolute barriers; null: the same catalysts with one constant substrate (E_T 50,
+    # lambdas 50/30).
     parity = []
     scored = table[~table.diffusion_controlled & table.barrier_exp.notna()]
     null = {"E_T": 50.0, "lambda_S0_T1": 50.0, "lambda_T1_S0": 30.0}
@@ -155,7 +138,7 @@ def main():
             for subset, sel in (("all 16 pairs", np.ones(len(t), bool)), ("TX pairs only (substrate varies)", tx)):
                 y = t.barrier_exp.to_numpy()[sel]
                 parity.append({"model": model, "estimate": estimate, "barriers": name, "subset": subset, "n": int(sel.sum()),
-                               # a null that is constant over the subset has no correlation to report
+                               # NaN for a constant null
                                "pearson_r": float(np.corrcoef(b[sel], y)[0, 1]) if np.ptp(b[sel]) > 1e-6 else np.nan,
                                "mae_barrier": float(np.abs(b[sel] - y).mean()),
                                "mean_signed_error": float((b[sel] - y).mean())})

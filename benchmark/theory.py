@@ -13,7 +13,7 @@ TEMPERATURE = 298.15            # K
 RT = R_KCAL * TEMPERATURE
 K_DIFF = 2.0e10                 # M-1 s-1, diffusion-limited rate constant in acetonitrile
 K_DIFF_OVER_Z = 0.2             # k_d / Z in the irreversible form, Z = 1e11 M-1 s-1
-EXP_LIMIT = 500.0               # exponents are capped here to avoid overflow
+EXP_LIMIT = 500.0               # cap on exponents (overflow)
 
 K_BOLTZMANN = 1.380649e-23      # J K-1
 PLANCK = 6.62607015e-34         # J s

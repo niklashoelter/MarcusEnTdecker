@@ -7,38 +7,26 @@ Scores the criteria that predict whether a photocatalyst-quencher pair quenches.
 
 Reads   ../data/exp_dataset_ent.csv (through pairs.py)
 Writes  results/classification/settings.csv   every DFT setting of every criterion
-        results/classification/best.csv       the best DFT setting of each criterion and
-                                              the same setting with ML parameters
+        results/classification/best.csv       best DFT setting per criterion, and the same
+                                              setting with ML parameters
 
     uv run benchmark/classification.py
 
 Criterion            predicts quenching when                              variants
 adiabatic            dG_EnT <= 0                                          dft, ml
 dvte                 E_T(PC) >= DvTE(p)                                   p x (normal, KDE quantile)
-two_gate             dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC    dft, ml; r from DFT
-                                                                          sizes or r = 7 A
-marcus_barrier       Marcus barrier < threshold                           dft, ml
+two_gate             dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC    dft, ml; r = r_PC + r_Q
+                                                                          or r = 7 A
+marcus_barrier       symmetric Marcus barrier < threshold                 dft, ml
 
-The reported DvTE variant is p = 0.008 with the normal quantile; the reported two_gate
-variant is r from DFT sizes.
+t_PC: barrier at which k tau0 = K_SV,crit for exp(dG/RT) -> 0 (theory.lifetime_barrier),
+k_-d/nu = (k_d/K_A)/(k_B T/h), K_A at contact distance r.
+marcus_barrier: geometric-mean lambda; threshold by highest MCC on DFT (middle on a tie),
+applied unchanged to ML. Photocatalyst properties are DFT throughout.
 
-two_gate: t_PC is the barrier at which k * tau0 = K_SV,crit in the exergonic limit of
-theory.rate (exp(dG/RT) -> 0), with k_-d/nu = (k_d/K_A)/(k_B T/h) and K_A the encounter
-constant at the contact distance r (theory.lifetime_barrier). r is r_PC + r_Q of the pair
-from the DFT molecular radii in the dataset (pairs.CONTACT), or theory.CONTACT_DISTANCE
-for every pair. t_PC follows from tau0 of the photocatalyst; nothing is chosen on the data.
-
-marcus_barrier: the barrier is symmetric with the geometric-mean lambda. The barrier
-threshold is chosen by the highest MCC on the DFT parameters (the middle setting on a
-tie); the ML row applies that same setting to the ML quencher parameters.
-
-Photocatalyst properties are DFT throughout.
-
-The ground truth is `quenches`. AUC is computed on each criterion's continuous score:
--dG_EnT, E_T(PC) - DvTE, t_PC - barrier (every endergonic pair below every exergonic
-one), -barrier. It is also computed within each photocatalyst that has both classes: the
-median over these photocatalysts, and pooled, comparing each quenching pair only with the
-non-quenching pairs of its own photocatalyst.
+Ground truth: `quenches`. AUC on the scores -dG_EnT, E_T(PC) - DvTE, t_PC - barrier
+(endergonic pairs last), -barrier; also within each photocatalyst with both classes
+(median and pooled).
 """
 
 from dataclasses import dataclass, replace
@@ -56,7 +44,7 @@ BARRIER_THRESHOLDS = tuple(round(t, 1) for t in np.arange(0.1, 20.0001, 0.1))  #
 K_SV_CRIT = 10.0                                                              # M-1
 # two_gate variant: contact distance in Angstrom, None for r_PC + r_Q of each pair
 TWO_GATE_VARIANTS = {"r from DFT sizes": None, "r = 7 A": theory.CONTACT_DISTANCE}
-ENDERGONIC_OFFSET = 1e3     # kcal/mol, puts every endergonic pair below every exergonic one
+ENDERGONIC_OFFSET = 1e3     # kcal/mol, ranks endergonic pairs last
 
 # criterion: (kind, barrier model, variants, sources tuned on, sources given the DFT setting)
 CRITERIA = {
@@ -126,7 +114,7 @@ def candidates(criterion, variant):
 
 
 def n_free(options):
-    """Number of setting fields that vary across the candidates, i.e. chosen on the data."""
+    """Number of setting fields that vary across the candidates."""
     fields = [tuple(getattr(s, f) for s in options) for f in Setting.__dataclass_fields__]
     return sum(len(set(map(str, values))) > 1 for values in fields)
 
@@ -159,7 +147,7 @@ def evaluate(df, label, variant, source, settings, n_free_parameters):
 def tune(df, label, variant, options, tuned_on=("dft",), given=("ml",), every_setting=True):
     """Chooses a setting per source in tuned_on and applies it to the sources in given.
 
-    Returns (rows for every candidate on DFT, best rows, [(source, chosen setting)]).
+    Returns (rows of every candidate on DFT, best rows, [(source, chosen setting)]).
     """
     k = n_free(options)
     every, best, chosen = [], [], []

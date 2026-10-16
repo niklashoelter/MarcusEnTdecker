@@ -13,8 +13,7 @@ Writes  results/within_groups/metrics.csv   one row per criterion row of the ben
 
     uv run benchmark/further_analysis/within_groups.py
 
-The settings are those of the benchmark on all pairs. AUC is blank for a group with only
-one class.
+Benchmark settings (all pairs). AUC blank for single-class groups.
 """
 
 import sys

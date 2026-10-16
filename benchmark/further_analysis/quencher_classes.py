@@ -7,19 +7,16 @@ Rigid, flexible and dissociative quenchers.
 
 Reads   ../../data/computational_data_processed/quencher_geometry_S0_T1.csv
         ../../data/compound_identification.xlsx   (names and SMILES)
-        ../../data/exp_dataset_ent.csv            (quencher parameters, all 48 quenchers)
+        ../../data/exp_dataset_ent.csv            (quencher parameters)
 Writes  results/quencher_classes/quencher_classes.csv   one row per quencher
 
     uv run benchmark/further_analysis/quencher_classes.py
 
-Each quencher is assigned by hand (CLASSES) from its structure and from the change
-between its S0 and T1 DFT minima (quencher_geometry_S0_T1.csv): rigid quenchers keep a
-planar or nearly unchanged T1 geometry, flexible ones twist about a C=C or C=N bond, or
-about the C-N bond of a thioamide, and dissociative ones elongate or break a bond in T1.
-A cut at lambda_T1_S0 (DFT) = LAMBDA_CUT, below which a quencher counts as rigid, is the
-cross-check; where cut and geometry disagree, the geometry decides and the note starts
-with AMBIGUOUS. The note also flags single-bond groups that rotate into the ring plane,
-ring puckers, and N-O reagents whose DFT triplet keeps the N-O bond.
+Classes assigned by hand (CLASSES) from structure and the S0 -> T1 DFT geometry change:
+rigid (planar or nearly unchanged T1), flexible (T1 twists about C=C, C=N or thioamide
+C-N), dissociative (bond elongated or broken in T1). Cross-check: lambda_T1_S0 (DFT) <
+LAMBDA_CUT -> rigid; on disagreement the geometry decides and the note starts with
+AMBIGUOUS.
 
 Columns
     id, name, smiles      quencher

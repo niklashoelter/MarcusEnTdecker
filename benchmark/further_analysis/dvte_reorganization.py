@@ -8,7 +8,7 @@ feasibility boundary.
 
 Reads   ../../data/exp_dataset_ent.csv (also through pairs.py)
         results/quencher_classes/quencher_classes.csv
-Writes  results/dvte_reorganization/quenchers.csv          per quencher (all 48): DvTE - E_T,
+Writes  results/dvte_reorganization/quenchers.csv          per quencher: DvTE - E_T,
                                                            mean and width of the sampled gaps and
                                                            their Gaussian four-point estimates
         results/dvte_reorganization/fits.csv               least-squares lines of DvTE - E_T and
@@ -24,21 +24,16 @@ Writes  results/dvte_reorganization/quenchers.csv          per quencher (all 48)
 
     uv run benchmark/further_analysis/dvte_reorganization.py
 
-Quencher level (all 48 quenchers, DFT unless marked ML). The Gaussian four-point estimate
-of the vertical gap at thermal S0 geometries has mean mu = E_T + lambda_T1-S0 and variance
-sigma^2 = 2 lambda_T1-S0 k_B T_eff; k_B T_eff = RT (classical) or (eps/2) coth(eps/2RT) for
-one quantum eps of 1000 or 1500 cm-1. DvTE_4pt = mu + Phi^-1(0.008) sigma. The k_B T_eff
-implied by a sampled distribution is sd^2 / (2 lambda_T1-S0). R^2 is the squared Pearson
-correlation.
+Quenchers (DFT unless marked ML). Gaussian four-point gap at thermal S0 geometries:
+mu = E_T + lambda_T1-S0, sigma^2 = 2 lambda_T1-S0 k_B T_eff; k_B T_eff = RT (classical) or
+(eps/2) coth(eps/2RT) for eps = 1000 or 1500 cm-1. DvTE_4pt = mu + Phi^-1(0.008) sigma.
+Implied k_B T_eff = sd^2 / (2 lambda_T1-S0). R^2 = squared Pearson correlation.
 
-Scored pairs. Two-gate is the benchmark criterion (r from DFT sizes); its symmetric form
-uses the symmetric barrier with the geometric-mean lambda, and the variant without the
-energy gate requires only barrier <= t_PC. The pair reorganization energies are
-lambda_f = lambda_T1-S0(PC) + lambda_S0-T1(Q) and lambda_r = lambda_S0-T1(PC) +
-lambda_T1-S0(Q). The Youden threshold c is the value of the rule dG_EnT <= c with the
-largest TPR - FPR (middle of ties; candidates between consecutive dG_EnT values); per
-photocatalyst only where it has at least MIN_EACH pairs of each outcome. The Sandros onset
-is dG_EnT = RT ln(k_d tau0 / K_SV,crit - 1).
+Pairs. Two-gate (r from DFT sizes); symmetric form: symmetric barrier with geometric-mean
+lambda; without energy gate: barrier <= t_PC only. lambda_f = lambda_T1-S0(PC) +
+lambda_S0-T1(Q), lambda_r = lambda_S0-T1(PC) + lambda_T1-S0(Q). Youden threshold c of
+dG_EnT <= c: largest TPR - FPR (middle of ties); per photocatalyst with >= MIN_EACH pairs of
+each outcome. Sandros onset: dG_EnT = RT ln(k_d tau0 / K_SV,crit - 1).
 """
 
 import sys
@@ -68,7 +63,7 @@ TWO_GATE = classification.candidates("two_gate", "r from DFT sizes")[0]
 
 
 def quencher_parameters():
-    """One row per quencher of the dataset (all 48), indexed by name."""
+    """One row per quencher of the dataset, indexed by name."""
     return pd.read_csv(pairs.DATASET).groupby(pairs.Q_NAME).first()
 
 
@@ -210,7 +205,7 @@ def boundary(df):
     bins = pd.DataFrame([{"parameters": "dft", "dG_low / kcal mol-1": lo, "dG_high / kcal mol-1": hi,
                           "n": int(((dG > lo) & (dG <= hi)).sum()),
                           "quench_fraction": float(y[(dG > lo) & (dG <= hi)].mean())} for lo, hi in BINS])
-    c_pc = []                    # per photocatalyst with at least MIN_EACH pairs of each outcome
+    c_pc = []                    # per photocatalyst, >= MIN_EACH pairs of each outcome
     for _, g in df.groupby(pairs.PC_NAME, sort=False):
         yy = g[pairs.QUENCHES].to_numpy(bool)
         if yy.sum() >= MIN_EACH and (~yy).sum() >= MIN_EACH:

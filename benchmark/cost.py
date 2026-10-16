@@ -21,15 +21,14 @@ Group            calculations                                        criteria
 adiabatic DFT    S0 and T1 opt+freq, S0 and T1 single points         adiabatic (dft)
 four-point DFT   the above and both vertical spin-change points      two_gate, marcus_barrier (dft)
 DvTE             Gaussian opt+freq, MD trajectories and the          dvte
-                 vertical-gap single points; single-point steps that
-                 failed or hit the time limit are not counted
+                 vertical-gap single points (failed or timed-out
+                 single points not counted)
 ML, per call     inference of one quencher per call                  all ml criteria
 ML, batch        one call for all quenchers, split equally per quencher
 
-CPU hours are wall time x cores for the DFT and DvTE jobs, and process CPU time for the
-ML inference (mean over repeats). The atom count includes hydrogens. A group is blank for
-a quencher that lacks one of its calculations, and that quencher is left out of the
-group's statistics and totals. Standard deviations are sample standard deviations.
+CPU hours: wall time x cores (DFT, DvTE); process CPU time, mean over repeats (ML).
+Atom counts include hydrogens. A group is blank for a quencher missing one of its
+calculations and left out of that group's statistics and totals. Sample standard deviations.
 """
 
 import sys
@@ -105,8 +104,7 @@ def dataset_totals(long):
 
 
 def significant(table, digits=4):
-    """Floats to `digits` significant figures, as written; summation noise around zero
-    (the spread of identical values) becomes 0."""
+    """Floats to `digits` significant figures; |x| < 1e-12 becomes 0."""
     def one(x):
         if pd.isna(x):
             return x

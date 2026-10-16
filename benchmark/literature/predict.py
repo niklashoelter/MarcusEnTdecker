@@ -3,21 +3,10 @@ Our predictions for the compounds of the literature cases.
 
     uv run --extra ml python benchmark/literature/predict.py
 
-Reads the tables in data/literature_benchmark/ (CASES) and predicts E_T and both
-reorganisation energies for every structure the model can encode. The comparison scripts
-beside this one read what it writes; none of them calls the model.
-
-WHAT IS PREDICTED
-    Every substrate, and every photocatalyst that is an ordinary organic molecule: for example
-    Leonori's nitroarenes and the thioxanthones. Iridium and ruthenium complexes cannot be
-    encoded -- their elements are not in the model's atom vocabulary -- so they are skipped
-    here and their parameters come from the publications.
-
-TWO ESTIMATES, SIX MODELS
-    The deployed model (ml/data/model_final.pt) predicts a mixture of Gaussians per property.
-    Both its mean and its highest-weight component (`ml.model.ffn.mdn_utils.compute_max_mode`)
-    are written. The five random-split members of `ml.ensemble` are then predicted one at a
-    time with the same two estimates.
+Reads the tables in data/literature_benchmark/ (CASES) and predicts E_T, lambda_S0_T1 and
+lambda_T1_S0 for every structure the model can encode (Ir and Ru complexes are skipped).
+Estimates: mixture mean and highest-weight component (`compute_max_mode`), for the
+deployed model (ml/data/model_final.pt) and each of the five members of `ml.ensemble`.
 
 Writes   results/literature/predictions_<case>.csv          deployed model, one row per compound
          results/literature/predictions_members_<case>.csv  deployed model and every member

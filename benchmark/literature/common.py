@@ -1,45 +1,20 @@
 """
 Shared pieces for the literature comparisons.
 
-Not a script; imported by predict.py and by every comparison script beside it.
+Not a script; imported by predict.py and the comparison scripts.
 
-OUR CONVENTION, EVERYWHERE
-    Reorganisation energies are named for the transition they belong to, per molecule:
-    lambda_S0_T1 is the ground-state surface deformed to the triplet geometry, lambda_T1_S0
-    the triplet surface deformed to the ground-state geometry. The literature tables in
-    data/literature_benchmark/ are already written in this convention -- each paper's own
-    labels were mapped on extraction, which matters because some of them write a
-    photocatalyst's half-transformation in the de-excitation direction, so their "R" column
-    is our lambda_T1_S0. Nothing downstream re-maps anything.
+lambda_S0_T1: S0 surface at the T1 geometry; lambda_T1_S0: T1 surface at the S0 geometry
+(per molecule; the tables in data/literature_benchmark/ use this convention). Per pair:
 
-    For a pair, the forward and reverse reorganisation energies are then
+    lambda_forward = pc.lambda_T1_S0 + substrate.lambda_S0_T1
+    lambda_reverse = pc.lambda_S0_T1 + substrate.lambda_T1_S0
 
-        lambda_forward = pc.lambda_T1_S0 + substrate.lambda_S0_T1
-        lambda_reverse = pc.lambda_S0_T1 + substrate.lambda_T1_S0
+Reorganisation energies enter unscaled. Ma: `barrier_symmetric(dG, lambda_forward)`; every
+other case: `barrier_asymmetric`.
 
-    Each paper's published pair values are reproduced by those sums, which is how the
-    mapping was checked.
-
-UNSCALED
-    Reorganisation energies enter every barrier unscaled.
-
-THE TWO FORMS, AND WHY THE CHOICE IS PER PAPER
-    Ma reports a symmetric barrier built on a single reorganisation energy which is exactly
-    lambda_forward -- he never computes the reverse pair -- so his case is compared with
-    `barrier_symmetric(dG, lambda_forward)` and nothing else. Every other case with a barrier
-    uses the asymmetric form, `barrier_asymmetric`.
-
-MEAN AND MODE
-    The model predicts a mixture of Gaussians per property. Its point prediction is the
-    mixture mean; predict.py also writes the mean of the highest-weight component (the
-    model's own `max_mode`). Every comparison is run on both, as the `estimate` column of
-    its results, so that a multimodal prediction cannot change a conclusion unseen.
-
-MODELS
-    "deployed" is ml/data/model_final.pt. The five random-split members of ml.ensemble are
-    predicted one by one, so a result can be checked across them. They correlate strongly
-    with each other, so agreement across them is robustness to the training split, not to
-    model error.
+`estimate`: mixture mean ("mean") or mean of the highest-weight component (`max_mode`).
+`model`: "deployed" (ml/data/model_final.pt) or one of the five random-split members of
+ml.ensemble.
 """
 
 import re
@@ -96,15 +71,14 @@ def ours(row, estimate="mean"):
 def barrier_symmetric(dG, lambda_total):
     """Marcus barrier from a single reorganisation energy."""
     lambda_total = np.asarray(lambda_total, dtype=float)
-    with np.errstate(divide="ignore", invalid="ignore"):   # the masked branch is evaluated too
+    with np.errstate(divide="ignore", invalid="ignore"):   # masked branch is evaluated too
         return np.where(lambda_total > 0, (lambda_total + dG) ** 2 / (4 * lambda_total), np.nan)
 
 
 def barrier_asymmetric(dG, lambda_forward, lambda_reverse):
-    """Marcus barrier from two reorganisation energies, as Sole-Daura's equation 4.
+    """Marcus barrier from two reorganisation energies (Sole-Daura's equation 4).
 
-    Falls back to the symmetric form on the geometric mean where the parabolas do not
-    intersect, which is what ml.energy.marcus_ent does, so the two agree.
+    Symmetric form on the geometric mean where the parabolas do not intersect.
     """
     root = lambda_forward * lambda_reverse + (lambda_forward - lambda_reverse) * dG
     if root < 0 or abs(lambda_forward - lambda_reverse) < 1e-10:
@@ -129,9 +103,7 @@ def pair_barrier(pc, substrate):
 def split_difference(barrier, a, b):
     """barrier(a) - barrier(b), split into a driving-force and a reorganisation part.
 
-    `a` and `b` are (dG, lambda_forward, lambda_reverse). The split is the two-factor
-    Shapley one: each part is the change its factor causes, averaged over the order in
-    which the two factors are switched, so the parts add up to the difference exactly.
+    `a` and `b` are (dG, lambda_forward, lambda_reverse); two-factor Shapley split.
     """
     full = barrier(*a) - barrier(*b)
     dg = 0.5 * ((barrier(a[0], *a[1:]) - barrier(b[0], *a[1:]))
@@ -169,8 +141,8 @@ def auc(score, positive):
     return float(((pos[:, None] > neg).sum() + 0.5 * (pos[:, None] == neg).sum()) / (len(pos) * len(neg)))
 
 
-# Energies are written to two decimals (house rule); correlations, AUCs, probabilities, rates,
-# fractions and counts keep their precision, even when their name mentions an energy.
+# Energies to two decimals; correlations, AUCs, probabilities, rates, fractions and counts
+# at full precision.
 _ENERGY = re.compile(r"(^|_)(E_T|lambda|barrier|dG|ddG|margin|gap|dE|offset|mae|error|part)", re.I)
 _NOT_ENERGY = re.compile(r"(auc|rho|spearman|pearson|p_value|p_sign|correct|fraction|percent|k_q|ratio|^n_|^n$)", re.I)
 

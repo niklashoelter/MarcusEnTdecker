@@ -13,9 +13,8 @@ Writes  results/entdecker_1/adiabatic.csv        one row in the columns of
 
     uv run benchmark/entdecker_1.py
 
-The model run is not part of the repository; README.md describes it. dG_EnT is
-E_T(Q) - E_T(PC) with the DFT E_T of the photocatalyst, rounded to 2 decimals like the
-dataset's dG_EnT columns, and scored on the pairs every other criterion is scored on.
+The model run is not part of the repository (see README.md).
+dG_EnT = E_T(Q) - E_T(PC, DFT), rounded to 2 decimals, scored on pairs.scored().
 """
 
 import sys

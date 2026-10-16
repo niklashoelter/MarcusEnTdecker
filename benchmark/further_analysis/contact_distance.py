@@ -19,17 +19,14 @@ Writes  results/contact_distance/r_ij_distribution.csv   the distribution of r_P
 
     uv run benchmark/further_analysis/contact_distance.py
 
-The lifetime threshold is t_PC = RT ln((k_d tau0 / K_SV,crit - 1) / (k_-d/nu)) with
-k_-d/nu = (k_d / K_A) / (k_B T / h) and K_A = 4 pi N_A r^3 / 3 (theory.lifetime_barrier),
-so t_PC = const(tau0) + 3 RT ln r and dt_PC/dr = 3RT/r.
+t_PC = RT ln((k_d tau0 / K_SV,crit - 1) / (k_-d/nu)), k_-d/nu = (k_d / K_A) / (k_B T / h),
+K_A = 4 pi N_A r^3 / 3, so t_PC = const(tau0) + 3 RT ln r and dt_PC/dr = 3RT/r.
 
-The radius of a molecule is that of the sphere with its van der Waals volume (S0 DFT
-geometry, Bondi radii), as in the dataset (pairs.PC_RADIUS, pairs.Q_RADIUS); r_PC + r_Q
-is pairs.CONTACT.
+Molecular radius: sphere of the van der Waals volume (S0 DFT geometry, Bondi radii;
+pairs.PC_RADIUS, pairs.Q_RADIUS).
 
-two_gate: dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC(tau0, r), K_SV,crit = 10 M-1,
-as in classification.py, with the continuous score t_PC - barrier for AUC. Quencher
-parameters from DFT or ML; photocatalyst parameters are DFT.
+two_gate: dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC(tau0, r), K_SV,crit = 10 M-1;
+score t_PC - barrier for AUC. Quencher parameters DFT or ML; photocatalyst parameters DFT.
 """
 
 import sys

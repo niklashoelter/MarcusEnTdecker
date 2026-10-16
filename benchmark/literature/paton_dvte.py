@@ -7,17 +7,11 @@ Paton 2024: dynamic vertical triplet energies (DvTE) against our predicted reorg
 
     uv run benchmark/literature/paton_dvte.py
 
-Popescu and Paton (Chem 2024, 10, 3428) sample vertical singlet-triplet gaps along
-quasiclassical trajectories started at the ground-state minimum and report, for 24 molecules
-(their Figure 3, p. 3435), the DvTE beside the Gibbs adiabatic triplet energy at the same level
-of theory. Where the two disagree, the triplet surface at the ground-state geometry lies far
-above the triplet minimum -- which is what lambda_T1_S0 measures. The table carries the
-paper's two triplet energies beside our predicted E_T and both reorganisation energies; the
-figure reads the disagreement and its correlations from it.
+Popescu and Paton (Chem 2024, 10, 3428), Figure 3: DvTE and Gibbs adiabatic E_T per
+molecule, beside our predicted E_T, lambda_S0_T1 and lambda_T1_S0.
+Cyclohexyl azide is kept in the table and excluded downstream (see SI).
 
-Cyclohexyl azide is kept in the table and excluded from every comparison downstream (see SI).
-
-Writes paton_dvte_analysis.csv. Predictions come from predict.py (case "paton_2024").
+Writes paton_dvte_analysis.csv. Predictions from predict.py (case "paton_2024").
 """
 
 import pandas as pd
@@ -26,7 +20,7 @@ from common import column, literature, predictions, write
 
 CASE = "paton_2024"
 
-# the paper's compound classes, by its Figure 3 labels
+# compound classes by the paper's Figure 3 labels
 CLASS = {"1": "alkene", "3": "alkene", "4": "alkene", "5": "alkene", "6": "alkene", "7": "alkene",
          "8": "conj. alkene", "9": "conj. alkene", "10": "conj. alkene", "11": "conj. alkene",
          "2-E": "conj. alkene", "2-Z": "conj. alkene", "12": "conj. alkene", "13": "enone",

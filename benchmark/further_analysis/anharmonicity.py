@@ -26,24 +26,17 @@ Writes  results/anharmonicity/gap_shape.csv          per quencher: moments of th
 
     uv run benchmark/further_analysis/anharmonicity.py
 
-Gap shape (all 48 quenchers). The gap of every sample is (E_T1 - E_S0) x 627.509
-kcal/mol. Skewness is the bias-corrected sample skewness. Its 95% interval comes from
-B_SKEW resamples of whole trajectories with replacement (the samples of one trajectory are
-5 fs apart and correlated); after them, an i.i.d. resample of the samples is drawn from the
-same random stream. A skewness is significant when the interval excludes 0. The tail shift
-is the empirical 0.008 quantile minus the normal one, mu + Phi^-1(0.008) sd. A quencher
-has a twisted T1 when its C=C or C=N torsion changes by at least TWIST_DEG between the S0
-and T1 minima; dissociative quenchers are those of quencher_classes.py.
+Gap = (E_T1 - E_S0) x 627.509 kcal/mol. Skewness: bias-corrected; 95% interval from B_SKEW
+resamples of whole trajectories; significant when the interval excludes 0. Tail shift =
+empirical 0.008 quantile - (mu + Phi^-1(0.008) sd). Twisted T1: C=C/C=N torsion change
+S0 -> T1 >= TWIST_DEG.
 
-Scored pairs. Two-gate DFT is the benchmark criterion (r from DFT sizes). The signed error
-of a quencher is (FN - FP) / n over its pairs. The tail correction replaces dG_EnT by
-dG_EnT + tail shift of the quencher in both gates. The crossing point x (0 at the reactant,
-1 at the product minimum) of the asymmetric barrier and the quencher S0 energy there,
-lambda_S0-T1(Q) x^2 / RT, are given for the exergonic pairs (DFT). The torsional curves
-replace the quencher part of the reactant curve, lambda_S0-T1(Q) x^2, by
-lambda_S0-T1(Q) [w_S0 sin^2(pi x / 2) + (1 - w_S0) x^2] and that of the product curve,
-lambda_T1-S0(Q) (1 - x)^2, by lambda_T1-S0(Q) [w_T1 cos^2(pi x / 2) + (1 - w_T1) (1 - x)^2],
-for the twisted-T1 quenchers only; w_S0 = w_T1 = 0 is the benchmark barrier.
+Two-gate DFT (r from DFT sizes). Signed error per quencher = (FN - FP) / n. Tail correction:
+dG_EnT + tail shift in both gates. Crossing x (0 = reactant, 1 = product minimum) and
+lambda_S0-T1(Q) x^2 / RT, exergonic pairs. Torsional curves (twisted-T1 quenchers only):
+lambda_S0-T1(Q) x^2 -> lambda_S0-T1(Q) [w_S0 sin^2(pi x / 2) + (1 - w_S0) x^2],
+lambda_T1-S0(Q) (1 - x)^2 -> lambda_T1-S0(Q) [w_T1 cos^2(pi x / 2) + (1 - w_T1) (1 - x)^2];
+w_S0 = w_T1 = 0 is the harmonic barrier.
 """
 
 import sys

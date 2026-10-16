@@ -13,17 +13,14 @@ Writes  results/exclusion/evidence.csv      Q38 and Q31: pairs, outcomes, drivin
 
     uv run benchmark/further_analysis/exclusion.py
 
-Q38 and Q31 are pairs.LEFT_OUT_QUENCHERS. Here they are put back on loading, so that their
-pairs are scored like every other pair (PC22 stays left out). The criteria are those of
-the benchmark table: adiabatic (DFT, ML), DvTE (p = 0.008, normal) and two-gate (DFT, ML;
-r from DFT sizes).
+Q38 and Q31 (pairs.LEFT_OUT_QUENCHERS) are kept on loading and scored (PC22 stays left out).
+Criteria: adiabatic (DFT, ML), DvTE (p = 0.008, normal), two-gate (DFT, ML; r from DFT sizes).
 
-A pair is in the energy-transfer data set unless it quenches and electron transfer cannot
-be ruled out. The emission ratio I0/I is the mean intensity without quencher over the mean
-intensity at the highest quencher concentration of the plate. The ratio expected for
-k_q = K_Q_REFERENCE is 1 + K_Q_REFERENCE tau0 [Q]max. The two-gate rejections are split
-into the energy gate (dG_EnT > 0) and the barrier gate (exergonic, barrier above t_PC).
-dG_EnT is E_T(Q) - E_T(PC) for every pair.
+Energy-transfer data set: all pairs except quenching pairs where electron transfer is not
+ruled out. I0/I = mean intensity without quencher / mean intensity at the highest quencher
+concentration. Expected I0/I for k_q = K_Q_REFERENCE: 1 + K_Q_REFERENCE tau0 [Q]max.
+Two-gate rejections: energy gate (dG_EnT > 0) or barrier gate (exergonic, barrier > t_PC).
+dG_EnT = E_T(Q) - E_T(PC).
 """
 
 import sys

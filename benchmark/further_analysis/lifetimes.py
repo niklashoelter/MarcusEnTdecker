@@ -21,18 +21,16 @@ Writes  results/lifetimes/barrier_bins.csv          exergonic pairs (DFT) per li
 
     uv run benchmark/further_analysis/lifetimes.py
 
-Lifetime groups: tau0 < SHORT_NS (short) and tau0 >= SHORT_NS (long). Barrier bins of
-BIN_WIDTH kcal/mol, the last one open (BIN_EDGES). The criteria are those of
-metrics_extended.py (DFT quencher parameters; two-gate with r = r_PC + r_Q). Gate of
-two-gate DFT for a pair: energy (dG_EnT > 0), barrier (exergonic but the asymmetric
-barrier exceeds t_PC) or pass.
+Lifetime groups: short tau0 < SHORT_NS, long tau0 >= SHORT_NS. Barrier bins: BIN_EDGES
+(last one open). Criteria of metrics_extended.py (DFT quencher parameters; two-gate with
+r = r_PC + r_Q). Two-gate DFT gate per pair: energy (dG_EnT > 0), barrier (exergonic,
+barrier > t_PC) or pass.
 
-dvte_false_positives.csv: DvTE false positives that two-gate DFT does not predict, split
-by the gate that rejects them; DvTE true positives that the energy gate rejects; two-gate
-DFT false positives that DvTE does not predict; median and largest dG_EnT (DFT) of the
-false positives rejected by the energy gate.
+dvte_false_positives.csv: DvTE FP not predicted by two-gate DFT, by rejecting gate; DvTE TP
+rejected by the energy gate; two-gate DFT FP not predicted by DvTE; median and max dG_EnT
+(DFT) of the FP rejected by the energy gate.
 
-kcal/mol rounded to 2 decimals, fractions to 3.
+kcal/mol: 2 decimals; fractions: 3.
 """
 
 import sys

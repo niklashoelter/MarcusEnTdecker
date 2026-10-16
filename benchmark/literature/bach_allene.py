@@ -4,55 +4,24 @@
 # ///
 """
 Hofer, Bertrams, Kerzig, Bach 2026: allene amides cyclise to beta-lactams by triplet energy
-transfer -- does the barrier explain a rate ratio that the triplet energy alone cannot?
+transfer; quenching of 7a by xanthone (XT) and thioxanthone (TXT).
 
     uv run benchmark/literature/bach_allene.py
 
-The acceptor is non-vertical by bending: the central allene carbon rehybridises from sp to
-sp2 in the triplet. The authors measure the quenching of 7a by two donors (xanthone, XT, and
-thioxanthone, TXT; k_q 1.1e9 and ~3e7 M-1 s-1), argue within the Sandros equation that the
-rate difference demands an allene triplet "almost 300 kJ/mol" high, and conclude that their
-own adiabatic DFT E_T (45.75 kcal/mol) is "at least 0.5 eV too low". Our reading: the
-adiabatic E_T is fine, and the large bending reorganisation sets how strongly the donor's
-driving force is transmitted to the rate. The test is that one ratio.
+Asymmetric form, unscaled; all molecular properties ours. k_act = k_q k_d / (k_d - k_q),
+k_d(MeCN) = 1.9e10 M-1 s-1; ddG_exp = RT ln(k_act,XT / k_act,TXT).
 
-All tests below were registered before any prediction was looked at, except those marked
-POST HOC.
+kq          ddG_ml = barrier(TXT -> 7a) - barrier(XT -> 7a) against ddG_exp; pass within a
+            factor of two (deployed mixture mean; "robust" if >= 10 of 12 runs pass).
+            Baselines: Sandros k_q = k_d / (1 + exp(dG/RT)) on the k_act and k_q basis, with
+            our and the literature donor E_T; (lambda_fwd,TXT - lambda_fwd,XT) / 4; vertical
+            acceptor (both 7a lambdas = 0). Model-free: Sandros on the paper's adiabatic DFT
+            E_T and the Sandros-apparent E_T of 7a. Also: Shapley split of ddG_ml into
+            driving-force and reorganisation parts, apparent Bronsted slope
+            ddG / (dG_TXT - dG_XT), prefactor k_act exp(barrier/RT), predicted k_act ratio.
+donor pair  barrier(TXT -> s) - barrier(XT -> s) for 7a and every scope allene s.
 
-CONVENTION
-    Asymmetric form, unscaled; the paper uses no Marcus form. Every property of every molecule
-    is ours, donors included. Rates are compared as activation-limited constants,
-    k_act = k_q k_d / (k_d - k_q), with the paper's k_d(MeCN) = 1.9e10 M-1 s-1, so the
-    experimental quantity is ddG_exp = RT ln(k_act,XT / k_act,TXT).
-
-THE TESTS
-    kq (primary)  ddG_ml = barrier(TXT -> 7a) - barrier(XT -> 7a) against ddG_exp. Passes when
-                  ddG_ml lies within a factor of two of ddG_exp; the pre-registered verdict is
-                  the deployed model's mixture mean, "robust" only if >= 10 of the 12 runs pass.
-                  Baselines on the same band: the Sandros (triplet-energy) screen with our E_T,
-                  k_q = k_d / (1 + exp(dG/RT)), on the k_act basis (registered; analytically
-                  dG_TXT - dG_XT) and on the uncorrected k_q basis (added, before the results
-                  were read, when the k_act form overflowed); the same with the literature donor
-                  E_T; the lambda term alone, (lambda_fwd,TXT - lambda_fwd,XT) / 4; and a null
-                  "vertical acceptor" with both 7a lambdas set to zero. The paper's own straw
-                  man -- Sandros on its adiabatic DFT E_T -- and the Sandros-apparent E_T of 7a
-                  from each rate are model-free and written once. One acceptor and two donors:
-                  this is ONE independent ratio. The TXT rate is an estimate from a single
-                  concentration; absolute barriers are descriptive only.
-    donor pair    descriptive (POST HOC, user request 2026-10-06): the same difference,
-                  barrier(TXT -> s) - barrier(XT -> s), for 7a and every scope allene s, to show
-                  whether the predicted XT/TXT difference is a property of the donor pair. Only
-                  7a has a measured ratio.
-
-THE SERIES, AND WHAT IS EXCLUDED
-    Scope: 7e and 7o are flagged as excluded (see SI). The deuterated 7f-d1/d2 are kept as
-    the table has them.
-
-POST HOC
-    kq      the barrier with the literature donor E_T; the Shapley split of ddG_ml into
-            driving-force and reorganisation parts; the apparent Bronsted slope
-            ddG / (dG_TXT - dG_XT) (0 or 1 under Sandros); the prefactor k_act exp(barrier/RT)
-            implied by each rate; the predicted k_act ratio.
+7e and 7o excluded (see SI); 7f-d1/d2 kept.
 
 Writes   results/literature/bach_kq_summary.csv       the k_q ratio test and its baselines per model and estimate
          results/literature/bach_kq_reference.csv     the model-free numbers: ddG_exp, band, Sandros straw man
@@ -70,7 +39,7 @@ from common import (ESTIMATES, RT, barrier_asymmetric, literature, models, ours,
 CASE = "bach_2026"
 ACCEPTOR = "7a"
 FAST, SLOW = "XT", "TXT"
-K_DIFFUSION = 1.9e10            # M-1 s-1, MeCN, the paper's value (SI p.89, its ref 62)
+K_DIFFUSION = 1.9e10            # M-1 s-1, MeCN, from the paper
 BAND = 2.0                      # pass: ddG_ml within a factor of two of ddG_exp
 ROBUST = 10                     # of 12 runs
 SCOPE_EXCLUDED = {"7e": "excluded (see SI)", "7o": "excluded (see SI)"}
@@ -114,7 +83,7 @@ def main():
         "ddG_exp_kq_basis": RT * np.log(k_q[FAST] / k_q[SLOW]),
         "E_T_lit_XT": E_T_pc_lit[FAST], "E_T_lit_TXT": E_T_pc_lit[SLOW],
         "bronsted_slope_exp": ddG_exp / (E_T_pc_lit[FAST] - E_T_pc_lit[SLOW]),
-        # the paper's straw man: Sandros on its own adiabatic DFT E_T of 7a
+        # Sandros on the paper's adiabatic DFT E_T of 7a
         "E_T_7a_dft_lit": E_dft,
         "ddG_sandros_dft_k_act": (E_dft - E_T_pc_lit[SLOW]) - (E_dft - E_T_pc_lit[FAST]),
         "ddG_sandros_dft_kq": RT * np.log(sandros(E_dft - E_T_pc_lit[FAST]) / sandros(E_dft - E_T_pc_lit[SLOW])),
@@ -135,7 +104,7 @@ def main():
             o = {c: ours(pred.loc[c], estimate) for c in pred.index}
             acc = o[ACCEPTOR]
 
-            # the XT/TXT difference for 7a and every scope allene (descriptive)
+            # XT/TXT barrier difference for 7a and every scope allene
             for s_id in [ACCEPTOR] + [c for c in scope.index if c != ACCEPTOR]:
                 b_xt = pair_barrier(o[f"PC_{FAST}"], o[s_id])[1]
                 b_txt = pair_barrier(o[f"PC_{SLOW}"], o[s_id])[1]
@@ -144,7 +113,7 @@ def main():
                                    "E_T_ml": o[s_id]["E_T"], "barrier_XT_ml": b_xt, "barrier_TXT_ml": b_txt,
                                    "ddG_ml": b_txt - b_xt, "ddG_exp": ddG_exp if s_id == ACCEPTOR else np.nan})
 
-            # ------------------------------------------------ kq: the primary test
+            # ------------------------------------------------ kq
             xt, txt = o[f"PC_{FAST}"], o[f"PC_{SLOW}"]
             a = (acc["E_T"] - txt["E_T"], *pair_lambdas(txt, acc))
             b = (acc["E_T"] - xt["E_T"], *pair_lambdas(xt, acc))
@@ -182,9 +151,7 @@ def main():
     write(kq_table, "bach_kq_summary.csv")
     write(pd.DataFrame(donor_pair), "bach_donor_pair.csv")
 
-    # For a small explanatory panel: the deployed model's barrier for 7a as a function of the
-    # driving force, with the reorganisation energies of each donor pair held fixed, beside the
-    # triplet-energy-only (Sandros) expectation, which is flat (diffusion-limited) once exergonic.
+    # Deployed barrier of 7a vs driving force at each donor pair's lambdas; Sandros ln(k/k_d).
     dep = kq_table[(kq_table.model == "deployed") & (kq_table.estimate == "mean")].iloc[0]
     grid = np.round(np.arange(-35.0, 5.01, 0.25), 2)
     write(pd.DataFrame({"dG_EnT": grid,

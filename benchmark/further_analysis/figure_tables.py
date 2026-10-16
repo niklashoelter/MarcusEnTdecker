@@ -18,24 +18,19 @@ Writes  results/figure_tables/quenchers.csv        one row per quencher with sco
 
     uv run benchmark/further_analysis/figure_tables.py
 
-quenchers.csv: DFT and ML parameters, DvTE at p = 0.008 (normal) with the mean and standard
-deviation of the vertical gaps and DvTE - E_T (DFT), the radius r, the number of scored
-pairs and the fraction that quench.
+quenchers.csv: DFT and ML parameters, DvTE (p = 0.008, normal), mean and SD of the vertical
+gaps, DvTE - E_T (DFT), r, scored pairs, quench fraction.
 
-photocatalysts.csv: DFT parameters, tau0, r, the median t_PC over the photocatalyst's
-scored pairs (r = r_PC + r_Q) and t_PC at r = 7 A, pairs and quench fraction. The complex
-class follows from the name: Ru -> Ru(II) tris(diimine); pmb -> Ir(III) tris(NHC);
-no brackets -> neutral Ir(C^N)3; otherwise cationic [Ir(C^N)2(N^N)]+.
+photocatalysts.csv: DFT parameters, tau0, r, median t_PC (r = r_PC + r_Q), t_PC at r = 7 A,
+pairs, quench fraction. Complex class from the name: Ru -> Ru(II) tris(diimine);
+pmb -> Ir(III) tris(NHC); no brackets -> neutral Ir(C^N)3; else cationic [Ir(C^N)2(N^N)]+.
 
-cost.csv: over the quenchers with scored pairs, the median, quartiles, IQR and mean per
-quencher of the CPU time (DFT and DvTE: job wall time x cores; ML: process CPU time of the
-inference) and of the wall time (DFT and DvTE: sum of the job wall times; ML: one call,
-or the batch call divided by the number of molecules), grouped by ../cost.py. Ratios are
-to DvTE. One row per method and criterion it enables, with that criterion's metrics from
-metrics_extended.py (both ML methods enable the ML criteria).
+cost.csv: median, quartiles, IQR and mean per quencher of CPU time (DFT, DvTE: job wall
+time x cores; ML: process CPU time) and wall time (DFT, DvTE: sum of job wall times; ML: one
+call, or batch call / molecules), grouped by ../cost.py; ratios to DvTE. One row per method
+and enabled criterion, with its metrics from metrics_extended.py.
 
-kcal/mol, V and A rounded to 2 decimals, fractions and metrics to 3, times and ratios to
-4 significant figures.
+kcal/mol, V, A: 2 decimals; fractions, metrics: 3; times, ratios: 4 significant figures.
 """
 
 import sys
@@ -65,7 +60,7 @@ WALL_KIND = {"adiabatic DFT": "sum of the job wall times (jobs may run in parall
              "DvTE": "sum of the job wall times (jobs may run in parallel)",
              "ML, per call": "wall time of one call (median of 20 repeats)",
              "ML, batch": "wall time of the 48-molecule batch call (median of 20 repeats) / 48"}
-# criterion of metrics_extended.py: the cost methods that provide its quencher parameters
+# criterion of metrics_extended.py -> cost methods providing its quencher parameters
 ENABLES = {("adiabatic", "dft"): ("adiabatic DFT",), ("adiabatic", "ml"): ("ML, per call", "ML, batch"),
            ("dvte_2024", "dvte"): ("DvTE",),
            ("twogate_lifetime", "dft"): ("four-point DFT",), ("twogate_lifetime", "ml"): ("ML, per call", "ML, batch"),

@@ -3,42 +3,21 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-Ma 2023: which functional groups survive energy-transfer catalysis?
+Ma 2023: functional-group tolerance of the azaarene reduction by energy transfer.
 
     uv run benchmark/literature/ma_tolerance.py
 
-The paper reduces azaarenes by energy transfer and finds a long list of reducible pendant
-groups untouched. The question for us is whether our predicted driving force and
-reorganisation energy, combined in the barrier, put the reduced azaarenes below the tolerated
-groups.
+Symmetric barrier on lambda_forward, with the Ir sensitiser's published E_T and
+lambda_T1_S0; only the substrates are predicted.
 
-CONVENTION
-    The paper's barrier is symmetric on a single reorganisation energy, lambda_A(singlet) +
-    lambda_D(triplet), which in our naming is exactly lambda_forward, with the Ir sensitiser's
-    published E_T (63.9, not the 62.9 misprinted in its Figure 4a) and lambda_T1_S0. Only the
-    substrates are predicted.
+Groups: reduced (the five azaarenes, as free bases), tolerated (pendant groups a-k),
+hat (naphthalene l, anthracene, phenanthrene; scored separately and folded in).
 
-THE GROUPS, FROM THE REACTION OUTCOME
-    reduced     the five azaarenes the paper reduces (products 16-20). They react as Lewis-acid
-                adducts -- without the Lewis acid there is no product -- and the model has no
-                Lewis acid, so the free bases stand in for them, as in the paper's own analysis.
-    tolerated   the pendant groups a-k, which survive.
-    hat         naphthalene (l), anthracene, phenanthrene: they survive, but the paper assigns
-                that to the hydrogen-atom-transfer step, because their energy-transfer barriers
-                are low in its own DFT too. Scored separately and also folded in, both reported.
-
-THE DFT REFERENCE
-    Agreement with the paper's driving forces (its printed dG_EnT) and barriers. Two problems in
-    the published table are handled separately, each by a rule fixed on the table alone:
-    reference_excluded      the paper's free-base E_T exceeds 90 kcal/mol (4,7-phenanthroline,
-                            thiophene c, iodobenzene d): excluded from every reference statistic
-                            (see SI).
-    lambda_total_inconsistent  the printed lambda_total is not lambda_S0_T1 + 6.5 (a, g, i),
-                            so the printed barrier cannot be reproduced from the paper's own
-                            components. Their E_T are plausible; the barrier is recomputed from
-                            the paper's components (barrier_lit_recomputed) and used instead.
-    Reported over every row with a published barrier, and over the rows not excluded, with the
-    recomputed and with the printed barriers.
+Reference: agreement with the paper's dG_EnT and barriers, over every row with a published
+barrier and over the rows not excluded, with recomputed and printed barriers.
+    reference_excluded         paper's free-base E_T > 90 kcal/mol (see SI)
+    lambda_total_inconsistent  printed lambda_total != lambda_S0_T1 + pc lambda_T1_S0; the
+                               barrier is recomputed from the components (barrier_lit_recomputed)
 
 Writes   results/literature/ma_tolerance.csv           one row per compound, model and estimate
          results/literature/ma_reference.csv           agreement with the paper's DFT
@@ -64,7 +43,7 @@ def group(compound_id):
 
 def lambda_total_inconsistent(row):
     """Printed lambda_total is not lambda_S0_T1 + the sensitiser's lambda_T1_S0."""
-    # printed to one decimal, so sums may be off by 0.1; the inconsistent rows are off by 1.4-4.2
+    # tolerance 0.5 kcal/mol (values printed to one decimal)
     return bool(pd.notna(row.lambda_total_lit) and pd.notna(row.lambda_S0_T1_lit)
                 and abs(row.lambda_total_lit - (row.lambda_S0_T1_lit + row.pc_lambda_T1_S0_lit)) > 0.5)
 

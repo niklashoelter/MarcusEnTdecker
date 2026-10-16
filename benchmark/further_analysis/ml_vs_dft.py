@@ -16,12 +16,10 @@ Writes  results/ml_vs_dft/quenchers.csv         per quencher: ML - DFT parameter
 
     uv run benchmark/further_analysis/ml_vs_dft.py
 
-The criterion is two-gate with r from DFT sizes; the photocatalyst parameters are DFT in
-both cases. "ML" uses E_T(Q), lambda_S0-T1(Q) and lambda_T1-S0(Q) from the model, "DFT"
-the DFT values; giving a quencher DFT parameters takes all three from DFT for the pairs
-of that quencher and keeps ML for the others. A pair is rescued when ML classifies it
-correctly and DFT does not, and lost in the opposite case. The summed ML uncertainty is
-the sum of the three predictive standard deviations of a quencher.
+Two-gate, r from DFT sizes; photocatalyst parameters DFT. ML/DFT: source of E_T(Q),
+lambda_S0-T1(Q), lambda_T1-S0(Q). "Only this quencher DFT": all three from DFT for its
+pairs, ML for the rest. Rescued: correct with ML, wrong with DFT; lost: the reverse.
+Summed ML uncertainty: sum of the three predictive SDs of a quencher.
 """
 
 import sys

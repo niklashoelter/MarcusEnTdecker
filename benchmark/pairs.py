@@ -3,11 +3,9 @@ Loads the energy-transfer dataset and names its columns.
 
 Reads   ../data/exp_dataset_ent.csv
 
-PC22 (LEFT_OUT) and the quenchers Q31 and Q38 (LEFT_OUT_QUENCHERS) are left out on
-loading. The contact distance r_PC + r_Q of each pair (CONTACT) is added from the
-molecular radii of the dataset (PC_RADIUS, Q_RADIUS, from the S0 DFT geometries). Of the
-remaining pairs, a pair is scored only if every input of every criterion is present;
-`excluded` names the blank inputs of the others.
+PC22 (LEFT_OUT) and Q31, Q38 (LEFT_OUT_QUENCHERS) are left out on loading. CONTACT =
+r_PC + r_Q from the DFT molecular radii (PC_RADIUS, Q_RADIUS). A pair is scored only if
+every input of every criterion is present; `excluded` names the blank inputs otherwise.
 
 Not a script; imported by the benchmark and further_analysis scripts.
 """

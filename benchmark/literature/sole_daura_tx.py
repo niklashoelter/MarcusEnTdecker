@@ -3,29 +3,17 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-Sole-Daura 2024: the E/Z comparison with other parameter sets for thioxanthone.
+Sole-Daura 2024: sole_daura_ez.py with thioxanthone (TX) parameters from one source at a time.
 
     uv run benchmark/literature/sole_daura_tx.py
 
-sole_daura_ez.py takes thioxanthone at its experimental E_T with the paper's DFT
-reorganisation energies, which mixes two sources. Here the thioxanthone parameters come from
-one source at a time, and everything else is run as in sole_daura_ez.py: the substrates are
-ours, and the iridium photocatalysts keep the paper's DFT lambdas and the experimental E_T in
-every set.
+Substrates ours; the other photocatalysts keep the paper's DFT lambdas and experimental E_T.
 
-THE PARAMETER SETS (`tx_source`, thioxanthone only)
-    paper       experimental E_T, the paper's DFT lambdas: the main analysis of
-                sole_daura_ez.py, carried along as the reference
-    paper_dft   the paper's DFT throughout: its triplet free energy (`pc_E_T_calc_lit`) and
-                its lambdas
-    opc_dft     our DFT, thioxanthone of the organophotocatalyst library
-    ml          our prediction throughout, from the same model as the substrates and at the
-                mixture mean whatever the substrate estimate, as `pc_source` = "ours" in
-                sole_daura_ez.py
-
-    The series, the exclusion of substrate 4, the sign test, its split, the probability under
-    the predicted uncertainty, the photostationary Z share and the parity nulls are those of
-    sole_daura_ez.py, for every set.
+`tx_source` (TX only)
+    paper       experimental E_T, the paper's DFT lambdas (as in sole_daura_ez.py)
+    paper_dft   the paper's DFT E_T (`pc_E_T_calc_lit`) and lambdas
+    opc_dft     our DFT, organophotocatalyst library
+    ml          our prediction, same model as the substrates, mixture mean
 
 Reads    ../data/literature_benchmark/sole_daura_2024.csv
          ../data/computational_data_raw/organophotocatalysts/organophotocatalyst_dft.csv
@@ -76,7 +64,7 @@ def terms(pc, substrate):
 
 def run(source, lit, preds, opc):
     """The four tables of sole_daura_ez.py for one thioxanthone parameter set."""
-    rng = np.random.default_rng(20261006)   # sole_daura_ez.py's seed and draw order, per set
+    rng = np.random.default_rng(20261006)   # seed of sole_daura_ez.py, per set
     rows = []
     for model, pred in preds.items():
         for estimate in ESTIMATES:
@@ -119,8 +107,8 @@ def run(source, lit, preds, opc):
         signs.append(row)
     signs = pd.DataFrame(signs)
 
-    # Probability of the deployed model's sign under its own predicted uncertainty, as in
-    # sole_daura_ez.py; the photocatalyst is fixed at the set's values.
+    # Probability of the correct sign under the deployed model's predicted uncertainty;
+    # photocatalyst fixed at the set's values.
     pred = preds["deployed"]
     p_sign = {}
     for (substrate, pc_label), g in lit[lit.barrier_exp.notna()].groupby(["substrate", "pc_label"]):
@@ -148,7 +136,7 @@ def run(source, lit, preds, opc):
                     "z_percent_exp": exp_row.pss_z_percent_exp, "z_percent_calc_lit": exp_row.pss_z_percent_calc_lit})
     pss = pd.DataFrame(pss)
 
-    # The nulls take the set's thioxanthone too, so they stay comparable within a set.
+    # Nulls use the set's thioxanthone.
     parity = []
     scored = table[~table.diffusion_controlled & table.barrier_exp.notna()]
     pairs = lit[lit.barrier_exp.notna() & (lit.substrate != EXCLUDED_SUBSTRATE)]
@@ -187,8 +175,7 @@ def main():
     write(pss, "sole_daura_tx_pss.csv")
     write(parity, "sole_daura_tx_parity.csv")
 
-    # deployed model, mixture mean: the TX parameters, the absolute barriers over the 16 pairs,
-    # ddG and the Z share with TX per substrate
+    # deployed model, mixture mean: TX parameters, parity, ddG and Z share per substrate
     deployed = lambda t: t[(t.model == "deployed") & (t.estimate == "mean")]  # noqa: E731
     tx = deployed(table)[lambda t: t.pc_label == "TX"].groupby("tx_source", sort=False).first()
     fit = deployed(parity)[lambda t: (t.barriers == "ours, asymmetric") & (t.subset == "all 16 pairs")]

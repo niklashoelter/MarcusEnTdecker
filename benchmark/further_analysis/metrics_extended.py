@@ -24,17 +24,14 @@ twogate_lifetime       dft, ml    dG_EnT <= 0 and asym barrier <= t_PC,
                                   r = r_PC + r_Q of the pair
 twogate_lifetime_r7A   dft, ml    the same with r = 7 A
 
-These are the classification.py criteria and settings; none is tuned, so n_free is 0
-and setting is empty. Photocatalyst parameters are DFT throughout.
+Settings of classification.py, untuned (n_free = 0). Photocatalyst parameters DFT.
 
-Scores (ROC AUC, PR AUC): -dG_EnT; E_T(PC) - DvTE; t_PC - barrier with every endergonic
-pair below every exergonic one. PR AUC is the average precision (precision at each
-distinct score, weighted by the recall gained there). Within-PC: over the photocatalysts
-with both outcomes, the median of the per-PC ROC AUCs, their mean weighted by
-n_pos x n_neg (pooled), and the median per-PC MCC. Class metrics: the classes of
-quencher_classes.py, and flexible and dissociative together; MCC is 0 where undefined.
+Scores: -dG_EnT; E_T(PC) - DvTE; t_PC - barrier, endergonic pairs below all exergonic ones.
+PR AUC = average precision. Within-PC (photocatalysts with both outcomes): median ROC AUC,
+mean weighted by n_pos x n_neg (pooled), median MCC. Class metrics: classes of
+quencher_classes.py plus flexible + dissociative; MCC = 0 where undefined.
 
-Energies and distances in the pair table are rounded to 2 decimals, metrics to 3.
+Pair table: energies and distances 2 decimals; metrics 3.
 """
 
 import sys
@@ -107,8 +104,7 @@ def criteria(df):
 
 
 def average_precision(y, score) -> float:
-    """Area under the precision-recall curve as the average precision: the precision at
-    each distinct score threshold, weighted by the increase in recall."""
+    """Average precision: precision at each distinct score threshold, weighted by the recall gain."""
     y = np.asarray(y, bool)
     order = np.argsort(-np.asarray(score, float), kind="mergesort")
     s, t = np.asarray(score, float)[order], y[order]

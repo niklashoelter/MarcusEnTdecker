@@ -18,38 +18,30 @@ Writes  results/error_propagation/monte_carlo.csv        one row per error scena
 
     uv run benchmark/further_analysis/error_propagation.py
 
-Rate law: k_q = k_d / (1 + exp(dG/RT) + (k_-d/nu) exp(B/RT)) (theory.rate), with B the
-asymmetric Marcus barrier and k_-d/nu = (k_d/K_A)/(k_B T/h) at the contact distance
-r_PC + r_Q of each pair. two_gate: dG_EnT <= 0 and B <= t_PC(tau0, r), K_SV,crit = 10 M-1,
-as in classification.py; adiabatic: dG_EnT <= 0.
+k_q = k_d / (1 + exp(dG/RT) + (k_-d/nu) exp(B/RT)), B = asymmetric Marcus barrier,
+k_-d/nu = (k_d/K_A)/(k_B T/h) at r = r_PC + r_Q. two_gate: dG_EnT <= 0 and B <= t_PC(tau0, r),
+K_SV,crit = 10 M-1; adiabatic: dG_EnT <= 0.
 
-Monte Carlo: N_DRAWS draws per scenario from one generator seeded with SEED, the
-scenarios in the order of SCENARIOS. An error is drawn once per
-molecule and applied to all of its pairs. A quencher lambda with an added error is floored
-at LAMBDA_MIN kcal/mol, a multiplicative lambda factor at LAMBDA_MIN.
+Monte Carlo: N_DRAWS draws per scenario, one generator (SEED), scenarios in SCENARIOS order.
+One error per molecule, applied to all its pairs. Lambdas floored at LAMBDA_MIN (kcal/mol,
+or factor for multiplicative errors).
 
-Q E_T                 normal error with sigma in kcal/mol on the quencher E_T (dG_EnT)
-Q and PC E_T          independent normal errors on the quencher and photocatalyst E_T
+Q E_T                 N(0, sigma) in kcal/mol on the quencher E_T
+Q and PC E_T          independent N(0, sigma) on quencher and photocatalyst E_T
 Q params +- ML uncertainty
-                      E_T, lambda_S0_T1 and lambda_T1_S0 of each quencher + N(0, the model's
-                      uncertainty of that value)
+                      quencher E_T, lambda_S0_T1, lambda_T1_S0 + N(0, ML uncertainty)
 Q params + resampled ML-DFT differences
-                      the per-quencher (E_T, lambda_S0_T1, lambda_T1_S0) differences ML - DFT,
-                      resampled jointly with replacement; added to the DFT parameters and
-                      subtracted from the ML parameters
-lambda multiplicative every lambda of every photocatalyst and quencher x (1 + N(0, sigma)),
-                      sigma relative
+                      per-quencher ML - DFT differences, resampled jointly with replacement;
+                      added to DFT, subtracted from ML parameters
+lambda multiplicative every lambda x (1 + N(0, sigma)), sigma relative
 
-Per scenario, over the quenching pairs: the width of the 5-95 % interval of each pair's
-log10 k_q over the draws (median and 5th/95th percentiles over the pairs), its SD, the
-fraction of pairs wider than two decades, and the shift of the median draw. Per draw, over
-the quenching pairs: RMSE and Spearman rho against the measured log10 k_q. Per draw, over
-all scored pairs: MCC and the fraction of pairs whose class changes; and the fraction of
-pairs that change class in at least half of the draws.
+Quenching pairs: 5-95 % width and SD of log10 k_q over draws, fraction wider than two
+decades, shift of the median draw; per draw RMSE and Spearman rho vs measured log10 k_q.
+All scored pairs: MCC and fraction changing class per draw; fraction changing class in
+>= 50 % of draws.
 
-Sensitivity: central quantities of the derivative of log10 k_q, by a forward difference of
-SENSITIVITY_STEP kcal/mol in dG_EnT (decades per kcal/mol) and of 1 % in both quencher
-lambdas (decades per decade).
+Sensitivity: forward difference of log10 k_q, SENSITIVITY_STEP kcal/mol in dG_EnT (decades
+per kcal/mol) and 1 % in both quencher lambdas (decades per decade).
 """
 
 import sys
