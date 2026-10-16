@@ -10,7 +10,7 @@ This repository accompanies our paper *A Hybrid Machine Learning and Marcus Theo
 for Triplet Energy Transfer* (citation to follow).
 
 Its core is an ML framework that predicts, from a SMILES string, the adiabatic triplet energy
-E_T, the reorganization energies λS0-T1 and λT1-S0, and the triplet spin populations of a
+<i>E</i><sub>T</sub>, the reorganization energies <i>λ</i><sub>S0-T1</sub> and <i>λ</i><sub>T1-S0</sub>, and the triplet spin populations of a
 molecule. Each prediction comes with an uncertainty. Combined with Marcus theory, these
 predictions give the driving force and the barrier of triplet energy transfer from a
 photocatalyst.
@@ -46,7 +46,7 @@ The trained model (`ml/data/model_final.pt`) is part of the repository.
 Command line:
 
 ```bash
-uv run ent-ml predict "C=Cc1ccccc1"                  # E_T, λ and their uncertainties
+uv run ent-ml predict "C=Cc1ccccc1"                  # triplet and reorganization energies, uncertainties
 uv run ent-ml predict --file smiles.txt --format csv --out predictions.csv
 uv run ent-ml rate --quencher "C=Cc1ccccc1" \
     --photocatalysts data/computational_data_processed/photocatalyst_properties_calc.xlsx \
@@ -60,7 +60,7 @@ Python:
 from ml.prediction import predict
 from ml.predict import RatePredictor, photocatalyst_properties
 
-predict(["C=Cc1ccccc1"])        # DataFrame: E_T, λS0-T1, λT1-S0, uncertainties, spin populations
+predict(["C=Cc1ccccc1"])        # DataFrame: triplet and reorganization energies, uncertainties, spin populations
 
 pc = photocatalyst_properties(
     "data/computational_data_processed/photocatalyst_properties_calc.xlsx", 1)   # PC1
@@ -68,7 +68,7 @@ result = RatePredictor().predict(pc, quencher="C=Cc1ccccc1")
 result.dG_kcal, result.dG_barrier_kcal, result.k_ent
 ```
 
-The photocatalyst properties (E_T, λ) come from DFT. `ml/README.md` describes the model, its
+The photocatalyst properties (<i>E</i><sub>T</sub>, <i>λ</i>) come from DFT. `ml/README.md` describes the model, its
 training and the full API.
 
 ## Web application
