@@ -1,21 +1,9 @@
-"""The dependency runs one way: ml -> webapp, and never back.
+"""Dependency rules: ml -> webapp, never back.
 
-`ml` is the models and the prediction API; `webapp` is EnTdecker built on top of it.
-So `webapp` may import `ml`, and `ml` may never import `webapp`.
-
-Neither package may read anything under the repository's `data/` or `benchmark/`
-directories either. Those are scripts and measurements, not a library: they are
-regenerated, rearranged and partly kept out of git, and a package that reached into
-them would stop working the moment it was installed anywhere but this checkout. The
-packages carry their own resources instead -- `ml/data/model_final.pt`, `webapp/data/` --
-and reach them through `importlib.resources`, not through a path.
-
-Inside `ml`, `ml.training` is offline tooling -- dataset building, splits, the training
-loop, metrics -- and is left out of the wheel. Nothing else in `ml` or `webapp` may
-import it, or the installed package would break.
-
-This is the rule that must never regress, which is why it is a test and not a note in
-a README.
+- `ml` never imports `webapp`.
+- Neither package imports or reads anything under `data/` or `benchmark/`; resources
+  (`ml/data/model_final.pt`, `webapp/data/`) via `importlib.resources`.
+- `ml.training` (not in the wheel) is imported by nothing else in `ml` or `webapp`.
 """
 
 from __future__ import annotations
@@ -27,28 +15,21 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 
-# Directories excluded from the walk: the test suites themselves, which name the
-# forbidden packages and paths for a living, and webapp/scripts, the offline generator of
-# the packaged photocatalyst table, which reads data/ by design. It is no package (no
-# __init__.py, so it is neither installed nor importable as webapp.scripts), and
-# test_the_generator_stays_outside_the_package below holds it to that.
+# Excluded from the walk: the test suites and webapp/scripts (offline generator, reads
+# data/; checked by test_the_generator_stays_outside_the_package).
 EXCLUDED = {("ml", "tests"), ("webapp", "tests"), ("webapp", "scripts")}
 
 FORBIDDEN_PACKAGES = ("data", "benchmark")
 
-# The scripts' own module names, so that a sys.path insert followed by, say,
-# `import pairs` or `import properties_workbook` is caught as well.
+# Script module names (catches `import pairs` after a sys.path insert).
 SCRIPT_MODULES = {p.stem for d in FORBIDDEN_PACKAGES for p in (ROOT / d).rglob("*.py")
                   if "computational_data_raw" not in p.parts} | {"reproduce"}
 
-# A path literal is forbidden if one of its segments is exactly `data` or `benchmark`,
-# or if it is exactly that word. `ml.data` and `webapp.data` are module names, not
-# paths, and never match; neither does `new_data/` or a `data:image/png;base64,` URI.
+# Forbidden: a literal with a path segment exactly `data` or `benchmark`. Does not match
+# `ml.data`, `new_data/` or a `data:image/png;base64,` URI.
 FORBIDDEN_SEGMENTS = {"data", "benchmark"}
 
-# Unmistakable artefacts of the repository's data/ directory. Checked only against
-# literals that look like a filename or a path, so that `photocatalyst_properties` --
-# a function in ml/predict.py -- is not mistaken for the workbook of the same name.
+# File names from data/; checked only against path-like literals.
 FORBIDDEN_NAMES = (
     "exp_dataset",
     "compound_identification",
@@ -119,7 +100,7 @@ DATA_SUFFIXES =(".csv", ".tsv", ".xlsx", ".xls", ".gz", ".parquet", ".json", ".t
 
 
 def _docstrings(tree):
-    """ids of the docstring nodes, which are prose about paths and not paths."""
+    """ids of the docstring nodes (not checked for paths)."""
     out = set()
     for node in ast.walk(tree):
         body = getattr(node, "body", None)
@@ -146,7 +127,7 @@ def _looks_like_a_path(literal):
 
 @pytest.mark.parametrize("path", ML_MODULES, ids=_ids(ML_MODULES))
 def test_ml_never_imports_webapp(path):
-    """ml is the library; webapp is its consumer. The arrow points one way."""
+    """ml never imports webapp."""
     assert "webapp" not in _imported_roots(_tree(path)), (
         f"{path.relative_to(ROOT).as_posix()} imports webapp. ml must not know that "
         f"EnTdecker exists -- move whatever is shared down into ml."
@@ -155,7 +136,7 @@ def test_ml_never_imports_webapp(path):
 
 @pytest.mark.parametrize("path", RUNTIME_MODULES, ids=_ids(RUNTIME_MODULES))
 def test_runtime_never_imports_training(path):
-    """ml.training is not installed with the package; nothing that is may need it."""
+    """No runtime module imports ml.training."""
     offending = sorted(name for name in _imported_modules(_tree(path))
                        if name == "ml.training" or name.startswith("ml.training."))
     assert not offending, (
@@ -195,7 +176,7 @@ def test_no_package_reads_data_or_benchmark(path):
 
 
 def test_the_generator_stays_outside_the_package():
-    """webapp/scripts reads data/, so it may be neither a package nor imported by one."""
+    """webapp/scripts is no package and is imported by no runtime module."""
     assert not (ROOT / "webapp" / "scripts" / "__init__.py").exists(), (
         "webapp/scripts has become a package; it would be installed and break the rule above")
     offending = {path.relative_to(ROOT).as_posix(): sorted(

@@ -3,7 +3,7 @@
 # dependencies = ["pandas==2.3.3", "openpyxl==3.1.5", "rdkit==2025.9.4"]
 # ///
 """
-The photocatalyst table of the web application, built from the repository's data.
+The photocatalyst table of the web application.
 
 Reads   ../../data/compound_identification.xlsx                              PC names
         ../../data/computational_data_processed/photocatalyst_properties_calc.xlsx
@@ -12,32 +12,22 @@ Reads   ../../data/compound_identification.xlsx                              PC 
                                                      OPC names, E_T and both lambda
         ../../data/computational_data_raw/organophotocatalysts/OPC<n>/S0/opt_geometry.xyz
                                                      OPC SMILES
-        ../data/pc_structures/<id>.png                only to report which drawings are missing
+        ../data/pc_structures/<id>.png                reports missing drawings
 Writes  ../data/photocatalysts.csv
 
     uv run webapp/scripts/build_photocatalysts.py
 
-One row per photocatalyst of the library: the screened photocatalysts PC<n> by their
-new_id, then the organic photocatalysts OPC<n>, which were not screened and are offered
-only here. Each quantity has one source, the same one the benchmark uses:
+One row per photocatalyst: screened PC<n> (by new_id), then organic OPC<n>.
 
     E_T, lambda_S0_T1, lambda_T1_S0     DFT (kcal/mol); lambda_S0_T1 is the S0 surface at the
                                         T1 geometry, lambda_T1_S0 the T1 surface at the S0
                                         geometry
     E_PCplus_PCstar, E_PCstar_PCminus   DFT excited-state potentials (V vs SCE), E(PC+/PC*) and
-                                        E(PC*/PC-); none for the OPCs (S0 and T1 only)
+                                        E(PC*/PC-); none for the OPCs
 
-The web application gives the driving force and the barrier only, so no lifetime is
-carried.
-
-The values are copied as the data tables hold them (kcal/mol and V at 2 decimals). The
-metal complexes have no SMILES by design. A drawing data/pc_structures/<id>.png is picked
-up by the application wherever the file exists, so adding one needs no rerun; this script
-only lists the photocatalysts that have neither a drawing nor a SMILES. The OPC SMILES are read off the
-optimised S0 geometries (bond orders from connectivity, the neutral resonance form).
-
-Not part of the package: webapp/scripts/ has no __init__.py, so it is neither installed
-nor imported by the application.
+Values rounded to 2 decimals. Metal complexes have no SMILES. OPC SMILES from the
+optimised S0 geometry (bond orders from connectivity, neutral resonance form).
+Not part of the package.
 """
 
 from __future__ import annotations

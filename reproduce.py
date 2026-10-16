@@ -10,33 +10,14 @@ Regenerate the data and the benchmark, in dependency order.
     uv run reproduce.py data benchmark   several stages
     uv run reproduce.py --list           what would run, without running it
 
-Each script is standalone and declares its own dependencies, so this is only a
-runner -- it adds no behaviour of its own beyond ordering and reporting. Running any
-script by hand gives the same result.
+A stage whose input is missing is skipped.
 
-A stage whose inputs are not present is reported as skipped rather than failed, so a
-partial checkout (no computational_data_raw, say) still gets as far as it can.
-
-Not every script is a stage:
-    `photocatalyst_curate.py` builds the photocatalyst deposit from a job tree given as an
-    argument, so it is run by hand.
-
-    The literature benchmark in benchmark/literature/ is run by hand with the ml extra:
-    `predict.py` first, then the comparison scripts (benchmark/README.md). Its results
-    are in git.
-
-    `quencher_ml.py` needs the ml extra (torch, torch-geometric, rdkit). Run it by hand:
-    `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`. The workbook
-    it writes is in git.
-
-    `quencher_ml_timing.py` measures the model's inference time on the machine it runs on,
-    also with the ml extra: `uv run --extra ml python
-    data/computational_data_scripts/quencher_ml_timing.py`. The table it writes is in git.
-
-    `compound_identification.py`, `properties_workbook.py` and `molecular_size.py` in
-    data/, and `pairs.py`, `theory.py` and `scoring.py` in benchmark/, are imported modules.
-
-The model training is not a stage either; ml/README.md describes it.
+Run by hand (not stages):
+    uv run --extra ml python data/computational_data_scripts/quencher_ml.py
+    uv run --extra ml python data/computational_data_scripts/quencher_ml_timing.py
+    photocatalyst_curate.py <job tree>
+    benchmark/literature/: predict.py, then the comparison scripts (ml extra)
+    model training: ml/README.md
 """
 
 import argparse
@@ -61,10 +42,7 @@ PIPELINE = [
      "data/experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_literature.csv"),
     ("data", "data/experimental_data_scripts/properties_exp.py",
      "data/experimental_data_raw/quencher_cyclic_voltammetry/quencher_redox_potentials.csv"),
-    # The computational extraction needs the deposit, which is not in git. Each stage
-    # checks for a job directory rather than for its folder, because the folders are
-    # present in a clone -- they hold the tables these stages write -- and would
-    # otherwise send a clone without the deposit into failures instead of skips.
+    # Computational stages need the deposit (not in git); each checks for a job directory.
     ("data", "data/computational_data_scripts/quencher_dft.py",
      "data/computational_data_raw/quencher_adiabatic_DFT/Q1"),
     ("data", "data/computational_data_scripts/quencher_geometry.py",
@@ -91,7 +69,7 @@ PIPELINE = [
     ("benchmark", "benchmark/cost.py", "data/computational_data_processed/quencher_timings_ml.csv"),
     *[("further_analysis", f"benchmark/further_analysis/{name}.py", "data/exp_dataset_ent.csv")
       for name in ("within_groups", "rate_predictions")],
-    # The quencher classes come first: most of the modules below read them.
+    # quencher_classes first: read by the modules below.
     ("further_analysis", "benchmark/further_analysis/quencher_classes.py",
      "data/computational_data_processed/quencher_geometry_S0_T1.csv"),
     *[("further_analysis", f"benchmark/further_analysis/{name}.py",

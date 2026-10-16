@@ -1,16 +1,9 @@
-"""Is the packaged photocatalyst table the paper's, and does the app give the benchmark's
-driving forces and barriers?
+"""Packaged photocatalyst table and app against the repository (skip without it).
 
-Two checks against the rest of the repository, so both skip where it is absent (an
-installed package, a container image):
-
-- data/photocatalysts.csv is exactly what scripts/build_photocatalysts.py builds from
-  data/, so a hand edit or a stale table after a data change fails here.
-- For every scored pair of the benchmark and both quencher sources (DFT, ML), the app's
-  /api/marcus/compute with the packaged photocatalyst gives the benchmark's driving force
-  and asymmetric barrier (benchmark/further_analysis/results/metrics_extended/pairs.csv).
-  The pair table holds energies at 2 decimals, hence the tolerance of half a unit in the
-  last place.
+- data/photocatalysts.csv equals what scripts/build_photocatalysts.py builds.
+- /api/marcus/compute gives the driving force and asymmetric barrier of every pair in
+  benchmark/further_analysis/results/metrics_extended/pairs.csv (DFT and ML quencher),
+  within half a unit of the 2nd decimal.
 """
 
 from __future__ import annotations

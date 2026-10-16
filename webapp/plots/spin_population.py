@@ -55,7 +55,7 @@ def _prepare_mol_and_drawer(smiles, spin_population, uncertainty, rgb, theme="li
 
 
 def _make_colorbar_info(spin_population, uncertainty, rgb):
-    """Returns (colorscale, cmin, cmax, label) for both mpl and plotly."""
+    """Returns (r, g, b, cmin, cmax, label, alpha_start, alpha_end) of the colour bar."""
     r, g, b = np.array(rgb) / 255.0
     cmin, cmax = float(np.min(spin_population)), float(np.max(spin_population))
     label = 'Uncertainty' if uncertainty is not None else 'Spin density'

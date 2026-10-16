@@ -1,12 +1,9 @@
 # Triplet energy transfer kinetics — data, benchmarks and models
 
 Companion repository for *A Hybrid Machine-Learning and Marcus Theory Approach for
-Predicting Triplet Energy Transfer Kinetics*.
-
-It holds everything needed to regenerate the paper's numbers from instrument output:
-the experimental and computational data with the scripts that process them and the
-pair-level dataset built from them, the physical-organic theory benchmarks, and the
-training and evaluation of the machine-learning models.
+Predicting Triplet Energy Transfer Kinetics*: experimental and computational data with
+their processing scripts, the pair-level dataset, the theory benchmarks, and the
+machine-learning models.
 
 ## The screen
 
@@ -27,11 +24,10 @@ webapp/         the `webapp` package: EnTdecker, the FastAPI application that se
                 in a browser
 ```
 
-Each directory's README says what is in it, what produced it, and what is known to be
-wrong with it; `data/` has one README for all of its subfolders.
+Each directory has a README; `data/` has one for all of its subfolders.
 
 `data/` and `benchmark/` are scripts. `ml/` and `webapp/` are the two installable
-packages, and both are built from the single root `pyproject.toml`:
+packages, built from the root `pyproject.toml`:
 
 ```
 uv sync --extra ml         # the models, the prediction API and the ent-ml CLI
@@ -45,13 +41,11 @@ data  ->  benchmark
 ml    ->  webapp
 ```
 
-`benchmark/` reads only what `data/` writes (and, for the comparison of ML with DFT
-parameters, the training set and splits in `ml/data/`), so any number in the paper can be traced to
-the instrument file it came from. The packages never read anything under `data/` or
-`benchmark/`, and `ml` never imports `webapp`; each carries its own resources —
-`ml/data/model_final.pt`, `webapp/data/` — and reads them with `importlib.resources`.
-`webapp/tests/test_no_reverse_dependency.py` keeps that from regressing. The two sides
-meet in three scripts that call the `ml` package: `quencher_ml.py` and
+`benchmark/` reads only what `data/` writes (and the training set and splits in
+`ml/data/`). The packages never read anything under `data/` or `benchmark/`, and `ml`
+never imports `webapp`; each reads its own resources (`ml/data/model_final.pt`,
+`webapp/data/`) with `importlib.resources`. `webapp/tests/test_no_reverse_dependency.py`
+enforces this. Three scripts call the `ml` package: `quencher_ml.py` and
 `quencher_ml_timing.py` in `data/computational_data_scripts/`, which write
 `quencher_properties_ml.xlsx` and `quencher_timings_ml.csv`, and
 `benchmark/literature/predict.py`, which writes the predictions of the literature benchmark.
@@ -82,9 +76,9 @@ data/                                exp_dataset_ent.csv, exp_dataset_ent.xlsx  
 ```
 
 Each workbook has one row per compound and its columns in blocks, with a `Column key`
-sheet naming the table each column was copied from. Those tables — fitted lifetimes,
-extracted spectra, redox potentials, conformer energies — are intermediates, and sit in the raw
-folder beside the instrument files or jobs they were derived from.
+sheet naming the table each column was copied from. Those intermediate tables (fitted
+lifetimes, extracted spectra, redox potentials, conformer energies) sit in the raw folder
+beside the instrument files or jobs they were derived from.
 
 ## Reproducing
 
@@ -93,27 +87,22 @@ uv run reproduce.py            # the data, benchmark, further_analysis and webap
 uv run reproduce.py data       # just one stage
 ```
 
-Individual scripts are standalone and declare their own dependencies in a PEP 723
-header, so any one of them also runs by itself:
+Each script declares its dependencies in a PEP 723 header and runs by itself, without
+arguments, from any working directory:
 
 ```
 uv run data/experimental_data_scripts/stern_volmer_fits.py
 ```
 
-No install step, no environment to activate, no arguments. Paths are resolved relative
-to each script's own location, so the working directory does not matter. The exceptions
-are the three scripts that use the `ml` package (above), which run with
-`uv run --extra ml python <script>`, the comparison scripts of the literature benchmark,
-which are not a stage of `reproduce.py` and which `benchmark/README.md` describes, and the
-model training, which `ml/README.md` describes.
+Exceptions: the three scripts that use the `ml` package (above) run with
+`uv run --extra ml python <script>`; the comparison scripts of the literature benchmark
+are described in `benchmark/README.md`; the model training in `ml/README.md`.
 
-### The one thing that is not in this repository
+### Not in this repository
 
-`data/computational_data_raw/` is about 11 GB of ORCA and Milo job files. It is
-archived to Zenodo rather than versioned here. The tables extracted from it are
-committed — in the same folders, next to where the jobs go — and so are the workbooks
-built from them, so the repository is fully usable without it. You only need it to
-re-derive the extracted tables from scratch.
+`data/computational_data_raw/` (ORCA and Milo job files) is archived to Zenodo. The
+tables extracted from it and the workbooks built from them are committed; the archive is
+needed only to re-derive the extracted tables.
 
 ## Predicting from structure
 
@@ -129,10 +118,9 @@ result = RatePredictor().predict(photocatalyst, quencher=Q_SMILES)
 result.k_ent, result.dG_barrier_kcal, result.uncertainty, result.two_gate
 ```
 
-The photocatalysts are Ir and Ru complexes, which the model cannot read, so their
-properties come from DFT; the quencher is predicted from its SMILES. `uv sync --extra ml`
-first. The same calls are also a command line — see `uv run ent-ml --help` — and for a
-browser instead, that is what EnTdecker is, in `webapp/`.
+Photocatalyst properties (Ir and Ru complexes) come from DFT; the quencher is predicted
+from its SMILES. `uv sync --extra ml` first. Command line: `uv run ent-ml --help`;
+browser: EnTdecker, in `webapp/`.
 
 ## The models, and who wrote them
 
@@ -141,7 +129,3 @@ The model code is not this repository's work. It is
 the `ml` package together with his training scripts. The checkpoint the web application
 serves, `ml/data/model_final.pt`, was trained in this repository with that code;
 `ml/README.md` describes how, and records the commits the code came from.
-
-It is carried in this repository rather than pinned as a remote dependency because the
-paper's numbers have to stay reproducible after the library moves on, and because the
-deployed web application should be built from a commit rather than from a branch head.

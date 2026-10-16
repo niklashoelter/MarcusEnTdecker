@@ -18,17 +18,13 @@ def plot_reaction_coordinate(
     *,
     theme: str = "light",
 ) -> Dict[str, Any]:
-    """Plot the Marcus-theory parabolas for a triplet–triplet energy transfer reaction.
+    """Marcus parabolas of a triplet-triplet energy transfer pair.
 
-    Returns a dictionary that contains the matplotlib figure, metadata
-    (limits, key energies, TS position) and a flag that indicates
-    whether the symmetric approximation was applied.
-
-    This keeps compatibility with existing callers that only use the
-    figure (access via ``result["fig"]``).
+    Returns {"fig", "limits", "energies", "symmetric_approx", "symmetric_reason",
+    "x_intersect"}.
     """
 
-    # --- 1. Compute core values via shared logic ---
+    # --- 1. Driving force, barriers, lambda_forward/lambda_reverse ---
     (
         dG,
         dG_activation,
@@ -53,25 +49,22 @@ def plot_reaction_coordinate(
     c = -(lambda_r + dG)
     discriminant = b**2 - 4 * a * c
 
-    x_intersect = 0.5  # sensible default position
+    x_intersect = 0.5  # default
 
     if not symmetric_flag and abs(a) >= 1e-10 and discriminant >= 0:
-        # Regular case: quadratic equation is well behaved
+        # Root nearest x = 0.5
         sol1 = (-b + math.sqrt(discriminant)) / (2 * a)
         sol2 = (-b - math.sqrt(discriminant)) / (2 * a)
         x_intersect = sol1 if abs(sol1 - 0.5) < abs(sol2 - 0.5) else sol2
     else:
-        # Symmetric approximation or numerically problematic case
+        # Symmetric approximation or no real intersection
         if not symmetric_flag:
             symmetric_flag = True
             reason = reason or "quadratic_intersection_failed"
-        # Choose a TS position based on curve shape; for strongly
-        # exergonic reactions the TS tends to shift towards reactants/products.
         try:
             lambda_rxn = math.sqrt(max(lambda_f * lambda_r, 0.0))
             if lambda_rxn > 0:
-                # Inspired by the standard Marcus expression:
-                # x roughly proportional to (lambda_r + dG) / (lambda_f + lambda_r)
+                # x_TS = (lambda_r + dG) / (lambda_f + lambda_r)
                 denom = lambda_f + lambda_r
                 if abs(denom) > 1e-12:
                     x_intersect = (lambda_r + dG) / denom
@@ -82,7 +75,7 @@ def plot_reaction_coordinate(
         except Exception:
             x_intersect = 0.5
 
-    # --- 3. Plotting with robust scaling ---
+    # --- 3. Plot ---
 
     if theme == "dark":
         plt.style.use('dark_background')
@@ -109,7 +102,7 @@ def plot_reaction_coordinate(
     xmin = x_min_core - 0.5 * x_span
     xmax = x_max_core + 0.5 * x_span
 
-    # Ensure a minimal useful window
+    # Minimum window
     xmin = min(xmin, -1.0)
     xmax = max(xmax, 2.0)
 
@@ -137,7 +130,7 @@ def plot_reaction_coordinate(
     ymin_core = min(key_y_points + [min(G_initial.min(), G_final.min())])
     ymax_core = max(key_y_points + [max(G_initial.max(), G_final.max())])
 
-    # Safety padding so annotations are not clipped
+    # Padding for the annotations
     y_span = max(ymax_core - ymin_core, 1.0)
     ymin = ymin_core - 0.15 * y_span
     ymax = ymax_core + 0.3 * y_span

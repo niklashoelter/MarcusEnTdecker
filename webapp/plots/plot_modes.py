@@ -73,7 +73,7 @@ def plot_mode_distribution_single(
     ax.grid(True, linestyle='--', linewidth=0.5, color=grid_color)
     fig.tight_layout()
 
-    # Reset default style so it doesn't affect other global scripts if any
+    # Reset style
     plt.style.use('default')
     
     return fig

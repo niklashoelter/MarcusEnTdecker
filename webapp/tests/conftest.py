@@ -26,13 +26,8 @@ def stub():
 
 @pytest.fixture(scope="module")
 def client(stub):
-    """The app with the model stubbed out, and no lifespan.
-
-    `ml.prediction` is replaced in `sys.modules` before `webapp.app` is imported, so
-    the checkpoint is never loaded and torch is never asked for a forward pass. The
-    client is used outside a `with` block on purpose: entering one would run the
-    lifespan, whose whole job is to pre-warm the model.
-    """
+    """The app with `ml.prediction` stubbed in `sys.modules`; no `with` block, so the
+    lifespan (model pre-warm) does not run."""
     pytest.importorskip("fastapi", reason="needs the webapp extra: uv sync --extra webapp")
     pytest.importorskip("httpx", reason="fastapi.testclient is built on httpx")
     from fastapi.testclient import TestClient

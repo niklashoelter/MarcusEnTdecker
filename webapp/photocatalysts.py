@@ -1,8 +1,7 @@
 """The packaged photocatalyst library: data/photocatalysts.csv.
 
-The table is written by scripts/build_photocatalysts.py from the repository's data and
-is not edited by hand. One row per photocatalyst, the screened ones (PC<n>) first, then
-the organic photocatalysts offered only here (OPC<n>):
+Written by scripts/build_photocatalysts.py. One row per photocatalyst, screened (PC<n>)
+first, then organic photocatalysts (OPC<n>):
 
     id                  PC<n> or OPC<n>
     name                the compound
@@ -13,7 +12,7 @@ the organic photocatalysts offered only here (OPC<n>):
     E_PCplus_PCstar     E(PC+/PC*), DFT, V vs SCE; blank where not computed
     E_PCstar_PCminus    E(PC*/PC-), DFT, V vs SCE; blank where not computed
 
-A photocatalyst's drawing is data/pc_structures/<id>.png, used wherever that file exists.
+Drawings: data/pc_structures/<id>.png, where present.
 """
 
 from __future__ import annotations
@@ -72,10 +71,7 @@ def get_photocatalyst(pc_id: str) -> Optional[Dict[str, Any]]:
 
 
 def structure_image(pc_id: str) -> Optional[bytes]:
-    """The drawing pc_structures/<id>.png of a photocatalyst of the table, or None.
-
-    Only ids from the table are looked up, so a request never names a path.
-    """
+    """pc_structures/<id>.png for a table id, or None. Only table ids are looked up."""
     pc = get_photocatalyst(pc_id)
     if pc is None:
         return None

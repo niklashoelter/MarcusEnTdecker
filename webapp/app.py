@@ -23,17 +23,16 @@ import matplotlib.pyplot as plt
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # This safely pre-loads the model before accepting web traffic
+    # Pre-load the model before serving requests
     print("Pre-warming PyTorch model into global cache...")
     try:
         from ml.prediction import predict as warmup_predict
-        # Trigger cache loading via a single quick methane molecule
+        # Load the cache with methane
         warmup_predict(["C"])
         print("Model cached successfully!")
     except Exception as e:
         print(f"Could not pre-warm model: {e}")
     yield
-    # Code here runs on app shutdown if necessary
 
 app = FastAPI(title="EnTdecker", lifespan=lifespan)
 
@@ -144,8 +143,7 @@ def api_structure(request: StructureRequest):
     if not request.smiles.strip() and (not request.name or structure_image(request.name) is None):
         raise HTTPException(status_code=404, detail="No structure available")
     try:
-        # A photocatalyst is drawn from its packaged image where it has one; `name` is its
-        # id, looked up in the table and never used as a path.
+        # Packaged photocatalyst image if present; `name` is a table id, never a path.
         if request.name:
             image = structure_image(request.name)
             if image is not None:
@@ -156,7 +154,6 @@ def api_structure(request: StructureRequest):
         if mol is None:
             raise ValueError("Invalid SMILES")
 
-        # Consistent with load_acs_style but uses SVG for web view
         drawer = rdMolDraw2D.MolDraw2DSVG(200, 150)
         opts = drawer.drawOptions()
         opts.clearBackground = False
@@ -172,7 +169,7 @@ def api_structure(request: StructureRequest):
         drawer.DrawMolecule(mol)
         drawer.FinishDrawing()
         svg = drawer.GetDrawingText()
-        # Clean up the xml namespace sometimes included multiple times
+        # Remove the duplicated svg namespace
         svg = svg.replace('xmlns:svg="http://www.w3.org/2000/svg"', '')
         return Response(content=svg, media_type="image/svg+xml")
     except Exception as e:
@@ -185,10 +182,9 @@ def api_photocatalysts():
     return {"photocatalysts": photocatalysts()}
 
 class MarcusRequest(BaseModel):
-    """A pair, in `unit`. lambda_S0_T1 is the S0 surface at the T1 geometry, lambda_T1_S0
-    the T1 surface at the S0 geometry; ml.energy.marcus_ent pairs them into
-    lambda_forward = lambda_T1_S0(PC) + lambda_S0_T1(Q) and
-    lambda_reverse = lambda_S0_T1(PC) + lambda_T1_S0(Q). Any other field is refused."""
+    """A PC-Q pair, in `unit`. lambda_S0_T1: S0 surface at the T1 geometry; lambda_T1_S0:
+    T1 surface at the S0 geometry. lambda_forward = lambda_T1_S0(PC) + lambda_S0_T1(Q),
+    lambda_reverse = lambda_S0_T1(PC) + lambda_T1_S0(Q). Extra fields are refused."""
     model_config = ConfigDict(extra="forbid")
 
     pc_adiabatic_E_T: float
@@ -239,7 +235,7 @@ def api_marcus_plot(request: MarcusRequest):
         plt.close(fig)
         buf.seek(0)
         
-        # We also want to return symmetric_approx info. Using headers to pass metadata.
+        # symmetric_approx info in the response headers
         headers = {
             "X-Symmetric-Approx": "true" if res.get("symmetric_approx") else "false",
             "X-Symmetric-Reason": str(res.get("symmetric_reason", ""))

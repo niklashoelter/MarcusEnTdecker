@@ -1,12 +1,6 @@
-"""Does EnTdecker still come up, and do its routes still answer?
+"""Smoke test of webapp.app with the model stubbed out (no forward pass).
 
-A smoke test, not a test of the science: the model is stubbed out, so nothing here
-runs a forward pass. What it checks is that `webapp.app` imports under its new module
-path, that the page renders, and that an API route that needs no prediction answers.
-
-It needs the `webapp` extra for fastapi, and the dev group for httpx, which fastapi's
-test client is built on. Under `uv sync --extra ml` alone fastapi is missing and the whole
-file skips; the dependency test beside it does not, because it only reads source.
+Needs the `webapp` extra (fastapi) and the dev group (httpx); skips otherwise.
 """
 
 from __future__ import annotations
@@ -16,7 +10,7 @@ import pytest
 pytest.importorskip("fastapi", reason="needs the webapp extra: uv sync --extra webapp")
 pytest.importorskip("httpx", reason="fastapi.testclient is built on httpx")
 
-# The `client` and `stub` fixtures (the app with the model stubbed out) are in conftest.py.
+# `client` and `stub` fixtures: conftest.py.
 
 
 def test_index_renders(client):
@@ -33,7 +27,7 @@ def test_health(client):
 
 
 def test_photocatalyst_api_answers(client):
-    """The packaged photocatalyst table, served without touching the model."""
+    """The packaged photocatalyst table, served without the model."""
     response = client.get("/api/photocatalysts")
     assert response.status_code == 200
 
@@ -46,13 +40,13 @@ def test_photocatalyst_api_answers(client):
 
 
 def test_the_library_is_the_screened_photocatalysts_and_the_organic_ones(client):
-    """PC1-PC27, the photocatalysts of the screen, then OPC1-OPC8, offered only here."""
+    """PC1-PC27 (screened), then OPC1-OPC8."""
     ids = [pc["id"] for pc in client.get("/api/photocatalysts").json()["photocatalysts"]]
     assert ids == [f"PC{n}" for n in range(1, 28)] + [f"OPC{n}" for n in range(1, 9)]
 
 
 def test_only_the_screened_photocatalysts_carry_potentials(client):
-    """The excited-state potentials were computed for the screened ones only."""
+    """Excited-state potentials for PC<n> only; SMILES for OPC<n> only."""
     for pc in client.get("/api/photocatalysts").json()["photocatalysts"]:
         values = (pc["E_PCplus_PCstar"], pc["E_PCstar_PCminus"])
         if pc["id"].startswith("OPC"):
@@ -65,8 +59,7 @@ def test_only_the_screened_photocatalysts_carry_potentials(client):
 
 
 def test_every_photocatalyst_is_drawn_or_named(client):
-    """The drawing <id>.png wherever the file exists, else the SMILES; neither gives a 404
-    the page turns into the compound name, never a 500."""
+    """<id>.png if present, else SVG from the SMILES, else 404 (never 500)."""
     import importlib.resources as ir
 
     drawings = ir.files("webapp.data").joinpath("pc_structures")
@@ -90,8 +83,7 @@ PAIR = {"pc_adiabatic_E_T": 65.7, "pc_lambda_S0_T1": 10.3, "pc_lambda_T1_S0": 8.
 
 
 def test_marcus_pairs_the_lambdas_as_ml_energy_does(client):
-    """lambda_forward = lambda_T1_S0(PC) + lambda_S0_T1(Q): the route hands each surface to
-    the argument of ml.energy that holds it."""
+    """lambda_forward = lambda_T1_S0(PC) + lambda_S0_T1(Q), as in ml.energy."""
     from ml.energy.marcus_ent import _compute_marcus_core
 
     expected = _compute_marcus_core(65.7, 10.3, 8.3, 58.0, 9.0, 7.0)
@@ -109,7 +101,7 @@ def test_marcus_refuses_the_old_lambda_names(client):
 
 
 def test_marcus_gives_the_driving_force_and_the_barriers_only(client):
-    """No lifetime goes in and no lifetime threshold or verdict comes out."""
+    """No lifetime input; no threshold or verdict output."""
     result = client.post("/api/marcus/compute", json=PAIR).json()
     assert set(result) == {"dG", "dG_activation", "dG_activation_backEnT"}
     assert result["dG"] < 0 and result["dG_activation"] > 0
