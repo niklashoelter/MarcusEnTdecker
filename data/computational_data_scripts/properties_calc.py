@@ -154,8 +154,8 @@ def quenchers():
                 "Dplus surface: E_Dplus at the S0 geometry minus E_Dplus at its own."),
         ]),
         Block("Reduction, adiabatic DFT", [
-            col(f"dG_Red / {KCAL}", "dG_Red", "Free energy released by Q -> Q-."),
-            col("E_Red_vs_SCE_calc / V", "E_Red_vs_SCE_calc", "dG_Red / F - 4.42 V."),
+            col(f"dG_Red / {KCAL}", "dG_Red", "Free energy of Q -> Q-."),
+            col("E_Red_vs_SCE_calc / V", "E_Red_vs_SCE_calc", "-dG_Red / F - 4.42 V."),
             col(f"lambda_S0_Dminus / {KCAL}", "lambda_S0_Dminus",
                 "S0 surface: E_S0 at the Dminus (radical anion) geometry minus E_S0 at its own."),
             col(f"lambda_Dminus_S0 / {KCAL}", "lambda_Dminus_S0",

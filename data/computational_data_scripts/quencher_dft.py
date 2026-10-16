@@ -22,8 +22,9 @@ conformer; in Q18/S0, `sp_vert_red_output.out` comes from a second run.
     E_combined   E(sp) + G-E(el)(opt)
     E_T          E_combined(T1) - E_combined(S0)
     dG_Ox        E_combined(ox) - E_combined(S0)
-    dG_Red       -(E_combined(red) - E_combined(S0))
-    E vs SCE     dG / 23.061 - 4.42
+    dG_Red       E_combined(red) - E_combined(S0)
+    E_Ox vs SCE   dG_Ox / 23.061 - 4.42
+    E_Red vs SCE  -dG_Red / 23.061 - 4.42
     Hartree to kcal/mol: x 627.509
 
 Reorganization energies are named lambda_<surface>_<geometry>: lambda_S0_T1 is E_S0 at the
@@ -183,9 +184,8 @@ def main():
             row["lambda_Dplus_S0"] = to_kcal(sub(s0["E_vert_ox"], ox["E_singlepoint"]))
 
         if s0 and red:
-            dg = to_kcal(sub(red["E_combined"], s0["E_combined"]))
-            row["dG_Red"] = None if dg is None else -1.0 * dg
-            row["E_Red_vs_SCE_calc"] = to_volt(row["dG_Red"])
+            row["dG_Red"] = to_kcal(sub(red["E_combined"], s0["E_combined"]))
+            row["E_Red_vs_SCE_calc"] = to_volt(None if row["dG_Red"] is None else -row["dG_Red"])
             row["lambda_S0_Dminus"] = to_kcal(sub(red["E_vert_ox"], s0["E_singlepoint"]))
             row["lambda_Dminus_S0"] = to_kcal(sub(s0["E_vert_red"], red["E_singlepoint"]))
 
