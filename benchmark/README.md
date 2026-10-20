@@ -57,17 +57,15 @@ Ground truth: `quenches`. Photocatalyst properties are DFT throughout.
 | `adiabatic` | ΔG_EnT ≤ 0 | — | nothing |
 | `dvte` | E_T(PC) ≥ DvTE(p) | p = 0.005, 0.008, 0.01, 0.015; normal or KDE quantile | nothing |
 | `two_gate` | ΔG_EnT ≤ 0 and asymmetric ΔG‡ ≤ t_PC(τ₀, r) | r = r_PC + r_Q from DFT sizes, r = 7 A | nothing |
-| `marcus_barrier` | symmetric ΔG‡ < threshold | — | threshold |
 
 - **Two-gate.** t_PC is the barrier at which k·τ₀ = K_SV,crit in the exergonic limit of the
   full scheme (see Physics).
-- **Grids.** Barrier threshold = 0.1–20 kcal/mol in steps of 0.1. K_SV,crit = 10 M⁻¹.
-- **Choice.** Highest MCC on the DFT parameters; on a tie the middle setting in grid order.
-- **ML.** `adiabatic` and `two_gate` are scored with each source directly; `marcus_barrier`
-  with the ML quencher parameters at the threshold chosen on DFT; `dvte` has no ML row.
+- **Detection threshold.** K_SV,crit = 10 M⁻¹.
+- **Settings.** The criteria use fixed physical settings; none is fitted to the labels.
+- **ML.** `adiabatic` and `two_gate` are scored with each source directly; `dvte` has no ML row.
 - **Metrics.** Confusion counts, accuracy, precision, recall (sensitivity), specificity,
   F1, MCC, and ROC AUC on the continuous score (−ΔG_EnT, E_T(PC) − DvTE, t_PC − ΔG‡ with
-  endergonic pairs ranked last, −ΔG‡). Within photocatalysts with both classes:
+  endergonic pairs ranked last). Within photocatalysts with both classes:
   `AUC_within_PC_median` (median of per-photocatalyst AUCs) and `AUC_within_PC_pooled`
   (each quenching pair compared only with non-quenching pairs of its photocatalyst).
   Three decimals.
@@ -79,16 +77,14 @@ Ground truth: `quenches`. Photocatalyst properties are DFT throughout.
 
 Energies in kcal/mol, T = 298.15 K.
 
-- **Pair reorganization energies.** λ_f = λ_S0_T1(PC) + λ_T1_S0(Q),
-  λ_r = λ_T1_S0(PC) + λ_S0_T1(Q); unscaled.
+- **Pair reorganization energies.** λ_f = λ_T1_S0(PC) + λ_S0_T1(Q),
+  λ_r = λ_S0_T1(PC) + λ_T1_S0(Q); unscaled.
 - **Marcus barrier, symmetric.** (ΔG + λ)² / 4λ with λ = √(λ_f·λ_r).
-- **Marcus barrier, asymmetric.** Crossing of λ_r·x² and ΔG + λ_f·(x − 1)²; the symmetric
+- **Marcus barrier, asymmetric.** Crossing of λ_f·x² and ΔG + λ_r·(x − 1)²; the symmetric
   form where they do not cross.
 - **Rate, full scheme.** k = k_d / (1 + exp(ΔG/RT) + (k_−d/ν)·exp(ΔG‡/RT)), with
   k_d = 2 × 10¹⁰ M⁻¹ s⁻¹ (acetonitrile) and k_−d/ν = (k_d/K_A)/(k_BT/h) at the contact
   distance r.
-- **Rate, irreversible.** k = k_d / (1 + (k_d/Z)·exp(ΔG‡/RT)), k_d/Z = 0.2.
-- **Sandros.** k = k_d / (1 + exp(ΔG/RT)).
 - **Lifetime barrier (two-gate).** t_PC = RT·ln((k_d·τ₀/K_SV,crit − 1) / (k_−d/ν)): the full
   scheme without exp(ΔG/RT), solved for k·τ₀ = K_SV,crit, with the Eigen encounter constant
   K_A = 4π·N_A·r³/3.
@@ -96,9 +92,9 @@ Energies in kcal/mol, T = 298.15 K.
   van der Waals volume (union of Bondi-radius spheres, Ir and Ru 2.00 Å, around the S0 DFT
   geometry, 0.1 Å grid; `../data/molecular_size.py`). Variant `r = 7 A`: 7 Å for every pair.
 
-`two_gate` uses the asymmetric Marcus barrier and the lifetime barrier; `marcus_barrier`
-the symmetric one. The rate expressions are used only in
-`further_analysis/rate_predictions.py`. Reorganization energies are named
+`two_gate` uses the asymmetric Marcus barrier and the lifetime barrier.
+`further_analysis/rate_predictions.py` compares the full-scheme rates with measured rates.
+Reorganization energies are named
 `lambda_<surface>_<geometry>`, as in `../data/`.
 
 ## Cost
@@ -113,7 +109,7 @@ photocatalyst calculations are not counted. Outputs in `results/cost/`:
 | group | calculations | criteria |
 |---|---|---|
 | adiabatic DFT | S0 and T1 opt+freq, S0 and T1 single points | `adiabatic` (dft) |
-| four-point DFT | the above and both vertical spin-change single points | `two_gate`, `marcus_barrier` (dft) |
+| four-point DFT | the above and both vertical spin-change single points | `two_gate` (dft) |
 | DvTE | Gaussian opt+freq, MD trajectories, vertical-gap single points; failed or timed-out steps not counted | `dvte` |
 | ML, per call / batch | inference of one quencher per call, or its share of one call for all quenchers | every `ml` row |
 
@@ -153,23 +149,20 @@ model in its own process; the header gives the protocol of each.
 ## Further analysis
 
 Each script writes to `further_analysis/results/<script>/`. Besides the dataset, some read
-`../data/computational_data_processed/quencher_geometry_S0_T1.csv` or
-`reorganization_modes.csv`, the Stern–Volmer tables in
+`../data/computational_data_processed/quencher_geometry_S0_T1.csv`, the Stern–Volmer tables in
 `../data/experimental_data_processed/`, or the quencher classes written by
 `quencher_classes.py` (runs first); each docstring names its inputs.
 
 | script | contents |
 |---|---|
-| `within_groups.py` | metrics and AUC within each photocatalyst and within each quencher |
-| `rate_predictions.py` | log₁₀ k for every pair and source: full scheme at r_PC + r_Q and at 7 Å, irreversible, Sandros; parity with the measured k_q, and of a constant predictor |
+| `rate_predictions.py` | log₁₀ k for every pair and source: full scheme at r_PC + r_Q and at 7 Å; parity with the measured k_q, and of a constant predictor |
 | `quencher_classes.py` | quenchers as rigid, flexible or dissociative, from structure and the S0→T1 geometry change (`quencher_geometry_S0_T1.csv`); λ_T1_S0 = 20 kcal/mol cross-check; ambiguous assignments flagged |
 | `metrics_extended.py` | per-pair table for the figures; full metrics of every criterion (PR AUC, within-PC), metrics per quencher class |
-| `lifetimes.py` | quenching fraction by barrier bin for τ₀ < 1 µs and ≥ 1 µs; short-lived photocatalysts; DvTE false positives rejected, by gate and quencher class |
+| `lifetimes.py` | outcomes and false positives for τ₀ < 1 µs and ≥ 1 µs; pairs rejected by the barrier gate |
 | `figure_tables.py` | per-quencher and per-photocatalyst tables of the scored pairs; cost per quencher of each method over the scored quenchers with its metrics |
 | `contact_distance.py` | the criterion with r = r_PC + r_Q from van der Waals volumes, or fixed r = 4–12 Å; distribution of r; shift of t_PC per Å |
-| `gate_offset.py` | first gate moved to ΔG ≤ c (DvTE − E_T(PC) ≤ c), c = −5…+2 kcal/mol: optimum, held-out c (nested LOPCO), the window −1.5 < ΔG ≤ 0, changed pairs by quencher class |
+| `gate_offset.py` | first gate moved to ΔG ≤ c (DvTE − E_T(PC) ≤ c), c = −5…+2 kcal/mol: MCC sweeps, optimum and quenching fractions in driving-force windows |
 | `error_propagation.py` | Monte Carlo errors in the computed parameters (per molecule, 1000 draws) through the classification and the predicted log₁₀ k_q; local sensitivity of log₁₀ k_q to E_T(Q) and λ |
-| `mlj.py` | Marcus–Levich–Jortner rates from the mode-resolved λ (`reorganization_modes.csv`; split at 3 k_BT, one quantum mode): rate parity, MLJ criteria against two-gate (bootstrap ΔMCC), k_−d/ν = 0.25, one variant with tuned classical λ (LOQO/LOPCO) |
 | `exclusion.py` | Q38 and Q31: outcomes, ΔG, K_SV, I₀/I and gate rejections |
 | `anharmonicity.py` | skewness and tail of the DvTE gap distributions (trajectory bootstrap), skewness against the signed error, ΔG shifted by the tail, crossing position, torsional instead of harmonic curves |
 | `dvte_reorganization.py` | DvTE − E_T against λ, four-point Gaussian estimate of DvTE, symmetric against asymmetric barrier, position of the Youden and Sandros boundaries |
@@ -180,7 +173,7 @@ Each script writes to `further_analysis/results/<script>/`. Besides the dataset,
 `literature/` compares the model's predictions with published studies. Published tables:
 `../data/literature_benchmark/`, one CSV per study. `predict.py` predicts E_T and both
 reorganization energies for every structure the model can encode and writes
-`results/literature/predictions_<case>.csv` and `predictions_members_<case>.csv`; the
+`results/literature/predictions_<case>.csv`; the
 comparison scripts read those files and never call the model. Not a stage of
 `reproduce.py`; run with the `ml` extra:
 

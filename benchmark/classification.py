@@ -175,17 +175,6 @@ def score(df):
     return pd.DataFrame(every), pd.DataFrame(best)
 
 
-def chosen_settings(df):
-    """[(criterion, variant, source, setting)] of the benchmark, without scoring every setting."""
-    out = []
-    for criterion, (_, _, variants, tuned_on, given) in CRITERIA.items():
-        for variant in variants:
-            for source in tuned_on:
-                s = choose(df, candidates(criterion, variant), source)
-                out += [(criterion, variant, source, s)] + [(criterion, variant, g, s) for g in given]
-    return out
-
-
 def main():
     table = pairs.load()
     print(pairs.summary(table))

@@ -4,9 +4,7 @@
 prediction.py       model wrapper: SMILES in, E_T and both reorganization energies out
 predict.py          prediction API: a pair in, a rate constant out
 cli.py              the `ent-ml` command
-ensemble.py         the random-split models predicting together
 model/              the graph MDN, its loss and its inference
-  checkpoint.py     aliases the old `pyrates` module path so model_final_old.pt unpickles
 energy/             Marcus, Eyring and the two-gate verdict
 utils/              graph construction and the molecule dataset
 training/           offline only, not in the wheel
@@ -14,21 +12,19 @@ training/           offline only, not in the wheel
   hyperparameters.py   the hyperparameters, Optuna trial 55
   train.py          trains on a split, or on all data
   test_predictions.py   a checkpoint's predictions for the test set of its split
-  evaluate.py       metrics from the test predictions, and the ensemble's member list
-  uncertainty_calibration.py   coverage of the test errors by the predicted uncertainty
+  evaluate.py       metrics from the test predictions
   hyperparameter_optimization.py   the Optuna search
   build_dataset.py  training targets from raw DFT energies (raw energies not included)
   loop.py           one training or validation epoch, and the loss
   metrics.py        spin-population ranking metrics
 data/
   model_final.pt              the deployed checkpoint, a copy of results/full/model.pt
-  model_final_old.pt          Leon Schlosser's checkpoint; not in the wheel
   training_dataset_full.csv   the training dataset
   splits/                     random_<seed>.csv and oos_styryl.csv
 results/            what training/ writes:
   random_<seed>/, oos_styryl/   model.pt, test_predictions_graph.csv, test_predictions_node.csv
   full/model.pt                 the model trained on all data
-  metrics.csv, metrics_random_splits.csv, uncertainty_filtering.csv, ensemble_members.csv
+  metrics.csv, metrics_random_splits.csv
   hyperparameter_optimization/optuna_results.csv
   logs/                         console output of the training runs
 tests/              the package's test suite
@@ -42,9 +38,8 @@ uv sync --extra ml
 
 ## Inputs
 
-The package opens only its checkpoint, `ml/data/model_final.pt` (via `importlib.resources`),
-and, in `ml.ensemble`, the checkpoints in `ml/results/`. It does not read `data/` or
-`benchmark/`.
+The prediction interface loads `ml/data/model_final.pt` via `importlib.resources`.
+Offline training and evaluation use the datasets, splits and checkpoints under `ml/`.
 
 The photocatalyst table is an argument: `photocatalyst_properties(source, pc_id)` takes a
 path to an .xlsx (headers on row 2) or .csv, a pandas DataFrame, or a mapping, with one row
@@ -80,25 +75,6 @@ k·τ₀ reaches K_SV,crit in the exergonic limit; the constants are in `energy/
 
 `predict_many` takes an iterable of pairs and predicts each distinct SMILES once.
 
-### The ensemble
-
-`ml.ensemble` combines the five random-split models (`results/random_<seed>/model.pt`),
-listed with md5 sums in `results/ensemble_members.csv`; a changed file is refused. It was
-written for this repository.
-
-```python
-from ml.ensemble import predict
-
-predict([smiles, ...])                  # the columns of ml.prediction.predict, plus
-                                        # <target>_model_spread and n_models
-RatePredictor(ensemble=True)            # rates from the ensemble
-```
-
-The members' mixtures are pooled with equal weight: the prediction is the mean of the
-members' means, the uncertainty the standard deviation of the pooled mixture, and
-`_model_spread` the standard deviation of the members' means. The members are not in the
-installed package; outside a checkout, pass `checkpoints=`.
-
 ## Command line
 
 ```
@@ -108,8 +84,6 @@ ent-ml predict --file quenchers.smi       one SMILES per line
 
 ent-ml rate --quencher SMILES --photocatalysts photocatalysts.xlsx
        [--photocatalyst 1] [--tau0 NS]     with tau0, also t_pc_kcal and two_gate
-
-ent-ml predict|rate ... --ensemble        the same, from the ensemble
 
 ent-ml info                               the checkpoint and its element vocabulary
 ```
@@ -163,8 +137,7 @@ predictions; with `full` it trains on every molecule for the median best epoch o
 random-split runs and keeps the last epoch. An existing `model.pt` is not overwritten (only
 the test predictions are rewritten); move it away to retrain. `test_predictions.py` rewrites
 the test predictions of a split. `evaluate.py` writes `ml/results/metrics.csv` (per split and
-target), `metrics_random_splits.csv` (mean and SD over the random splits),
-`uncertainty_filtering.csv` and `ensemble_members.csv`.
+target) and `metrics_random_splits.csv` (mean and SD over the random splits).
 
 Test predictions: `test_predictions_graph.csv`, one row per test molecule (`idx`, `smiles`,
 and `<target>_target`, `_pred`, `_uncertainty` per graph target); `test_predictions_node.csv`,
@@ -187,12 +160,9 @@ validation loss).
 
 ## Credit and origin
 
-**The model code here is Leon Schlosser's work, not this repository's.** It comes from
-[le-schlo/pyrates](https://github.com/le-schlo/pyrates). It lives here as ordinary
-first-party code — develop against it, fix it, extend it — but the
-authorship is his, and anything published from it should say so. The package was
-renamed from `pyrates` to `ml` in this repository; `model/checkpoint.py` aliases the
-old dotted path so his checkpoint, `model_final_old.pt`, still unpickles, byte-identical.
+The model code is Leon Schlosser's work, from
+[le-schlo/pyrates](https://github.com/le-schlo/pyrates), renamed to `ml` and arranged
+into runtime and offline training modules in this repository.
 
 The code was taken at these commits:
 
@@ -201,13 +171,12 @@ The code was taken at these commits:
 | the model code | branch `fastapi-webapp` | `c7d5fec279a7d05f03bd2a715d66d2e52bab9fd8` | 2026-07-31 |
 | `data/training_dataset_full.csv` | branch `main` | `8b1de3c74b05940c0b0c28d64a2482e2154629d1` | 2026-07-31 |
 
-Upstream's `data/dataset.csv` is
-`data/training_dataset_full.csv` here, and its checkpoint `model.pt` is
-`data/model_final_old.pt`; both files are byte-identical to upstream.
+Upstream's `data/dataset.csv` is carried here as
+`data/training_dataset_full.csv`, byte-identical to upstream.
 
 The modules were rearranged into runtime and training code. Beyond import paths, two
 changed: in `model/inference.py`, building a model from a checkpoint is its own function,
-`build_model`, which `ensemble.py` reuses, and `get_predictions` takes the checkpoint path
+`build_model`, and `get_predictions` takes the checkpoint path
 as a required argument (upstream defaulted to a path on Leon's machine) and reloads
 the model when the path or device changes; in `prediction.py`, the table is built by its own function,
 `frame`, and the checkpoint is found through `importlib.resources`. Where upstream code
@@ -217,7 +186,7 @@ lives here:
 |---|---|
 | `utilities/dataset/graph_construction.py`, `molecule_dataset.py` | `utils/` |
 | `utilities/dataset/data_loader.py` | `training/build_dataset.py` |
-| `utilities/metrics/digitize.py`, `jaccard.py`, `ranked_score.py` | `training/metrics.py`, concatenated |
+| `utilities/metrics/jaccard.py`, `ranked_score.py` | `training/metrics.py` |
 | `model/training.py` | `training/loop.py` |
 
 Not carried over: `utilities/plotting/scatter_plot.py` (a parity plot nothing called) and
@@ -232,17 +201,10 @@ the dataset and splits of this package and without their plotting.
 |---|---|
 | `train.py` | `model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py` |
 | `test_predictions.py` | `thesis/model/gps/get_preds.py`, and the output block of `train.py` |
-| `evaluate.py` | `og_data_opt_param/eval.py`, `thesis/model/gps/eval_fivefold.py`, `thesis/model/gps/uncertainty_curve.py` |
+| `evaluate.py` | `og_data_opt_param/eval.py`, `thesis/model/gps/eval_fivefold.py` |
 | `hyperparameter_optimization.py` | `hyperparameters/new_data/gps_ogdata_newmodel/opt.py` |
 | `splits.py` (procedures) | `og_data_opt_param/train.py` (random), `thesis/model/oos/train.py` (out of sample) |
 
-`model_final_old.pt` is that training script's seed-42 checkpoint (hyperparameters of
-trial 0 of the search). The models in `results/` and `model_final.pt` were trained in this
-repository with trial 55.
+The models in `results/` and `model_final.pt` were trained in this repository with
+trial 55.
 `results/hyperparameter_optimization/optuna_results.csv` is the search's output, unchanged.
-
-### Known issue: the two upstream branches have diverged
-
-`main` and `fastapi-webapp` forked at `1ae1a13` on 2026-03-20 and were never merged;
-nine commits on `main` are absent from the deployed branch. They do not touch the
-physics: `energy/` is byte-identical between the two.

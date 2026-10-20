@@ -198,7 +198,7 @@ def _process_mdn_output(mu, sigma, pi, batch, target_attr, mode='mixture_mean'):
         pi: Mixture weights [batch_size, output_dim, n_components]
         batch: Batch containing targets
         target_attr: Attribute name for targets in batch ('y' or 'node_y')
-        mode: Computation mode - 'mixture_mean', 'max_mode', or 'each_mode'
+        mode: Computation mode - 'mixture_mean' or 'max_mode'
 
     Returns:
         preds: Predictions as numpy array

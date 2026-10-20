@@ -1,6 +1,0 @@
-
-===== select on ad5767b1ead3 cuda:3 2026-10-02T19:41:44
-hyperparameters  n_splits  val_loss_mean  val_loss_sd  best_epoch_median  selected
-        trial_0         5      -0.765565     0.019373              105.0     False
-       trial_55         5      -0.863303     0.020812              164.0      True
-selected: trial_55

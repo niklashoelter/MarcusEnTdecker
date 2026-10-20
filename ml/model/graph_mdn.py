@@ -32,7 +32,8 @@ class GraphMDN(nn.Module):
         Initialize the model.
 
         Args:
-            encoder_type (str): Type of encoder to use ('dmpnn', 'gat', or 'mpnn').
+            encoder_type (str): Encoder: 'dmpnn', 'gat', 'mpnn', 'gin',
+                'base_transformer', 'transformer' (alias 'transformer_v2'), or 'gps'.
             node_hidden_dim (int): Hidden dimension for node embeddings.
             encoder_layers (int): Number of layers in the encoder.
             encoder_dropout (float): Dropout rate for the encoder.

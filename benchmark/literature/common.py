@@ -102,18 +102,6 @@ def spearman(x, y):
     return float(r.statistic), float(r.pvalue), len(d)
 
 
-def bootstrap_spearman(x, y, draws=10000, seed=20261006):
-    """Percentile 95 % interval of Spearman rho, resampling compounds."""
-    d = pd.DataFrame({"x": x, "y": y}).dropna().to_numpy()
-    rng = np.random.default_rng(seed)
-    rhos = []
-    for _ in range(draws):
-        s = d[rng.integers(0, len(d), len(d))]
-        if np.ptp(s[:, 0]) > 0 and np.ptp(s[:, 1]) > 0:
-            rhos.append(stats.spearmanr(s[:, 0], s[:, 1]).statistic)
-    return tuple(np.percentile(rhos, [2.5, 97.5]))
-
-
 def auc(score, positive):
     """Probability that a positive scores higher than a negative (ties count half)."""
     d = pd.DataFrame({"s": score, "p": positive}).dropna()

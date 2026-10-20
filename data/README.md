@@ -15,7 +15,6 @@ data/
 │   └── stern_volmer/                plate reads, pipetting maps
 ├── experimental_data_processed/
 │   ├── lifetimes_tcspc.csv          from pc_tcspc/
-│   ├── absorption_extinction.csv    from quencher_absorption/
 │   ├── plate_reader_filters.csv     from stern_volmer/
 │   ├── quencher_redox_measured.csv, quencher_redox_literature.csv
 │   │                                redox potentials, entered by hand
@@ -41,19 +40,15 @@ data/
 │   ├── quencher_properties_ml.xlsx  E_T, lambda_S0_T1 and lambda_T1_S0 predicted from the SMILES
 │   ├── quencher_timings.csv         wall time, cores and CPU hours of every quencher job
 │   ├── quencher_timings_ml.csv      the deployed model's inference time per quencher
-│   ├── quencher_geometry_S0_T1.csv  change of each quencher geometry from S0 to T1
-│   ├── molecular_extent.csv         extent radius of every photocatalyst and quencher
-│   └── reorganization_modes.csv     reorganization energies resolved into normal modes
+│   └── quencher_geometry_S0_T1.csv  change of each quencher geometry from S0 to T1
 ├── experimental_data_scripts/       one script per raw folder (none for pc_emission/),
 │                                    plus properties_exp.py
 ├── computational_data_scripts/      one script per raw folder, plus properties_calc.py,
 │                                    quencher_timings.py, quencher_ml.py,
 │                                    quencher_ml_timing.py, photocatalyst_curate.py,
-│                                    quencher_geometry.py, molecular_extent.py and
-│                                    reorganization_modes.py
+│                                    quencher_geometry.py
 ├── literature_benchmark/            published tables of the literature benchmark, one CSV
-│                                    per study (the PDFs beside them are not in git), and
-│                                    photocatalyst_triplet_energies.csv
+│                                    per study (the PDFs beside them are not in git)
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
 ├── molecular_size.py                molecular radius from a DFT geometry, used by the
@@ -72,8 +67,7 @@ data/
 4. `build_exp_dataset_ent.py` builds `exp_dataset_ent` from `exp_dataset` and the property workbooks.
 
 `uv run reproduce.py data` runs all of this in order, plus `quencher_timings.py`,
-`quencher_geometry.py`, `reorganization_modes.py` and `molecular_extent.py`. Not part of
-it:
+`quencher_geometry.py`. Run separately:
 
 - `quencher_ml.py` (model environment, workbook in git): `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`.
 - `quencher_ml_timing.py` (inference time on the local machine, table in git): `uv run --extra ml python data/computational_data_scripts/quencher_ml_timing.py`.
@@ -164,19 +158,6 @@ counted on a cubic grid (`molecular_size.py`). In `exp_dataset_ent` as `pc_radiu
 (`opt_geometry.xyz`): largest relative change of an S0 bond length, largest change of the
 deviation from coplanarity about a non-aromatic double bond and about any heavy-atom bond,
 and heavy-atom RMSD after Kabsch alignment (columns defined in `quencher_geometry.py`).
-
-**Molecular extent:** `molecular_extent.csv`, r_extent = max_ij (d_ij + R_i + R_j)/2 from
-the S0 geometry with the Bondi radii of `molecular_size.py`, for each photocatalyst and
-quencher.
-
-**Reorganization energies by mode:** `reorganization_modes.py` projects the S0–T1
-displacement onto the normal modes of the surface it is evaluated on. Per compound,
-surface (S0 or T1) and displacement (internal or Cartesian): the sum of the mode
-contributions λ\_j, the fraction of λ in modes below 3 k_BT (classical) and the λ-weighted
-mean frequency of the modes at or above it (quantum).
-
-**Literature triplet energies:** `literature_benchmark/photocatalyst_triplet_energies.csv`,
-literature E_T at 77 K and at room temperature, with measurement conditions and DOI.
 
 **Photocatalyst triplet:** `T1/` holds one triplet per photocatalyst, the lowest minimum
 over the ligand-localized triplets; within 1 kcal/mol, the character assigned by

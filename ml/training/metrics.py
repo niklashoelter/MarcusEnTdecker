@@ -1,15 +1,6 @@
-"""Metrics for spin-population predictions: digitizing, top-k overlap and ranking."""
+"""Metrics for spin-population predictions: top-k overlap and ranking."""
 
 import numpy as np
-
-
-def digitize_spin_populations(spin_populations: np.ndarray, bins: list = [-1, 0.07, 0.2, 0.4, 0.8, 2]):
-    '''
-    Bin index of each spin population (np.digitize with bin edges `bins`).
-    '''
-    bins = np.array(bins)
-    digitized = np.digitize(spin_populations, bins)
-    return digitized
 
 
 def top_k_jaccard_similarity(y_true: np.ndarray, y_pred: np.ndarray, k: int = 3) -> float:
