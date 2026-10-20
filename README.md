@@ -8,16 +8,20 @@
 
 This repository accompanies our manuscript:
 
-Hölter, N.; Schlosser, L.; Hümpel, C.; Spierling, L.; Glorius, F.
-*A Hybrid Machine Learning and Marcus Theory Approach for Rationalizing and Predicting Triplet Energy Transfer*.
+<p align="center">
+Hölter, N.; Schlosser, L.; Hümpel, C.; Spierling, L.; Glorius, F.<br>
+A Hybrid Machine Learning and Marcus Theory Approach for Rationalizing and Predicting Triplet Energy Transfer.<br>
 Manuscript in preparation; publication link to follow.
+</p>
 
 It builds on the original EnTdecker platform:
 
-Schlosser, L.; Rana, D.; Pflüger, P.; Katzenburg, F.; Glorius, F.
-*EnTdecker—A Machine Learning-Based Platform for Guiding Substrate Discovery in Energy Transfer Catalysis*.
-**J. Am. Chem. Soc. 2024**, *146* (19), 13266–13275.
-[DOI: 10.1021/jacs.4c01352](https://doi.org/10.1021/jacs.4c01352).
+<p align="center">
+Schlosser, L.; Rana, D.; Pflüger, P.; Katzenburg, F.; Glorius, F.<br>
+EnTdecker—A Machine Learning-Based Platform for Guiding Substrate Discovery in Energy Transfer Catalysis.<br>
+<i>J. Am. Chem. Soc.</i> <b>2024</b>, <i>146</i> <b>(19)</b>, 13266–13275.
+<a href="https://doi.org/10.1021/jacs.4c01352">DOI: 10.1021/jacs.4c01352</a>.
+</p>
 
 The ML framework in this repository predicts, from a SMILES string, the adiabatic triplet energy
 <i>E</i><sub>T</sub>, the reorganization energies <i>λ</i><sub>S0-T1</sub> and <i>λ</i><sub>T1-S0</sub>, and the triplet spin populations of a
