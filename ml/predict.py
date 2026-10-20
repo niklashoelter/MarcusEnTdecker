@@ -202,18 +202,15 @@ class RatePredictor:
     """EnT rate constants for photocatalyst-quencher pairs.
 
     The model loads on the first prediction; properties are cached per SMILES.
-    `ensemble=True`: properties from `ml.ensemble`.
     """
 
     def __init__(
         self,
         temperature: float = DEFAULT_TEMPERATURE_K,
         k_diff: float = K_DIFF_ACETONITRILE,
-        ensemble: bool = False,
     ):
         self.temperature = temperature
         self.k_diff = k_diff
-        self.ensemble = ensemble
         self._cache: dict[str, MolecularProperties] = {}
 
     # -- properties -------------------------------------------------------------
@@ -224,10 +221,7 @@ class RatePredictor:
         missing = [s for s in dict.fromkeys(wanted) if s not in self._cache]
 
         if missing:
-            if self.ensemble:
-                from ml.ensemble import predict as _predict
-            else:
-                from ml.prediction import predict as _predict
+            from ml.prediction import predict as _predict
 
             frame = _predict(missing)
             for _, row in frame.iterrows():
@@ -240,7 +234,7 @@ class RatePredictor:
                     lambda_T_S=float(row["lamda_T_S"]),
                     lambda_T_S_uncertainty=float(row["lamda_T_S_uncertainty"]),
                     spin_density=list(row["spin_map"]),
-                    source="ensemble" if self.ensemble else "model",
+                    source="model",
                 )
 
         return [self._cache[s] for s in wanted]

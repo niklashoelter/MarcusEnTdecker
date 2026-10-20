@@ -66,22 +66,17 @@ data/
 
 ## Pipeline
 
-1. Each extraction script reads one raw folder and writes its table into the matching
-   processed folder.
-2. `properties_exp.py` and `properties_calc.py` copy the per-compound values into the
-   workbooks.
+1. Each extraction script reads one raw folder and writes its table into the matching processed folder.
+2. `properties_exp.py` and `properties_calc.py` copy the per-compound values into the workbooks.
 3. `build_exp_dataset.py` builds `exp_dataset` from the experimental processed folder.
-4. `build_exp_dataset_ent.py` builds `exp_dataset_ent` from `exp_dataset` and the
-   property workbooks.
+4. `build_exp_dataset_ent.py` builds `exp_dataset_ent` from `exp_dataset` and the property workbooks.
 
 `uv run reproduce.py data` runs all of this in order, plus `quencher_timings.py`,
 `quencher_geometry.py`, `reorganization_modes.py` and `molecular_extent.py`. Not part of
 it:
 
-- `quencher_ml.py` (model environment, workbook in git):
-  `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`.
-- `quencher_ml_timing.py` (inference time on the local machine, table in git):
-  `uv run --extra ml python data/computational_data_scripts/quencher_ml_timing.py`.
+- `quencher_ml.py` (model environment, workbook in git): `uv run --extra ml python data/computational_data_scripts/quencher_ml.py`.
+- `quencher_ml_timing.py` (inference time on the local machine, table in git): `uv run --extra ml python data/computational_data_scripts/quencher_ml_timing.py`.
 - `photocatalyst_curate.py` builds the deposited photocatalyst folders from a job tree.
 
 ## Photocatalyst ids
@@ -121,23 +116,18 @@ K_SV is below the detection limit, k_q is an upper bound.
 The pairs of `exp_dataset` on which quenching can be attributed to energy transfer.
 
 - **Non-quenching pairs:** all kept.
-- **Quenching pairs:** kept only if every single-electron-transfer channel with a measured
-  quencher potential is more than **0.25 V** uphill:
+- **Quenching pairs:** kept only if every single-electron-transfer channel with a measured quencher potential is more than **0.25 V** uphill:
   - ΔE_SET,ox = E_ox(Q) − E(PC\*/PC⁻), oxidation of the quencher
   - ΔE_SET,red = E(PC⁺/PC\*) − E_red(Q), reduction of the quencher
-- **Potentials:** quencher potentials measured, photocatalyst excited-state potentials
-  calculated.
-- **Limits:** a measured limit (E_ox > x, E_red < x) makes ΔE a lower bound, marked in
-  `dE_SET_ox_bound` / `dE_SET_red_bound`; it rules a channel out only if the limit itself
-  is past 0.25 V.
+- **Potentials:** quencher potentials measured, photocatalyst excited-state potentials calculated.
+- **Limits:** a measured limit (E_ox > x, E_red < x) makes ΔE a lower bound, marked in `dE_SET_ox_bound` / `dE_SET_red_bound`; it rules a channel out only if the limit itself is past 0.25 V.
 
 Columns besides those of `exp_dataset` and the two ΔE_SET:
+
 - **Photocatalyst (DFT):** E_T, both λ and the molecular radius.
 - **Quencher (DFT):** E_T, both λ and the molecular radius.
-- **Quencher (DvTE):** mean and standard deviation of the vertical gaps, and their
-  p-quantiles for p = 0.005, 0.008, 0.01, 0.015, from a normal distribution and from a KDE.
-- **Quencher (ML):** E_T and both λ, each with the model's uncertainty (organic molecules
-  only, no photocatalyst predictions).
+- **Quencher (DvTE):** mean and standard deviation of the vertical gaps, and their p-quantiles for p = 0.005, 0.008, 0.01, 0.015, from a normal distribution and from a KDE.
+- **Quencher (ML):** E_T and both λ, each with the model's uncertainty (organic molecules only, no photocatalyst predictions).
 - **Driving force:** ΔG_EnT = E_T(Q) − E_T(PC), from both quencher sources.
 
 Values missing from the source table are left empty.
@@ -182,7 +172,7 @@ quencher.
 **Reorganization energies by mode:** `reorganization_modes.py` projects the S0–T1
 displacement onto the normal modes of the surface it is evaluated on. Per compound,
 surface (S0 or T1) and displacement (internal or Cartesian): the sum of the mode
-contributions λ_j, the fraction of λ in modes below 3 k_BT (classical) and the λ-weighted
+contributions λ\_j, the fraction of λ in modes below 3 k_BT (classical) and the λ-weighted
 mean frequency of the modes at or above it (quantum).
 
 **Literature triplet energies:** `literature_benchmark/photocatalyst_triplet_energies.csv`,

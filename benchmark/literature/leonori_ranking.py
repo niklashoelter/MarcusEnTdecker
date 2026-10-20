@@ -8,12 +8,12 @@ Leonori 2025: nitroarene photocatalysts -- triplet character.
     uv run benchmark/literature/leonori_ranking.py
 
 Predicted catalyst lambdas (lambda_T1_S0, lambda_S0_T1, sum) and barriers against the
-paper's triplet character (3pi,pi* or 3n,pi*) and dE_TT = E(3pi,pi*) - E(3n,pi*), also at
-fixed E_T (partial Spearman). Measured k_q converted to barriers by the Eyring equation;
+paper's triplet character (3pi,pi* or 3n,pi*) and dE_TT = E(3pi,pi*) - E(3n,pi*). Measured
+k_q converted to barriers by the Eyring equation;
 the E/Z pair N24 with (E)- and (Z)-1. 24 h yields and the Z share after 5 min excluded
 (see SI).
 
-Writes   results/literature/leonori_catalysts.csv     one row per catalyst, model and estimate
+Writes   results/literature/leonori_catalysts.csv     one row per catalyst
          results/literature/leonori_character.csv     lambda against triplet character
          results/literature/leonori_quenching.csv     measured k_q beside our barriers, and the E/Z pair
 """
@@ -21,8 +21,7 @@ Writes   results/literature/leonori_catalysts.csv     one row per catalyst, mode
 import numpy as np
 import pandas as pd
 
-from common import (ESTIMATES, RT, auc, barrier_asymmetric, literature, models,
-                    ours, pair_barrier, pair_lambdas, spearman, split_difference, write)
+from common import ESTIMATES, RT, auc, literature, models, ours, pair_barrier, spearman, write
 
 ISOMERISATION_CATALYST = "N24"
 K_B, H_PLANCK, T = 1.380649e-23, 6.62607015e-34, 298.15
@@ -31,15 +30,6 @@ K_B, H_PLANCK, T = 1.380649e-23, 6.62607015e-34, 298.15
 def eyring_barrier(k):
     """Eyring barrier -RT ln(k h / (k_B T)) from k in M-1 s-1 (1 M standard state)."""
     return float(-RT * np.log(k * H_PLANCK / (K_B * T)))
-
-
-def partial_spearman(x, y, control):
-    """Spearman of x and y with the rank effect of `control` removed from both."""
-    d = pd.DataFrame({"x": x, "y": y, "c": control}).dropna()
-    rx, ry, rc = d.x.rank(), d.y.rank(), d.c.rank()
-    ex = rx - np.polyval(np.polyfit(rc, rx, 1), rc)
-    ey = ry - np.polyval(np.polyfit(rc, ry, 1), rc)
-    return float(np.corrcoef(ex, ey)[0, 1])
 
 
 def main():
@@ -76,7 +66,6 @@ def main():
         character.append({
             "model": model, "estimate": estimate, "n": len(c),
             "rho_lambda_gap": spearman(c.lambda_sum_ml, c.dE_TT_lit)[0],
-            "rho_lambda_gap_fixed_E_T": partial_spearman(c.lambda_sum_ml, c.dE_TT_lit, c.E_T_ml),
             "rho_lambda_gap_within_npi": spearman(npi.lambda_sum_ml, npi.dE_TT_lit)[0],
             "rho_barrier_1E_gap": spearman(c.barrier_ml_1E, c.dE_TT_lit)[0],
             "rho_barrier_1E_gap_within_npi": spearman(npi.barrier_ml_1E, npi.dE_TT_lit)[0],
@@ -112,12 +101,11 @@ def main():
                                "barrier_ml": pair_barrier(ours(pred.loc[c], estimate), ours(pred.loc[quencher_id[q]], estimate))[1]})
             pc = ours(pred.loc[ISOMERISATION_CATALYST], estimate)
             a, b = (ours(pred.loc[s], estimate) for s in ("1E", "1Z"))
-            full, dg_part, lam_part = split_difference(
-                barrier_asymmetric, (a["E_T"] - pc["E_T"], *pair_lambdas(pc, a)), (b["E_T"] - pc["E_T"], *pair_lambdas(pc, b)))
+            full = pair_barrier(pc, a)[1] - pair_barrier(pc, b)[1]
             quench.append({"model": model, "estimate": estimate, "catalyst": ISOMERISATION_CATALYST,
                            "quencher": "(E)-1 minus (Z)-1", "k_q": np.nan, "method": "ratio of the two constants",
                            "ddG_exp": -RT * np.log(lit.at[ISOMERISATION_CATALYST, "k_q"] / lit.at[ISOMERISATION_CATALYST, "k_q_Z1"]),
-                           "ddG_ml": full, "ddG_ml_dG_part": dg_part, "ddG_ml_lambda_part": lam_part,
+                           "ddG_ml": full,
                            "ddG_EnT_ml": a["E_T"] - b["E_T"]})
     write(pd.DataFrame(quench), "leonori_quenching.csv")
 

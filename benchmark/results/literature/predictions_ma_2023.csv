@@ -1,21 +1,21 @@
-compound_id,label,name,smiles,role,isomer,predictable,reason,E_T_ml / kcal mol-1,E_T_ml_mode / kcal mol-1,E_T_ml_uncertainty / kcal mol-1,lambda_S0_T1_ml / kcal mol-1,lambda_S0_T1_ml_mode / kcal mol-1,lambda_S0_T1_ml_uncertainty / kcal mol-1,lambda_T1_S0_ml / kcal mol-1,lambda_T1_S0_ml_mode / kcal mol-1,lambda_T1_S0_ml_uncertainty / kcal mol-1
-quinoline,Quinoline,quinoline,c1ccc2ncccc2c1,substrate,,True,,62.58,62.54,0.97,12.7,12.69,0.56,11.2,11.17,0.83
-isoquinoline,Isoquinoline,isoquinoline,c1ccc2cnccc2c1,substrate,,True,,60.62,60.56,1.03,13.07,13.06,0.68,11.38,11.33,1.02
-phenanthridine,Phenanthridine,phenanthridine,c1ccc2c(c1)cnc1ccccc12,substrate,,True,,62.65,62.64,1.02,13.07,13.04,0.88,11.51,11.35,1.69
-benzofquinoline,Benzo[f]quinoline,benzo[f]quinoline,c1ccc2c(c1)ccc1ncccc12,substrate,,True,,62.16,62.11,1.02,12.81,12.77,0.92,11.14,11.01,1.62
-47phenanthroline,"4,7-Phenanthroline","4,7-phenanthroline",c1cnc2ccc3ncccc3c2c1,substrate,,True,,62.23,62.16,1.08,13.11,13.02,1.62,12.75,11.24,5.51
-a,a,tert-butyl 1H-indole-1-carboxylate (N-Boc indole),CC(C)(C)OC(=O)n1ccc2ccccc21,substrate,,True,,68.32,68.21,1.19,18.96,20.2,2.88,12.07,11.91,1.04
-b,b,benzofuran,c1ccc2occc2c1,substrate,,True,,70.64,70.55,0.98,19.36,20.49,2.94,11.37,11.21,1.42
-c,c,thiophene,c1ccsc1,substrate,,True,,69.59,69.51,1.02,30.86,31.04,2.1,13.87,13.01,3.02
-d,d,iodobenzene,Ic1ccccc1,substrate,,True,,66.4,60.97,6.4,68.32,68.52,6.31,28.7,30.02,5.29
-e,e,cyclobutanone,O=C1CCC1,substrate,,True,,75.29,75.37,1.3,31.47,31.57,2.36,11.92,11.34,3.56
-f,f,benzyl methyl ether (Bn-O-Me),COCc1ccccc1,substrate,,True,,81.34,81.34,1.17,33.37,42.23,13.16,11.77,11.66,1.22
-g,g,N-methylbenzamide (Bz-NH-Me),CNC(=O)c1ccccc1,substrate,,True,,76.52,76.53,1.07,18.18,18.47,3.03,11.96,11.96,0.94
-h,h,N-methyl-4-methylbenzenesulfonamide (Ts-NH-Me),Cc1ccc(S(=O)(=O)NC)cc1,substrate,,True,,78.34,78.35,1.23,44.27,45.19,6.41,11.07,10.8,1.52
-i,i,N-methylbut-2-ynamide,CC#CC(=O)NC,substrate,,True,,82.76,82.9,2.88,50.75,51.42,4.07,24.48,23.18,5.64
-j,j,methyl (E)-but-2-enoate (methyl crotonate),C/C=C/C(=O)OC,substrate,,True,,56.64,56.62,1.63,82.34,82.38,6.01,27.72,28.34,2.28
-k,k,N-methylethenesulfonamide (ethenyl sulfonamide),C=CS(=O)(=O)NC,substrate,,True,,58.73,58.72,1.53,91.94,91.97,6.13,35.64,35.56,2.65
-l,l,naphthalene,c1ccc2ccccc2c1,substrate,,True,,61.1,61.03,1.0,12.09,12.07,0.59,10.63,10.6,0.74
-anthracene,anthracene,anthracene,c1ccc2cc3ccccc3cc2c1,substrate,,True,,40.6,40.59,2.64,9.95,9.94,0.96,8.4,8.37,0.91
-phenanthrene,phenanthrene,phenanthrene,c1ccc2c(c1)ccc1ccccc12,substrate,,True,,61.74,61.68,1.0,12.89,12.82,0.85,10.66,10.6,1.14
-PC_Ir-PS,Ir-PS,Ir-PS,Cc1ccc2-c3c(F)cc(F)c[c]3[Ir+]34([c]5cc(F)cc(F)c5-c5ccc(C)c[n]->35)(<-[n]2c1)<-[n]1ccc(C(C)(C)C)cc1-c1cc(C(C)(C)C)cc[n]->41,photocatalyst,,False,element(s) Ir outside the model vocabulary,,,,,,,,,
+compound_id,label,name,smiles,role,isomer,predictable,reason,E_T_ml / kcal mol-1,E_T_ml_uncertainty / kcal mol-1,lambda_S0_T1_ml / kcal mol-1,lambda_S0_T1_ml_uncertainty / kcal mol-1,lambda_T1_S0_ml / kcal mol-1,lambda_T1_S0_ml_uncertainty / kcal mol-1
+quinoline,Quinoline,quinoline,c1ccc2ncccc2c1,substrate,,True,,62.58,0.97,12.7,0.56,11.2,0.83
+isoquinoline,Isoquinoline,isoquinoline,c1ccc2cnccc2c1,substrate,,True,,60.62,1.03,13.07,0.68,11.38,1.02
+phenanthridine,Phenanthridine,phenanthridine,c1ccc2c(c1)cnc1ccccc12,substrate,,True,,62.65,1.02,13.07,0.88,11.51,1.69
+benzofquinoline,Benzo[f]quinoline,benzo[f]quinoline,c1ccc2c(c1)ccc1ncccc12,substrate,,True,,62.16,1.02,12.81,0.92,11.14,1.62
+47phenanthroline,"4,7-Phenanthroline","4,7-phenanthroline",c1cnc2ccc3ncccc3c2c1,substrate,,True,,62.23,1.08,13.11,1.62,12.75,5.51
+a,a,tert-butyl 1H-indole-1-carboxylate (N-Boc indole),CC(C)(C)OC(=O)n1ccc2ccccc21,substrate,,True,,68.32,1.19,18.96,2.88,12.07,1.04
+b,b,benzofuran,c1ccc2occc2c1,substrate,,True,,70.64,0.98,19.36,2.94,11.37,1.42
+c,c,thiophene,c1ccsc1,substrate,,True,,69.59,1.02,30.86,2.1,13.87,3.02
+d,d,iodobenzene,Ic1ccccc1,substrate,,True,,66.4,6.4,68.32,6.31,28.7,5.29
+e,e,cyclobutanone,O=C1CCC1,substrate,,True,,75.29,1.3,31.47,2.36,11.92,3.56
+f,f,benzyl methyl ether (Bn-O-Me),COCc1ccccc1,substrate,,True,,81.34,1.17,33.37,13.16,11.77,1.22
+g,g,N-methylbenzamide (Bz-NH-Me),CNC(=O)c1ccccc1,substrate,,True,,76.52,1.07,18.18,3.03,11.96,0.94
+h,h,N-methyl-4-methylbenzenesulfonamide (Ts-NH-Me),Cc1ccc(S(=O)(=O)NC)cc1,substrate,,True,,78.34,1.23,44.27,6.41,11.07,1.52
+i,i,N-methylbut-2-ynamide,CC#CC(=O)NC,substrate,,True,,82.76,2.88,50.75,4.07,24.48,5.64
+j,j,methyl (E)-but-2-enoate (methyl crotonate),C/C=C/C(=O)OC,substrate,,True,,56.64,1.63,82.34,6.01,27.72,2.28
+k,k,N-methylethenesulfonamide (ethenyl sulfonamide),C=CS(=O)(=O)NC,substrate,,True,,58.73,1.53,91.94,6.13,35.64,2.65
+l,l,naphthalene,c1ccc2ccccc2c1,substrate,,True,,61.1,1.0,12.09,0.59,10.63,0.74
+anthracene,anthracene,anthracene,c1ccc2cc3ccccc3cc2c1,substrate,,True,,40.6,2.64,9.95,0.96,8.4,0.91
+phenanthrene,phenanthrene,phenanthrene,c1ccc2c(c1)ccc1ccccc12,substrate,,True,,61.74,1.0,12.89,0.85,10.66,1.14
+PC_Ir-PS,Ir-PS,Ir-PS,Cc1ccc2-c3c(F)cc(F)c[c]3[Ir+]34([c]5cc(F)cc(F)c5-c5ccc(C)c[n]->35)(<-[n]2c1)<-[n]1ccc(C(C)(C)C)cc1-c1cc(C(C)(C)C)cc[n]->41,photocatalyst,,False,element(s) Ir outside the model vocabulary,,,,,,

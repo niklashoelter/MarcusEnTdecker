@@ -1,6 +1,3 @@
-# Registers the `pyrates` aliases model_final_old.pt needs to unpickle.
-from ml.model import checkpoint as _checkpoint  # noqa: F401
-
 import numpy as np
 import torch
 from pathlib import Path

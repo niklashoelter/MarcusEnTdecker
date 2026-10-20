@@ -8,7 +8,6 @@ Measured properties of the photocatalysts and quenchers, one workbook per compou
 Reads   ../compound_identification.xlsx   (ids, names, SMILES)
         ../experimental_data_processed/lifetimes_tcspc.csv
         ../experimental_data_processed/plate_reader_filters.csv
-        ../experimental_data_processed/absorption_extinction.csv
         ../experimental_data_processed/quencher_redox_potentials.csv
 Writes  ../experimental_data_processed/photocatalyst_properties_exp.xlsx
         ../experimental_data_processed/quencher_properties_exp.xlsx
@@ -19,7 +18,6 @@ Values copied from the extraction tables (layout: ../properties_workbook.py); re
 potentials rounded to 2 decimals.
 """
 
-import csv
 import sys
 from pathlib import Path
 
@@ -36,16 +34,8 @@ Q_OUT = OUT_DIR / "quencher_properties_exp.xlsx"
 IDENTIFICATION = "compound_identification.xlsx"
 TAU0 = OUT_DIR / "lifetimes_tcspc.csv"
 FILTERS = OUT_DIR / "plate_reader_filters.csv"
-ABSORPTION = OUT_DIR / "absorption_extinction.csv"
 REDOX = OUT_DIR / "quencher_redox_potentials.csv"
 DECIMALS = 2                 # for V
-
-
-def epsilon_wavelengths(path):
-    """Wavelengths of the epsilon columns in absorption_extinction.csv."""
-    with path.open(encoding="utf-8", newline="") as fh:
-        header = next(csv.reader(fh))
-    return [int(h.split("_")[1]) for h in header if h.startswith("epsilon_")]
 
 
 def src(path, column):
@@ -101,13 +91,11 @@ def photocatalysts():
 
 
 def quenchers():
-    absorption = read_table(ABSORPTION, "quencher_id")
     redox = read_table(REDOX, "quencher_id")
 
-    for name, table in (("absorption", absorption), ("redox", redox)):
-        stray = sorted(set(table) - set(QUENCHERS))
-        if stray:
-            sys.exit(f"{name} rows for quenchers not in {IDENTIFICATION}: {stray}")
+    stray = sorted(set(redox) - set(QUENCHERS))
+    if stray:
+        sys.exit(f"redox rows for quenchers not in {IDENTIFICATION}: {stray}")
     if set(redox) != set(QUENCHERS):
         sys.exit(f"redox table misses quenchers {sorted(set(QUENCHERS) - set(redox))}")
 
@@ -119,13 +107,6 @@ def quenchers():
         value = field(redox, name)
         return Column(header, description, src(REDOX, name),
                       lambda i: None if value(i) is None else round(value(i), DECIMALS))
-
-    epsilon =[col(f"epsilon_{nm} / mM-1 cm-1", absorption, ABSORPTION,
-                   f"epsilon_{nm}_mM-1cm-1", f"Molar extinction coefficient at {nm} nm.")
-               for nm in epsilon_wavelengths(ABSORPTION)]
-    epsilon.append(col("max_read_rsd / %", absorption, ABSORPTION, "max_read_rsd_percent",
-                       "Largest relative spread between repeat reads across the 18 "
-                       "wavelengths."))
 
     blocks = [
         Block("Identity", [
@@ -154,11 +135,6 @@ def quenchers():
             col("comment", redox, REDOX, "comment",
                 "Free-text note from quencher_redox_measured.csv or "
                 "quencher_redox_literature.csv."),
-        ]),
-        Block("Molar extinction coefficients in MeCN / mM-1 cm-1", epsilon),
-        Block("Sample", [
-            col("c_stock / mM", absorption, ABSORPTION, "c_stock_mM", "Stock concentration."),
-            col("well_position", absorption, ABSORPTION, "well", "Well of the stock plate."),
         ]),
     ]
     note = """

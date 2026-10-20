@@ -1,6 +1,0 @@
-criterion,parameters,scheme,MCC_c0,MCC_heldout,gain_MCC,accuracy_c0,accuracy_heldout,gain_accuracy,AUC_within_PC_pooled_c0,AUC_within_PC_pooled_heldout,c_chosen_min / kcal mol-1,c_chosen_median / kcal mol-1,c_chosen_max / kcal mol-1,n_folds
-adiabatic,dft,LOPCO,0.469,0.542,0.074,0.713,0.765,0.052,0.699,0.699,-1.8,-1.6,-1.6,26
-adiabatic,ml,LOPCO,0.466,0.541,0.075,0.718,0.767,0.05,0.7,0.7,-1.6,-1.5,-1.3,26
-dvte,dft,LOPCO,0.541,0.572,0.032,0.768,0.779,0.01,0.757,0.757,-3.1,-3.1,-2.4,26
-two_gate,dft,LOPCO,0.619,0.669,0.05,0.81,0.835,0.025,0.754,0.768,-2.8,-1.6,-1.6,26
-two_gate,ml,LOPCO,0.559,0.643,0.084,0.778,0.824,0.046,0.675,0.726,-1.6,-1.5,-1.5,26

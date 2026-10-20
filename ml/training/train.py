@@ -20,7 +20,7 @@ hyperparameters from hyperparameters.py. Python, numpy and torch are seeded with
 seed (42 for oos_styryl and `full`); GPU runs are not bit-reproducible. `full`: all molecules,
 no early stopping, epochs = median best epoch of the five random-split runs, last epoch kept.
 
-Leon Schlosser's training script for the model in ml/data/model_final_old.pt,
+Adapted from Leon Schlosser's training script,
 playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py.
 """
 

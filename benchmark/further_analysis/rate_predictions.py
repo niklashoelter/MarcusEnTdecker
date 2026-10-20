@@ -3,15 +3,13 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-Predicted quenching rate constants for every scored pair, source, rate law and barrier
-model.
+Predicted quenching rate constants for every scored pair, source and contact distance.
 
 Reads   ../../data/exp_dataset_ent.csv (through pairs.py)
 Writes  results/rate_predictions/pairs.csv              the scored pairs with their
                                                         measurement
-        results/rate_predictions/predictions.csv.gz     one row per pair, source, rate law
-                                                        and barrier: log10 of the
-                                                        predicted k
+        results/rate_predictions/predictions.csv.gz     one row per pair, source and rate
+                                                        law: log10 of the predicted k
         results/rate_predictions/parity.csv             full rate law, asymmetric barrier:
                                                         predicted against measured log10 k_q
                                                         on the quenching pairs, and a
@@ -20,10 +18,8 @@ Writes  results/rate_predictions/pairs.csv              the scored pairs with th
     uv run benchmark/further_analysis/rate_predictions.py
 
 Rate law          barrier
-full              Marcus symmetric, Marcus asymmetric
-full (r = 7 A)    Marcus symmetric, Marcus asymmetric
-irreversible      Marcus symmetric, Marcus asymmetric
-sandros           none
+full              Marcus asymmetric
+full (r = 7 A)    Marcus asymmetric
 
 Full rate law: k_-d/nu = (k_d/K_A)/(k_B T/h), K_A = encounter constant at r = r_PC + r_Q
 (pairs.CONTACT) or r = 7 A (theory.CONTACT_DISTANCE).
@@ -71,21 +67,12 @@ def log_k_full(df, source, model=PARITY_BARRIER, distance=None):
 def predictions(df):
     parts = []
     index = np.arange(len(df))
-    escape = {law: escape_over_nu(df, distance) for law, distance in FULL_LAWS.items()}
     for source in pairs.SOURCES:
-        dG = pairs.driving_force(df, source)
-        forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
-        parts.append(pd.DataFrame({"pair": index, "parameters": source, "rate_law": "sandros",
-                                   "barrier": "none",
-                                   "log10 k / M-1 s-1": np.log10(theory.sandros_rate(dG))}))
-        for model in theory.BARRIERS:
-            barrier = theory.barrier(model, dG, forward, reverse)
-            laws = {law: theory.rate(dG, barrier, escape[law]) for law in FULL_LAWS}
-            laws["irreversible"] = theory.rate_irreversible(barrier)
-            for law, k in laws.items():
-                parts.append(pd.DataFrame({"pair": index, "parameters": source,
-                                           "rate_law": law, "barrier": model,
-                                           "log10 k / M-1 s-1": np.log10(k)}))
+        for law, distance in FULL_LAWS.items():
+            parts.append(pd.DataFrame({"pair": index, "parameters": source,
+                                       "rate_law": law, "barrier": PARITY_BARRIER,
+                                       "log10 k / M-1 s-1": log_k_full(df, source,
+                                                                       distance=distance)}))
     return pd.concat(parts, ignore_index=True)
 
 

@@ -19,7 +19,7 @@ Writes  results/cost/per_quencher.csv   CPU hours of each group per quencher, pe
 
 Group            calculations                                        criteria
 adiabatic DFT    S0 and T1 opt+freq, S0 and T1 single points         adiabatic (dft)
-four-point DFT   the above and both vertical spin-change points      two_gate, marcus_barrier (dft)
+four-point DFT   the above and both vertical spin-change points      two_gate (dft)
 DvTE             Gaussian opt+freq, MD trajectories and the          dvte
                  vertical-gap single points (failed or timed-out
                  single points not counted)

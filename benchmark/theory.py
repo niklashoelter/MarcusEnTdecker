@@ -12,7 +12,6 @@ R_KCAL = 1.9872e-3              # kcal mol-1 K-1
 TEMPERATURE = 298.15            # K
 RT = R_KCAL * TEMPERATURE
 K_DIFF = 2.0e10                 # M-1 s-1, diffusion-limited rate constant in acetonitrile
-K_DIFF_OVER_Z = 0.2             # k_d / Z in the irreversible form, Z = 1e11 M-1 s-1
 EXP_LIMIT = 500.0               # cap on exponents (overflow)
 
 K_BOLTZMANN = 1.380649e-23      # J K-1
@@ -104,13 +103,3 @@ def lifetime_barrier(tau0, k_sv_crit, escape_over_nu):
     """
     tau0 = np.asarray(tau0, float)
     return RT * np.log((K_DIFF * tau0 / k_sv_crit - 1.0) / escape_over_nu)
-
-
-def rate_irreversible(barrier_height):
-    """k_d / (1 + (k_d/Z) exp(barrier/RT)): no back transfer."""
-    return K_DIFF / (1.0 + K_DIFF_OVER_Z * _exp(barrier_height))
-
-
-def sandros_rate(dG):
-    """k_d / (1 + exp(dG/RT)): no barrier."""
-    return K_DIFF / (1.0 + _exp(dG))

@@ -19,7 +19,7 @@ barrier and over the rows not excluded, with recomputed and printed barriers.
     lambda_total_inconsistent  printed lambda_total != lambda_S0_T1 + pc lambda_T1_S0; the
                                barrier is recomputed from the components (barrier_lit_recomputed)
 
-Writes   results/literature/ma_tolerance.csv           one row per compound, model and estimate
+Writes   results/literature/ma_tolerance.csv           one row per compound
          results/literature/ma_reference.csv           agreement with the paper's DFT
 """
 

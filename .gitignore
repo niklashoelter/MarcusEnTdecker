@@ -9,9 +9,6 @@ data/*/**/README.md
 # run ends.
 ml/results/**/*.pt.partial
 
-# The alternative Stern-Volmer fit through (0, 1), written only on request.
-data/experimental_data_processed/stern_volmer_fits_fixed_intercept.csv
-
 # Site-specific deployment: the image build and the university cluster manifests, not published.
 webapp/deploy/
 

@@ -5,7 +5,6 @@
                                 the two-gate verdict when the photocatalyst's tau0 is known
     ent-ml info                 loaded checkpoint and its element vocabulary
 
-`--ensemble` (predict, rate): the five random-split models (ml.ensemble).
 Reads SMILES (arguments or file) and a photocatalyst table (path). Writes a table, CSV or
 JSON to stdout or `--out`.
 """
@@ -78,10 +77,6 @@ def _predict(args) -> None:
     if not smiles:
         raise ValueError("no SMILES given; pass them as arguments or with --file")
 
-    if args.ensemble:
-        _emit(_ensemble_rows(_valid(smiles)), args.format, args.out)
-        return
-
     with _quiet_model():
         predicted = RatePredictor().properties(_valid(smiles))
 
@@ -95,33 +90,13 @@ def _predict(args) -> None:
     _emit(rows, args.format, args.out)
 
 
-def _ensemble_rows(smiles: list[str]) -> list[dict]:
-    """Rows of `predict` from the ensemble, plus the members' spread."""
-    from ml.ensemble import predict as ensemble_predict
-
-    with _quiet_model():
-        table = ensemble_predict(smiles)
-    names = {"E_T": "triplet_energy_adiabatic", "lambda_S_T": "lamda_S_T",
-             "lambda_T_S": "lamda_T_S"}
-    rows = []
-    for _, r in table.iterrows():
-        row = {"smiles": r["smiles"]}
-        for label, column in names.items():
-            row[label] = float(r[column])
-            row[f"{label}_uncertainty"] = float(r[f"{column}_uncertainty"])
-            row[f"{label}_model_spread"] = float(r[f"{column}_model_spread"])
-        row["n_models"] = int(r["n_models"])
-        rows.append(row)
-    return rows
-
-
 def _rate(args) -> None:
     quencher = _valid([args.quencher])[0]
     photocatalyst = photocatalyst_properties(args.photocatalysts, args.photocatalyst)
     if args.tau0 is not None:
         photocatalyst = dataclasses.replace(photocatalyst, tau0_ns=args.tau0)
     with _quiet_model():
-        result = RatePredictor(ensemble=args.ensemble).predict(photocatalyst, quencher)
+        result = RatePredictor().predict(photocatalyst, quencher)
     row = {"photocatalyst": result.photocatalyst,
            "quencher": result.quencher,
            "dG_kcal": result.dG_kcal,
@@ -138,7 +113,6 @@ def _info(args) -> None:
     import torch
     from rdkit.Chem import GetPeriodicTable
 
-    from ml.model import checkpoint as _checkpoint  # noqa: F401  aliases the pre-rename module path
     from ml.utils.graph_construction import ATOM_FEATURES
 
     path = Path(str(ir.files("ml.data").joinpath("model_final.pt")))
@@ -169,8 +143,6 @@ def build_parser() -> argparse.ArgumentParser:
     predict.add_argument("smiles", nargs="*")
     predict.add_argument("--file", metavar="PATH",
                          help="read SMILES from this file, one per line")
-    predict.add_argument("--ensemble", action="store_true",
-                         help="use the five random-split models together")
     predict.set_defaults(run=_predict)
 
     rate = commands.add_parser("rate", parents=[shared],
@@ -183,8 +155,6 @@ def build_parser() -> argparse.ArgumentParser:
     rate.add_argument("--tau0", type=float, metavar="NS",
                       help="excited-state lifetime of the photocatalyst in ns, for the "
                            "two-gate verdict; overrides a `tau0 / ns` column of the table")
-    rate.add_argument("--ensemble", action="store_true",
-                      help="use the five random-split models together")
     rate.set_defaults(run=_rate)
 
     info = commands.add_parser("info", help="the loaded checkpoint and its vocabulary")

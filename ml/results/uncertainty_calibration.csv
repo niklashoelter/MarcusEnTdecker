@@ -1,4 +1,0 @@
-split,target,n,within_1_sigma,within_2_sigma,median_abs_error_most_certain_decile,median_abs_error_least_certain_decile
-random_42,adiabatic_energy,3571,0.733,0.92,0.39,2.02
-random_42,lambda_acceptor_singlet,3571,0.681,0.888,0.34,8.45
-random_42,lambda_donor_triplet,3571,0.698,0.891,0.37,6.71

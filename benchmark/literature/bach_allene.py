@@ -12,36 +12,28 @@ Asymmetric form, unscaled; all molecular properties ours. k_act = k_q k_d / (k_d
 k_d(MeCN) = 1.9e10 M-1 s-1; ddG_exp = RT ln(k_act,XT / k_act,TXT).
 
 kq          ddG_ml = barrier(TXT -> 7a) - barrier(XT -> 7a) against ddG_exp; pass within a
-            factor of two (deployed mixture mean; "robust" if >= 10 of 12 runs pass).
-            Baselines: Sandros k_q = k_d / (1 + exp(dG/RT)) on the k_act and k_q basis, with
-            our and the literature donor E_T; (lambda_fwd,TXT - lambda_fwd,XT) / 4; vertical
-            acceptor (both 7a lambdas = 0). Model-free: Sandros on the paper's adiabatic DFT
-            E_T and the Sandros-apparent E_T of 7a. Also: Shapley split of ddG_ml into
-            driving-force and reorganisation parts, apparent Bronsted slope
-            ddG / (dG_TXT - dG_XT), prefactor k_act exp(barrier/RT), predicted k_act ratio.
+            factor of two. E_T only: ddG from the Sandros k_q = k_d / (1 + exp(dG/RT)).
 donor pair  barrier(TXT -> s) - barrier(XT -> s) for 7a and every scope allene s.
 
 7e and 7o excluded (see SI); 7f-d1/d2 kept.
 
-Writes   results/literature/bach_kq_summary.csv       the k_q ratio test and its baselines per model and estimate
-         results/literature/bach_kq_reference.csv     the model-free numbers: ddG_exp, band, Sandros straw man
+Writes   results/literature/bach_kq_summary.csv       the k_q ratio test, and the E_T-only difference
+         results/literature/bach_kq_reference.csv     measured k_q, k_act and ddG_exp
          results/literature/bach_donor_pair.csv       barrier(TXT) - barrier(XT) for 7a and every scope allene
          results/literature/bach_marcus_curve.csv     deployed barrier of 7a vs driving force, beside the Sandros expectation
 """
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import brentq
 
 from common import (ESTIMATES, RT, barrier_asymmetric, literature, models, ours, pair_barrier,
-                    pair_lambdas, split_difference, write)
+                    pair_lambdas, write)
 
 CASE = "bach_2026"
 ACCEPTOR = "7a"
 FAST, SLOW = "XT", "TXT"
 K_DIFFUSION = 1.9e10            # M-1 s-1, MeCN, from the paper
 BAND = 2.0                      # pass: ddG_ml within a factor of two of ddG_exp
-ROBUST = 10                     # of 12 runs
 SCOPE_EXCLUDED = {"7e": "excluded (see SI)", "7o": "excluded (see SI)"}
 
 
@@ -66,34 +58,14 @@ def main():
     # ---------------------------------------------------------------- experiment, from the table
     kq = lit[lit.experiment == "kq"].set_index("pc_label")
     k_q = {d: float(kq.at[d, "k_q"]) for d in (FAST, SLOW)}
-    E_T_pc_lit = lit.dropna(subset=["pc_E_T_lit"]).groupby("pc_label").pc_E_T_lit.first()
     ddG_exp = RT * np.log(k_act(k_q[FAST]) / k_act(k_q[SLOW]))
-    acceptor_lit = lit[lit.compound_id == ACCEPTOR].iloc[0]
 
     scope = lit[lit.experiment == "scope"].drop_duplicates("compound_id").set_index("compound_id")
 
-    # ---------------------------------------------------------------- model-free reference
-    E_single = brentq(lambda e: np.log(sandros(e - E_T_pc_lit[FAST]) / sandros(e - E_T_pc_lit[SLOW]))
-                      - np.log(k_q[FAST] / k_q[SLOW]), 50, 90)
-    E_dft = acceptor_lit.E_T_lit
+    # ---------------------------------------------------------------- measured
     reference = {
         "k_d": K_DIFFUSION, "k_q_XT": k_q[FAST], "k_q_TXT": k_q[SLOW],
-        "k_act_XT": k_act(k_q[FAST]), "k_act_TXT": k_act(k_q[SLOW]),
-        "ddG_exp": ddG_exp, "ddG_band_low": ddG_exp / BAND, "ddG_band_high": ddG_exp * BAND,
-        "ddG_exp_kq_basis": RT * np.log(k_q[FAST] / k_q[SLOW]),
-        "E_T_lit_XT": E_T_pc_lit[FAST], "E_T_lit_TXT": E_T_pc_lit[SLOW],
-        "bronsted_slope_exp": ddG_exp / (E_T_pc_lit[FAST] - E_T_pc_lit[SLOW]),
-        # Sandros on the paper's adiabatic DFT E_T of 7a
-        "E_T_7a_dft_lit": E_dft,
-        "ddG_sandros_dft_k_act": (E_dft - E_T_pc_lit[SLOW]) - (E_dft - E_T_pc_lit[FAST]),
-        "ddG_sandros_dft_kq": RT * np.log(sandros(E_dft - E_T_pc_lit[FAST]) / sandros(E_dft - E_T_pc_lit[SLOW])),
-        "k_q_sandros_dft_XT": sandros(E_dft - E_T_pc_lit[FAST]), "k_q_sandros_dft_TXT": sandros(E_dft - E_T_pc_lit[SLOW]),
-        # the E_T of 7a that Sandros needs to reproduce each rate on its own, and both together
-        "E_T_7a_sandros_apparent_XT": E_T_pc_lit[FAST] + RT * np.log(K_DIFFUSION / k_q[FAST] - 1),
-        "E_T_7a_sandros_apparent_TXT": E_T_pc_lit[SLOW] + RT * np.log(K_DIFFUSION / k_q[SLOW] - 1),
-        "E_T_7a_sandros_single": E_single,
-        "k_q_sandros_single_XT": sandros(E_single - E_T_pc_lit[FAST]),
-        "k_q_sandros_single_TXT": sandros(E_single - E_T_pc_lit[SLOW]),
+        "k_act_XT": k_act(k_q[FAST]), "k_act_TXT": k_act(k_q[SLOW]), "ddG_exp": ddG_exp,
     }
     write(pd.DataFrame([reference]), "bach_kq_reference.csv")
 
@@ -117,34 +89,14 @@ def main():
             xt, txt = o[f"PC_{FAST}"], o[f"PC_{SLOW}"]
             a = (acc["E_T"] - txt["E_T"], *pair_lambdas(txt, acc))
             b = (acc["E_T"] - xt["E_T"], *pair_lambdas(xt, acc))
-            ddG, dg_part, lam_part = split_difference(barrier_asymmetric, a, b)
-            dG_xt_lit, dG_txt_lit = acc["E_T"] - E_T_pc_lit[FAST], acc["E_T"] - E_T_pc_lit[SLOW]
-            vertical = dict(acc, lambda_S0_T1=0.0, lambda_T1_S0=0.0)
-            base = {
-                "ddG_sandros_k_act": a[0] - b[0],
-                "ddG_sandros_kq": RT * np.log(sandros(b[0]) / sandros(a[0])),
-                "ddG_sandros_lit_pc_k_act": dG_txt_lit - dG_xt_lit,
-                "ddG_sandros_lit_pc_kq": RT * np.log(sandros(dG_xt_lit) / sandros(dG_txt_lit)),
-                "ddG_lambda_only": (a[1] - b[1]) / 4,
-                "ddG_null_vertical_acceptor": pair_barrier(txt, vertical)[1] - pair_barrier(xt, vertical)[1],
-            }
-            posthoc_lit = (barrier_asymmetric(dG_txt_lit, *a[1:]) - barrier_asymmetric(dG_xt_lit, *b[1:]))
+            ddG = barrier_asymmetric(*a) - barrier_asymmetric(*b)
             row = {"model": model, "estimate": estimate, "primary": model == "deployed" and estimate == "mean",
                    "E_T_7a_ml": acc["E_T"], "E_T_XT_ml": xt["E_T"], "E_T_TXT_ml": txt["E_T"],
                    "dG_XT": b[0], "dG_TXT": a[0], "lambda_forward_XT": b[1], "lambda_reverse_XT": b[2],
                    "lambda_forward_TXT": a[1], "lambda_reverse_TXT": a[2],
                    "barrier_XT": barrier_asymmetric(*b), "barrier_TXT": barrier_asymmetric(*a),
-                   "ddG_ml": ddG, "ddG_exp": ddG_exp, "pass": in_band(ddG, ddG_exp)}
-            for name, value in base.items():
-                row[name] = value
-                row[f"pass_{name[4:]}"] = in_band(value, ddG_exp)
-            row.update({
-                "posthoc_ddG_barrier_lit_pc": posthoc_lit, "posthoc_pass_barrier_lit_pc": in_band(posthoc_lit, ddG_exp),
-                "posthoc_ddG_dG_part": dg_part, "posthoc_ddG_lambda_part": lam_part,
-                "posthoc_bronsted_slope_ml": ddG / (a[0] - b[0]) if a[0] != b[0] else np.nan,
-                "posthoc_prefactor_XT": k_act(k_q[FAST]) * np.exp(row["barrier_XT"] / RT),
-                "posthoc_prefactor_TXT": k_act(k_q[SLOW]) * np.exp(row["barrier_TXT"] / RT),
-                "posthoc_k_act_ratio_ml": np.exp(ddG / RT)})
+                   "ddG_ml": ddG, "ddG_exp": ddG_exp, "pass": in_band(ddG, ddG_exp),
+                   "ddG_sandros_kq": RT * np.log(sandros(b[0]) / sandros(a[0]))}
             kq_rows.append(row)
 
     kq_table = pd.DataFrame(kq_rows)
@@ -160,20 +112,9 @@ def main():
                         "ln_k_over_k_d_sandros": [float(-np.log1p(np.exp(g / RT))) for g in grid]}), "bach_marcus_curve.csv")
 
     # ---------------------------------------------------------------- stdout
-    n = len(kq_table)
-    print(f"\nkq (primary): ddG_exp {ddG_exp:.2f}, band {ddG_exp / BAND:.2f} to {ddG_exp * BAND:.2f} kcal/mol")
+    print(f"\nkq: ddG_exp {ddG_exp:.2f}, band {ddG_exp / BAND:.2f} to {ddG_exp * BAND:.2f} kcal/mol")
     print(kq_table[["model", "estimate", "dG_XT", "dG_TXT", "barrier_XT", "barrier_TXT", "ddG_ml", "pass",
-                    "ddG_sandros_k_act", "ddG_sandros_kq", "ddG_lambda_only", "ddG_null_vertical_acceptor",
-                    "posthoc_ddG_barrier_lit_pc"]].round(2).to_string(index=False))
-    primary = bool(kq_table.loc[kq_table.primary, "pass"].iloc[0])
-    passes = int(kq_table["pass"].sum())
-    print(f"pass of {n}: barrier {passes} (deployed mean {'PASS' if primary else 'FAIL'}; "
-          f"robust {'yes' if passes >= ROBUST else 'no'}, needs {ROBUST}); "
-          + ", ".join(f"{c[5:]} {int(kq_table[c].sum())}" for c in kq_table.columns if c.startswith("pass_"))
-          + f"; post hoc barrier with literature donor E_T {int(kq_table.posthoc_pass_barrier_lit_pc.sum())}")
-    print(f"Sandros on the paper's DFT E_T: ddG {reference['ddG_sandros_dft_kq']:.2f} (k_q), "
-          f"{reference['ddG_sandros_dft_k_act']:.2f} (k_act); apparent E_T(7a) {reference['E_T_7a_sandros_apparent_XT']:.2f} "
-          f"from XT, {reference['E_T_7a_sandros_apparent_TXT']:.2f} from TXT")
+                    "ddG_sandros_kq"]].round(2).to_string(index=False))
 
 
 if __name__ == "__main__":

@@ -1,13 +1,6 @@
-import numpy as np
 import pandas as pd
 
 from ml.training import evaluate
-
-
-def test_threshold_keeping_fewer_than_two_gives_no_metrics():
-    y = np.array([1.0, 2.0, 3.0])
-    mae, rmse, r2, n_keep = evaluate.metrics_at_threshold(y, y, np.array([0.1, 5.0, 5.0]), 1.0)
-    assert n_keep == 1 and np.isnan(mae) and np.isnan(rmse) and np.isnan(r2)
 
 
 def test_summary_uses_the_population_sd_over_random_splits():

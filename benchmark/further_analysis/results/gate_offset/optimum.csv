@@ -1,6 +1,6 @@
-criterion,parameters,MCC_c0,c_best / kcal mol-1,MCC_best,MCC_c_window,gain_best,gain_c_window,"c within 0.01 of the best MCC, min / kcal mol-1","c within 0.01 of the best MCC, max / kcal mol-1"
-adiabatic,dft,0.469,-1.6,0.55,0.544,0.082,0.076,-2.7,-1.5
-adiabatic,ml,0.466,-1.5,0.545,0.545,0.08,0.08,-1.6,-1.0
-dvte,dft,0.541,-3.1,0.593,0.562,0.053,0.021,-3.2,-1.7
-two_gate,dft,0.619,-1.6,0.698,0.69,0.079,0.072,-2.9,-1.5
-two_gate,ml,0.559,-1.5,0.646,0.646,0.087,0.087,-1.7,-1.2
+criterion,parameters,MCC_c0,c_best / kcal mol-1,MCC_best
+adiabatic,dft,0.469,-1.6,0.55
+adiabatic,ml,0.466,-1.5,0.545
+dvte,dft,0.541,-3.1,0.593
+two_gate,dft,0.619,-1.6,0.698
+two_gate,ml,0.559,-1.5,0.646

@@ -12,9 +12,7 @@ lambda_S0_T1: S0 surface at the T1 geometry; lambda_T1_S0: T1 surface at the S0 
 Reorganisation energies enter unscaled. Ma: `barrier_symmetric(dG, lambda_forward)`; every
 other case: `barrier_asymmetric`.
 
-`estimate`: mixture mean ("mean") or mean of the highest-weight component (`max_mode`).
-`model`: "deployed" (ml/data/model_final.pt) or one of the five random-split members of
-ml.ensemble.
+`model`: "deployed" (ml/data/model_final.pt); `estimate`: "mean" (mixture mean).
 """
 
 import re
@@ -29,7 +27,7 @@ DATA = REPO / "data" / "literature_benchmark"
 OUT = REPO / "benchmark" / "results" / "literature"
 
 RT = 1.98720425e-3 * 298.15
-ESTIMATES = ("mean", "mode")
+ESTIMATES = ("mean",)
 PROPERTIES = ("E_T", "lambda_S0_T1", "lambda_T1_S0")
 
 
@@ -37,7 +35,7 @@ def column(prop, estimate="mean", uncertainty=False):
     """The predictions-file column of one property."""
     if uncertainty:
         return f"{prop}_ml_uncertainty / kcal mol-1"
-    return f"{prop}_ml{'_mode' if estimate == 'mode' else ''} / kcal mol-1"
+    return f"{prop}_ml / kcal mol-1"
 
 
 def literature(case):
@@ -50,15 +48,10 @@ def predictions(case):
     return pd.read_csv(OUT / f"predictions_{case}.csv").set_index("compound_id")
 
 
-def member_predictions(case):
-    """Predictions of the deployed model and every ensemble member, one row per model and compound."""
-    return pd.read_csv(OUT / f"predictions_members_{case}.csv")
-
-
 def models(case):
-    """Each model's predictions for one case, as {model: frame indexed by compound_id}."""
-    m = member_predictions(case)
-    return {name: g.set_index("compound_id") for name, g in m.groupby("model", sort=False)}
+    """The deployed model's predictions of the predictable compounds, as {"deployed": frame}."""
+    pred = predictions(case)
+    return {"deployed": pred[pred.predictable.astype(bool)]}
 
 
 def ours(row, estimate="mean"):
@@ -98,17 +91,6 @@ def pair_barrier(pc, substrate):
     forward, reverse = pair_lambdas(pc, substrate)
     dG = substrate["E_T"] - pc["E_T"]
     return dG, barrier_asymmetric(dG, forward, reverse)
-
-
-def split_difference(barrier, a, b):
-    """barrier(a) - barrier(b), split into a driving-force and a reorganisation part.
-
-    `a` and `b` are (dG, lambda_forward, lambda_reverse); two-factor Shapley split.
-    """
-    full = barrier(*a) - barrier(*b)
-    dg = 0.5 * ((barrier(a[0], *a[1:]) - barrier(b[0], *a[1:]))
-                + (barrier(a[0], *b[1:]) - barrier(b[0], *b[1:])))
-    return full, dg, full - dg
 
 
 def spearman(x, y):

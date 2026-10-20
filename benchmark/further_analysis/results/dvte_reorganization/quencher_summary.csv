@@ -1,10 +1,6 @@
-quantity,value,n
-"DvTE - E_T, minimum / kcal mol-1",-9.32,
-"DvTE - E_T, maximum / kcal mol-1",25.96,
-quenchers with DvTE < E_T,18.0,
-"quenchers with DvTE < E_T, rigid",18.0,
-largest lambda_T1-S0 of the quenchers with DvTE < E_T / kcal mol-1,19.3,
-"k_B T_eff / RT implied by the DvTE width, median, non-dissociative quenchers",2.732,44
-"k_B T_eff / RT implied by the DvTE width, median, all quenchers",2.697,48
-k_B T_eff / RT of one 1000 cm-1 quantum,2.452,
-k_B T_eff / RT of one 1500 cm-1 quantum,3.624,
+quantity,value
+"DvTE - E_T, minimum / kcal mol-1",-9.32
+"DvTE - E_T, maximum / kcal mol-1",25.96
+quenchers with DvTE < E_T,18.0
+"quenchers with DvTE < E_T, rigid",18.0
+largest lambda_T1-S0 of the quenchers with DvTE < E_T / kcal mol-1,19.3

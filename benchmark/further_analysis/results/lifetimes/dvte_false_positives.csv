@@ -1,6 +1,0 @@
-quencher_class,dvte_FP_rejected,dvte_FP_rejected_energy_gate,dvte_FP_rejected_barrier_gate,dvte_TP_rejected_energy_gate,two_gate_FP_not_dvte,dG_EnT_median_energy_gate / kcal mol-1,dG_EnT_max_energy_gate / kcal mol-1
-rigid,42,41,1,24,17,0.96,8.55
-flexible,16,0,16,0,9,,
-dissociative,0,0,0,0,1,,
-flexible + dissociative,16,0,16,0,10,,
-all,58,41,17,24,27,0.96,8.55

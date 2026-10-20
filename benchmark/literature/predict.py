@@ -4,12 +4,10 @@ Our predictions for the compounds of the literature cases.
     uv run --extra ml python benchmark/literature/predict.py
 
 Reads the tables in data/literature_benchmark/ (CASES) and predicts E_T, lambda_S0_T1 and
-lambda_T1_S0 for every structure the model can encode (Ir and Ru complexes are skipped).
-Estimates: mixture mean and highest-weight component (`compute_max_mode`), for the
-deployed model (ml/data/model_final.pt) and each of the five members of `ml.ensemble`.
+lambda_T1_S0 for every structure the model can encode (Ir and Ru complexes are skipped):
+mixture mean and uncertainty of the deployed model (ml/data/model_final.pt).
 
-Writes   results/literature/predictions_<case>.csv          deployed model, one row per compound
-         results/literature/predictions_members_<case>.csv  deployed model and every member
+Writes   results/literature/predictions_<case>.csv          one row per compound
 """
 
 import sys
@@ -28,13 +26,10 @@ def _imports():
     """The model code, imported without writing bytecode into the repository."""
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(REPO))
-    import torch
-    from ml.ensemble import Ensemble, default_checkpoints
     from ml.utils.graph_construction import ATOM_FEATURES
-    from ml.model.ffn.mdn_utils import compute_max_mode
     from ml.prediction import collect_results
 
-    return torch, Ensemble, default_checkpoints, compute_max_mode, collect_results, ATOM_FEATURES
+    return collect_results, ATOM_FEATURES
 
 
 def encodable(smiles, elements):
@@ -67,48 +62,32 @@ def compounds(table, elements):
     return out
 
 
-def estimates(graph, compute_max_mode, torch):
-    """Mean, highest-weight component and uncertainty per molecule and property."""
-    mdn = graph["mdn_params"]
-    mode, _ = compute_max_mode(torch.as_tensor(np.asarray(mdn["mu"])), torch.as_tensor(np.asarray(mdn["sigma"])),
-                               torch.as_tensor(np.asarray(mdn["pi"])))
-    return np.asarray(graph["predictions"]), mode.numpy(), np.asarray(graph["uncertainties"])
-
-
-def frame(base, mean, mode, sd):
+def frame(base, mean, sd):
     """Predictions as table columns, one row per predictable compound."""
     out = base.copy()
     for prop, i in HEADS.items():
         out[column(prop)] = mean[:, i]
-        out[column(prop, "mode")] = mode[:, i]
         out[column(prop, uncertainty=True)] = sd[:, i]
     return out
 
 
 def main():
-    torch, Ensemble, default_checkpoints, compute_max_mode, collect_results, atoms = _imports()
+    collect_results, atoms = _imports()
     elements = set(atoms["atomic_num"])
     tables = {case: compounds(pd.read_csv(DATA / f"{case}.csv"), elements) for case in CASES}
     smiles = sorted({s for t in tables.values() for s in t[t.predictable].smiles})
     index = {s: i for i, s in enumerate(smiles)}
 
-    runs = {"deployed": estimates(collect_results(smiles)[0], compute_max_mode, torch)}
-    for checkpoint in default_checkpoints():
-        runs[checkpoint.parent.name] = estimates(Ensemble([checkpoint]).outputs(smiles)["graph"],
-                                                 compute_max_mode, torch)
+    graph = collect_results(smiles)[0]
+    mean, sd = np.asarray(graph["predictions"]), np.asarray(graph["uncertainties"])
 
     for case, table in tables.items():
         ok = table[table.predictable]
-        rows = [ok.smiles.map(index).to_numpy()]
-        members = []
-        for name, (mean, mode, sd) in runs.items():
-            f = frame(ok, mean[rows[0]], mode[rows[0]], sd[rows[0]])
-            if name == "deployed":
-                write(pd.concat([f, table[~table.predictable]], ignore_index=True)
-                      .reindex(columns=list(table.columns) + [c for c in f.columns if c not in table.columns]),
-                      f"predictions_{case}.csv")
-            members.append(f.assign(model=name))
-        write(pd.concat(members, ignore_index=True), f"predictions_members_{case}.csv")
+        rows = ok.smiles.map(index).to_numpy()
+        f = frame(ok, mean[rows], sd[rows])
+        write(pd.concat([f, table[~table.predictable]], ignore_index=True)
+              .reindex(columns=list(table.columns) + [c for c in f.columns if c not in table.columns]),
+              f"predictions_{case}.csv")
         skipped = table[~table.predictable]
         if len(skipped):
             print(f"  {case}: not predicted -- " + "; ".join(f"{r.compound_id} ({r.reason})" for r in skipped.itertuples()))

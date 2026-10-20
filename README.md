@@ -1,10 +1,6 @@
 # MarcusEnTdecker
 
-[![Python](https://img.shields.io/badge/python-%E2%89%A53.12-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Paper](https://img.shields.io/badge/paper-to%20follow-lightgrey)](#publication)
-[![Zenodo](https://img.shields.io/badge/Zenodo-data%20to%20follow-lightgrey?logo=zenodo&logoColor=white)](#publication)
-[![ioChem-BD](https://img.shields.io/badge/ioChem--BD-DFT%20to%20follow-lightgrey)](#publication)
-[![Web app](https://img.shields.io/badge/web%20app-EnTdecker-2ea44f)](https://entdecker.uni-muenster.de)
+![Python](https://img.shields.io/badge/python-%E2%89%A53.12-blue?logo=python&logoColor=white)![Paper](https://img.shields.io/badge/paper-to%20follow-lightgrey)![Zenodo](https://img.shields.io/badge/Zenodo-data%20to%20follow-lightgrey?logo=zenodo&logoColor=white)![ioChem-BD](https://img.shields.io/badge/ioChem--BD-DFT%20to%20follow-lightgrey)![Web app](https://img.shields.io/badge/web%20app-EnTdecker-2ea44f)
 
 This repository accompanies our paper *A Hybrid Machine Learning and Marcus Theory Approach
 for Triplet Energy Transfer* (citation to follow).

@@ -17,9 +17,9 @@ Substrates ours; the other photocatalysts keep the paper's DFT lambdas and exper
 
 Reads    ../data/literature_benchmark/sole_daura_2024.csv
          ../data/computational_data_processed/organophotocatalyst_dft.csv
-         results/literature/predictions_members_sole_daura_2024.csv
-Writes   results/literature/sole_daura_tx.csv         one row per set, pair, model and estimate
-         results/literature/sole_daura_tx_signs.csv   one row per set and E/Z group: ddG, its split, sign
+         results/literature/predictions_sole_daura_2024.csv
+Writes   results/literature/sole_daura_tx.csv         one row per set and pair
+         results/literature/sole_daura_tx_signs.csv   one row per set and E/Z group: ddG and its sign
          results/literature/sole_daura_tx_pss.csv     photostationary Z share with TX, per set
          results/literature/sole_daura_tx_parity.csv  absolute barriers against experiment, with nulls, per set
 """
@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 from common import (ESTIMATES, PROPERTIES, REPO, RT, barrier_asymmetric, barrier_symmetric,
-                    literature, models, ours, pair_lambdas, split_difference, write)
+                    literature, models, ours, pair_lambdas, write)
 
 OPC = REPO / "data" / "computational_data_processed" / "organophotocatalyst_dft.csv"
 EXCLUDED_SUBSTRATE = "4"
@@ -92,14 +92,12 @@ def run(source, lit, preds, opc):
         if set(g.isomer) != {"E", "Z"}:
             continue
         e, z = g[g.isomer == "E"].iloc[0], g[g.isomer == "Z"].iloc[0]
-        full, dg_part, lam_part = split_difference(
-            barrier_asymmetric, (e.dG_EnT_ml, e.lambda_forward_ml, e.lambda_reverse_ml),
-            (z.dG_EnT_ml, z.lambda_forward_ml, z.lambda_reverse_ml))
+        full = e.barrier_ml - z.barrier_ml
         exp = e.barrier_exp - z.barrier_exp
         row = {"tx_source": source, "model": model, "estimate": estimate, "substrate": substrate,
                "pc_label": pc_label, "diffusion_controlled": bool(e.diffusion_controlled),
                "ddG_exp": exp, "ddG_lit": e.barrier_asym_lit - z.barrier_asym_lit,
-               "ddG_ml": full, "ddG_ml_dG_part": dg_part, "ddG_ml_lambda_part": lam_part,
+               "ddG_ml": full,
                "ddG_ml_symmetric": e.barrier_ml_symmetric - z.barrier_ml_symmetric,
                "ddG_EnT_ml": e.dG_EnT_ml - z.dG_EnT_ml, "ddG_EnT_lit": e.dG_EnT_lit - z.dG_EnT_lit}
         for name in ("ml", "ml_symmetric", "lit", "EnT_ml", "EnT_lit"):

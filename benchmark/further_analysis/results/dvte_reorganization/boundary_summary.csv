@@ -1,9 +1,5 @@
-quantity,value,n
-"Youden threshold, pooled / kcal mol-1",-1.74,
-"Youden threshold, median over photocatalysts / kcal mol-1",-2.45,20
-photocatalysts with a negative threshold,17.0,20
-"Sandros onset, median over the scored pairs / kcal mol-1",4.76,868
-"MCC, two-gate DFT",0.619,
-"MCC, two-gate DFT without the energy gate",0.516,
-endergonic pairs passing the barrier gate,117.0,
-quench fraction of the endergonic pairs passing the barrier gate,0.239,
+quantity,value
+"MCC, two-gate DFT",0.619
+"MCC, two-gate DFT without the energy gate",0.516
+endergonic pairs passing the barrier gate,117.0
+quench fraction of the endergonic pairs passing the barrier gate,0.239

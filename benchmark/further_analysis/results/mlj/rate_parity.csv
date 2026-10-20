@@ -1,9 +1,0 @@
-line_shape,prefactor,parameters,quantum_mode,n,median bias / decades,RMSE / decades,Spearman rho,within 1 decade
-symmetric,Eyring,dft,projected,392,1.592,3.884,0.667,0.26
-symmetric,k_-d/nu = 0.25,dft,projected,392,0.091,3.7,0.671,0.768
-asymmetric,Eyring,dft,projected,392,1.702,4.461,0.679,0.253
-asymmetric,k_-d/nu = 0.25,dft,projected,392,0.292,4.331,0.678,0.73
-symmetric,Eyring,ml,projected,392,1.569,2.934,0.734,0.25
-symmetric,k_-d/nu = 0.25,ml,projected,392,0.483,2.783,0.732,0.712
-asymmetric,Eyring,ml,projected,392,1.589,3.406,0.744,0.242
-asymmetric,k_-d/nu = 0.25,ml,projected,392,0.551,3.341,0.741,0.686

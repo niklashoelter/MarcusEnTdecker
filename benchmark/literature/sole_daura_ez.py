@@ -8,16 +8,15 @@ sensitisation barriers.
 
     uv run benchmark/literature/sole_daura_ez.py
 
-ddG = dG*(E) - dG*(Z) (negative: Z accumulates), its sign against experiment per substrate
-and its Shapley split into driving-force and reorganisation parts; also
-ddG_EnT = dG_EnT(E) - dG_EnT(Z), ours and the paper's, and the symmetric form.
+ddG = dG*(E) - dG*(Z) (negative: Z accumulates) and its sign against experiment per
+substrate; also ddG_EnT = dG_EnT(E) - dG_EnT(Z), ours and the paper's, and the symmetric form.
 Asymmetric form (the paper's eq. 4), unscaled. Substrates ours; photocatalysts the paper's
 with the experimental E_T (`pc_source` = "paper"). Ru catalyst and substrate 4 excluded
 (see SI; substrate 4 flagged in the pair table).
 Photostationary state with TX: [Z]/[E] = k_E/k_Z = exp(-ddG/RT).
 
 Writes   results/literature/sole_daura_ez.csv        one row per pair, model and estimate
-         results/literature/sole_daura_ez_signs.csv  one row per E/Z group: ddG, its split, sign
+         results/literature/sole_daura_ez_signs.csv  one row per E/Z group: ddG and its sign
          results/literature/sole_daura_pss.csv       photostationary Z share with TX
          results/literature/sole_daura_parity.csv    absolute barriers against experiment, with nulls
 """
@@ -26,7 +25,7 @@ import numpy as np
 import pandas as pd
 
 from common import (ESTIMATES, PROPERTIES, RT, barrier_asymmetric, barrier_symmetric, literature,
-                    models, ours, pair_lambdas, split_difference, write)
+                    models, ours, pair_lambdas, write)
 
 EXCLUDED_SUBSTRATE = "4"
 LEFT_OUT_PC = "Ru"
@@ -76,14 +75,12 @@ def main():
         if set(g.isomer) != {"E", "Z"}:
             continue
         e, z = g[g.isomer == "E"].iloc[0], g[g.isomer == "Z"].iloc[0]
-        full, dg_part, lam_part = split_difference(
-            barrier_asymmetric, (e.dG_EnT_ml, e.lambda_forward_ml, e.lambda_reverse_ml),
-            (z.dG_EnT_ml, z.lambda_forward_ml, z.lambda_reverse_ml))
+        full = e.barrier_ml - z.barrier_ml
         exp = e.barrier_exp - z.barrier_exp
         row = {"model": model, "estimate": estimate, "pc_source": source, "substrate": substrate,
                "pc_label": pc_label, "diffusion_controlled": bool(e.diffusion_controlled),
                "ddG_exp": exp, "ddG_lit": e.barrier_asym_lit - z.barrier_asym_lit,
-               "ddG_ml": full, "ddG_ml_dG_part": dg_part, "ddG_ml_lambda_part": lam_part,
+               "ddG_ml": full,
                "ddG_ml_symmetric": e.barrier_ml_symmetric - z.barrier_ml_symmetric,
                # triplet-energy-only difference
                "ddG_EnT_ml": e.dG_EnT_ml - z.dG_EnT_ml, "ddG_EnT_lit": e.dG_EnT_lit - z.dG_EnT_lit}

@@ -3,37 +3,34 @@
 # dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
 # ///
 """
-DvTE and the four-point parameters, symmetric and asymmetric barriers, and the observed
-feasibility boundary.
+DvTE and the four-point parameters, symmetric and asymmetric barriers, and the quenching
+fraction against the driving force.
 
 Reads   ../../data/exp_dataset_ent.csv (also through pairs.py)
         results/quencher_classes/quencher_classes.csv
 Writes  results/dvte_reorganization/quenchers.csv          per quencher: DvTE - E_T,
-                                                           mean and width of the sampled gaps and
-                                                           their Gaussian four-point estimates
-        results/dvte_reorganization/fits.csv               least-squares lines of DvTE - E_T and
-                                                           mean gap - E_T against lambda
+                                                           mean and width of the sampled gaps,
+                                                           Gaussian four-point widths
+        results/dvte_reorganization/fits.csv               least-squares lines of DvTE - E_T
+                                                           against lambda
         results/dvte_reorganization/quencher_summary.csv   range of DvTE - E_T, quenchers with
-                                                           DvTE below E_T, implied k_B T_eff
+                                                           DvTE below E_T
         results/dvte_reorganization/barrier_forms.csv      asymmetric against symmetric barrier
         results/dvte_reorganization/barrier_forms_quenchers.csv   pairs only the asymmetric barrier admits
         results/dvte_reorganization/boundary_bins.csv      quenching fraction in dG_EnT bins (DFT)
-        results/dvte_reorganization/boundary_summary.csv   pooled and per-photocatalyst threshold,
-                                                           Sandros onset, two-gate without the
+        results/dvte_reorganization/boundary_summary.csv   two-gate DFT with and without the
                                                            energy gate
 
     uv run benchmark/further_analysis/dvte_reorganization.py
 
-Quenchers (DFT unless marked ML). Gaussian four-point gap at thermal S0 geometries:
-mu = E_T + lambda_T1-S0, sigma^2 = 2 lambda_T1-S0 k_B T_eff; k_B T_eff = RT (classical) or
-(eps/2) coth(eps/2RT) for eps = 1000 or 1500 cm-1. DvTE_4pt = mu + Phi^-1(0.008) sigma.
-Implied k_B T_eff = sd^2 / (2 lambda_T1-S0). R^2 = squared Pearson correlation.
+Quenchers (DFT). Gaussian four-point width of the gap at thermal S0 geometries:
+sigma^2 = 2 lambda_T1-S0 k_B T_eff; k_B T_eff = RT (classical) or (eps/2) coth(eps/2RT) for
+eps = 1500 cm-1. kT_eff_over_RT = sd^2 / (2 lambda_T1-S0 RT). R^2 = squared Pearson
+correlation.
 
-Pairs. Two-gate (DFT: r from DFT sizes; ML: r = 7 A); symmetric form: symmetric barrier with geometric-mean
-lambda; without energy gate: barrier <= t_PC only. lambda_f = lambda_T1-S0(PC) +
-lambda_S0-T1(Q), lambda_r = lambda_S0-T1(PC) + lambda_T1-S0(Q). Youden threshold c of
-dG_EnT <= c: largest TPR - FPR (middle of ties); per photocatalyst with >= MIN_EACH pairs of
-each outcome. Sandros onset: dG_EnT = RT ln(k_d tau0 / K_SV,crit - 1).
+Pairs. Two-gate (DFT: r from DFT sizes; ML: r = 7 A); symmetric form: symmetric barrier with
+geometric-mean lambda; without energy gate: barrier <= t_PC only. lambda_f = lambda_T1-S0(PC) +
+lambda_S0-T1(Q), lambda_r = lambda_S0-T1(PC) + lambda_T1-S0(Q).
 """
 
 import sys
@@ -56,8 +53,7 @@ RESULTS = HERE / "results" / "dvte_reorganization"
 
 P_DVTE = 0.008
 CM_TO_KCAL = 1 / 349.755
-QUANTA = {"classical": None, "1000 cm-1": 1000, "1500 cm-1": 1500}
-MIN_EACH = 3
+QUANTA = {"classical": None, "1500 cm-1": 1500}
 BINS = ((-60, -5), (-5, -2), (-2, 0), (0, 2), (2, 5), (5, 60))
 TWO_GATE = classification.candidates("two_gate", "r from DFT sizes")[0]
 
@@ -76,11 +72,9 @@ def kT_eff(quantum):
     return hw / 2 / np.tanh(hw / (2 * theory.RT))
 
 
-def gaussian_estimate(E_T, lambda_t1_s0, quantum):
-    """(mean, width, 0.008 quantile) of the Gaussian four-point gap distribution."""
-    mu = E_T + lambda_t1_s0
-    sd = np.sqrt(2 * lambda_t1_s0 * kT_eff(quantum))
-    return mu, sd, mu + stats.norm.ppf(P_DVTE) * sd
+def gaussian_width(lambda_t1_s0, quantum):
+    """Width of the Gaussian four-point gap distribution."""
+    return np.sqrt(2 * lambda_t1_s0 * kT_eff(quantum))
 
 
 def quencher_table(q, classes):
@@ -92,12 +86,7 @@ def quencher_table(q, classes):
                       "dvte_mu / kcal mol-1": mu, "dvte_std / kcal mol-1": sd, "dvte / kcal mol-1": dvte,
                       "kT_eff_over_RT": sd ** 2 / (2 * lt) / theory.RT})
     for label, quantum in QUANTA.items():
-        m4, s4, q4 = gaussian_estimate(E, lt, quantum)
-        t["mu_4pt / kcal mol-1"] = m4
-        t[f"sd_4pt {label} / kcal mol-1"] = s4
-        t[f"dvte_4pt {label} / kcal mol-1"] = q4
-    t["dvte_4pt ml 1000 cm-1 / kcal mol-1"] = gaussian_estimate(
-        q["q_E_T_ml / kcal mol-1"], q["q_lambda_T1_S0_ml / kcal mol-1"], 1000)[2]
+        t[f"sd_4pt {label} / kcal mol-1"] = gaussian_width(lt, quantum)
     t.index.name = "quencher"
     return t.sort_index(key=lambda s: s.str[1:].astype(int)).reset_index()
 
@@ -113,27 +102,19 @@ def line(x, y, name):
 def fits(t):
     return pd.DataFrame([
         line(t["lambda_T1_S0 / kcal mol-1"], t["dvte_minus_E_T / kcal mol-1"], "DvTE - E_T vs lambda_T1-S0"),
-        line(t["lambda_T1_S0 / kcal mol-1"], t["dvte_mu_minus_E_T / kcal mol-1"], "mean gap - E_T vs lambda_T1-S0"),
         line(t["lambda_S0_T1 / kcal mol-1"], t["dvte_minus_E_T / kcal mol-1"], "DvTE - E_T vs lambda_S0-T1")])
 
 
 def quencher_summary(t):
     d = t["dvte_minus_E_T / kcal mol-1"]
     below = t[d < 0]
-    nondiss = t["class"] != "dissociative"
     return pd.DataFrame([
         {"quantity": "DvTE - E_T, minimum / kcal mol-1", "value": d.min()},
         {"quantity": "DvTE - E_T, maximum / kcal mol-1", "value": d.max()},
         {"quantity": "quenchers with DvTE < E_T", "value": len(below)},
         {"quantity": "quenchers with DvTE < E_T, rigid", "value": int((below["class"] == "rigid").sum())},
         {"quantity": "largest lambda_T1-S0 of the quenchers with DvTE < E_T / kcal mol-1",
-         "value": below["lambda_T1_S0 / kcal mol-1"].max()},
-        {"quantity": "k_B T_eff / RT implied by the DvTE width, median, non-dissociative quenchers",
-         "value": t.loc[nondiss, "kT_eff_over_RT"].median(), "n": int(nondiss.sum())},
-        {"quantity": "k_B T_eff / RT implied by the DvTE width, median, all quenchers",
-         "value": t["kT_eff_over_RT"].median(), "n": len(t)},
-        *({"quantity": f"k_B T_eff / RT of one {label} quantum", "value": kT_eff(w) / theory.RT}
-          for label, w in QUANTA.items() if w is not None)])
+         "value": below["lambda_T1_S0 / kcal mol-1"].max()}])
 
 
 # ----------------------------------------------------------------------------- scored pairs
@@ -189,40 +170,16 @@ def barrier_forms(df, classes):
                                              "admitted_only_asymmetric_quench"]]
 
 
-def youden(dG, y):
-    """Threshold c of dG <= c with the largest TPR - FPR; the middle one of ties."""
-    dG, y = np.asarray(dG, float), np.asarray(y, bool)
-    xs = np.unique(dG)
-    candidates = np.r_[xs[0] - 0.5, (xs[1:] + xs[:-1]) / 2, xs[-1] + 0.5]
-    J = np.array([((dG <= c) & y).sum() / y.sum() - ((dG <= c) & ~y).sum() / (~y).sum() for c in candidates])
-    best = np.flatnonzero(np.isclose(J, J.max()))
-    return float(candidates[best[(len(best) - 1) // 2]])
-
-
 def boundary(df):
     y = df[pairs.QUENCHES].to_numpy(bool)
     dG = pairs.driving_force(df, "dft")
     bins = pd.DataFrame([{"parameters": "dft", "dG_low / kcal mol-1": lo, "dG_high / kcal mol-1": hi,
                           "n": int(((dG > lo) & (dG <= hi)).sum()),
                           "quench_fraction": float(y[(dG > lo) & (dG <= hi)].mean())} for lo, hi in BINS])
-    c_pc = []                    # per photocatalyst, >= MIN_EACH pairs of each outcome
-    for _, g in df.groupby(pairs.PC_NAME, sort=False):
-        yy = g[pairs.QUENCHES].to_numpy(bool)
-        if yy.sum() >= MIN_EACH and (~yy).sum() >= MIN_EACH:
-            c_pc.append(youden(g[pairs.dg_ent("dft")].to_numpy(float), yy))
-    c_pc = np.array(c_pc)
-    sandros = theory.RT * np.log(theory.K_DIFF * pairs.tau0_seconds(df) / TWO_GATE.k_sv_crit - 1)
     p_gate = two_gate(df, "dft")[0]
     p_free, _, _, _ = two_gate(df, "dft", energy_gate=False)
     endergonic_pass = p_free & (dG > 0)
     summary = pd.DataFrame([
-        {"quantity": "Youden threshold, pooled / kcal mol-1", "value": youden(dG, y)},
-        {"quantity": "Youden threshold, median over photocatalysts / kcal mol-1",
-         "value": float(np.median(c_pc)), "n": len(c_pc)},
-        {"quantity": "photocatalysts with a negative threshold", "value": int((c_pc < 0).sum()),
-         "n": len(c_pc)},
-        {"quantity": "Sandros onset, median over the scored pairs / kcal mol-1", "value": float(np.median(sandros)),
-         "n": len(df)},
         {"quantity": "MCC, two-gate DFT", "value": scoring.metrics(y, p_gate)["MCC"]},
         {"quantity": "MCC, two-gate DFT without the energy gate", "value": scoring.metrics(y, p_free)["MCC"]},
         {"quantity": "endergonic pairs passing the barrier gate", "value": int(endergonic_pass.sum())},

@@ -17,20 +17,18 @@ adiabatic            dG_EnT <= 0                                          dft, m
 dvte                 E_T(PC) >= DvTE(p)                                   p x (normal, KDE quantile)
 two_gate             dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC    dft, ml; r = r_PC + r_Q
                                                                           or r = 7 A
-marcus_barrier       symmetric Marcus barrier < threshold                 dft, ml
 
 t_PC: barrier at which k tau0 = K_SV,crit for exp(dG/RT) -> 0 (theory.lifetime_barrier),
 k_-d/nu = (k_d/K_A)/(k_B T/h), K_A at contact distance r. two_gate
 outside the variant comparisons (TWO_GATE_DEFAULT): r = r_PC + r_Q with DFT, r = 7 A with ML.
-marcus_barrier: geometric-mean lambda; threshold by highest MCC on DFT (middle on a tie),
-applied unchanged to ML. Photocatalyst properties are DFT throughout.
+Photocatalyst properties are DFT throughout.
 
 Ground truth: `quenches`. AUC on the scores -dG_EnT, E_T(PC) - DvTE, t_PC - barrier
-(endergonic pairs last), -barrier; also within each photocatalyst with both classes
-(median and pooled).
+(endergonic pairs last); also within each photocatalyst with both classes (median and
+pooled).
 """
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -41,8 +39,7 @@ import theory
 
 RESULTS = pairs.RESULTS / "classification"
 
-BARRIER_THRESHOLDS = tuple(round(t, 1) for t in np.arange(0.1, 20.0001, 0.1))  # kcal/mol
-K_SV_CRIT = 10.0                                                              # M-1
+K_SV_CRIT = 10.0            # M-1
 # two_gate variant: contact distance in Angstrom, None for r_PC + r_Q of each pair
 TWO_GATE_VARIANTS = {"r from DFT sizes": None, "r = 7 A": theory.CONTACT_DISTANCE}
 # two_gate variant of each source where the variants are not compared
@@ -55,20 +52,17 @@ CRITERIA = {
     "dvte": ("dvte", None, tuple(f"p = {p}, {kind}" for p in pairs.DVTE_P
                                  for kind in pairs.DVTE_KINDS), ("dft",), ()),
     "two_gate": ("two_gate", "marcus_asymmetric", tuple(TWO_GATE_VARIANTS), pairs.SOURCES, ()),
-    "marcus_barrier": ("barrier", "marcus_symmetric", ("",), ("dft",), ("ml",)),
 }
 
 
 @dataclass(frozen=True)
 class Setting:
-    kind: str                           # adiabatic, dvte, two_gate, barrier
+    kind: str                           # adiabatic, dvte, two_gate
     p: str | None = None                # DvTE quantile
     dvte_kind: str | None = None        # normal or kde
-    barrier_model: str = "marcus_symmetric"
-    barrier_threshold: float = np.nan   # kcal/mol
+    barrier_model: str = "marcus_asymmetric"
     k_sv_crit: float = np.nan           # M-1
     contact_distance: float | None = None   # Angstrom; None: r_PC + r_Q of each pair
-    requires_exergonic: bool = False    # also require dG_EnT <= 0
 
 
 def predict(df, setting: Setting, source):
@@ -81,9 +75,9 @@ def predict(df, setting: Setting, source):
         gap = df[pairs.PC_E_T].to_numpy(float) - df[pairs.q_dvte(setting.p, setting.dvte_kind)].to_numpy(float)
         return gap >= 0, gap
 
-    forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
-    barrier = theory.barrier(setting.barrier_model, dG, forward, reverse)
     if setting.kind == "two_gate":
+        forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
+        barrier = theory.barrier(setting.barrier_model, dG, forward, reverse)
         r = (pairs.contact_distances(df) if setting.contact_distance is None
              else setting.contact_distance)
         t_pc = theory.lifetime_barrier(pairs.tau0_seconds(df), setting.k_sv_crit,
@@ -91,12 +85,6 @@ def predict(df, setting: Setting, source):
         margin = t_pc - barrier
         exergonic = dG <= 0
         return exergonic & (margin >= 0), np.where(exergonic, margin, margin - ENDERGONIC_OFFSET)
-
-    if setting.kind == "barrier":
-        predicted = barrier < setting.barrier_threshold
-        if setting.requires_exergonic:
-            predicted &= dG <= 0
-        return predicted, -barrier
 
     raise ValueError(f"unknown criterion kind {setting.kind!r}")
 
@@ -110,10 +98,8 @@ def candidates(criterion, variant):
         p, dvte_kind = (part.strip() for part in variant.removeprefix("p = ").split(","))
         return [Setting("dvte", p=p, dvte_kind=dvte_kind)]
 
-    base = Setting(kind, barrier_model=model)
-    if kind == "barrier":
-        return [replace(base, barrier_threshold=t) for t in BARRIER_THRESHOLDS]
-    return [replace(base, k_sv_crit=K_SV_CRIT, contact_distance=TWO_GATE_VARIANTS[variant])]
+    return [Setting(kind, barrier_model=model, k_sv_crit=K_SV_CRIT,
+                    contact_distance=TWO_GATE_VARIANTS[variant])]
 
 
 def two_gate_setting(source):
@@ -150,7 +136,6 @@ def evaluate(df, label, variant, source, settings, n_free_parameters):
         within = scoring.auc_within(y, score_, photocatalysts)
         rows.append({"criterion": label, "parameters": source, "variant": variant,
                      "n_free": n_free_parameters,
-                     "barrier_threshold / kcal mol-1": s.barrier_threshold,
                      "K_SV_crit / M-1": s.k_sv_crit,
                      **scoring.metrics(y, predicted), "AUC": scoring.auc(y, score_),
                      "AUC_within_PC_median": within["median"],
@@ -210,11 +195,10 @@ def main():
     scoring.rounded(every).to_csv(RESULTS / "settings.csv", index=False, lineterminator="\n")
     scoring.rounded(best).to_csv(RESULTS / "best.csv", index=False, lineterminator="\n")
 
-    shown = ["criterion", "parameters", "variant", "barrier_threshold / kcal mol-1",
-             "accuracy", "MCC", "AUC", "AUC_within_PC_median", "AUC_within_PC_pooled"]
+    shown = ["criterion", "parameters", "variant", "accuracy", "MCC", "AUC",
+             "AUC_within_PC_median", "AUC_within_PC_pooled"]
     print()
-    print(best[shown].rename(columns={"barrier_threshold / kcal mol-1": "threshold"})
-          .round(3).to_string(index=False))
+    print(best[shown].round(3).to_string(index=False))
     print(f"\n-> {len(every)} settings, {len(best)} rows in "
           f"{RESULTS.relative_to(pairs.HERE.parent)}")
 
