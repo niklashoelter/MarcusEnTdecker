@@ -14,25 +14,6 @@ class DualScaler:
         self.graph_scaler = graph_scaler
         self.node_scaler = node_scaler
 
-    def transform(self, targets):
-        pass
-
-    def inverse_transform(self, data):
-        # Data is keys 'graph' and 'node' or tuple
-        if isinstance(data, dict):
-            res = {}
-            if 'graph' in data and self.graph_scaler:
-                res['graph'] = self.graph_scaler.inverse_transform(data['graph'])
-            elif 'graph' in data:
-                res['graph'] = data['graph']
-
-            if 'node' in data and self.node_scaler:
-                res['node'] = self.node_scaler.inverse_transform(data['node'])
-            elif 'node' in data:
-                res['node'] = data['node']
-            return res
-        return data
-
 class MoleculeDataset(Dataset):
 
     def __init__(self, smiles_list, node_targets=None, graph_targets=None, positional_encoding_kwargs=None, **kwargs):

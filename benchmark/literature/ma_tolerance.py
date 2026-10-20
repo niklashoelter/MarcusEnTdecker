@@ -26,7 +26,7 @@ Writes   results/literature/ma_tolerance.csv           one row per compound
 import numpy as np
 import pandas as pd
 
-from common import ESTIMATES, barrier_symmetric, literature, models, ours, write
+from common import barrier_symmetric, literature, models, ours, write
 
 REDUCED = ["quinoline", "isoquinoline", "phenanthridine", "benzofquinoline", "47phenanthroline"]
 HAT = ["l", "anthracene", "phenanthrene"]
@@ -66,20 +66,20 @@ def main():
 
     rows = []
     for model, pred in models("ma_2023").items():
-        for estimate in ESTIMATES:
-            for compound_id in lit.index:
-                o = ours(pred.loc[compound_id], estimate)
-                lam, dG = o["lambda_S0_T1"] + pc_lambda, o["E_T"] - pc_E_T
-                rows.append({"model": model, "estimate": estimate, "compound_id": compound_id,
-                             "label": lit.at[compound_id, "label"], "group": group(compound_id),
-                             "E_T_ml": o["E_T"], "lambda_S0_T1_ml": o["lambda_S0_T1"],
-                             "dG_EnT_ml": dG, "lambda_total_ml": lam,
-                             "barrier_ml": float(barrier_symmetric(dG, lam)),
-                             "dG_EnT_lit": lit.at[compound_id, "dG_EnT_lit"],
-                             "barrier_lit": lit.at[compound_id, "barrier_lit"],
-                             "barrier_lit_recomputed": recomputed_barrier(lit.loc[compound_id]),
-                             "reference_excluded": reference_excluded(lit.loc[compound_id]),
-                             "lambda_total_inconsistent": lambda_total_inconsistent(lit.loc[compound_id])})
+        estimate = "mean"
+        for compound_id in lit.index:
+            o = ours(pred.loc[compound_id])
+            lam, dG = o["lambda_S0_T1"] + pc_lambda, o["E_T"] - pc_E_T
+            rows.append({"model": model, "estimate": estimate, "compound_id": compound_id,
+                         "label": lit.at[compound_id, "label"], "group": group(compound_id),
+                         "E_T_ml": o["E_T"], "lambda_S0_T1_ml": o["lambda_S0_T1"],
+                         "dG_EnT_ml": dG, "lambda_total_ml": lam,
+                         "barrier_ml": float(barrier_symmetric(dG, lam)),
+                         "dG_EnT_lit": lit.at[compound_id, "dG_EnT_lit"],
+                         "barrier_lit": lit.at[compound_id, "barrier_lit"],
+                         "barrier_lit_recomputed": recomputed_barrier(lit.loc[compound_id]),
+                         "reference_excluded": reference_excluded(lit.loc[compound_id]),
+                         "lambda_total_inconsistent": lambda_total_inconsistent(lit.loc[compound_id])})
     table = pd.DataFrame(rows)
     write(table, "ma_tolerance.csv")
 

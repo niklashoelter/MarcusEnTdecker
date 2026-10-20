@@ -26,7 +26,7 @@ Writes   results/literature/bach_kq_summary.csv       the k_q ratio test, and th
 import numpy as np
 import pandas as pd
 
-from common import (ESTIMATES, RT, barrier_asymmetric, literature, models, ours, pair_barrier,
+from common import (RT, barrier_asymmetric, literature, models, ours, pair_barrier,
                     pair_lambdas, write)
 
 CASE = "bach_2026"
@@ -72,32 +72,32 @@ def main():
     # ---------------------------------------------------------------- per model and estimate
     kq_rows, donor_pair = [], []
     for model, pred in preds.items():
-        for estimate in ESTIMATES:
-            o = {c: ours(pred.loc[c], estimate) for c in pred.index}
-            acc = o[ACCEPTOR]
+        estimate = "mean"
+        o = {c: ours(pred.loc[c]) for c in pred.index}
+        acc = o[ACCEPTOR]
 
-            # XT/TXT barrier difference for 7a and every scope allene
-            for s_id in [ACCEPTOR] + [c for c in scope.index if c != ACCEPTOR]:
-                b_xt = pair_barrier(o[f"PC_{FAST}"], o[s_id])[1]
-                b_txt = pair_barrier(o[f"PC_{SLOW}"], o[s_id])[1]
-                donor_pair.append({"model": model, "estimate": estimate, "substrate": s_id,
-                                   "measured": s_id == ACCEPTOR, "excluded": SCOPE_EXCLUDED.get(s_id, ""),
-                                   "E_T_ml": o[s_id]["E_T"], "barrier_XT_ml": b_xt, "barrier_TXT_ml": b_txt,
-                                   "ddG_ml": b_txt - b_xt, "ddG_exp": ddG_exp if s_id == ACCEPTOR else np.nan})
+        # XT/TXT barrier difference for 7a and every scope allene
+        for s_id in [ACCEPTOR] + [c for c in scope.index if c != ACCEPTOR]:
+            b_xt = pair_barrier(o[f"PC_{FAST}"], o[s_id])[1]
+            b_txt = pair_barrier(o[f"PC_{SLOW}"], o[s_id])[1]
+            donor_pair.append({"model": model, "estimate": estimate, "substrate": s_id,
+                               "measured": s_id == ACCEPTOR, "excluded": SCOPE_EXCLUDED.get(s_id, ""),
+                               "E_T_ml": o[s_id]["E_T"], "barrier_XT_ml": b_xt, "barrier_TXT_ml": b_txt,
+                               "ddG_ml": b_txt - b_xt, "ddG_exp": ddG_exp if s_id == ACCEPTOR else np.nan})
 
-            # ------------------------------------------------ kq
-            xt, txt = o[f"PC_{FAST}"], o[f"PC_{SLOW}"]
-            a = (acc["E_T"] - txt["E_T"], *pair_lambdas(txt, acc))
-            b = (acc["E_T"] - xt["E_T"], *pair_lambdas(xt, acc))
-            ddG = barrier_asymmetric(*a) - barrier_asymmetric(*b)
-            row = {"model": model, "estimate": estimate, "primary": model == "deployed" and estimate == "mean",
-                   "E_T_7a_ml": acc["E_T"], "E_T_XT_ml": xt["E_T"], "E_T_TXT_ml": txt["E_T"],
-                   "dG_XT": b[0], "dG_TXT": a[0], "lambda_forward_XT": b[1], "lambda_reverse_XT": b[2],
-                   "lambda_forward_TXT": a[1], "lambda_reverse_TXT": a[2],
-                   "barrier_XT": barrier_asymmetric(*b), "barrier_TXT": barrier_asymmetric(*a),
-                   "ddG_ml": ddG, "ddG_exp": ddG_exp, "pass": in_band(ddG, ddG_exp),
-                   "ddG_sandros_kq": RT * np.log(sandros(b[0]) / sandros(a[0]))}
-            kq_rows.append(row)
+        # ------------------------------------------------ kq
+        xt, txt = o[f"PC_{FAST}"], o[f"PC_{SLOW}"]
+        a = (acc["E_T"] - txt["E_T"], *pair_lambdas(txt, acc))
+        b = (acc["E_T"] - xt["E_T"], *pair_lambdas(xt, acc))
+        ddG = barrier_asymmetric(*a) - barrier_asymmetric(*b)
+        row = {"model": model, "estimate": estimate, "primary": model == "deployed" and estimate == "mean",
+               "E_T_7a_ml": acc["E_T"], "E_T_XT_ml": xt["E_T"], "E_T_TXT_ml": txt["E_T"],
+               "dG_XT": b[0], "dG_TXT": a[0], "lambda_forward_XT": b[1], "lambda_reverse_XT": b[2],
+               "lambda_forward_TXT": a[1], "lambda_reverse_TXT": a[2],
+               "barrier_XT": barrier_asymmetric(*b), "barrier_TXT": barrier_asymmetric(*a),
+               "ddG_ml": ddG, "ddG_exp": ddG_exp, "pass": in_band(ddG, ddG_exp),
+               "ddG_sandros_kq": RT * np.log(sandros(b[0]) / sandros(a[0]))}
+        kq_rows.append(row)
 
     kq_table = pd.DataFrame(kq_rows)
     write(kq_table, "bach_kq_summary.csv")

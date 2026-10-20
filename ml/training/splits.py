@@ -13,11 +13,9 @@ Split file: one row per molecule in dataset order, columns `idx`, `split` (train
 Both procedures are Leon Schlosser's, taken from his training scripts:
 
 - random: `train_test_split` (test_size 0.2, the seed), then a second one with the same seed
-  halves that into val and test
-  (playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py).
+  halves that into val and test.
 - out-of-sample: molecules matching SMARTS `c1ccc(cc1)C=C` are the test set; the rest, in
-  dataset order, shuffled with `random.Random(42)`, first 80 % train, rest val
-  (playground/thesis/model/oos/train.py).
+  dataset order, shuffled with `random.Random(42)`, first 80 % train, rest val.
 """
 
 import importlib.resources as ir

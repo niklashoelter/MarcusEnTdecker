@@ -10,7 +10,7 @@ Writes  ml/results/hyperparameter_optimization/optuna_results.csv   one row per 
 Objective: lowest validation loss of a trial; median pruner. Running it overwrites
 optuna_results.csv, whose trial 55 hyperparameters.py holds.
 
-Leon's script, playground/hyperparameters/new_data/gps_ogdata_newmodel/opt.py.
+Adapted from Leon Schlosser's hyperparameter-optimization script.
 """
 
 from pathlib import Path
@@ -38,7 +38,6 @@ save_path = RESULTS / 'hyperparameter_optimization'
 
 GRAPH_TARGETS = ['adiabatic_energy', 'lambda_acceptor_singlet', 'lambda_donor_triplet']
 NODE_TARGETS = ['spin_population']
-ALL_TARGETS = GRAPH_TARGETS + NODE_TARGETS
 
 data = load_dataset()
 train_idx, val_idx, test_idx = read_split(SPLIT)

@@ -90,11 +90,10 @@ def index_of(c):
     return int(np.flatnonzero(np.isclose(C_GRID, c))[0])
 
 
-def mcc_weighted(y, matrix, weights=None):
-    """MCC of every row of a (settings x pairs) prediction matrix, with pair weights."""
+def mcc_grid(y, matrix):
+    """MCC of every row of a (settings x pairs) prediction matrix."""
     matrix = np.atleast_2d(np.asarray(matrix, float))
-    weights = np.ones(matrix.shape[1]) if weights is None else np.asarray(weights, float)
-    positive, negative = y * weights, (~y) * weights
+    positive, negative = y.astype(float), (~y).astype(float)
     tp, fp = matrix @ positive, matrix @ negative
     return scoring._mcc(tp, fp, negative.sum() - fp, positive.sum() - tp)
 
@@ -112,7 +111,7 @@ def optimum(o: Offsets):
     zero = index_of(0.0)
     rows = []
     for key in CRITERIA:
-        mcc = mcc_weighted(o.y, o.grid[key])
+        mcc = mcc_grid(o.y, o.grid[key])
         best = scoring.best_setting_from_scores(mcc)
         rows.append({"criterion": key[0], "parameters": key[1], "MCC_c0": mcc[zero],
                      "c_best / kcal mol-1": C_GRID[best], "MCC_best": mcc[best]})

@@ -136,7 +136,7 @@ def slurm_seconds(text):
 
 
 def parse_slurm(text):
-    """Slurm job report -> {wall_s, cores, state, cpu_s, n_reports}, or None.
+    """Slurm job report -> {wall_s, cores, state, n_reports}, or None.
 
     Layouts: `JOB REPORT` (`Job Wall-clock time`, `Nodes`, `Cores per node`, `State`) and
     `SLURM JOB STATISTICS` (`WallTime`, `Allocated CPUs`). Last report used; without
@@ -153,7 +153,6 @@ def parse_slurm(text):
         return found[-1].strip() if found else None
 
     wall = last(r"^Job Wall-clock time:\s*(\S+)") or last(r"^WallTime:\s*(\S+)")
-    cpu = last(r"^CPU Utilized:\s*(\S+)") or last(r"^CPU Time \(CPUTime\):\s*(\S+)")
     per_node = last(r"^Cores per node:\s*(\d+)")
     nodes = last(r"^Nodes:\s*(\d+)")
     allocated = last(r"^Allocated CPUs:\s*(\d+)")
@@ -168,7 +167,6 @@ def parse_slurm(text):
     else:
         cores = None
     return {"wall_s": slurm_seconds(wall) if wall else None,
-            "cpu_s": slurm_seconds(cpu) if cpu else None,
             "cores": cores,
             "state": state,
             "n_reports": n_reports}

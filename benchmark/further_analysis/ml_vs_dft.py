@@ -7,20 +7,14 @@ Two-gate classification with machine-learned instead of DFT quencher parameters.
 
 Reads   ../../data/exp_dataset_ent.csv (also through pairs.py)
         results/quencher_classes/quencher_classes.csv
-Writes  results/ml_vs_dft/quenchers.csv         per quencher: ML - DFT parameters, summed ML
-                                                uncertainty, pairs classified correctly with DFT
-                                                and with ML, pairs rescued and lost, and the
-                                                change in the within-PC AUC when only this
-                                                quencher gets DFT parameters
-        results/ml_vs_dft/summary.csv           counts and correlations over pairs and quenchers
+Writes  results/ml_vs_dft/quenchers.csv   ML - DFT parameters, correct classifications,
+                                          and pairs rescued and lost for each quencher
+        results/ml_vs_dft/summary.csv     counts over pairs and quenchers
 
     uv run benchmark/further_analysis/ml_vs_dft.py
 
-Two-gate: DFT with r from DFT sizes, ML with r = 7 A (also when one quencher gets DFT
-parameters); photocatalyst parameters DFT. ML/DFT: source of E_T(Q),
-lambda_S0-T1(Q), lambda_T1-S0(Q). "Only this quencher DFT": all three from DFT for its
-pairs, ML for the rest. Rescued: correct with ML, wrong with DFT; lost: the reverse.
-Summed ML uncertainty: sum of the three predictive SDs of a quencher.
+Two-gate: DFT with r from DFT sizes, ML with r = 7 A; photocatalyst parameters DFT.
+Rescued: correct with ML, wrong with DFT; lost: the reverse.
 """
 
 import sys
@@ -31,7 +25,6 @@ sys.path.insert(0, str(HERE.parent))
 
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
-from scipy import stats  # noqa: E402
 
 import classification  # noqa: E402
 import pairs  # noqa: E402
@@ -44,63 +37,45 @@ TWO_GATE = {s: classification.two_gate_setting(s) for s in pairs.SOURCES}
 PARAMETERS = {"E_T": "q_E_T", "lambda_S0_T1": "q_lambda_S0_T1", "lambda_T1_S0": "q_lambda_T1_S0"}
 
 
-def with_dft(df, parameters, rows=None):
-    """df whose ML quencher `parameters` are the DFT ones (on `rows` only, if given)."""
-    d = df.copy()
-    rows = np.ones(len(df), bool) if rows is None else rows
-    for p in parameters:
-        ml, dft = ((pairs.dg_ent(s) if p == "E_T" else f"{PARAMETERS[p]}_{s} / kcal mol-1") for s in ("ml", "dft"))
-        d[ml] = np.where(rows, df[dft], df[ml])
-    return d
-
-
 def two_gate(df):
     return classification.predict(df, TWO_GATE["ml"], "ml")
 
 
-def pooled_within(y, score, groups):
-    return scoring.auc_within(y, score, groups)["pooled"]
-
-
 def quencher_table(df, q, classes):
-    y, g = df[pairs.QUENCHES].to_numpy(bool), df[pairs.PC_NAME].to_numpy()
+    y = df[pairs.QUENCHES].to_numpy(bool)
     p_dft, _ = classification.predict(df, TWO_GATE["dft"], "dft")
-    p_ml, s_ml = two_gate(df)
-    base = pooled_within(y, s_ml, g)
+    p_ml, _ = two_gate(df)
     names = df[pairs.Q_NAME].to_numpy()
     rows = []
     for name in q.index:
         r = {"quencher": name, "class": classes.get(name)}
         for p, col in PARAMETERS.items():
             r[f"{p} ML - DFT / kcal mol-1"] = q.loc[name, f"{col}_ml / kcal mol-1"] - q.loc[name, f"{col}_dft / kcal mol-1"]
-        r["ML uncertainty sum / kcal mol-1"] = sum(q.loc[name, pairs.q_ml_uncertainty(p)] for p in PARAMETERS)
         m = names == name
         r["n"] = int(m.sum())
         if m.any():
             yy, pd_, pm = y[m], p_dft[m], p_ml[m]
-            _, s_x = two_gate(with_dft(df, PARAMETERS, m))
             r |= {"n_quench": int(yy.sum()), "correct_dft": int((pd_ == yy).sum()), "correct_ml": int((pm == yy).sum()),
                   "TP_dft": int((pd_ & yy).sum()), "TP_ml": int((pm & yy).sum()),
                   "FP_dft": int((pd_ & ~yy).sum()), "FP_ml": int((pm & ~yy).sum()),
                   "rescued_quench": int(((pm == yy) & (pd_ != yy) & yy).sum()),
                   "rescued_no_quench": int(((pm == yy) & (pd_ != yy) & ~yy).sum()),
                   "lost_quench": int(((pm != yy) & (pd_ == yy) & yy).sum()),
-                  "lost_no_quench": int(((pm != yy) & (pd_ == yy) & ~yy).sum()),
-                  "dAUC_within_PC_pooled_if_dft": pooled_within(y, s_x, g) - base}
+                  "lost_no_quench": int(((pm != yy) & (pd_ == yy) & ~yy).sum())}
             r["dcorrect_ml_minus_dft"] = r["correct_ml"] - r["correct_dft"]
         rows.append(r)
     t = pd.DataFrame(rows)
-    order = ["quencher", "class", *[c for c in t.columns if "ML - DFT" in c], "ML uncertainty sum / kcal mol-1",
+    order = ["quencher", "class", *[c for c in t.columns if "ML - DFT" in c],
              "n", "n_quench", "correct_dft", "correct_ml", "dcorrect_ml_minus_dft",
              "TP_dft", "TP_ml", "FP_dft", "FP_ml", "rescued_quench", "rescued_no_quench", "lost_quench",
-             "lost_no_quench", "dAUC_within_PC_pooled_if_dft"]
+             "lost_no_quench"]
     t = t[order]
-    for c in order[order.index("n_quench"):-1]:
+    for c in order[order.index("n_quench"):]:
         t[c] = t[c].astype("Int64")
     return t
 
 
-def summary(df, quenchers, q):
+def summary(df, quenchers):
     y = df[pairs.QUENCHES].to_numpy(bool)
     p_dft = classification.predict(df, TWO_GATE["dft"], "dft")[0]
     p_ml = two_gate(df)[0]
@@ -108,8 +83,6 @@ def summary(df, quenchers, q):
     scored = quenchers[quenchers.n > 0].set_index("quencher")
     dc = scored.dcorrect_ml_minus_dft.astype(int)
     losses = dc[dc < 0].sort_values(kind="stable")
-    abs_dev = sum((q[f"{c}_ml / kcal mol-1"] - q[f"{c}_dft / kcal mol-1"]).abs() for c in PARAMETERS.values())
-    sigma = sum(q[pairs.q_ml_uncertainty(p)] for p in PARAMETERS)
     rows = [
         ("pairs", len(y), ""),
         ("correct, DFT", int((p_dft == y).sum()), ""), ("correct, ML", int((p_ml == y).sum()), ""),
@@ -124,11 +97,6 @@ def summary(df, quenchers, q):
         ("net change in correct pairs, quenchers gaining", int(dc[dc > 0].sum()), ""),
         ("quenchers with a net gain", int((dc > 0).sum()), ""),
         ("net loss of the five quenchers losing most", int(-losses.iloc[:5].sum()), " ".join(losses.index[:5])),
-        ("Spearman rho, ML uncertainty sum vs within-PC AUC gain if DFT, scored quenchers",
-         float(stats.spearmanr(scored["ML uncertainty sum / kcal mol-1"], scored.dAUC_within_PC_pooled_if_dft)[0]),
-         f"n = {len(scored)}"),
-        ("Spearman rho, ML uncertainty sum vs summed |ML - DFT|, all quenchers",
-         float(stats.spearmanr(sigma, abs_dev)[0]), f"n = {len(q)}"),
     ]
     return pd.DataFrame(rows, columns=["quantity", "value", "detail"])
 
@@ -150,7 +118,7 @@ def main():
     classes = pd.read_csv(CLASSES).set_index("id")["proposed_class"]
     df = pairs.scored(pairs.load())
     quenchers = quencher_table(df, q, classes)
-    tables = {"quenchers": quenchers, "summary": summary(df, quenchers, q)}
+    tables = {"quenchers": quenchers, "summary": summary(df, quenchers)}
     RESULTS.mkdir(parents=True, exist_ok=True)
     for name, table in tables.items():
         rounded(table).to_csv(RESULTS / f"{name}.csv", index=False, lineterminator="\n")

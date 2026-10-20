@@ -70,7 +70,6 @@ SCENARIOS = ([("Q E_T", s) for s in (1.0, 2.0, 3.0)]
              + [("Q params +- ML uncertainty", np.nan),
                 ("Q params + resampled ML-DFT differences", np.nan)]
              + [("lambda multiplicative", s) for s in (0.1, 0.2)])
-SWEEP_SIGMAS = np.round(np.arange(0.25, 5.0001, 0.25), 2)     # kcal/mol
 ML_TARGETS = ("E_T", "lambda_S0_T1", "lambda_T1_S0")
 
 

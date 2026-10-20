@@ -15,5 +15,3 @@ quenchers with a net loss,22.0,
 "net change in correct pairs, quenchers gaining",27.0,
 quenchers with a net gain,6.0,
 net loss of the five quenchers losing most,29.0,Q12 Q44 Q8 Q37 Q40
-"Spearman rho, ML uncertainty sum vs within-PC AUC gain if DFT, scored quenchers",-0.058,n = 46
-"Spearman rho, ML uncertainty sum vs summed |ML - DFT|, all quenchers",0.711,n = 48

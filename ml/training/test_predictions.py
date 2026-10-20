@@ -10,9 +10,7 @@ Writes  ml/results/<split>/test_predictions_graph.csv   one row per test molecul
 
     uv run --extra ml python -m ml.training.test_predictions random_42 random_101 ...
 
-Adapted from Leon Schlosser's
-playground/thesis/model/gps/get_preds.py and the output block of
-playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py.
+Adapted from Leon Schlosser's test-prediction and training scripts.
 """
 
 import argparse

@@ -27,7 +27,7 @@ Writes   results/literature/sole_daura_tx.csv         one row per set and pair
 import numpy as np
 import pandas as pd
 
-from common import (ESTIMATES, PROPERTIES, REPO, RT, barrier_asymmetric, barrier_symmetric,
+from common import (PROPERTIES, REPO, RT, barrier_asymmetric, barrier_symmetric,
                     literature, models, ours, pair_lambdas, write)
 
 OPC = REPO / "data" / "computational_data_processed" / "organophotocatalyst_dft.csv"
@@ -67,23 +67,23 @@ def run(source, lit, preds, opc):
     rng = np.random.default_rng(20261006)   # seed of sole_daura_ez.py, per set
     rows = []
     for model, pred in preds.items():
-        for estimate in ESTIMATES:
-            for _, pair in lit.iterrows():
-                sub = ours(pred.loc[pair.compound_id], estimate)
-                pc = pc_of(pair, pred, source, opc)
-                dG, forward, reverse = terms(pc, sub)
-                rows.append({"tx_source": source, "model": model, "estimate": estimate,
-                             "substrate": pair.substrate, "isomer": pair.isomer,
-                             "compound_id": pair.compound_id, "pc_label": pair.pc_label,
-                             "pc_E_T": pc["E_T"], "pc_lambda_S0_T1": pc["lambda_S0_T1"],
-                             "pc_lambda_T1_S0": pc["lambda_T1_S0"],
-                             "E_T_ml": sub["E_T"], "lambda_S0_T1_ml": sub["lambda_S0_T1"],
-                             "lambda_T1_S0_ml": sub["lambda_T1_S0"],
-                             "dG_EnT_ml": dG, "dG_EnT_lit": pair.dG_EnT_lit, "lambda_forward_ml": forward, "lambda_reverse_ml": reverse,
-                             "barrier_ml": barrier_asymmetric(dG, forward, reverse),
-                             "barrier_ml_symmetric": float(barrier_symmetric(dG, (forward + reverse) / 2)),
-                             "barrier_asym_lit": pair.barrier_asym_lit, "barrier_exp": pair.barrier_exp,
-                             "diffusion_controlled": pair.substrate == EXCLUDED_SUBSTRATE})
+        estimate = "mean"
+        for _, pair in lit.iterrows():
+            sub = ours(pred.loc[pair.compound_id])
+            pc = pc_of(pair, pred, source, opc)
+            dG, forward, reverse = terms(pc, sub)
+            rows.append({"tx_source": source, "model": model, "estimate": estimate,
+                         "substrate": pair.substrate, "isomer": pair.isomer,
+                         "compound_id": pair.compound_id, "pc_label": pair.pc_label,
+                         "pc_E_T": pc["E_T"], "pc_lambda_S0_T1": pc["lambda_S0_T1"],
+                         "pc_lambda_T1_S0": pc["lambda_T1_S0"],
+                         "E_T_ml": sub["E_T"], "lambda_S0_T1_ml": sub["lambda_S0_T1"],
+                         "lambda_T1_S0_ml": sub["lambda_T1_S0"],
+                         "dG_EnT_ml": dG, "dG_EnT_lit": pair.dG_EnT_lit, "lambda_forward_ml": forward, "lambda_reverse_ml": reverse,
+                         "barrier_ml": barrier_asymmetric(dG, forward, reverse),
+                         "barrier_ml_symmetric": float(barrier_symmetric(dG, (forward + reverse) / 2)),
+                         "barrier_asym_lit": pair.barrier_asym_lit, "barrier_exp": pair.barrier_exp,
+                         "diffusion_controlled": pair.substrate == EXCLUDED_SUBSTRATE})
     table = pd.DataFrame(rows)
 
     signs = []

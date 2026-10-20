@@ -119,3 +119,33 @@ def test_predict_no_targets(mock_model_graph_only):
     assert result['graph']['targets'] is None
 
 
+@pytest.mark.parametrize("head", ["graph", "node"])
+@pytest.mark.parametrize("mode", ["mixture_mean", "max_mode"])
+def test_predictions_and_mixtures_are_returned_in_physical_units(head, mode):
+    from sklearn.preprocessing import StandardScaler
+    from ml.utils.molecule_dataset import DualScaler
+
+    batch = MockBatch(batch_size=2, num_nodes=4)
+    batch.y = torch.zeros(2, 1)
+    batch.node_y = torch.zeros(4, 1)
+    size = 2 if head == "graph" else 4
+    mu = torch.tensor([[[0.0, 2.0]]]).repeat(size, 1, 1)
+    sigma = torch.ones_like(mu)
+    pi = torch.tensor([[[0.75, 0.25]]]).repeat(size, 1, 1)
+    model = MagicMock(return_value=(mu, sigma, pi))
+    graph_scaler = StandardScaler().fit([[8.0], [12.0]])
+    node_scaler = StandardScaler().fit([[-8.0], [-2.0]])
+    scaler = graph_scaler if head == "graph" else node_scaler
+
+    result = predict(model, [batch], "cpu", DualScaler(graph_scaler, node_scaler), mode)[head]
+    standard_mean = 0.5 if mode == "mixture_mean" else 0.0
+    standard_sd = np.sqrt(1.75) if mode == "mixture_mean" else 1.0
+    np.testing.assert_allclose(result["predictions"],
+                               np.full((size, 1), standard_mean * scaler.scale_[0] + scaler.mean_[0]))
+    np.testing.assert_allclose(result["uncertainties"],
+                               np.full((size, 1), standard_sd * scaler.scale_[0]), rtol=1e-6)
+    np.testing.assert_allclose(result["targets"], np.full((size, 1), scaler.mean_[0]))
+    np.testing.assert_allclose(result["mdn_params"]["mu"], mu.numpy() * scaler.scale_[0] + scaler.mean_[0])
+    np.testing.assert_allclose(result["mdn_params"]["sigma"], sigma.numpy() * scaler.scale_[0])
+
+

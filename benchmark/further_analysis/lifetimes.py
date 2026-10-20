@@ -39,7 +39,6 @@ import theory  # noqa: E402
 
 RESULTS = HERE / "results" / "lifetimes"
 SHORT_NS = 1000.0
-GROUPS = ("short", "long")
 KC = "kcal mol-1"
 FP_COLUMNS = {"adiabatic_dft": ("adiabatic", "dft"), "dvte": ("dvte_2024", "dvte"),
               "two_gate_dft": ("twogate_lifetime", "dft")}

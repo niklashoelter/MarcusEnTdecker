@@ -6,9 +6,8 @@
 Scores the criteria that predict whether a photocatalyst-quencher pair quenches.
 
 Reads   ../data/exp_dataset_ent.csv (through pairs.py)
-Writes  results/classification/settings.csv   every DFT setting of every criterion
-        results/classification/best.csv       best DFT setting per criterion, and the same
-                                              setting with ML parameters
+Writes  results/classification/settings.csv   each fixed DFT variant of every criterion
+        results/classification/best.csv       fixed variants per criterion and parameter source
 
     uv run benchmark/classification.py
 
@@ -46,12 +45,12 @@ TWO_GATE_VARIANTS = {"r from DFT sizes": None, "r = 7 A": theory.CONTACT_DISTANC
 TWO_GATE_DEFAULT = {"dft": "r from DFT sizes", "ml": "r = 7 A"}
 ENDERGONIC_OFFSET = 1e3     # kcal/mol, ranks endergonic pairs last
 
-# criterion: (kind, barrier model, variants, sources tuned on, sources given the DFT setting)
+# criterion: (kind, barrier model, variants, parameter sources)
 CRITERIA = {
-    "adiabatic": ("adiabatic", None, ("",), pairs.SOURCES, ()),
+    "adiabatic": ("adiabatic", None, ("",), pairs.SOURCES),
     "dvte": ("dvte", None, tuple(f"p = {p}, {kind}" for p in pairs.DVTE_P
-                                 for kind in pairs.DVTE_KINDS), ("dft",), ()),
-    "two_gate": ("two_gate", "marcus_asymmetric", tuple(TWO_GATE_VARIANTS), pairs.SOURCES, ()),
+                                 for kind in pairs.DVTE_KINDS), ("dft",)),
+    "two_gate": ("two_gate", "marcus_asymmetric", tuple(TWO_GATE_VARIANTS), pairs.SOURCES),
 }
 
 
@@ -90,7 +89,7 @@ def predict(df, setting: Setting, source):
 
 
 def candidates(criterion, variant):
-    """Every setting a criterion variant chooses from, in grid order."""
+    """The fixed setting of a criterion variant."""
     kind, model = CRITERIA[criterion][:2]
     if kind == "adiabatic":
         return [Setting("adiabatic")]
@@ -113,20 +112,7 @@ def contact_distance(df, source):
     return pairs.contact_distances(df) if r is None else np.full(len(df), float(r))
 
 
-def n_free(options):
-    """Number of setting fields that vary across the candidates."""
-    fields = [tuple(getattr(s, f) for s in options) for f in Setting.__dataclass_fields__]
-    return sum(len(set(map(str, values))) > 1 for values in fields)
-
-
-def choose(df, options, source="dft"):
-    """The candidate with the highest MCC; the middle one on a tie."""
-    y = df[pairs.QUENCHES].to_numpy(bool)
-    matrix = np.vstack([predict(df, s, source)[0] for s in options])
-    return options[scoring.best_setting(y, matrix)]
-
-
-def evaluate(df, label, variant, source, settings, n_free_parameters):
+def evaluate(df, label, variant, source, settings):
     """One row per setting: the setting, its metrics and its AUCs."""
     y = df[pairs.QUENCHES].to_numpy(bool)
     photocatalysts = df[pairs.PC_NAME].to_numpy()
@@ -135,7 +121,7 @@ def evaluate(df, label, variant, source, settings, n_free_parameters):
         predicted, score_ = predict(df, s, source)
         within = scoring.auc_within(y, score_, photocatalysts)
         rows.append({"criterion": label, "parameters": source, "variant": variant,
-                     "n_free": n_free_parameters,
+                     "n_free": 0,
                      "K_SV_crit / M-1": s.k_sv_crit,
                      **scoring.metrics(y, predicted), "AUC": scoring.auc(y, score_),
                      "AUC_within_PC_median": within["median"],
@@ -143,35 +129,17 @@ def evaluate(df, label, variant, source, settings, n_free_parameters):
     return rows
 
 
-def tune(df, label, variant, options, tuned_on=("dft",), given=("ml",), every_setting=True):
-    """Chooses a setting per source in tuned_on and applies it to the sources in given.
-
-    Returns (rows of every candidate on DFT, best rows, [(source, chosen setting)]).
-    """
-    k = n_free(options)
-    every, best, chosen = [], [], []
-    for source in tuned_on:
-        s = choose(df, options, source)
-        if source == "dft" and every_setting:
-            every += evaluate(df, label, variant, source, options, k)
-        best += [{**row, "n_settings": len(options)}
-                 for row in evaluate(df, label, variant, source, [s], k)]
-        chosen.append((source, s))
-        for other in given:
-            best += [{**row, "n_settings": 0} for row in evaluate(df, label, variant, other, [s], k)]
-            chosen.append((other, s))
-    return every, best, chosen
-
-
 def score(df):
-    """(every DFT setting, best setting per criterion and source) as DataFrames."""
+    """(all DFT variants, fixed variants per criterion and source) as DataFrames."""
     every, best = [], []
-    for criterion, (_, _, variants, tuned_on, given) in CRITERIA.items():
+    for criterion, (_, _, variants, sources) in CRITERIA.items():
         for variant in variants:
-            rows, best_rows, _ = tune(df, criterion, variant, candidates(criterion, variant),
-                                      tuned_on, given)
-            every += rows
-            best += best_rows
+            settings = candidates(criterion, variant)
+            for source in sources:
+                rows = evaluate(df, criterion, variant, source, settings)
+                if source == "dft":
+                    every.extend(rows)
+                best.extend({**row, "n_settings": len(settings)} for row in rows)
     return pd.DataFrame(every), pd.DataFrame(best)
 
 

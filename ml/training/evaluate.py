@@ -7,17 +7,13 @@ Writes  ml/results/metrics.csv                  MAE, RMSE, R² per split and tar
 
     uv run --extra ml python -m ml.training.evaluate
 
-Spin population: pooled over all test atoms. r2_abs_error_vs_uncertainty: R² of |error|
-against the predicted uncertainty. Rounding: kcal/mol 2 decimals, unitless 3.
+Spin population: pooled over all test atoms. Rounding: kcal/mol 2 decimals, unitless 3.
 
-Adapted from Leon Schlosser's evaluation scripts, without their plotting:
-playground/model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/eval.py
-and playground/thesis/model/gps/eval_fivefold.py.
+Adapted from Leon Schlosser's evaluation scripts.
 """
 
 import argparse
 
-import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, r2_score, root_mean_squared_error
 
@@ -33,14 +29,13 @@ def decimals(target):
 
 
 def predictions(split, target):
-    """Targets, predictions and uncertainties of one target on the test set of a split."""
+    """Targets and predictions of one target on the test set of a split."""
     kind = "node" if target in NODE_TARGETS else "graph"
     path = run_dir(split) / f"test_predictions_{kind}.csv"
     if not path.exists():
         return None
     data = pd.read_csv(path)
-    return (data[f"{target}_target"].to_numpy(), data[f"{target}_pred"].to_numpy(),
-            data[f"{target}_uncertainty"].to_numpy())
+    return data[f"{target}_target"].to_numpy(), data[f"{target}_pred"].to_numpy()
 
 
 def split_metrics(splits):
@@ -50,13 +45,11 @@ def split_metrics(splits):
             found = predictions(split, target)
             if found is None:
                 continue
-            y, yhat, unc = found
+            y, yhat = found
             rows.append({"split": split, "target": target, "n": len(y),
                          "mae": mean_absolute_error(y, yhat),
                          "rmse": root_mean_squared_error(y, yhat),
-                         "r2": r2_score(y, yhat),
-                         "r2_abs_error_vs_uncertainty": r2_score(np.abs(y - yhat), unc),
-                         "median_uncertainty": np.median(unc)})
+                         "r2": r2_score(y, yhat)})
     return pd.DataFrame(rows)
 
 
@@ -74,8 +67,7 @@ def summary(metrics):
 def rounded(table):
     """Two decimals for kcal/mol, three for unitless values; counts untouched."""
     table = table.copy()
-    per_target = [c for c in table.columns if c.startswith(("mae", "rmse"))
-                  or c == "median_uncertainty"]
+    per_target = [c for c in table.columns if c.startswith(("mae", "rmse"))]
     for target in table["target"].unique():
         rows = table["target"] == target
         table.loc[rows, per_target] = table.loc[rows, per_target].round(decimals(target))

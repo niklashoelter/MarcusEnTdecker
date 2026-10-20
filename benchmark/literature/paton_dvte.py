@@ -14,7 +14,6 @@ Cyclohexyl azide is kept in the table and excluded downstream (see SI).
 Writes paton_dvte_analysis.csv. Predictions from predict.py (case "paton_2024").
 """
 
-import pandas as pd
 
 from common import column, literature, predictions, write
 

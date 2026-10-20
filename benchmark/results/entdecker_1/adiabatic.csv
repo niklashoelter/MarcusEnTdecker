@@ -1,2 +1,2 @@
-criterion,parameters,variant,n_free,barrier_threshold / kcal mol-1,K_SV_crit / M-1,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,AUC,AUC_within_PC_median,AUC_within_PC_pooled,n_settings
-adiabatic,entdecker,,0,,,868,347,197,279,45,0.721,0.638,0.885,0.586,0.741,0.485,0.797,0.709,0.683,1
+criterion,parameters,variant,n_free,K_SV_crit / M-1,n,TP,FP,TN,FN,accuracy,precision,recall,specificity,F1,MCC,AUC,AUC_within_PC_median,AUC_within_PC_pooled,n_settings
+adiabatic,entdecker,,0,,868,347,197,279,45,0.721,0.638,0.885,0.586,0.741,0.485,0.797,0.709,0.683,1

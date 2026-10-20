@@ -174,29 +174,6 @@ class GraphMDN(nn.Module):
         else:
              raise RuntimeError("No tasks configured.")
 
-    def get_config(self):
-        """Get model configuration as a dictionary."""
-        config = {
-            'encoder_type': self.encoder_type,
-            'node_hidden_dim': self.node_hidden_dim,
-            'encoder_layers': self.encoder_layers,
-            'encoder_dropout': self.encoder_dropout,
-            'num_graph_tasks': self.num_graph_tasks,
-            'num_node_tasks': self.num_node_tasks,
-            'n_components': self.n_components,
-            'mdn_hidden_dims': self.mdn_hidden_dims,
-            'mdn_dropout': self.mdn_dropout,
-            'mdn_activation': self.mdn_activation,
-            'use_batch_norm': self.use_batch_norm,
-            'epsilon': self.epsilon,
-            'lambda_cal': self.lambda_cal,
-            'lambda_sharp': self.lambda_sharp,
-            'device': str(self.device),
-            'atom_wise': self.atom_wise
-        }
-        config.update(self.encoder_args)
-        return config
-
     def __repr__(self):
         return (
             f"{self.__class__.__name__}(\n"

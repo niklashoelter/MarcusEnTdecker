@@ -69,9 +69,9 @@ Ground truth: `quenches`. Photocatalyst properties are DFT throughout.
   `AUC_within_PC_median` (median of per-photocatalyst AUCs) and `AUC_within_PC_pooled`
   (each quenching pair compared only with non-quenching pairs of its photocatalyst).
   Three decimals.
-- **Columns.** `parameters`: source of the quencher parameters (`dft`, `ml`). `n_free`:
-  parameters chosen on the data. `n_settings`: grid points of that choice; 0 on `ml` rows,
-  which take the setting of their `dft` row.
+- **Columns.** `parameters`: source of the quencher parameters (`dft`, `ml`).
+  `n_free` is 0: none of the settings is fitted to the labels. `n_settings` is 1 for
+  each fixed variant, with each source evaluated independently.
 
 ## Physics
 
@@ -165,7 +165,7 @@ Each script writes to `further_analysis/results/<script>/`. Besides the dataset,
 | `error_propagation.py` | Monte Carlo errors in the computed parameters (per molecule, 1000 draws) through the classification and the predicted log₁₀ k_q; local sensitivity of log₁₀ k_q to E_T(Q) and λ |
 | `exclusion.py` | Q38 and Q31: outcomes, ΔG, K_SV, I₀/I and gate rejections |
 | `anharmonicity.py` | skewness and tail of the DvTE gap distributions (trajectory bootstrap), skewness against the signed error, ΔG shifted by the tail, crossing position, torsional instead of harmonic curves |
-| `dvte_reorganization.py` | DvTE − E_T against λ, four-point Gaussian estimate of DvTE, symmetric against asymmetric barrier, position of the Youden and Sandros boundaries |
+| `dvte_reorganization.py` | DvTE − E_T against λ, symmetric against asymmetric barrier, driving-force bins and removal of the energy gate |
 | `ml_vs_dft.py` | the criterion with ML against DFT quencher parameters: per-quencher deviations and change in correct predictions |
 
 ## Literature

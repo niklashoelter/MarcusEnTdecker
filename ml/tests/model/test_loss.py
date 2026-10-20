@@ -16,16 +16,10 @@ def test_mdn_loss_perfect_fit():
     # Check that loss is a scalar tensor
     assert loss.ndim == 0
 
-    # Calculate expected loss manually
-    # LogProb1 = -0.5 * (log(2*pi*0.1^2) + 0) = -0.5 * log(0.0628) approx -0.5 * -2.76 = 1.38
-    # LogProb2 = -0.5 * (log(2*pi*1^2) + (5-10)^2/1) = -0.5 * (1.83 + 25) = -13.4
-    # Weighted: log(0.9) + 1.38 vs log(0.1) - 13.4
-    # -0.1 + 1.38 = 1.28 vs -2.3 - 13.4 = -15.7
-    # LogSumExp(1.28, -15.7) approx 1.28
-    # Negative -> -1.28
+    density = (0.9 / (0.1 * torch.sqrt(torch.tensor(2 * torch.pi)))
+               + 0.1 * torch.exp(torch.tensor(-12.5)) / torch.sqrt(torch.tensor(2 * torch.pi)))
+    torch.testing.assert_close(loss, -torch.log(density), atol=1e-6, rtol=1e-6)
 
-    # Just checking it runs and gives a reasonable value
-    assert loss < 0 # NLL can be negative for continuous distributions (densities > 1)
 
 def test_calibration_loss():
     # Target = 5.0

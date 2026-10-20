@@ -10,7 +10,6 @@ def plot_mode_distribution_single(
     uncertainty: float,
     target_name: str,
     unit: str,
-    target_value: float = None,
     theme: str = "light",
 ):
     if theme == "dark":
@@ -49,9 +48,6 @@ def plot_mode_distribution_single(
 
     y_combined = np.sum([norm.pdf(x_range, mu_mol[i], sigma_mol[i]) * pi_mol[i] for i in range(n_components)], axis=0)
     ax.plot(x_range, y_combined, color=fg_color, linestyle='--', linewidth=1.5, label='Combined PDF')
-
-    if target_value is not None:
-        ax.axvline(target_value, color='#ef4444', linewidth=1.5, label=f'True: {target_value:.2f}')
 
     ax.axvline(predicted_value, color='#10b981', linestyle='--', linewidth=1.5, label=f'Predicted: {predicted_value:.2f}')
 

@@ -21,7 +21,7 @@ Writes   results/literature/leonori_catalysts.csv     one row per catalyst
 import numpy as np
 import pandas as pd
 
-from common import ESTIMATES, RT, auc, literature, models, ours, pair_barrier, spearman, write
+from common import RT, auc, literature, models, ours, pair_barrier, spearman, write
 
 ISOMERISATION_CATALYST = "N24"
 K_B, H_PLANCK, T = 1.380649e-23, 6.62607015e-34, 298.15
@@ -38,24 +38,24 @@ def main():
 
     rows = []
     for model, pred in models("leonori_2025").items():
-        for estimate in ESTIMATES:
-            o = {c: ours(pred.loc[c], estimate) for c in pred.index}
-            for c in cats:
-                row = {"model": model, "estimate": estimate, "compound_id": c,
-                       "triplet_character_lit": lit.at[c, "triplet_character"], "dE_TT_lit": lit.at[c, "dE_TT_lit"],
-                       "E_T_lit": lit.at[c, "E_T_lit"], "E_T_ml": o[c]["E_T"],
-                       "lambda_S0_T1_ml": o[c]["lambda_S0_T1"], "lambda_T1_S0_ml": o[c]["lambda_T1_S0"],
-                       "lambda_sum_ml": o[c]["lambda_S0_T1"] + o[c]["lambda_T1_S0"],
-                       "lambda_S0_T1_lit": lit.at[c, "lambda_S0_T1_lit"], "lambda_T1_S0_lit": lit.at[c, "lambda_T1_S0_lit"]}
-                row["barrier_ml_1E"] = pair_barrier(o[c], o["1E"])[1]
-                row["barrier_ml_2E"] = pair_barrier(o[c], o["2E"])[1]
-                row["barrier_lit_2E"] = lit.at[c, "barrier_lit_2E"]
-                if pd.notna(lit.at[c, "lambda_T1_S0_lit"]):
-                    # our E_T and substrate, the paper's catalyst lambdas
-                    pc = {"E_T": o[c]["E_T"], "lambda_S0_T1": lit.at[c, "lambda_S0_T1_lit"],
-                          "lambda_T1_S0": lit.at[c, "lambda_T1_S0_lit"]}
-                    row["barrier_ml_2E_paper_pc_lambda"] = pair_barrier(pc, o["2E"])[1]
-                rows.append(row)
+        estimate = "mean"
+        o = {c: ours(pred.loc[c]) for c in pred.index}
+        for c in cats:
+            row = {"model": model, "estimate": estimate, "compound_id": c,
+                   "triplet_character_lit": lit.at[c, "triplet_character"], "dE_TT_lit": lit.at[c, "dE_TT_lit"],
+                   "E_T_lit": lit.at[c, "E_T_lit"], "E_T_ml": o[c]["E_T"],
+                   "lambda_S0_T1_ml": o[c]["lambda_S0_T1"], "lambda_T1_S0_ml": o[c]["lambda_T1_S0"],
+                   "lambda_sum_ml": o[c]["lambda_S0_T1"] + o[c]["lambda_T1_S0"],
+                   "lambda_S0_T1_lit": lit.at[c, "lambda_S0_T1_lit"], "lambda_T1_S0_lit": lit.at[c, "lambda_T1_S0_lit"]}
+            row["barrier_ml_1E"] = pair_barrier(o[c], o["1E"])[1]
+            row["barrier_ml_2E"] = pair_barrier(o[c], o["2E"])[1]
+            row["barrier_lit_2E"] = lit.at[c, "barrier_lit_2E"]
+            if pd.notna(lit.at[c, "lambda_T1_S0_lit"]):
+                # our E_T and substrate, the paper's catalyst lambdas
+                pc = {"E_T": o[c]["E_T"], "lambda_S0_T1": lit.at[c, "lambda_S0_T1_lit"],
+                      "lambda_T1_S0": lit.at[c, "lambda_T1_S0_lit"]}
+                row["barrier_ml_2E_paper_pc_lambda"] = pair_barrier(pc, o["2E"])[1]
+            rows.append(row)
     catalysts = pd.DataFrame(rows)
     catalysts["is_pipi"] = catalysts.triplet_character_lit == "3pi,pi*"
     write(catalysts, "leonori_catalysts.csv")
@@ -94,19 +94,19 @@ def main():
     measured += [(ISOMERISATION_CATALYST, lit.at[ISOMERISATION_CATALYST, "k_q_Z1"], "(Z)-1", lit.at[ISOMERISATION_CATALYST, "k_q_method"])]
     quencher_id = {"(E)-1": "1E", "(Z)-1": "1Z", "27": "27"}
     for model, pred in models("leonori_2025").items():
-        for estimate in ESTIMATES:
-            for c, k_q, q, method in measured:
-                quench.append({"model": model, "estimate": estimate, "catalyst": c, "quencher": q, "k_q": k_q,
-                               "method": method, "barrier_exp_eyring": eyring_barrier(k_q),
-                               "barrier_ml": pair_barrier(ours(pred.loc[c], estimate), ours(pred.loc[quencher_id[q]], estimate))[1]})
-            pc = ours(pred.loc[ISOMERISATION_CATALYST], estimate)
-            a, b = (ours(pred.loc[s], estimate) for s in ("1E", "1Z"))
-            full = pair_barrier(pc, a)[1] - pair_barrier(pc, b)[1]
-            quench.append({"model": model, "estimate": estimate, "catalyst": ISOMERISATION_CATALYST,
-                           "quencher": "(E)-1 minus (Z)-1", "k_q": np.nan, "method": "ratio of the two constants",
-                           "ddG_exp": -RT * np.log(lit.at[ISOMERISATION_CATALYST, "k_q"] / lit.at[ISOMERISATION_CATALYST, "k_q_Z1"]),
-                           "ddG_ml": full,
-                           "ddG_EnT_ml": a["E_T"] - b["E_T"]})
+        estimate = "mean"
+        for c, k_q, q, method in measured:
+            quench.append({"model": model, "estimate": estimate, "catalyst": c, "quencher": q, "k_q": k_q,
+                           "method": method, "barrier_exp_eyring": eyring_barrier(k_q),
+                           "barrier_ml": pair_barrier(ours(pred.loc[c]), ours(pred.loc[quencher_id[q]]))[1]})
+        pc = ours(pred.loc[ISOMERISATION_CATALYST])
+        a, b = (ours(pred.loc[s]) for s in ("1E", "1Z"))
+        full = pair_barrier(pc, a)[1] - pair_barrier(pc, b)[1]
+        quench.append({"model": model, "estimate": estimate, "catalyst": ISOMERISATION_CATALYST,
+                       "quencher": "(E)-1 minus (Z)-1", "k_q": np.nan, "method": "ratio of the two constants",
+                       "ddG_exp": -RT * np.log(lit.at[ISOMERISATION_CATALYST, "k_q"] / lit.at[ISOMERISATION_CATALYST, "k_q_Z1"]),
+                       "ddG_ml": full,
+                       "ddG_EnT_ml": a["E_T"] - b["E_T"]})
     write(pd.DataFrame(quench), "leonori_quenching.csv")
 
     print(pd.DataFrame(character).round(2).to_string(index=False))

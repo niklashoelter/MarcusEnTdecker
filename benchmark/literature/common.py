@@ -27,11 +27,10 @@ DATA = REPO / "data" / "literature_benchmark"
 OUT = REPO / "benchmark" / "results" / "literature"
 
 RT = 1.98720425e-3 * 298.15
-ESTIMATES = ("mean",)
 PROPERTIES = ("E_T", "lambda_S0_T1", "lambda_T1_S0")
 
 
-def column(prop, estimate="mean", uncertainty=False):
+def column(prop, uncertainty=False):
     """The predictions-file column of one property."""
     if uncertainty:
         return f"{prop}_ml_uncertainty / kcal mol-1"
@@ -54,9 +53,9 @@ def models(case):
     return {"deployed": pred[pred.predictable.astype(bool)]}
 
 
-def ours(row, estimate="mean"):
+def ours(row):
     """One compound's predicted properties, as a plain mapping."""
-    out = {prop: row[column(prop, estimate)] for prop in PROPERTIES}
+    out = {prop: row[column(prop)] for prop in PROPERTIES}
     out.update({f"{prop}_sd": row[column(prop, uncertainty=True)] for prop in PROPERTIES})
     return out
 

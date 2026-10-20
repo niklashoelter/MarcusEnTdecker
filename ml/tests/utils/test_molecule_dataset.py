@@ -3,23 +3,13 @@ import pytest
 import numpy as np
 from ml.utils.molecule_dataset import MoleculeDataset
 from unittest.mock import patch
-
-class MockGraph:
-    def __init__(self, num_nodes=2):
-        self.num_nodes = num_nodes
-        self.x = torch.zeros(num_nodes, 10)
-        self.edge_index = torch.zeros(2, 0)
-        self.rwse = None
-        self.rrwp_edge = None
-
-    def clone(self):
-        return self
+from torch_geometric.data import Data
 
 @pytest.fixture
 def mock_smiles_to_graph_func():
     with patch('ml.utils.molecule_dataset.smiles_to_graph') as mock:
-        # Default behavior: return a MockGraph with 2 nodes
-        mock.return_value = MockGraph(num_nodes=2)
+        mock.side_effect = lambda *args, **kwargs: Data(
+            x=torch.zeros(2, 10), edge_index=torch.empty(2, 0, dtype=torch.long))
         yield mock
 
 def test_moleculedataset_graph_only(mock_smiles_to_graph_func):
@@ -42,11 +32,7 @@ def test_moleculedataset_mixed_targets(mock_smiles_to_graph_func):
     graph_targets = np.array([1.0, 2.0])
     node_targets = np.array([[0.1, 0.2], [0.3, 0.4]], dtype=object) # Arrays of lists or arrays
 
-    # Check if this crashes
-    try:
-        dataset = MoleculeDataset(smiles_list, node_targets=node_targets, graph_targets=graph_targets)
-    except Exception as e:
-        pytest.fail(f"MoleculeDataset failed with mixed targets: {e}")
+    dataset = MoleculeDataset(smiles_list, node_targets=node_targets, graph_targets=graph_targets)
 
     assert len(dataset) == 2
     data = dataset[0]
@@ -84,13 +70,15 @@ def test_moleculedataset_node_only(mock_smiles_to_graph_func):
 
     assert len(dataset) == 1
     data = dataset[0]
-    # node-only: data.y = data.node_y
-    assert torch.allclose(data.y, torch.tensor([0.1, 0.2]).unsqueeze(1))
-
-    assert hasattr(data, 'y')
-    if hasattr(data, 'node_y'):
-        assert torch.allclose(data.y, data.node_y)
-
     assert data.y.shape == (2, 1)
+    assert torch.allclose(data.y, data.node_y)
     assert torch.allclose(data.y, torch.tensor([[0.1], [0.2]]))
 
+
+def test_molecule_graphs_and_items_are_independent(mock_smiles_to_graph_func):
+    dataset = MoleculeDataset(np.array(["CC", "CO"]),
+                              graph_targets=np.array([[1.0], [2.0]]))
+    first, second = dataset[0], dataset[1]
+    first.x.fill_(9)
+    assert first.y.item() == 1.0 and second.y.item() == 2.0
+    assert not dataset.graphs[0].x.any() and not second.x.any()

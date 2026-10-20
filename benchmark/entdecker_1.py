@@ -45,7 +45,7 @@ def main():
     df[pairs.dg_ent(SOURCE)] = np.round(q_e_t - df[pairs.PC_E_T].to_numpy(float), DECIMALS)
 
     rows = classification.evaluate(df, "adiabatic", "", SOURCE,
-                                   [classification.Setting("adiabatic")], 0)
+                                   [classification.Setting("adiabatic")])
     row = scoring.rounded(pd.DataFrame([{**r, "n_settings": 1} for r in rows]))
     row.to_csv(RESULTS / "adiabatic.csv", index=False, lineterminator="\n")
 

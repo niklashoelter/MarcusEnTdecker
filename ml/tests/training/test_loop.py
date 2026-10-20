@@ -44,16 +44,14 @@ def test_compute_loss_node_only():
     model.lambda_sharp = 0.0
 
     batch = MockBatch()
+    batch.batch = torch.tensor([0, 0, 0, 1])
+    batch.node_y = torch.tensor([[0.0], [0.0], [0.0], [2.0]])
+    outputs = (torch.zeros(4, 1, 1), torch.ones(4, 1, 1), torch.ones(4, 1, 1))
+    loss = compute_loss(model, outputs, batch)["loss"]
+    # Each molecule contributes equally, despite their different atom counts.
+    expected = 0.5 * torch.log(torch.tensor(2 * torch.pi)) + 1.0
+    torch.testing.assert_close(loss, expected, atol=1e-6, rtol=1e-6)
 
-    # Output: node level. 4 nodes.
-    mu = torch.randn(4, 1, 3)
-    sigma = torch.abs(torch.randn(4, 1, 3))
-    pi = torch.softmax(torch.randn(4, 1, 3), dim=-1)
-    outputs = (mu, sigma, pi)
-
-    loss_dict = compute_loss(model, outputs, batch)
-
-    assert "loss" in loss_dict
 
 def test_compute_loss_mixed():
     model = MagicMock()

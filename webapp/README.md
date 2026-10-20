@@ -24,7 +24,7 @@ every benchmark pair.
 
 Structures: `data/pc_structures/<id>.png` where present (no rerun needed); otherwise an
 organic photocatalyst is drawn from its SMILES (from its DFT geometry) and a metal
-complex is shown by name. `scripts/` is not part of the package.
+complex is shown by name. The library generator is in `scripts/`.
 
 λ names: the API uses `lambda_S0_T1`, `lambda_T1_S0`. `ml` keeps its own names: the
 prediction keys `lamda_S_T` (S0 surface) and `lamda_T_S` (T1 surface) and the arguments
@@ -44,7 +44,7 @@ plots/              Marcus, mode-distribution and spin-population figures
 templates/          index.html, the single page
 static/ketcher/     the EPAM Ketcher structure editor, as built for the browser
 data/               photocatalysts.csv and the structure drawings, by photocatalyst id
-scripts/            build_photocatalysts.py, the generator of photocatalysts.csv (not packaged)
+scripts/            build_photocatalysts.py, the generator of photocatalysts.csv
 tests/              a smoke test, the library against data/ and the benchmark, and the
                     dependency direction
 ```

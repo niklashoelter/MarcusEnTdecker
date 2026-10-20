@@ -1,4 +1,4 @@
-"""Dependency rules: ml -> webapp, never back.
+"""Dependency rules: webapp imports ml; ml never imports webapp.
 
 - `ml` never imports `webapp`.
 - Neither package imports or reads anything under `data/` or `benchmark/`; resources

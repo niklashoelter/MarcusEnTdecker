@@ -7,7 +7,7 @@ from rdkit.Chem import rdDepictor
 
 
 def _prepare_mol_and_drawer(smiles, spin_population, uncertainty, rgb, theme="light"):
-    """Shared preprocessing: returns (mol, drawer, hover_texts, atom_xs, atom_ys)"""
+    """Shared preprocessing: returns (mol, drawer, atom_xs, atom_ys, hover_texts)"""
     mol = Chem.MolFromSmiles(smiles)
     nh_indices = [a.GetIdx() for a in mol.GetAtoms() if a.GetSymbol() == 'N' and a.GetTotalNumHs() > 0]
     if nh_indices:

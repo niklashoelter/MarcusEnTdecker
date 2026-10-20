@@ -48,7 +48,7 @@ data/
 │                                    quencher_ml_timing.py, photocatalyst_curate.py,
 │                                    quencher_geometry.py
 ├── literature_benchmark/            published tables of the literature benchmark, one CSV
-│                                    per study (the PDFs beside them are not in git)
+│                                    per study (source PDFs are not included)
 ├── compound_identification.py/.xlsx compound ids, names, SMILES, old -> new PC ids
 ├── properties_workbook.py           layout shared by the workbooks
 ├── molecular_size.py                molecular radius from a DFT geometry, used by the
@@ -196,8 +196,8 @@ vertical single points (`sp_vert_<state>`); `PC<n>/conf/`: conformer search.
 `sp_output.out` from two runs of the same conformer; Q18 S0: the reduced-state vertical
 single point from a second run.
 
-## Git and Zenodo
+## Raw-data availability
 
-The raw data (`experimental_data_raw/`, `computational_data_raw/`) are not part of this
-repository; they are available on Zenodo (DOI: to follow). Without them,
-`uv run reproduce.py data` skips the extraction scripts.
+The Zenodo archive includes `experimental_data_raw/` and `computational_data_raw/`
+alongside the processed data and code. The GitHub checkout excludes the raw folders.
+Without them, `uv run reproduce.py data` skips the extraction scripts.

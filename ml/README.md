@@ -14,9 +14,7 @@ training/           offline only, not in the wheel
   test_predictions.py   a checkpoint's predictions for the test set of its split
   evaluate.py       metrics from the test predictions
   hyperparameter_optimization.py   the Optuna search
-  build_dataset.py  training targets from raw DFT energies (raw energies not included)
   loop.py           one training or validation epoch, and the loss
-  metrics.py        spin-population ranking metrics
 data/
   model_final.pt              the deployed checkpoint, a copy of results/full/model.pt
   training_dataset_full.csv   the training dataset
@@ -26,7 +24,6 @@ results/            what training/ writes:
   full/model.pt                 the model trained on all data
   metrics.csv, metrics_random_splits.csv
   hyperparameter_optimization/optuna_results.csv
-  logs/                         console output of the training runs
 tests/              the package's test suite
 ```
 
@@ -174,36 +171,10 @@ The code was taken at these commits:
 Upstream's `data/dataset.csv` is carried here as
 `data/training_dataset_full.csv`, byte-identical to upstream.
 
-The modules were rearranged into runtime and training code. Beyond import paths, two
-changed: in `model/inference.py`, building a model from a checkpoint is its own function,
-`build_model`, and `get_predictions` takes the checkpoint path
-as a required argument (upstream defaulted to a path on Leon's machine) and reloads
-the model when the path or device changes; in `prediction.py`, the table is built by its own function,
-`frame`, and the checkpoint is found through `importlib.resources`. Where upstream code
-lives here:
-
-| upstream (`pyrates/`) | here (`ml/`) |
-|---|---|
-| `utilities/dataset/graph_construction.py`, `molecule_dataset.py` | `utils/` |
-| `utilities/dataset/data_loader.py` | `training/build_dataset.py` |
-| `utilities/metrics/jaccard.py`, `ranked_score.py` | `training/metrics.py` |
-| `model/training.py` | `training/loop.py` |
-
-Not carried over: `utilities/plotting/scatter_plot.py` (a parity plot nothing called) and
-`main`'s `examples/train.py`, which despite its name only plots one prediction from a
-saved checkpoint.
-
-The training, evaluation and hyperparameter-optimization scripts are not in pyrates. They
-come from Leon's working directory (`playground/`, received 2026-10-01), adapted to read
-the dataset and splits of this package and without their plotting.
-
-| here (`ml/training/`) | from `playground/` |
-|---|---|
-| `train.py` | `model_setup/save_model_and_inspect/new_data/graph_gps/og_data_opt_param/train.py` |
-| `test_predictions.py` | `thesis/model/gps/get_preds.py`, and the output block of `train.py` |
-| `evaluate.py` | `og_data_opt_param/eval.py`, `thesis/model/gps/eval_fivefold.py` |
-| `hyperparameter_optimization.py` | `hyperparameters/new_data/gps_ogdata_newmodel/opt.py` |
-| `splits.py` (procedures) | `og_data_opt_param/train.py` (random), `thesis/model/oos/train.py` (out of sample) |
+The runtime code was reorganized into `model/` and `utils/`, with explicit checkpoint
+selection and package-resource loading. The offline training, evaluation and
+hyperparameter-optimization scripts were adapted from Leon Schlosser's research code
+to use this package's dataset and splits.
 
 The models in `results/` and `model_final.pt` were trained in this repository with
 trial 55.

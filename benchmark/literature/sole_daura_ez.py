@@ -24,7 +24,7 @@ Writes   results/literature/sole_daura_ez.csv        one row per pair, model and
 import numpy as np
 import pandas as pd
 
-from common import (ESTIMATES, PROPERTIES, RT, barrier_asymmetric, barrier_symmetric, literature,
+from common import (PROPERTIES, RT, barrier_asymmetric, barrier_symmetric, literature,
                     models, ours, pair_lambdas, write)
 
 EXCLUDED_SUBSTRATE = "4"
@@ -52,20 +52,20 @@ def main():
 
     rows = []
     for model, pred in preds.items():
-        for estimate in ESTIMATES:
-            for _, pair in lit.iterrows():
-                sub = ours(pred.loc[pair.compound_id], estimate)
-                dG, forward, reverse = terms(pc_of(pair), sub)
-                rows.append({"model": model, "estimate": estimate, "pc_source": "paper",
-                             "substrate": pair.substrate, "isomer": pair.isomer,
-                             "compound_id": pair.compound_id, "pc_label": pair.pc_label,
-                             "E_T_ml": sub["E_T"], "lambda_S0_T1_ml": sub["lambda_S0_T1"],
-                             "lambda_T1_S0_ml": sub["lambda_T1_S0"],
-                             "dG_EnT_ml": dG, "dG_EnT_lit": pair.dG_EnT_lit, "lambda_forward_ml": forward, "lambda_reverse_ml": reverse,
-                             "barrier_ml": barrier_asymmetric(dG, forward, reverse),
-                             "barrier_ml_symmetric": float(barrier_symmetric(dG, (forward + reverse) / 2)),
-                             "barrier_asym_lit": pair.barrier_asym_lit, "barrier_exp": pair.barrier_exp,
-                             "diffusion_controlled": pair.substrate == EXCLUDED_SUBSTRATE})
+        estimate = "mean"
+        for _, pair in lit.iterrows():
+            sub = ours(pred.loc[pair.compound_id])
+            dG, forward, reverse = terms(pc_of(pair), sub)
+            rows.append({"model": model, "estimate": estimate, "pc_source": "paper",
+                         "substrate": pair.substrate, "isomer": pair.isomer,
+                         "compound_id": pair.compound_id, "pc_label": pair.pc_label,
+                         "E_T_ml": sub["E_T"], "lambda_S0_T1_ml": sub["lambda_S0_T1"],
+                         "lambda_T1_S0_ml": sub["lambda_T1_S0"],
+                         "dG_EnT_ml": dG, "dG_EnT_lit": pair.dG_EnT_lit, "lambda_forward_ml": forward, "lambda_reverse_ml": reverse,
+                         "barrier_ml": barrier_asymmetric(dG, forward, reverse),
+                         "barrier_ml_symmetric": float(barrier_symmetric(dG, (forward + reverse) / 2)),
+                         "barrier_asym_lit": pair.barrier_asym_lit, "barrier_exp": pair.barrier_exp,
+                         "diffusion_controlled": pair.substrate == EXCLUDED_SUBSTRATE})
     table = pd.DataFrame(rows)
     write(table, "sole_daura_ez.csv")
 

@@ -9,8 +9,7 @@ fraction against the driving force.
 Reads   ../../data/exp_dataset_ent.csv (also through pairs.py)
         results/quencher_classes/quencher_classes.csv
 Writes  results/dvte_reorganization/quenchers.csv          per quencher: DvTE - E_T,
-                                                           mean and width of the sampled gaps,
-                                                           Gaussian four-point widths
+                                                           mean and width of the sampled gaps
         results/dvte_reorganization/fits.csv               least-squares lines of DvTE - E_T
                                                            against lambda
         results/dvte_reorganization/quencher_summary.csv   range of DvTE - E_T, quenchers with
@@ -23,10 +22,8 @@ Writes  results/dvte_reorganization/quenchers.csv          per quencher: DvTE - 
 
     uv run benchmark/further_analysis/dvte_reorganization.py
 
-Quenchers (DFT). Gaussian four-point width of the gap at thermal S0 geometries:
-sigma^2 = 2 lambda_T1-S0 k_B T_eff; k_B T_eff = RT (classical) or (eps/2) coth(eps/2RT) for
-eps = 1500 cm-1. kT_eff_over_RT = sd^2 / (2 lambda_T1-S0 RT). R^2 = squared Pearson
-correlation.
+Quenchers (DFT). DvTE - E_T against both reorganization energies; R^2 is the squared
+Pearson correlation.
 
 Pairs. Two-gate (DFT: r from DFT sizes; ML: r = 7 A); symmetric form: symmetric barrier with
 geometric-mean lambda; without energy gate: barrier <= t_PC only. lambda_f = lambda_T1-S0(PC) +
@@ -52,8 +49,6 @@ CLASSES = HERE / "results" / "quencher_classes" / "quencher_classes.csv"
 RESULTS = HERE / "results" / "dvte_reorganization"
 
 P_DVTE = 0.008
-CM_TO_KCAL = 1 / 349.755
-QUANTA = {"classical": None, "1500 cm-1": 1500}
 BINS = ((-60, -5), (-5, -2), (-2, 0), (0, 2), (2, 5), (5, 60))
 TWO_GATE = classification.candidates("two_gate", "r from DFT sizes")[0]
 
@@ -64,29 +59,13 @@ def quencher_parameters():
 
 
 # ----------------------------------------------------------------------------- quencher level
-def kT_eff(quantum):
-    """Effective k_B T of one quantum in cm-1 (None: classical)."""
-    if quantum is None:
-        return theory.RT
-    hw = quantum * CM_TO_KCAL
-    return hw / 2 / np.tanh(hw / (2 * theory.RT))
-
-
-def gaussian_width(lambda_t1_s0, quantum):
-    """Width of the Gaussian four-point gap distribution."""
-    return np.sqrt(2 * lambda_t1_s0 * kT_eff(quantum))
-
-
 def quencher_table(q, classes):
     E, lt, ls = (q[f"q_{c}_dft / kcal mol-1"] for c in ("E_T", "lambda_T1_S0", "lambda_S0_T1"))
     mu, sd, dvte = q["q_dvte_mu / kcal mol-1"], q["q_dvte_std / kcal mol-1"], q[pairs.q_dvte(str(P_DVTE), "normal")]
     t = pd.DataFrame({"class": q.index.map(classes), "E_T / kcal mol-1": E,
                       "lambda_T1_S0 / kcal mol-1": lt, "lambda_S0_T1 / kcal mol-1": ls,
                       "dvte_minus_E_T / kcal mol-1": dvte - E, "dvte_mu_minus_E_T / kcal mol-1": mu - E,
-                      "dvte_mu / kcal mol-1": mu, "dvte_std / kcal mol-1": sd, "dvte / kcal mol-1": dvte,
-                      "kT_eff_over_RT": sd ** 2 / (2 * lt) / theory.RT})
-    for label, quantum in QUANTA.items():
-        t[f"sd_4pt {label} / kcal mol-1"] = gaussian_width(lt, quantum)
+                      "dvte_mu / kcal mol-1": mu, "dvte_std / kcal mol-1": sd, "dvte / kcal mol-1": dvte})
     t.index.name = "quencher"
     return t.sort_index(key=lambda s: s.str[1:].astype(int)).reset_index()
 

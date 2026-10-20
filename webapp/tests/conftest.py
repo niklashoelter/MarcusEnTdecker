@@ -35,12 +35,16 @@ def client(stub):
     fake = types.ModuleType("ml.prediction")
     fake.predict = stub
 
+    import ml
+    import webapp
+
+    missing = object()
+    attributes = {(package, name): vars(package).get(name, missing)
+                  for package, name in ((ml, "prediction"), (webapp, "app"))}
     saved = {name: sys.modules[name] for name in ("ml.prediction", "webapp.app")
              if name in sys.modules}
     sys.modules["ml.prediction"] = fake
     sys.modules.pop("webapp.app", None)
-
-    import ml
 
     ml.prediction = fake
     try:
@@ -51,3 +55,8 @@ def client(stub):
         sys.modules.pop("webapp.app", None)
         sys.modules.pop("ml.prediction", None)
         sys.modules.update(saved)
+        for (package, name), previous in attributes.items():
+            if previous is missing:
+                vars(package).pop(name, None)
+            else:
+                setattr(package, name, previous)
