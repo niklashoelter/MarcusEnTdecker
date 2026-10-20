@@ -29,7 +29,7 @@ mu = E_T + lambda_T1-S0, sigma^2 = 2 lambda_T1-S0 k_B T_eff; k_B T_eff = RT (cla
 (eps/2) coth(eps/2RT) for eps = 1000 or 1500 cm-1. DvTE_4pt = mu + Phi^-1(0.008) sigma.
 Implied k_B T_eff = sd^2 / (2 lambda_T1-S0). R^2 = squared Pearson correlation.
 
-Pairs. Two-gate (r from DFT sizes); symmetric form: symmetric barrier with geometric-mean
+Pairs. Two-gate (DFT: r from DFT sizes; ML: r = 7 A); symmetric form: symmetric barrier with geometric-mean
 lambda; without energy gate: barrier <= t_PC only. lambda_f = lambda_T1-S0(PC) +
 lambda_S0-T1(Q), lambda_r = lambda_S0-T1(PC) + lambda_T1-S0(Q). Youden threshold c of
 dG_EnT <= c: largest TPR - FPR (middle of ties); per photocatalyst with >= MIN_EACH pairs of
@@ -143,7 +143,7 @@ def two_gate(df, source, model="marcus_asymmetric", energy_gate=True):
     forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
     barrier = theory.barrier(model, dG, forward, reverse)
     t_pc = theory.lifetime_barrier(pairs.tau0_seconds(df), TWO_GATE.k_sv_crit,
-                                   theory.escape_over_frequency(pairs.contact_distances(df)))
+                                   theory.escape_over_frequency(classification.contact_distance(df, source)))
     margin = t_pc - barrier
     exergonic = dG <= 0
     predicted = (exergonic & (margin >= 0)) if energy_gate else margin >= 0
@@ -155,7 +155,7 @@ def barrier_forms(df, classes):
     rows, per_quencher = [], None
     for source in pairs.SOURCES:
         pa, sa, dG, ba = two_gate(df, source)
-        assert np.array_equal(pa, classification.predict(df, TWO_GATE, source)[0])
+        assert np.array_equal(pa, classification.predict(df, classification.two_gate_setting(source), source)[0])
         ps, ss, _, bs = two_gate(df, source, "marcus_symmetric")
         _, _, q_s0_t1, _ = pairs.lambdas(df, source)
         forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))

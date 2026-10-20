@@ -50,60 +50,60 @@ mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",dft,0,868,344,
 mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",dft,0,868,362,263,213,30,0.411,0.923,0.447,-0.208,-0.324,-0.106
 mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",dft,0,868,342,183,293,50,0.497,0.872,0.616,-0.122,-0.223,-0.033
 mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",dft,0,868,342,183,293,50,0.497,0.872,0.616,-0.122,-0.223,-0.033
-adiabatic,,ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-two_gate,Eyring,ml,0,868,327,128,348,65,0.563,0.834,0.731,0.0,0.0,0.0
-two_gate,k_-d/nu = 0.25,ml,0,868,221,74,402,171,0.429,0.564,0.845,-0.134,-0.278,-0.006
-mlj_symmetric,"projected mode, Eyring, rate",ml,0,868,375,305,171,17,0.382,0.957,0.359,-0.182,-0.316,-0.062
-mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",ml,0,868,360,239,237,32,0.448,0.918,0.498,-0.115,-0.231,-0.012
-mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,177,299,59,0.483,0.849,0.628,-0.08,-0.171,-0.009
-mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,177,299,59,0.483,0.849,0.628,-0.08,-0.171,-0.009
-mlj_symmetric,"1200 cm-1, Eyring, rate",ml,0,868,373,300,176,19,0.383,0.952,0.37,-0.18,-0.314,-0.059
-mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,185,291,59,0.468,0.849,0.611,-0.096,-0.194,-0.015
-mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,185,291,59,0.468,0.849,0.611,-0.096,-0.194,-0.015
-mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,0,868,356,220,256,36,0.47,0.908,0.538,-0.094,-0.202,0.006
-mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,171,305,59,0.494,0.849,0.641,-0.069,-0.155,-0.0
-mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,171,305,59,0.494,0.849,0.641,-0.069,-0.155,-0.0
-mlj_symmetric,"1500 cm-1, Eyring, rate",ml,0,868,375,307,169,17,0.378,0.957,0.355,-0.185,-0.318,-0.065
-mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,0,868,361,248,228,31,0.435,0.921,0.479,-0.128,-0.247,-0.023
-mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.084,-0.177,-0.011
-mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.084,-0.177,-0.011
-mlj_symmetric,"1800 cm-1, Eyring, rate",ml,0,868,376,309,167,16,0.378,0.959,0.351,-0.185,-0.318,-0.062
-mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,0,868,365,267,209,27,0.414,0.931,0.439,-0.149,-0.271,-0.04
-mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.092,-0.186,-0.014
-mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.092,-0.186,-0.014
-mlj_asymmetric,"projected mode, Eyring, rate",ml,0,868,374,305,171,18,0.378,0.954,0.359,-0.185,-0.317,-0.067
-mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",ml,0,868,359,245,231,33,0.434,0.916,0.485,-0.129,-0.247,-0.023
-mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,178,298,59,0.481,0.849,0.626,-0.082,-0.175,-0.01
-mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,178,298,59,0.481,0.849,0.626,-0.082,-0.175,-0.01
-mlj_asymmetric,"1200 cm-1, Eyring, rate",ml,0,868,373,300,176,19,0.383,0.952,0.37,-0.18,-0.316,-0.061
-mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,0,868,356,228,248,36,0.455,0.908,0.521,-0.108,-0.217,-0.014
-mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,172,304,59,0.492,0.849,0.639,-0.071,-0.152,-0.005
-mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,172,304,59,0.492,0.849,0.639,-0.071,-0.152,-0.005
-mlj_asymmetric,"1500 cm-1, Eyring, rate",ml,0,868,374,307,169,18,0.374,0.954,0.355,-0.189,-0.319,-0.071
-mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,0,868,363,253,223,29,0.433,0.926,0.468,-0.131,-0.252,-0.023
-mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.084,-0.177,-0.011
-mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.084,-0.177,-0.011
-mlj_asymmetric,"1800 cm-1, Eyring, rate",ml,0,868,375,308,168,17,0.376,0.957,0.353,-0.187,-0.318,-0.068
-mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.098,-0.195,-0.017
-mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,0,868,366,270,206,26,0.412,0.934,0.433,-0.151,-0.269,-0.041
-mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.092,-0.186,-0.014
-mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.092,-0.186,-0.014
+adiabatic,,ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+two_gate,Eyring,ml,0,868,319,120,356,73,0.559,0.814,0.748,0.0,0.0,0.0
+two_gate,k_-d/nu = 0.25,ml,0,868,221,74,402,171,0.429,0.564,0.845,-0.13,-0.263,-0.007
+mlj_symmetric,"projected mode, Eyring, rate",ml,0,868,374,303,173,18,0.381,0.954,0.363,-0.178,-0.309,-0.052
+mlj_symmetric,"projected mode, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_symmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate",ml,0,868,360,239,237,32,0.448,0.918,0.498,-0.111,-0.234,-0.002
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,177,299,59,0.483,0.849,0.628,-0.076,-0.174,0.008
+mlj_symmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,177,299,59,0.483,0.849,0.628,-0.076,-0.174,0.008
+mlj_symmetric,"1200 cm-1, Eyring, rate",ml,0,868,372,296,180,20,0.387,0.949,0.378,-0.172,-0.303,-0.047
+mlj_symmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,185,291,59,0.468,0.849,0.611,-0.092,-0.193,-0.002
+mlj_symmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,185,291,59,0.468,0.849,0.611,-0.092,-0.193,-0.002
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,0,868,356,220,256,36,0.47,0.908,0.538,-0.089,-0.203,0.017
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,171,305,59,0.494,0.849,0.641,-0.065,-0.156,0.017
+mlj_symmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,171,305,59,0.494,0.849,0.641,-0.065,-0.156,0.017
+mlj_symmetric,"1500 cm-1, Eyring, rate",ml,0,868,374,304,172,18,0.38,0.954,0.361,-0.179,-0.309,-0.055
+mlj_symmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_symmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,0,868,361,248,228,31,0.435,0.921,0.479,-0.124,-0.249,-0.01
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.08,-0.176,0.006
+mlj_symmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.08,-0.176,0.006
+mlj_symmetric,"1800 cm-1, Eyring, rate",ml,0,868,376,308,168,16,0.38,0.959,0.353,-0.179,-0.312,-0.054
+mlj_symmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_symmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,0,868,365,267,209,27,0.414,0.931,0.439,-0.145,-0.269,-0.033
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.088,-0.185,-0.001
+mlj_symmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.088,-0.185,-0.001
+mlj_asymmetric,"projected mode, Eyring, rate",ml,0,868,374,302,174,18,0.383,0.954,0.366,-0.176,-0.306,-0.05
+mlj_asymmetric,"projected mode, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_asymmetric,"projected mode, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate",ml,0,868,359,245,231,33,0.434,0.916,0.485,-0.125,-0.25,-0.012
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,178,298,59,0.481,0.849,0.626,-0.078,-0.176,0.008
+mlj_asymmetric,"projected mode, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,178,298,59,0.481,0.849,0.626,-0.078,-0.176,0.008
+mlj_asymmetric,"1200 cm-1, Eyring, rate",ml,0,868,371,294,182,21,0.387,0.946,0.382,-0.173,-0.303,-0.048
+mlj_asymmetric,"1200 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,184,292,59,0.469,0.849,0.613,-0.09,-0.188,-0.002
+mlj_asymmetric,"1200 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,184,292,59,0.469,0.849,0.613,-0.09,-0.188,-0.002
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate",ml,0,868,356,228,248,36,0.455,0.908,0.521,-0.104,-0.219,-0.002
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,172,304,59,0.492,0.849,0.639,-0.067,-0.155,0.013
+mlj_asymmetric,"1200 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,172,304,59,0.492,0.849,0.639,-0.067,-0.155,0.013
+mlj_asymmetric,"1500 cm-1, Eyring, rate",ml,0,868,374,305,171,18,0.378,0.954,0.359,-0.181,-0.313,-0.055
+mlj_asymmetric,"1500 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_asymmetric,"1500 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate",ml,0,868,363,253,223,29,0.433,0.926,0.468,-0.127,-0.253,-0.01
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.08,-0.178,0.006
+mlj_asymmetric,"1500 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,179,297,59,0.479,0.849,0.624,-0.08,-0.178,0.006
+mlj_asymmetric,"1800 cm-1, Eyring, rate",ml,0,868,375,307,169,17,0.378,0.957,0.355,-0.181,-0.313,-0.059
+mlj_asymmetric,"1800 cm-1, Eyring, rate and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_asymmetric,"1800 cm-1, Eyring, effective barrier and dG <= 0",ml,0,868,333,186,290,59,0.466,0.849,0.609,-0.093,-0.194,-0.003
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate",ml,0,868,366,270,206,26,0.412,0.934,0.433,-0.147,-0.273,-0.033
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, rate and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.088,-0.185,-0.001
+mlj_asymmetric,"1800 cm-1, k_-d/nu = 0.25, effective barrier and dG <= 0",ml,0,868,333,183,293,59,0.471,0.849,0.616,-0.088,-0.185,-0.001
 mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",dft,1,868,298,65,411,94,0.629,0.76,0.863,0.01,-0.059,0.081
-mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",ml,1,868,299,101,375,93,0.55,0.763,0.788,-0.014,-0.084,0.053
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, all pairs",ml,1,868,299,101,375,93,0.55,0.763,0.788,-0.009,-0.079,0.06
 mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",dft,1,868,298,65,411,94,0.629,0.76,0.863,0.01,-0.059,0.081
-mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",ml,1,868,299,101,375,93,0.55,0.763,0.788,-0.014,-0.084,0.053
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOQO",ml,1,868,299,101,375,93,0.55,0.763,0.788,-0.009,-0.079,0.06
 mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",dft,1,868,298,75,401,94,0.606,0.76,0.842,-0.013,-0.077,0.049
-mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",ml,1,868,299,105,371,93,0.541,0.763,0.779,-0.022,-0.092,0.041
+mlj_tuned,"1500 cm-1, k_-d/nu = 0.25, rate and dG <= 0, LOPCO",ml,1,868,299,105,371,93,0.541,0.763,0.779,-0.018,-0.084,0.047

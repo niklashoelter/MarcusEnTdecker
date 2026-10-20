@@ -24,7 +24,9 @@ twogate_lifetime       dft, ml    dG_EnT <= 0 and asym barrier <= t_PC,
                                   r = r_PC + r_Q of the pair
 twogate_lifetime_r7A   dft, ml    the same with r = 7 A
 
-Settings of classification.py, untuned (n_free = 0). Photocatalyst parameters DFT.
+Settings of classification.py, untuned (n_free = 0). Photocatalyst parameters DFT. Role
+"shown": twogate_lifetime with DFT, twogate_lifetime_r7A with ML
+(classification.TWO_GATE_DEFAULT); the other two "secondary".
 
 Scores: -dG_EnT; E_T(PC) - DvTE; t_PC - barrier, endergonic pairs below all exergonic ones.
 PR AUC = average precision. Within-PC (photocatalysts with both outcomes): median ROC AUC,
@@ -96,9 +98,9 @@ def criteria(df):
         out.append(single("adiabatic", source, ROLE_SHOWN, classification.Setting("adiabatic"), source))
     out.append(single("dvte_2024", "dvte", ROLE_SHOWN,
                       classification.candidates("dvte", "p = 0.008, normal")[0], "dft"))
-    for key, variant, role in (("twogate_lifetime", "r from DFT sizes", ROLE_SHOWN),
-                               ("twogate_lifetime_r7A", "r = 7 A", ROLE_SECONDARY)):
+    for key, variant in (("twogate_lifetime", "r from DFT sizes"), ("twogate_lifetime_r7A", "r = 7 A")):
         for source in pairs.SOURCES:
+            role = ROLE_SHOWN if classification.TWO_GATE_DEFAULT[source] == variant else ROLE_SECONDARY
             out.append(single(key, source, role, two_gate_setting(variant), source))
     return out
 

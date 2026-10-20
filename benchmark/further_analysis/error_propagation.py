@@ -19,8 +19,8 @@ Writes  results/error_propagation/monte_carlo.csv        one row per error scena
     uv run benchmark/further_analysis/error_propagation.py
 
 k_q = k_d / (1 + exp(dG/RT) + (k_-d/nu) exp(B/RT)), B = asymmetric Marcus barrier,
-k_-d/nu = (k_d/K_A)/(k_B T/h) at r = r_PC + r_Q. two_gate: dG_EnT <= 0 and B <= t_PC(tau0, r),
-K_SV,crit = 10 M-1; adiabatic: dG_EnT <= 0.
+k_-d/nu = (k_d/K_A)/(k_B T/h) at r = r_PC + r_Q (DFT) or r = 7 A (ML). two_gate:
+dG_EnT <= 0 and B <= t_PC(tau0, r), K_SV,crit = 10 M-1; adiabatic: dG_EnT <= 0.
 
 Monte Carlo: N_DRAWS draws per scenario, one generator (SEED), scenarios in SCENARIOS order.
 One error per molecule, applied to all its pairs. Lambdas floored at LAMBDA_MIN (kcal/mol,
@@ -81,16 +81,17 @@ class Pairs:
         self.df = df
         self.n = len(df)
         self.y = df[pairs.QUENCHES].to_numpy(bool)
-        self.escape_over_nu = theory.escape_over_frequency(pairs.contact_distances(df))
-        self.t_pc = theory.lifetime_barrier(pairs.tau0_seconds(df), classification.K_SV_CRIT,
-                                            self.escape_over_nu)
+        self.escape_over_nu = {s: theory.escape_over_frequency(classification.contact_distance(df, s))
+                               for s in pairs.SOURCES}
+        self.t_pc = {s: theory.lifetime_barrier(pairs.tau0_seconds(df), classification.K_SV_CRIT,
+                                                self.escape_over_nu[s]) for s in pairs.SOURCES}
         k_q = df[pairs.K_Q].to_numpy(float)
         self.measured = np.log10(np.where(k_q > 0, k_q, np.nan))
         quencher_ids, self.q_index = np.unique(df[pairs.Q_ID].to_numpy(), return_inverse=True)
         pc_names, self.pc_index = np.unique(df[pairs.PC_NAME].to_numpy(), return_inverse=True)
         self.n_q, self.n_pc = len(quencher_ids), len(pc_names)
         self.base = {s: self.parameters(s) for s in pairs.SOURCES}
-        self.unperturbed = {s: self.evaluate(self.base[s]) for s in pairs.SOURCES}
+        self.unperturbed = {s: self.evaluate(self.base[s], s) for s in pairs.SOURCES}
 
         quenchers = df.groupby(pairs.Q_ID).first().loc[quencher_ids]
         self.ml_uncertainty = {t: quenchers[pairs.q_ml_uncertainty(t)].to_numpy(float)
@@ -104,13 +105,14 @@ class Pairs:
         return {"dG": pairs.driving_force(self.df, source), "pc_s0_t1": pc_s0_t1,
                 "pc_t1_s0": pc_t1_s0, "q_s0_t1": q_s0_t1, "q_t1_s0": q_t1_s0}
 
-    def evaluate(self, p):
-        """(log10 k_q, two_gate prediction, adiabatic prediction), arrays of any leading shape."""
+    def evaluate(self, p, source):
+        """(log10 k_q, two_gate prediction, adiabatic prediction), arrays of any leading shape;
+        contact distance of `source`."""
         forward, reverse = theory.pair_lambdas(p["pc_s0_t1"], p["pc_t1_s0"], p["q_s0_t1"], p["q_t1_s0"])
         barrier = theory.marcus_barrier_asymmetric(p["dG"], forward, reverse)
-        log_k = np.log10(theory.rate(p["dG"], barrier, self.escape_over_nu))
+        log_k = np.log10(theory.rate(p["dG"], barrier, self.escape_over_nu[source]))
         exergonic = p["dG"] <= 0
-        return log_k, exergonic & (barrier <= self.t_pc), exergonic
+        return log_k, exergonic & (barrier <= self.t_pc[source]), exergonic
 
 
 def draw(rng, data: Pairs, scenario, source, sigma, n):
@@ -149,7 +151,7 @@ def draw(rng, data: Pairs, scenario, source, sigma, n):
 
 def run(rng, data: Pairs, scenario, source, sigma, n=None):
     n = N_DRAWS if n is None else n
-    log_k, two_gate, adiabatic = data.evaluate(draw(rng, data, scenario, source, sigma, n))
+    log_k, two_gate, adiabatic = data.evaluate(draw(rng, data, scenario, source, sigma, n), source)
     y, measured = data.y, data.measured[data.y]
     quenching = log_k[:, y]
     width = np.percentile(quenching, 95, axis=0) - np.percentile(quenching, 5, axis=0)
@@ -200,8 +202,8 @@ def sensitivity(data: Pairs):
         base = data.unperturbed[source][0]
         shifted = dict(p, dG=p["dG"] + SENSITIVITY_STEP)
         scaled = dict(p, q_s0_t1=p["q_s0_t1"] * 1.01, q_t1_s0=p["q_t1_s0"] * 1.01)
-        d_energy = np.abs((data.evaluate(shifted)[0] - base) / SENSITIVITY_STEP)
-        d_lambda = np.abs((data.evaluate(scaled)[0] - base) / np.log10(1.01))
+        d_energy = np.abs((data.evaluate(shifted, source)[0] - base) / SENSITIVITY_STEP)
+        d_lambda = np.abs((data.evaluate(scaled, source)[0] - base) / np.log10(1.01))
         for label, inside in (("quenching", data.y), ("all", np.ones(data.n, bool))):
             rows.append({"parameters": source, "pairs": label,
                          "median |dlog k / dE_T(Q)| / dec per kcal": np.median(d_energy[inside]),

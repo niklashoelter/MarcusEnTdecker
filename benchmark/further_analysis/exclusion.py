@@ -14,7 +14,8 @@ Writes  results/exclusion/evidence.csv      Q38 and Q31: pairs, outcomes, drivin
     uv run benchmark/further_analysis/exclusion.py
 
 Q38 and Q31 (pairs.LEFT_OUT_QUENCHERS) are kept on loading and scored (PC22 stays left out).
-Criteria: adiabatic (DFT, ML), DvTE (p = 0.008, normal), two-gate (DFT, ML; r from DFT sizes).
+Criteria: adiabatic (DFT, ML), DvTE (p = 0.008, normal), two-gate (DFT, r from DFT sizes;
+ML, r = 7 A).
 
 Energy-transfer data set: all pairs except quenching pairs where electron transfer is not
 ruled out. I0/I = mean intensity without quencher / mean intensity at the highest quencher
@@ -48,8 +49,8 @@ CRITERIA = {
     "adiabatic, dft": (classification.candidates("adiabatic", "")[0], "dft"),
     "adiabatic, ml": (classification.candidates("adiabatic", "")[0], "ml"),
     "dvte": (classification.candidates("dvte", "p = 0.008, normal")[0], "dft"),
-    "two_gate, dft": (classification.candidates("two_gate", "r from DFT sizes")[0], "dft"),
-    "two_gate, ml": (classification.candidates("two_gate", "r from DFT sizes")[0], "ml"),
+    "two_gate, dft": (classification.two_gate_setting("dft"), "dft"),
+    "two_gate, ml": (classification.two_gate_setting("ml"), "ml"),
 }
 
 

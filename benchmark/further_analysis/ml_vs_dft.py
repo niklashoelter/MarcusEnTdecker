@@ -16,7 +16,8 @@ Writes  results/ml_vs_dft/quenchers.csv         per quencher: ML - DFT parameter
 
     uv run benchmark/further_analysis/ml_vs_dft.py
 
-Two-gate, r from DFT sizes; photocatalyst parameters DFT. ML/DFT: source of E_T(Q),
+Two-gate: DFT with r from DFT sizes, ML with r = 7 A (also when one quencher gets DFT
+parameters); photocatalyst parameters DFT. ML/DFT: source of E_T(Q),
 lambda_S0-T1(Q), lambda_T1-S0(Q). "Only this quencher DFT": all three from DFT for its
 pairs, ML for the rest. Rescued: correct with ML, wrong with DFT; lost: the reverse.
 Summed ML uncertainty: sum of the three predictive SDs of a quencher.
@@ -39,7 +40,7 @@ import scoring  # noqa: E402
 CLASSES = HERE / "results" / "quencher_classes" / "quencher_classes.csv"
 RESULTS = HERE / "results" / "ml_vs_dft"
 
-TWO_GATE = classification.candidates("two_gate", "r from DFT sizes")[0]
+TWO_GATE = {s: classification.two_gate_setting(s) for s in pairs.SOURCES}
 PARAMETERS = {"E_T": "q_E_T", "lambda_S0_T1": "q_lambda_S0_T1", "lambda_T1_S0": "q_lambda_T1_S0"}
 
 
@@ -54,7 +55,7 @@ def with_dft(df, parameters, rows=None):
 
 
 def two_gate(df):
-    return classification.predict(df, TWO_GATE, "ml")
+    return classification.predict(df, TWO_GATE["ml"], "ml")
 
 
 def pooled_within(y, score, groups):
@@ -63,8 +64,8 @@ def pooled_within(y, score, groups):
 
 def quencher_table(df, q, classes):
     y, g = df[pairs.QUENCHES].to_numpy(bool), df[pairs.PC_NAME].to_numpy()
-    p_dft, _ = classification.predict(df, TWO_GATE, "dft")
-    p_ml, s_ml = classification.predict(df, TWO_GATE, "ml")
+    p_dft, _ = classification.predict(df, TWO_GATE["dft"], "dft")
+    p_ml, s_ml = two_gate(df)
     base = pooled_within(y, s_ml, g)
     names = df[pairs.Q_NAME].to_numpy()
     rows = []
@@ -101,8 +102,8 @@ def quencher_table(df, q, classes):
 
 def summary(df, quenchers, q):
     y = df[pairs.QUENCHES].to_numpy(bool)
-    p_dft = classification.predict(df, TWO_GATE, "dft")[0]
-    p_ml = classification.predict(df, TWO_GATE, "ml")[0]
+    p_dft = classification.predict(df, TWO_GATE["dft"], "dft")[0]
+    p_ml = two_gate(df)[0]
     rescued, lost = (p_ml == y) & (p_dft != y), (p_ml != y) & (p_dft == y)
     scored = quenchers[quenchers.n > 0].set_index("quencher")
     dc = scored.dcorrect_ml_minus_dft.astype(int)

@@ -20,7 +20,8 @@ two_gate             dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC    dft, m
 marcus_barrier       symmetric Marcus barrier < threshold                 dft, ml
 
 t_PC: barrier at which k tau0 = K_SV,crit for exp(dG/RT) -> 0 (theory.lifetime_barrier),
-k_-d/nu = (k_d/K_A)/(k_B T/h), K_A at contact distance r.
+k_-d/nu = (k_d/K_A)/(k_B T/h), K_A at contact distance r. two_gate
+outside the variant comparisons (TWO_GATE_DEFAULT): r = r_PC + r_Q with DFT, r = 7 A with ML.
 marcus_barrier: geometric-mean lambda; threshold by highest MCC on DFT (middle on a tie),
 applied unchanged to ML. Photocatalyst properties are DFT throughout.
 
@@ -44,6 +45,8 @@ BARRIER_THRESHOLDS = tuple(round(t, 1) for t in np.arange(0.1, 20.0001, 0.1))  #
 K_SV_CRIT = 10.0                                                              # M-1
 # two_gate variant: contact distance in Angstrom, None for r_PC + r_Q of each pair
 TWO_GATE_VARIANTS = {"r from DFT sizes": None, "r = 7 A": theory.CONTACT_DISTANCE}
+# two_gate variant of each source where the variants are not compared
+TWO_GATE_DEFAULT = {"dft": "r from DFT sizes", "ml": "r = 7 A"}
 ENDERGONIC_OFFSET = 1e3     # kcal/mol, ranks endergonic pairs last
 
 # criterion: (kind, barrier model, variants, sources tuned on, sources given the DFT setting)
@@ -111,6 +114,17 @@ def candidates(criterion, variant):
     if kind == "barrier":
         return [replace(base, barrier_threshold=t) for t in BARRIER_THRESHOLDS]
     return [replace(base, k_sv_crit=K_SV_CRIT, contact_distance=TWO_GATE_VARIANTS[variant])]
+
+
+def two_gate_setting(source):
+    """The two_gate setting of TWO_GATE_DEFAULT[source]."""
+    return candidates("two_gate", TWO_GATE_DEFAULT[source])[0]
+
+
+def contact_distance(df, source):
+    """Contact distance in Angstrom of the TWO_GATE_DEFAULT variant, one per row of df."""
+    r = TWO_GATE_VARIANTS[TWO_GATE_DEFAULT[source]]
+    return pairs.contact_distances(df) if r is None else np.full(len(df), float(r))
 
 
 def n_free(options):

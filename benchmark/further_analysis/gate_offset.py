@@ -22,7 +22,8 @@ Writes  results/gate_offset/sweep.csv          metrics of every criterion at eve
 Criterion   first gate            second gate
 adiabatic   dG_EnT <= c           -
 dvte        DvTE - E_T(PC) <= c   -                  (DvTE p = 0.008, normal quantile)
-two_gate    dG_EnT <= c           asymmetric Marcus barrier <= t_PC, r = r_PC + r_Q
+two_gate    dG_EnT <= c           asymmetric Marcus barrier <= t_PC, r = r_PC + r_Q (DFT),
+                                  r = 7 A (ML)
 
 c = 0 is the benchmark. Only the first gate moves; the barrier uses the unshifted dG_EnT.
 adiabatic and two_gate with DFT and ML quencher parameters, dvte with DFT. Continuous
@@ -68,9 +69,10 @@ class Offsets:
         self.dG = {s: pairs.driving_force(df, s) for s in pairs.SOURCES}
         self.dvte_gap = (df[pairs.q_dvte(*DVTE)].to_numpy(float)
                          - df[pairs.PC_E_T].to_numpy(float))
-        self.t_pc = theory.lifetime_barrier(
+        self.t_pc = {s: theory.lifetime_barrier(
             pairs.tau0_seconds(df), classification.K_SV_CRIT,
-            theory.escape_over_frequency(pairs.contact_distances(df)))
+            theory.escape_over_frequency(classification.contact_distance(df, s)))
+            for s in pairs.SOURCES}
         self.barrier = {s: theory.marcus_barrier_asymmetric(
             self.dG[s], *theory.pair_lambdas(*pairs.lambdas(df, s))) for s in pairs.SOURCES}
         # (criterion, parameters) -> (len(C_GRID) x pairs) predictions
@@ -83,7 +85,7 @@ class Offsets:
         if criterion == "dvte":
             return self.dvte_gap <= c, -self.dvte_gap
         if criterion == "two_gate":
-            margin = self.t_pc - self.barrier[source]
+            margin = self.t_pc[source] - self.barrier[source]
             gate = self.dG[source] <= c
             return (gate & (margin >= 0),
                     np.where(gate, margin, margin - classification.ENDERGONIC_OFFSET))
@@ -171,7 +173,7 @@ def window_stats(o: Offsets):
     rows = []
     for source in pairs.SOURCES:
         dG = o.dG[source]
-        second_gate = o.t_pc >= o.barrier[source]
+        second_gate = o.t_pc[source] >= o.barrier[source]
         for region, inside in ((f"window {C_WINDOW:g} < dG <= 0", (dG > C_WINDOW) & (dG <= 0)),
                                (f"dG <= {C_WINDOW:g}", dG <= C_WINDOW), ("dG > 0", dG > 0)):
             non_quenching = inside & ~o.y

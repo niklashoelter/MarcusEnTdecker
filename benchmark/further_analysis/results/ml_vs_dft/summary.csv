@@ -3,17 +3,17 @@ pairs,868.0,
 "correct, DFT",703.0,
 "correct, ML",675.0,
 rescued by ML,43.0,
-"rescued by ML, quenching",24.0,
-"rescued by ML, non-quenching",19.0,
+"rescued by ML, quenching",23.0,
+"rescued by ML, non-quenching",20.0,
 quenchers with rescued pairs,14.0,
 lost by ML,71.0,
-"lost by ML, quenching",17.0,
-"lost by ML, non-quenching",54.0,
-quenchers with lost pairs,23.0,
-"net change in correct pairs, quenchers losing",59.0,
-quenchers with a net loss,21.0,
-"net change in correct pairs, quenchers gaining",31.0,
-quenchers with a net gain,7.0,
-net loss of the five quenchers losing most,33.0,Q12 Q44 Q8 Q19 Q37
-"Spearman rho, ML uncertainty sum vs within-PC AUC gain if DFT, scored quenchers",-0.07,n = 46
+"lost by ML, quenching",24.0,
+"lost by ML, non-quenching",47.0,
+quenchers with lost pairs,24.0,
+"net change in correct pairs, quenchers losing",55.0,
+quenchers with a net loss,22.0,
+"net change in correct pairs, quenchers gaining",27.0,
+quenchers with a net gain,6.0,
+net loss of the five quenchers losing most,29.0,Q12 Q44 Q8 Q37 Q40
+"Spearman rho, ML uncertainty sum vs within-PC AUC gain if DFT, scored quenchers",-0.058,n = 46
 "Spearman rho, ML uncertainty sum vs summed |ML - DFT|, all quenchers",0.711,n = 48

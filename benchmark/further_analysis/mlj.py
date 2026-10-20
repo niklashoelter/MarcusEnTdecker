@@ -43,9 +43,9 @@ S = 0, asymmetric: F = exp(-barrier/RT). Rate law:
 
     k_q = k_d / (1 + exp(dG/RT) + (k_-d/nu) / F)
 
-k_-d/nu = 0.25 or Eyring (k_d/K_A)/(k_B T/h) at r_PC + r_Q. Decisions: k_q tau0 >= K_SV,crit =
-10 M-1 (rate); rate and dG_EnT <= 0; -RT ln F <= t_PC and dG_EnT <= 0. Quantum mode:
-projected or fixed at 1200, 1500, 1800 cm-1.
+k_-d/nu = 0.25 or Eyring (k_d/K_A)/(k_B T/h) at r_PC + r_Q (DFT) or r = 7 A (ML).
+Decisions: k_q tau0 >= K_SV,crit = 10 M-1 (rate); rate and dG_EnT <= 0; -RT ln F <= t_PC
+and dG_EnT <= 0. Quantum mode: projected or fixed at 1200, 1500, 1800 cm-1.
 
 Tuned variant: one classical lambda_s (TUNED_GRID, capped at the geometric-mean pair
 lambda), remainder in a 1500 cm-1 mode, symmetric, k_-d/nu = 0.25, rate and dG_EnT <= 0;
@@ -66,6 +66,7 @@ import pandas as pd  # noqa: E402
 from scipy.special import gammaln, logsumexp  # noqa: E402
 from scipy.stats import spearmanr  # noqa: E402
 
+import classification  # noqa: E402
 import pairs  # noqa: E402
 import scoring  # noqa: E402
 import theory  # noqa: E402
@@ -195,12 +196,13 @@ def gated(dG, score):
 
 
 # ------------------------------------------------------------------ criteria
-def criteria(df, inp, ratios, t_pc):
+def criteria(df, inp, ratios_by_source, t_pc_by_source):
     """{(criterion, variant, source): predicted} and {(line shape, prefactor, source): log10 k}
     for the parameter-free criteria."""
     log_threshold = np.log10(K_SV_CRIT) - np.log10(pairs.tau0_seconds(df))
     predicted, rates = {}, {}
     for source, I in inp.items():
+        ratios, t_pc = ratios_by_source[source], t_pc_by_source[source]
         dG = I["dG"]
         predicted[("adiabatic", "", source)] = dG <= 0
         for prefactor in PREFACTORS:
@@ -393,9 +395,10 @@ def main():
         raise ValueError("quencher without a class in " + CLASSES.name)
 
     inp = {s: inputs(df, s, split, medians) for s in pairs.SOURCES}
-    ratios = {"Eyring": theory.escape_over_frequency(pairs.contact_distances(df)),
-              "k_-d/nu = 0.25": np.full(len(df), ESCAPE_OVER_NU_LOW)}
-    t_pc = {p: theory.lifetime_barrier(pairs.tau0_seconds(df), K_SV_CRIT, r) for p, r in ratios.items()}
+    ratios = {s: {"Eyring": theory.escape_over_frequency(classification.contact_distance(df, s)),
+                  "k_-d/nu = 0.25": np.full(len(df), ESCAPE_OVER_NU_LOW)} for s in pairs.SOURCES}
+    t_pc = {s: {p: theory.lifetime_barrier(pairs.tau0_seconds(df), K_SV_CRIT, r)
+                for p, r in ratios[s].items()} for s in pairs.SOURCES}
 
     predicted, rates = criteria(df, inp, ratios, t_pc)
     predicted_tuned, chosen = tuned(df, inp)
@@ -407,7 +410,7 @@ def main():
               "classes": classes_table(df, predicted, classes),
               "rate_parity": parity_table(df, rates),
               "barriers": barriers_table(inp["dft"], classes),
-              "summary": summary_table(df, inp["dft"], ratios, t_pc),
+              "summary": summary_table(df, inp["dft"], ratios["dft"], t_pc["dft"]),
               "tuned": tuned_table(chosen)}
     for name, table in tables.items():
         rounded(table).to_csv(RESULTS / f"{name}.csv", index=False, lineterminator="\n")
