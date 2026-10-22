@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EnTdecker</title>
+    <title>EnTdecker 2.0</title>
     <!-- Sleek Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -425,6 +425,203 @@
             color: var(--text-heading);
             border-color: var(--ring-color);
         }
+
+        /* Title row with the GitHub link at title height */
+        .title-row {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem 2rem 2rem;
+        }
+        .title-inner {
+            position: relative;
+        }
+        .title-row h1.title {
+            padding: 0;
+        }
+        .top-links {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 50;
+        }
+        .top-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 0.9rem;
+            border-radius: 2rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-surface);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: var(--glass-shadow);
+            transition: all 0.2s ease;
+        }
+        .top-link:hover {
+            border-color: var(--ring-color);
+            color: var(--text-heading);
+            transform: translateY(-1px);
+        }
+        .top-link.primary {
+            background: #0f172a;
+            border-color: #0f172a;
+            color: #ffffff;
+        }
+        .top-link.primary:hover { background: #1e293b; color: #ffffff; }
+        .top-link svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+        @media(max-width: 767px) {
+            .title-row { padding: 1.5rem 1rem 1.5rem 1rem; }
+            .top-links {
+                position: static;
+                transform: none;
+                justify-content: center;
+                margin-top: 0.75rem;
+            }
+        }
+
+        /* Introduction box */
+        .intro-box {
+            max-width: 1400px;
+            margin: -0.75rem auto 2rem auto;
+            padding: 0 2rem;
+            display: flex;
+        }
+        .intro-box > p {
+            flex: 1;
+            margin: 0;
+            padding: 1rem 1.25rem 1rem 3.25rem;
+            background: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--text-main);
+        }
+        .intro-box > svg {
+            position: relative;
+            left: 2.25rem;
+            margin-left: -1.25rem;
+            margin-top: 1.05rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            flex-shrink: 0;
+            color: #4f46e5;
+        }
+        .intro-box a {
+            color: #4f46e5;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .intro-box a:hover { color: #0284c7; }
+
+        /* Publications */
+        .pub-banner {
+            max-width: 1400px;
+            margin: 0 auto 4rem auto;
+            padding: 0 2rem;
+            scroll-margin-top: 1.5rem;
+        }
+        .pub-header {
+            text-align: center;
+            margin: 0 0 1.5rem 0;
+        }
+        .pub-heading {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0;
+            font-size: clamp(1.4rem, 3vw, 1.75rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .pub-heading::before,
+        .pub-heading::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+        }
+        .pub-heading::before { background: linear-gradient(90deg, transparent, rgba(79, 70, 229, 0.35)); }
+        .pub-heading::after { background: linear-gradient(90deg, rgba(79, 70, 229, 0.35), transparent); }
+        .pub-heading-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .pub-heading-label {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .pub-heading-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.75rem;
+            background: var(--accent-gradient);
+            color: #ffffff;
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+        }
+        .pub-heading-icon svg { width: 1.2rem; height: 1.2rem; }
+        .pub-subtitle {
+            margin: 0.5rem 0 0 0;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .pub-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        @media(min-width: 1024px) {
+            .pub-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .pub-card {
+            position: relative;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            box-shadow: var(--glass-shadow);
+            padding: 1rem 1.25rem 1rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow: hidden;
+        }
+        .pub-card::before {
+            content: "";
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--accent-gradient);
+        }
+        .pub-card.secondary::before { background: #94a3b8; }
+        .pub-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #4f46e5;
+        }
+        .pub-card.secondary .pub-tag { color: var(--text-muted); }
+        .pub-authors { font-size: 0.8rem; color: var(--text-muted); }
+        .pub-title { font-size: 0.95rem; font-weight: 700; color: var(--text-heading); line-height: 1.35; }
+        .pub-source { font-size: 0.8rem; color: var(--text-main); }
+        .pub-source svg { display: inline; width: 0.8rem; height: 0.8rem; margin-left: 0.2rem; vertical-align: -0.1rem; color: var(--text-muted); }
+        a.pub-card { text-decoration: none; transition: border-color 0.2s ease, transform 0.2s ease; }
+        a.pub-card:hover { border-color: var(--ring-color); transform: translateY(-1px); }
+        a.pub-card:hover .pub-title { color: #4f46e5; }
     </style>
 </head>
 <body>
@@ -481,8 +678,27 @@
         </div>
     </div>
 
-    <!-- Main Title -->
-    <h1 class="title">EnTdecker</h1>
+    <!-- Title and GitHub link -->
+    <header class="title-row">
+    <div class="title-inner">
+    <h1 class="title">EnTdecker 2.0</h1>
+    <nav class="top-links" aria-label="Code">
+        <a href="https://github.com/GloriusGroup/MarcusEnTdecker" target="_blank" rel="noopener noreferrer" class="top-link primary">
+            <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+        </a>
+    </nav>
+    </div>
+    </header>
+
+    <!-- Introduction -->
+    <div class="intro-box">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p>
+            EnTdecker 2.0 predicts the triplet energy, the reorganization energies and the triplet spin populations of a molecule, each with an uncertainty, and combines them with Marcus theory to give the driving force and the barrier of triplet energy transfer from a photocatalyst.
+            The method is described in the <a href="#publications">publications below</a>; please read them and cite both if you use EnTdecker.
+        </p>
+    </div>
 
     <div id="main-container" class="container-main focus-input">
 
@@ -664,6 +880,40 @@
         </div>
 
     </div>
+
+    <!-- Publications -->
+    <section id="publications" class="pub-banner" aria-label="Publications">
+        <div class="pub-header">
+            <h2 class="pub-heading">
+                <span class="pub-heading-text">
+                    <span class="pub-heading-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></span>
+                    <span class="pub-heading-label">Publications</span>
+                </span>
+            </h2>
+            <p class="pub-subtitle">If you use EnTdecker, please cite both publications.</p>
+        </div>
+        <div class="pub-grid">
+            <article class="pub-card">
+                <span class="pub-tag">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                    EnTdecker 2.0 · Manuscript submitted
+                </span>
+                <div class="pub-authors">Hölter, N.<sup>†</sup>; Schlosser, L.<sup>†</sup>; Hümpel, C.; Spierling, L.; Glorius, F.</div>
+                <div class="pub-title">A Hybrid Machine Learning and Marcus Theory Approach for Rationalizing and Predicting Triplet Energy Transfer</div>
+                <div class="pub-source"><i>Manuscript submitted</i>; publication link to follow.</div>
+            </article>
+            <a class="pub-card secondary" href="https://doi.org/10.1021/jacs.4c01352" target="_blank" rel="noopener noreferrer">
+                <span class="pub-tag">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    Original EnTdecker · J. Am. Chem. Soc. 2024
+                </span>
+                <div class="pub-authors">Schlosser, L.; Rana, D.; Pflüger, P.; Katzenburg, F.; Glorius, F.</div>
+                <div class="pub-title">EnTdecker—A Machine Learning-Based Platform for Guiding Substrate Discovery in Energy Transfer Catalysis</div>
+                <div class="pub-source"><i>J. Am. Chem. Soc.</i> <b>2024</b>, <i>146</i>, 13266–13275. DOI: 10.1021/jacs.4c01352<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></div>
+            </a>
+        </div>
+    </section>
+
 
     <script>
         window.appData = []; // Store latest results globally
