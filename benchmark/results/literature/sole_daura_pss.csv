@@ -1,0 +1,5 @@
+model,estimate,pc_source,substrate,diffusion_controlled,z_percent_ml,z_percent_exp,z_percent_calc_lit
+deployed,mean,paper,1,False,23.966071012669428,5.0,2.7
+deployed,mean,paper,2,False,93.29185106455898,76.0,97.2
+deployed,mean,paper,3,False,73.13540653461283,69.0,98.4
+deployed,mean,paper,4,True,89.47470377727593,,

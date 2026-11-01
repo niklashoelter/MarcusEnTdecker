@@ -1,0 +1,6 @@
+quantity,value
+"DvTE - E_T, minimum / kcal mol-1",-9.32
+"DvTE - E_T, maximum / kcal mol-1",25.96
+quenchers with DvTE < E_T,18.0
+"quenchers with DvTE < E_T, rigid",18.0
+largest lambda_T1-S0 of the quenchers with DvTE < E_T / kcal mol-1,19.3

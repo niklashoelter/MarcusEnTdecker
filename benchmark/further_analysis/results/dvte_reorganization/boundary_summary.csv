@@ -1,0 +1,5 @@
+quantity,value
+"MCC, two-gate DFT",0.619
+"MCC, two-gate DFT without the energy gate",0.516
+endergonic pairs passing the barrier gate,117.0
+quench fraction of the endergonic pairs passing the barrier gate,0.239

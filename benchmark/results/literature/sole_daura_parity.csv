@@ -1,0 +1,7 @@
+model,estimate,barriers,subset,n,pearson_r,mae_barrier,mean_signed_error
+deployed,mean,"ours, asymmetric",all 16 pairs,16,0.8801269348181298,1.18,-1.18
+deployed,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.6728754031561394,1.17,-1.17
+deployed,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
+deployed,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
+deployed,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
+deployed,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64

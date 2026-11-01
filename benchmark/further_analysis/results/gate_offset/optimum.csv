@@ -1,0 +1,6 @@
+criterion,parameters,MCC_c0,c_best / kcal mol-1,MCC_best
+adiabatic,dft,0.469,-1.6,0.55
+adiabatic,ml,0.466,-1.5,0.545
+dvte,dft,0.541,-3.1,0.593
+two_gate,dft,0.619,-1.6,0.698
+two_gate,ml,0.559,-1.5,0.646

@@ -1,0 +1,4 @@
+model,estimate,subset,n,pearson_r,spearman_rho,mae_barrier,n_dG,pearson_r_dG,spearman_rho_dG,mae_dG,excluded
+deployed,mean,"all with a published barrier, printed",19,0.418342366933159,0.7362879164271636,7.54,19,0.565832874276407,0.7473684210526316,6.99,
+deployed,mean,"E_T plausible, barrier recomputed",16,0.9250081162978234,0.9470588235294116,1.66,16,0.9589633926288128,0.9558823529411766,1.53,"4,7-Phenanthroline, c, d"
+deployed,mean,"E_T plausible, barrier printed",16,0.9211439008400225,0.9403976055841532,1.77,16,0.9589633926288128,0.9558823529411766,1.53,"4,7-Phenanthroline, c, d"

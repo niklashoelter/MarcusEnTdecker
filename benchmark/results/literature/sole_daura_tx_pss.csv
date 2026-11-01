@@ -1,0 +1,17 @@
+tx_source,model,estimate,substrate,diffusion_controlled,z_percent_ml,z_percent_exp,z_percent_calc_lit
+paper,deployed,mean,1,False,23.966071012669428,5.0,2.7
+paper,deployed,mean,2,False,93.29185106455898,76.0,97.2
+paper,deployed,mean,3,False,73.13540653461283,69.0,98.4
+paper,deployed,mean,4,True,89.47470377727593,,
+paper_dft,deployed,mean,1,False,17.45524541421079,5.0,2.7
+paper_dft,deployed,mean,2,False,93.02777658731519,76.0,97.2
+paper_dft,deployed,mean,3,False,67.9061763408927,69.0,98.4
+paper_dft,deployed,mean,4,True,88.21835759299795,,
+opc_dft,deployed,mean,1,False,26.04151375548574,5.0,2.7
+opc_dft,deployed,mean,2,False,92.81919551241624,76.0,97.2
+opc_dft,deployed,mean,3,False,73.61505761596148,69.0,98.4
+opc_dft,deployed,mean,4,True,88.75448598073137,,
+ml,deployed,mean,1,False,27.22287552790709,5.0,2.7
+ml,deployed,mean,2,False,92.20212752753476,76.0,97.2
+ml,deployed,mean,3,False,73.28082137046692,69.0,98.4
+ml,deployed,mean,4,True,87.99307335537524,,

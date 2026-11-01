@@ -1,0 +1,202 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
+# ///
+"""
+DvTE and the four-point parameters, symmetric and asymmetric barriers, and the quenching
+fraction against the driving force.
+
+Reads   ../../data/exp_dataset_ent.csv (also through pairs.py)
+        results/quencher_classes/quencher_classes.csv
+Writes  results/dvte_reorganization/quenchers.csv          per quencher: DvTE - E_T,
+                                                           mean and width of the sampled gaps
+        results/dvte_reorganization/fits.csv               least-squares lines of DvTE - E_T
+                                                           against lambda
+        results/dvte_reorganization/quencher_summary.csv   range of DvTE - E_T, quenchers with
+                                                           DvTE below E_T
+        results/dvte_reorganization/barrier_forms.csv      asymmetric against symmetric barrier
+        results/dvte_reorganization/barrier_forms_quenchers.csv   pairs only the asymmetric barrier admits
+        results/dvte_reorganization/boundary_bins.csv      quenching fraction in dG_EnT bins (DFT)
+        results/dvte_reorganization/boundary_summary.csv   two-gate DFT with and without the
+                                                           energy gate
+
+    uv run benchmark/further_analysis/dvte_reorganization.py
+
+Quenchers (DFT). DvTE - E_T against both reorganization energies; R^2 is the squared
+Pearson correlation.
+
+Pairs. Two-gate (DFT: r from DFT sizes; ML: r = 7 A); symmetric form: symmetric barrier with
+geometric-mean lambda; without energy gate: barrier <= t_PC only. lambda_f = lambda_T1-S0(PC) +
+lambda_S0-T1(Q), lambda_r = lambda_S0-T1(PC) + lambda_T1-S0(Q).
+"""
+
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+from scipy import stats  # noqa: E402
+
+import classification  # noqa: E402
+import pairs  # noqa: E402
+import scoring  # noqa: E402
+import theory  # noqa: E402
+
+CLASSES = HERE / "results" / "quencher_classes" / "quencher_classes.csv"
+RESULTS = HERE / "results" / "dvte_reorganization"
+
+P_DVTE = 0.008
+BINS = ((-60, -5), (-5, -2), (-2, 0), (0, 2), (2, 5), (5, 60))
+TWO_GATE = classification.candidates("two_gate", "r from DFT sizes")[0]
+
+
+def quencher_parameters():
+    """One row per quencher of the dataset, indexed by name."""
+    return pd.read_csv(pairs.DATASET).groupby(pairs.Q_NAME).first()
+
+
+# ----------------------------------------------------------------------------- quencher level
+def quencher_table(q, classes):
+    E, lt, ls = (q[f"q_{c}_dft / kcal mol-1"] for c in ("E_T", "lambda_T1_S0", "lambda_S0_T1"))
+    mu, sd, dvte = q["q_dvte_mu / kcal mol-1"], q["q_dvte_std / kcal mol-1"], q[pairs.q_dvte(str(P_DVTE), "normal")]
+    t = pd.DataFrame({"class": q.index.map(classes), "E_T / kcal mol-1": E,
+                      "lambda_T1_S0 / kcal mol-1": lt, "lambda_S0_T1 / kcal mol-1": ls,
+                      "dvte_minus_E_T / kcal mol-1": dvte - E, "dvte_mu_minus_E_T / kcal mol-1": mu - E,
+                      "dvte_mu / kcal mol-1": mu, "dvte_std / kcal mol-1": sd, "dvte / kcal mol-1": dvte})
+    t.index.name = "quencher"
+    return t.sort_index(key=lambda s: s.str[1:].astype(int)).reset_index()
+
+
+def line(x, y, name):
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    slope, intercept = np.polyfit(x, y, 1)
+    return {"fit": name, "n": len(x), "slope": slope, "intercept / kcal mol-1": intercept,
+            "R2": stats.pearsonr(x, y)[0] ** 2,
+            "rmse / kcal mol-1": np.sqrt(np.mean((y - (slope * x + intercept)) ** 2))}
+
+
+def fits(t):
+    return pd.DataFrame([
+        line(t["lambda_T1_S0 / kcal mol-1"], t["dvte_minus_E_T / kcal mol-1"], "DvTE - E_T vs lambda_T1-S0"),
+        line(t["lambda_S0_T1 / kcal mol-1"], t["dvte_minus_E_T / kcal mol-1"], "DvTE - E_T vs lambda_S0-T1")])
+
+
+def quencher_summary(t):
+    d = t["dvte_minus_E_T / kcal mol-1"]
+    below = t[d < 0]
+    return pd.DataFrame([
+        {"quantity": "DvTE - E_T, minimum / kcal mol-1", "value": d.min()},
+        {"quantity": "DvTE - E_T, maximum / kcal mol-1", "value": d.max()},
+        {"quantity": "quenchers with DvTE < E_T", "value": len(below)},
+        {"quantity": "quenchers with DvTE < E_T, rigid", "value": int((below["class"] == "rigid").sum())},
+        {"quantity": "largest lambda_T1-S0 of the quenchers with DvTE < E_T / kcal mol-1",
+         "value": below["lambda_T1_S0 / kcal mol-1"].max()}])
+
+
+# ----------------------------------------------------------------------------- scored pairs
+def two_gate(df, source, model="marcus_asymmetric", energy_gate=True):
+    """(prediction, score, dG_EnT, barrier) of the two-gate criterion."""
+    dG = pairs.driving_force(df, source)
+    forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
+    barrier = theory.barrier(model, dG, forward, reverse)
+    t_pc = theory.lifetime_barrier(pairs.tau0_seconds(df), TWO_GATE.k_sv_crit,
+                                   theory.escape_over_frequency(classification.contact_distance(df, source)))
+    margin = t_pc - barrier
+    exergonic = dG <= 0
+    predicted = (exergonic & (margin >= 0)) if energy_gate else margin >= 0
+    return predicted, np.where(exergonic, margin, margin - classification.ENDERGONIC_OFFSET), dG, barrier
+
+
+def barrier_forms(df, classes):
+    y, g = df[pairs.QUENCHES].to_numpy(bool), df[pairs.PC_NAME].to_numpy()
+    rows, per_quencher = [], None
+    for source in pairs.SOURCES:
+        pa, sa, dG, ba = two_gate(df, source)
+        assert np.array_equal(pa, classification.predict(df, classification.two_gate_setting(source), source)[0])
+        ps, ss, _, bs = two_gate(df, source, "marcus_symmetric")
+        _, _, q_s0_t1, _ = pairs.lambdas(df, source)
+        forward, reverse = theory.pair_lambdas(*pairs.lambdas(df, source))
+        exo = dG <= 0
+        diff = bs - ba
+        cls = df[pairs.Q_NAME].map(classes).to_numpy()
+        only_a, only_s = pa & ~ps, ps & ~pa
+        row = {"parameters": source, "n_exergonic": int(exo.sum()),
+               "rho_barrier_difference_vs_lambda_forward_minus_lambda_reverse": stats.spearmanr(diff[exo], (forward - reverse)[exo])[0],
+               "rho_barrier_difference_vs_lambda_S0_T1_Q": stats.spearmanr(diff[exo], q_s0_t1[exo])[0]}
+        for c in ("rigid", "flexible", "dissociative"):
+            inside = exo & (cls == c)
+            row[f"median_barrier_difference_{c} / kcal mol-1"] = np.median(diff[inside]) if inside.any() else np.nan
+        row |= {"admitted_only_asymmetric": int(only_a.sum()), "admitted_only_asymmetric_quench": int((only_a & y).sum()),
+                "admitted_only_symmetric": int(only_s.sum()), "admitted_only_symmetric_quench": int((only_s & y).sum()),
+                "MCC_asymmetric": scoring.metrics(y, pa)["MCC"], "MCC_symmetric": scoring.metrics(y, ps)["MCC"],
+                "AUC_within_PC_pooled_asymmetric": scoring.auc_within(y, sa, g)["pooled"],
+                "AUC_within_PC_pooled_symmetric": scoring.auc_within(y, ss, g)["pooled"],
+                "pairs_inverted": int(np.sum(-dG > theory.geometric_mean(forward, reverse))),
+                "min_lambda_plus_dG / kcal mol-1": float(np.min(theory.geometric_mean(forward, reverse) + dG)),
+                "min_lambda_reverse_plus_dG / kcal mol-1": float(np.min(reverse + dG))}
+        rows.append(row)
+        if source == "dft":
+            per_quencher = (pd.DataFrame({"quencher": df[pairs.Q_NAME], "admitted_only_asymmetric": only_a,
+                                          "admitted_only_asymmetric_quench": only_a & y})
+                            .groupby("quencher", sort=False).sum()
+                            .query("admitted_only_asymmetric > 0")
+                            .sort_values("admitted_only_asymmetric", ascending=False, kind="stable")
+                            .reset_index().assign(parameters="dft"))
+    return pd.DataFrame(rows), per_quencher[["parameters", "quencher", "admitted_only_asymmetric",
+                                             "admitted_only_asymmetric_quench"]]
+
+
+def boundary(df):
+    y = df[pairs.QUENCHES].to_numpy(bool)
+    dG = pairs.driving_force(df, "dft")
+    bins = pd.DataFrame([{"parameters": "dft", "dG_low / kcal mol-1": lo, "dG_high / kcal mol-1": hi,
+                          "n": int(((dG > lo) & (dG <= hi)).sum()),
+                          "quench_fraction": float(y[(dG > lo) & (dG <= hi)].mean())} for lo, hi in BINS])
+    p_gate = two_gate(df, "dft")[0]
+    p_free, _, _, _ = two_gate(df, "dft", energy_gate=False)
+    endergonic_pass = p_free & (dG > 0)
+    summary = pd.DataFrame([
+        {"quantity": "MCC, two-gate DFT", "value": scoring.metrics(y, p_gate)["MCC"]},
+        {"quantity": "MCC, two-gate DFT without the energy gate", "value": scoring.metrics(y, p_free)["MCC"]},
+        {"quantity": "endergonic pairs passing the barrier gate", "value": int(endergonic_pass.sum())},
+        {"quantity": "quench fraction of the endergonic pairs passing the barrier gate",
+         "value": float(y[endergonic_pass].mean())}])
+    return bins, summary
+
+
+def rounded(table):
+    """kcal/mol to 2 decimals, everything else to 3; in quantity/value tables by row."""
+    table = table.copy()
+    if {"quantity", "value"} <= set(table.columns):
+        table["value"] = [round(float(v), 2 if "kcal" in q else 3) for q, v in zip(table.quantity, table.value)]
+        if "n" in table:
+            table["n"] = table["n"].astype("Int64")
+    for c in table.select_dtypes(float).columns:
+        if c != "value":
+            table[c] = table[c].round(2 if "kcal" in c else 3)
+    return table
+
+
+def main():
+    classes = pd.read_csv(CLASSES).set_index("id")["proposed_class"]
+    q = quencher_table(quencher_parameters(), classes)
+    df = pairs.scored(pairs.load())
+    forms, forms_q = barrier_forms(df, classes)
+    bins, summary = boundary(df)
+    tables = {"quenchers": q, "fits": fits(q), "quencher_summary": quencher_summary(q),
+              "barrier_forms": forms, "barrier_forms_quenchers": forms_q,
+              "boundary_bins": bins, "boundary_summary": summary}
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    for name, table in tables.items():
+        rounded(table).to_csv(RESULTS / f"{name}.csv", index=False, lineterminator="\n")
+    for name in tables:
+        if name != "quenchers":
+            print(rounded(tables[name]).to_string(index=False), "\n")
+    print(f"-> {RESULTS.relative_to(pairs.HERE.parent)}")
+
+
+if __name__ == "__main__":
+    main()

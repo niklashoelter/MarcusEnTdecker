@@ -1,0 +1,120 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["pandas==2.3.3", "openpyxl==3.1.5", "rdkit==2025.9.4"]
+# ///
+"""
+The photocatalyst table of the web application.
+
+Reads   ../../data/compound_identification.xlsx                              PC names
+        ../../data/computational_data_processed/photocatalyst_properties_calc.xlsx
+                                                     E_T, both lambda, excited-state potentials
+        ../../data/computational_data_processed/organophotocatalyst_dft.csv
+                                                     OPC names, SMILES, E_T and both lambda
+        ../data/pc_structures/<id>.png                reports missing drawings
+Writes  ../data/photocatalysts.csv
+
+    uv run webapp/scripts/build_photocatalysts.py
+
+One row per photocatalyst: screened PC<n> (by new_id), then organic OPC<n>.
+
+    E_T, lambda_S0_T1, lambda_T1_S0     DFT (kcal/mol); lambda_S0_T1 is the S0 surface at the
+                                        T1 geometry, lambda_T1_S0 the T1 surface at the S0
+                                        geometry
+    E_PCplus_PCstar, E_PCstar_PCminus   DFT excited-state potentials (V vs SCE), E(PC+/PC*) and
+                                        E(PC*/PC-); none for the OPCs
+
+Values rounded to 2 decimals. Metal complexes have no SMILES. Not part of the package.
+"""
+
+from __future__ import annotations
+
+import csv
+import sys
+from pathlib import Path
+
+import pandas as pd
+from rdkit import Chem, RDLogger
+
+WEBAPP = Path(__file__).resolve().parent.parent
+ROOT = WEBAPP.parent
+DATA = ROOT / "data"
+IDENTIFICATION = DATA / "compound_identification.xlsx"
+CALC = DATA / "computational_data_processed" / "photocatalyst_properties_calc.xlsx"
+OPC_TABLE = DATA / "computational_data_processed" / "organophotocatalyst_dft.csv"
+IMAGES = WEBAPP / "data" / "pc_structures"
+OUT = WEBAPP / "data" / "photocatalysts.csv"
+
+COLUMNS = ["id", "name", "smiles", "E_T", "lambda_S0_T1", "lambda_T1_S0",
+           "E_PCplus_PCstar", "E_PCstar_PCminus"]
+DECIMALS = 2                    # kcal/mol and V
+
+# column of the source table -> column written
+CALC_COLUMNS = {"E_T / kcal mol-1": "E_T",
+                "lambda_S0_T1 / kcal mol-1": "lambda_S0_T1",
+                "lambda_T1_S0 / kcal mol-1": "lambda_T1_S0",
+                "E_PCplus_PCstar / V": "E_PCplus_PCstar",
+                "E_PCstar_PCminus / V": "E_PCstar_PCminus"}
+OPC_COLUMNS = {"E_T / kcal mol-1": "E_T",
+               "lambda_S0_T1 / kcal mol-1": "lambda_S0_T1",
+               "lambda_T1_S0 / kcal mol-1": "lambda_T1_S0"}
+
+
+def read_workbook(path: Path) -> pd.DataFrame:
+    """A processed property workbook: block header in row 0, column names in row 1."""
+    df = pd.read_excel(path, sheet_name=0, header=1)
+    return df.loc[:, ~df.columns.astype(str).str.startswith("Unnamed")]
+
+
+def screened() -> list[dict]:
+    names = pd.read_excel(IDENTIFICATION, sheet_name="Photocatalysts").set_index("new_id")["name"]
+    calc = read_workbook(CALC).set_index("new_id")
+    if list(calc.index) != list(names.index):
+        raise ValueError(f"{CALC.name} does not list the PCs of {IDENTIFICATION.name}")
+    clash = calc["compound"] != names
+    if clash.any():
+        raise ValueError(f"{CALC.name} names PC{list(calc.index[clash])} differently")
+
+    rows = []
+    for new_id, name in names.items():
+        pc_id = f"PC{int(new_id)}"
+        row = {"id": pc_id, "name": name, "smiles": ""}
+        row |= {out: round(float(calc.at[new_id, col]), DECIMALS) for col, out in CALC_COLUMNS.items()}
+        rows.append(row)
+    return rows
+
+
+def organic() -> list[dict]:
+    table = pd.read_csv(OPC_TABLE).sort_values("opc_id")
+    rows = []
+    for _, opc in table.iterrows():
+        pc_id = f"OPC{int(opc['opc_id'])}"
+        smiles = opc["smiles"]
+        atoms = Chem.AddHs(Chem.MolFromSmiles(smiles)).GetNumAtoms()
+        if atoms != int(opc["n_atoms"]):
+            raise ValueError(f"{pc_id}: {atoms} atoms in the SMILES, {opc['n_atoms']} in the table")
+        row = {"id": pc_id, "name": opc["name"], "smiles": smiles}
+        row |= {out: round(float(opc[col]), DECIMALS) for col, out in OPC_COLUMNS.items()}
+        row |= {"E_PCplus_PCstar": None, "E_PCstar_PCminus": None}
+        rows.append(row)
+    return rows
+
+
+def main() -> int:
+    RDLogger.DisableLog("rdApp.*")
+    rows = screened() + organic()
+    with OUT.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=COLUMNS, lineterminator="\n")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({k: "" if v is None else v for k, v in row.items()})
+    n_pc = sum(r["id"].startswith("PC") for r in rows)
+    missing = [r["id"] for r in rows
+               if not r["smiles"] and not (IMAGES / f"{r['id']}.png").is_file()]
+    print(f"wrote {OUT.relative_to(ROOT).as_posix()}: {n_pc} PC + {len(rows) - n_pc} OPC")
+    if missing:
+        print(f"no structure drawing or SMILES: {', '.join(missing)}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

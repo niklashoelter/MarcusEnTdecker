@@ -1,0 +1,161 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["numpy==2.4.2", "pandas==2.3.3", "scipy==1.18.1"]
+# ///
+"""
+The contact distance r in the lifetime threshold of the two_gate criterion.
+
+Reads   ../../data/exp_dataset_ent.csv (through pairs.py)
+Writes  results/contact_distance/r_ij_distribution.csv   the distribution of r_PC + r_Q over
+                                                         the scored pairs and of r_PC and
+                                                         r_Q over the molecules, and the
+                                                         shift of t_PC against r = 7 A
+        results/contact_distance/dt_pc_per_angstrom.csv  K_A, k_-d/nu, the shift and slope
+                                                         of t_PC and its range over the
+                                                         photocatalysts, for r = 4-12 A
+        results/contact_distance/metrics_r.csv           two_gate metrics with r = 7 A, the
+                                                         per-pair r, and a fixed r from 4 to
+                                                         12 A
+
+    uv run benchmark/further_analysis/contact_distance.py
+
+t_PC = RT ln((k_d tau0 / K_SV,crit - 1) / (k_-d/nu)), k_-d/nu = (k_d / K_A) / (k_B T / h),
+K_A = 4 pi N_A r^3 / 3, so t_PC = const(tau0) + 3 RT ln r and dt_PC/dr = 3RT/r.
+
+Molecular radius: sphere of the van der Waals volume (S0 DFT geometry, Bondi radii;
+pairs.PC_RADIUS, pairs.Q_RADIUS).
+
+two_gate: dG_EnT <= 0 and asymmetric Marcus barrier <= t_PC(tau0, r), K_SV,crit = 10 M-1;
+score t_PC - barrier for AUC. Quencher parameters DFT or ML; photocatalyst parameters DFT.
+"""
+
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+
+import classification  # noqa: E402
+import pairs  # noqa: E402
+import scoring  # noqa: E402
+import theory  # noqa: E402
+
+RESULTS = HERE / "results" / "contact_distance"
+
+R_REFERENCE = theory.CONTACT_DISTANCE                       # A
+R_GRID = np.round(np.arange(4.0, 12.0001, 0.5), 2)          # A
+VOLUME = "vdW volume spheres"
+
+
+def radii(df):
+    """(r_PC, r_Q) from the van der Waals volume, as arrays over the rows of df."""
+    return df[pairs.PC_RADIUS].to_numpy(float), df[pairs.Q_RADIUS].to_numpy(float)
+
+
+def threshold_shift(r):
+    """t_PC(r) - t_PC(7 A) = 3 RT ln(r / 7 A) in kcal/mol."""
+    return 3.0 * theory.RT * np.log(np.asarray(r, float) / R_REFERENCE)
+
+
+def two_gate(df, source, r):
+    """(predicted quenching, continuous score) of two_gate at the contact distance r in A,
+    one value or one per pair."""
+    dG = pairs.driving_force(df, source)
+    barrier = theory.marcus_barrier_asymmetric(dG, *theory.pair_lambdas(*pairs.lambdas(df, source)))
+    t_pc = theory.lifetime_barrier(pairs.tau0_seconds(df), classification.K_SV_CRIT,
+                                   theory.escape_over_frequency(np.asarray(r, float)))
+    margin = t_pc - barrier
+    exergonic = dG <= 0
+    return (exergonic & (margin >= 0),
+            np.where(exergonic, margin, margin - classification.ENDERGONIC_OFFSET))
+
+
+def distribution(df, r):
+    r_pc, r_q = r
+    values = r_pc + r_q
+    shift = threshold_shift(values)
+    rows = [{"definition": VOLUME, "n": len(values), **_quantiles(values),
+             "fraction below 7 A": float((values < R_REFERENCE).mean()),
+             "dt_PC vs 7 A median / kcal mol-1": float(np.median(shift)),
+             "dt_PC vs 7 A min / kcal mol-1": float(shift.min()),
+             "dt_PC vs 7 A max / kcal mol-1": float(shift.max())}]
+    for part, values_, ids in (("r_PC", r_pc, df[pairs.PC_NAME]), ("r_Q", r_q, df[pairs.Q_NAME])):
+        per_molecule = pd.Series(values_, index=ids.to_numpy()).groupby(level=0).first()
+        rows.append({"definition": f"{VOLUME}: {part} (per molecule)", "n": len(per_molecule),
+                     **_quantiles(per_molecule.to_numpy())})
+    return pd.DataFrame(rows)
+
+
+def _quantiles(values):
+    values = np.asarray(values, float)
+    return {"min / A": values.min(), "q05 / A": np.quantile(values, 0.05),
+            "q25 / A": np.quantile(values, 0.25), "median / A": np.median(values),
+            "q75 / A": np.quantile(values, 0.75), "q95 / A": np.quantile(values, 0.95),
+            "max / A": values.max(), "mean / A": values.mean()}
+
+
+def threshold_per_angstrom(df):
+    tau0 = df.groupby(pairs.PC_NAME)[pairs.TAU0].first().to_numpy(float) * 1e-9
+    t_pc = np.array([theory.lifetime_barrier(tau0, classification.K_SV_CRIT,
+                                             theory.escape_over_frequency(r)) for r in R_GRID])
+    return pd.DataFrame({"r / A": R_GRID, "K_A / M-1": theory.encounter_constant(R_GRID),
+                         "k_-d/nu": theory.escape_over_frequency(R_GRID),
+                         "dt_PC vs 7 A / kcal mol-1": threshold_shift(R_GRID),
+                         "dt_PC/dr = 3RT/r / kcal mol-1 A-1": 3.0 * theory.RT / R_GRID,
+                         "t_PC min / kcal mol-1": t_pc.min(axis=1),
+                         "t_PC median / kcal mol-1": np.median(t_pc, axis=1),
+                         "t_PC max / kcal mol-1": t_pc.max(axis=1)})
+
+
+def metrics(df, r):
+    y = df[pairs.QUENCHES].to_numpy(bool)
+    photocatalysts = df[pairs.PC_NAME].to_numpy()
+
+    def row(kind, label, source, distance):
+        predicted, score = two_gate(df, source, distance)
+        m = scoring.metrics(y, predicted)
+        within = scoring.auc_within(y, score, photocatalysts)
+        return {"r": kind, "r / A": label, "source": source,
+                **{k: m[k] for k in ("n", "TP", "FP", "TN", "FN", "accuracy", "MCC")},
+                "ROC_AUC": scoring.auc(y, score), "AUC_within_PC_pooled": within["pooled"],
+                "AUC_within_PC_median": within["median"], "specificity": m["specificity"],
+                "recall": m["recall"]}
+
+    rows = []
+    for source in pairs.SOURCES:
+        rows.append(row("fixed", f"{R_REFERENCE:g}", source, R_REFERENCE))
+        r_ij = r[0] + r[1]
+        rows.append(row(f"per pair r_PC + r_Q, {VOLUME}", f"{np.median(r_ij):.2f} (median)", source, r_ij))
+        rows += [row("sweep", f"{d:g}", source, float(d)) for d in R_GRID]
+    return pd.DataFrame(rows)
+
+
+def main():
+    df = pairs.scored(pairs.load())
+    r = radii(df)
+    if np.isnan(r[0]).any() or np.isnan(r[1]).any():
+        raise ValueError("a scored pair has no radius")
+
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    dist = distribution(df, r)
+    dist.round(2).to_csv(RESULTS / "r_ij_distribution.csv", index=False, lineterminator="\n")
+    per_angstrom = threshold_per_angstrom(df)
+    per_angstrom.round({"K_A / M-1": 4, "k_-d/nu": 7, "dt_PC vs 7 A / kcal mol-1": 2,
+                        "dt_PC/dr = 3RT/r / kcal mol-1 A-1": 3, "t_PC min / kcal mol-1": 2,
+                        "t_PC median / kcal mol-1": 2, "t_PC max / kcal mol-1": 2}).to_csv(
+        RESULTS / "dt_pc_per_angstrom.csv", index=False, lineterminator="\n")
+    table = metrics(df, r)
+    scoring.rounded(table).to_csv(RESULTS / "metrics_r.csv", index=False, lineterminator="\n")
+
+    print(dist.round(2).to_string(index=False))
+    print()
+    print(table[["r", "r / A", "source", "MCC", "ROC_AUC", "AUC_within_PC_pooled"]]
+          .round(3).to_string(index=False))
+    print(f"\n-> {RESULTS.relative_to(pairs.HERE.parent)}")
+
+
+if __name__ == "__main__":
+    main()

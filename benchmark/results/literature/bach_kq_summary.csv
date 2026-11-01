@@ -1,0 +1,2 @@
+model,estimate,primary,E_T_7a_ml,E_T_XT_ml,E_T_TXT_ml,dG_XT,dG_TXT,lambda_forward_XT,lambda_reverse_XT,lambda_forward_TXT,lambda_reverse_TXT,barrier_XT,barrier_TXT,ddG_ml,ddG_exp,pass,ddG_sandros_kq
+deployed,mean,True,46.08,75.61,66.5,-29.53,-20.42,62.91,50.79,62.65,50.03,2.63,5.11,2.49,2.17,True,0.0

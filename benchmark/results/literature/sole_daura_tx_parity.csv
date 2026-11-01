@@ -1,0 +1,41 @@
+tx_source,model,estimate,barriers,subset,n,pearson_r,mae_barrier,mean_signed_error
+paper,deployed,mean,"ours, asymmetric",all 16 pairs,16,0.8801269348181298,1.18,-1.18
+paper,deployed,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.6728754031561394,1.17,-1.17
+paper,deployed,mean,"ours, symmetric",all 16 pairs,16,0.8877250499810346,0.83,0.49
+paper,deployed,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.9412638452261004,0.94,0.72
+paper,deployed,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
+paper,deployed,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
+paper,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8010941679679657,0.87,-0.66
+paper,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,0.87,-0.64
+paper,deployed,mean,mean of our substrates,all 16 pairs,16,0.7964920028436971,1.19,-1.16
+paper,deployed,mean,mean of our substrates,TX pairs only (substrate varies),6,,1.11,-1.11
+paper_dft,deployed,mean,"ours, asymmetric",all 16 pairs,16,0.5735588914807576,1.26,-0.22
+paper_dft,deployed,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.788615015677099,1.39,1.39
+paper_dft,deployed,mean,"ours, symmetric",all 16 pairs,16,0.5470004358958829,1.6,1.34
+paper_dft,deployed,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.945323444882554,2.99,2.99
+paper_dft,deployed,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
+paper_dft,deployed,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
+paper_dft,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.4423055471520963,1.35,0.34
+paper_dft,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,2.16,2.01
+paper_dft,deployed,mean,mean of our substrates,all 16 pairs,16,0.443430539311843,1.43,-0.22
+paper_dft,deployed,mean,mean of our substrates,TX pairs only (substrate varies),6,,1.75,1.39
+opc_dft,deployed,mean,"ours, asymmetric",all 16 pairs,16,0.8746757845846652,1.37,-1.37
+opc_dft,deployed,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.641725636588747,1.68,-1.68
+opc_dft,deployed,mean,"ours, symmetric",all 16 pairs,16,0.8908529121253247,0.71,0.3
+opc_dft,deployed,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.939702638471747,0.61,0.21
+opc_dft,deployed,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
+opc_dft,deployed,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
+opc_dft,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8065892399697175,0.99,-0.86
+opc_dft,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,1.19,-1.19
+opc_dft,deployed,mean,mean of our substrates,all 16 pairs,16,0.8019986868346082,1.38,-1.35
+opc_dft,deployed,mean,mean of our substrates,TX pairs only (substrate varies),6,,1.61,-1.61
+ml,deployed,mean,"ours, asymmetric",all 16 pairs,16,0.8696804088525858,1.44,-1.44
+ml,deployed,mean,"ours, asymmetric",TX pairs only (substrate varies),6,0.6331574013827471,1.87,-1.87
+ml,deployed,mean,"ours, symmetric",all 16 pairs,16,0.8842775138929907,0.65,0.18
+ml,deployed,mean,"ours, symmetric",TX pairs only (substrate varies),6,0.938676249782611,0.47,-0.11
+ml,deployed,mean,"paper DFT, asymmetric",all 16 pairs,16,0.8346562447773143,1.11,0.19
+ml,deployed,mean,"paper DFT, asymmetric",TX pairs only (substrate varies),6,0.9015565329341325,0.87,0.63
+ml,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",all 16 pairs,16,0.8050170809359338,1.07,-0.95
+ml,deployed,mean,"constant substrate (E_T 50, lambda 50/30)",TX pairs only (substrate varies),6,,1.42,-1.42
+ml,deployed,mean,mean of our substrates,all 16 pairs,16,0.8008665157093228,1.45,-1.42
+ml,deployed,mean,mean of our substrates,TX pairs only (substrate varies),6,,1.8,-1.8

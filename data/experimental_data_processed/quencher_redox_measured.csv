@@ -1,0 +1,24 @@
+quencher_id,E_Ox_vs_SCE_V,E_Ox_bound,E_Red_vs_SCE_V,E_Red_bound,source,comment
+9,1.4,,-2.4,,CV,E_Ox: onset; E_Red: onset
+12,1.35,,-2.4,<,CV,E_Ox: onset; E_Red: no reduction wave inside the window
+17,1.25,,-1.6,,CV,E_Ox: onset; E_Red: onset
+18,0.85,,-2.15,,CV,E_Ox: onset; E_Red: onset
+21,1.95,,-1.8,,CV,E_Ox: onset; E_Red: onset
+22,1.9,,-1.4,,CV,"E_Ox: the lab's reading of its voltammogram, which the two deposited repeats cannot confirm (onset +2.19 V, and a +0.34 V feature in the second run only); E_Red: onset"
+23,1.65,,-2.15,,CV,E_Ox: onset; E_Red: onset
+24,1.85,,-2.3,,CV,E_Ox: onset; E_Red: onset
+25,1.8,,-1.93,,CV,measured by TJS; voltammogram not in the data
+26,1.95,,-2,<,CV,measured by TJS; voltammogram not in the data
+27,1.85,,-1.95,,CV,E_Ox: onset; E_Red: onset
+28,2.4,>,-1.15,,CV,E_Ox: no oxidation wave inside the window; E_Red: half-wave
+31,2.1,>,-2.1,<,CV,measured by NHO; voltammogram not in the data
+34,1.75,,-2.25,,CV,E_Ox: onset; E_Red: onset
+36,1.5,,-2.3,,CV,E_Ox: onset; E_Red: onset
+37,1.9,,-2.3,,CV,E_Ox: onset; E_Red: onset
+39,1.6,,-2,,CV,E_Ox: onset; E_Red: half-wave
+42,2.2,,-1.55,,CV,E_Ox: onset; E_Red: half-wave
+43,1.95,,-1.7,,CV,E_Ox: onset; E_Red: onset
+44,2.4,>,-1.65,,CV,E_Ox: no oxidation wave inside the window; E_Red: onset
+45,1.7,,-2.2,,CV,voltammogram not in the data
+46,1.55,,-2.3,,CV,E_Ox: onset; E_Red: onset
+48,2.4,>,-2,,CV,E_Ox: no oxidation wave inside the window; E_Red: onset

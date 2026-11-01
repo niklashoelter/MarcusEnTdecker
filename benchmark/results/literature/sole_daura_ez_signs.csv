@@ -1,0 +1,10 @@
+model,estimate,pc_source,substrate,pc_label,diffusion_controlled,ddG_exp,ddG_lit,ddG_ml,ddG_ml_symmetric,ddG_EnT_ml,ddG_EnT_lit,sign_correct_ml,sign_correct_ml_symmetric,sign_correct_lit,sign_correct_EnT_ml,sign_correct_EnT_lit,p_sign_correct_deployed_uncertainty
+deployed,mean,paper,3,Ir-A,False,-1.5,-2.1,-0.37,0.03,2.2,0.1,True,False,True,False,False,0.57695
+deployed,mean,paper,3,Ir-B,False,-1.6,-2.3,-0.5,-0.03,2.2,0.2,True,True,True,False,False,0.61495
+deployed,mean,paper,3,Ir-C,False,-1.3,-2.4,-0.61,-0.07,2.2,0.2,True,True,True,False,False,0.64215
+deployed,mean,paper,3,Ir-D,False,-1.3,-2.3,-0.58,-0.08,2.2,0.2,True,True,True,False,False,0.6417
+deployed,mean,paper,3,Ir-E,False,-0.4,-2.1,-0.56,-0.09,2.2,0.2,True,True,True,False,False,0.64615
+deployed,mean,paper,1,TX,False,2.0,2.2,0.68,0.66,2.9,1.0,True,True,True,True,True,0.66105
+deployed,mean,paper,2,TX,False,-0.5,-2.0,-1.56,-0.59,0.96,1.2,True,True,True,False,False,0.8507
+deployed,mean,paper,3,TX,False,-0.5,-2.4,-0.59,-0.08,2.2,0.2,True,True,True,False,False,0.6431
+deployed,mean,paper,4,TX,True,-0.1,-1.5,-1.27,-1.01,3.79,8.0,True,True,True,False,False,0.79195

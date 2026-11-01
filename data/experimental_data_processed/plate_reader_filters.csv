@@ -1,0 +1,82 @@
+batch,pc_new_id,mode_name,excitation_nm,excitation_bandwidth_nm,emission_nm,emission_bandwidth_nm,source
+PC10_QBatch1,8,FI: Ex: 425-8 Em: 620-50,425,8,620,50,export
+PC10_QBatch2,8,FI: Ex: 425-8 Em: 620-50,425,8,620,50,export
+PC10_QBatch3,8,FI: Ex: 425-8 Em: 620-50,425,8,620,50,export
+PC11_QBatch1,9,FI: Ex: 425-8 Em: 510-20,425,8,510,20,export
+PC11_QBatch2,9,FI: Ex: 425-8 Em: 510-20,425,8,510,20,export
+PC11_QBatch3,9,FI: Ex: 425-8 Em: 510-20,425,8,510,20,export
+PC12_QBatch1,10,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC12_QBatch2,10,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC12_QBatch3,10,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC13_QBatch1,11,FI: Ex: 425-8 Em: 475-20,425,8,475,20,export
+PC13_QBatch2,11,FI: Ex: 425-8 Em: 475-20,425,8,475,20,export
+PC13_QBatch3,11,FI: Ex: 425-8 Em: 475-20,425,8,475,20,export
+PC14_QBatch1,12,FI: Ex: 425-8 Em: 500-20,425,8,500,20,export
+PC14_QBatch2,12,FI: Ex: 425-8 Em: 500-20,425,8,500,20,export
+PC14_QBatch3,12,FI: Ex: 425-8 Em: 500-20,425,8,500,20,export
+PC15_QBatch1,13,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC15_QBatch2,13,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC15_QBatch3,13,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC16_QBatch1,14,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC16_QBatch2,14,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC16_QBatch3,14,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC17_QBatch1,15,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC17_QBatch2,15,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC17_QBatch3,15,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC18_QBatch1,16,FI: Ex: 450-8 Em: 520-20,450,8,520,20,export
+PC18_QBatch2,16,FI: Ex: 450-8 Em: 520-20,450,8,520,20,export
+PC18_QBatch3,16,FI: Ex: 450-8 Em: 520-20,450,8,520,20,export
+PC19_QBatch1,17,FI: Ex: 425-8 Em: 500-20,425,8,500,20,export
+PC19_QBatch2,17,FI: Ex: 425-8 Em: 500-20,425,8,500,20,export
+PC19_QBatch3,17,FI: Ex: 425-8 Em: 500-20,425,8,500,20,export
+PC1_QBatch1,1,FI: Ir-F,425,8,475,20,"protocol names no filters: wavelengths from the photocatalyst sheet, bandwidths inferred from the instrument's standing values"
+PC1_QBatch2,1,FI: Ir-F,425,8,475,20,"protocol names no filters: wavelengths from the photocatalyst sheet, bandwidths inferred from the instrument's standing values"
+PC1_QBatch3,1,FI: Ir-F,425,8,475,20,"protocol names no filters: wavelengths from the photocatalyst sheet, bandwidths inferred from the instrument's standing values"
+PC20_QBatch1,18,FI: Ex: 405-8 Em: 495-20,405,8,495,20,export
+PC20_QBatch2,18,FI: Ex: 405-8 Em: 495-20,405,8,495,20,export
+PC20_QBatch3,18,FI: Ex: 405-8 Em: 495-20,405,8,495,20,export
+PC21_QBatch1,19,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC21_QBatch2,19,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC21_QBatch3,19,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC22_QBatch1,20,FI: Ex: 450-8 Em: 520-20,450,8,520,20,export
+PC22_QBatch2,20,FI: Ex: 450-8 Em: 520-20,450,8,520,20,export
+PC22_QBatch3,20,FI: Ex: 450-8 Em: 520-20,450,8,520,20,export
+PC23_QBatch1,21,FI: Ex: 405-8 Em: 495-20,405,8,495,20,export
+PC23_QBatch2,21,FI: Ex: 405-8 Em: 495-20,405,8,495,20,export
+PC23_QBatch3,21,FI: Ex: 405-8 Em: 495-20,405,8,495,20,export
+PC24_QBatch1,22,FI: Ex: 425-8 Em: 490-25,425,8,490,25,export
+PC24_QBatch2,22,FI: Ex: 425-8 Em: 490-25,425,8,490,25,export
+PC24_QBatch3,22,FI: Ex: 425-8 Em: 490-25,425,8,490,25,export
+PC25_QBatch1,23,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC25_QBatch2,23,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC25_QBatch3,23,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC27_QBatch1,24,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC27_QBatch2,24,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC27_QBatch3,24,FI: Ex: 425-8 Em: 520-20,425,8,520,20,export
+PC28_QBatch1_50uM_1mM,26,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC28_QBatch2_50uM_1mM,26,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC28_QBatch3_50uM_1mM,26,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC29_QBatch1_50uM_1mM,27,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC29_QBatch2_50uM_1mM,27,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC29_QBatch3_50uM_1mM,27,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC2_QBatch1,2,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC2_QBatch2,2,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC2_QBatch3,2,FI: Ex: 425-8 Em: 580-20,425,8,580,20,export
+PC3_QBatch1,3,FI: Ir(ppy)3,425,8,520,20,"protocol names no filters: wavelengths from the photocatalyst sheet, bandwidths inferred from the instrument's standing values"
+PC3_QBatch2,3,FI: Ir(ppy)3,425,8,520,20,"protocol names no filters: wavelengths from the photocatalyst sheet, bandwidths inferred from the instrument's standing values"
+PC3_QBatch3,3,FI: Ir(ppy)3,425,8,520,20,"protocol names no filters: wavelengths from the photocatalyst sheet, bandwidths inferred from the instrument's standing values"
+PC4_QBatch1,4,FI: Ex: 425-8 Em: 490-20,425,8,490,20,export
+PC4_QBatch2,4,FI: Ex: 425-8 Em: 490-20,425,8,490,20,export
+PC4_QBatch3,4,FI: Ex: 425-8 Em: 490-20,425,8,490,20,export
+PC5_QBatch1,5,FI: Ex: 450-8 Em: 625-20,450,8,625,20,export
+PC5_QBatch2,5,FI: Ex: 450-8 Em: 625-20,450,8,625,20,export
+PC5_QBatch3,5,FI: Ex: 450-8 Em: 625-20,450,8,625,20,export
+PC6_QBatch1,6,FI: Ex: 450-8 Em: 600-20,450,8,600,20,export
+PC6_QBatch2,6,FI: Ex: 450-8 Em: 600-20,450,8,600,20,export
+PC6_QBatch3,6,FI: Ex: 450-8 Em: 600-20,450,8,600,20,export
+PC8_QBatch1_50uM_1mM,25,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC8_QBatch2_50uM_1mM,25,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC8_QBatch3_50uM_1mM,25,FI: Ex: 380-8 Em: 415-10,380,8,415,10,export
+PC9_QBatch1,7,FI: Ex: 425-8 Em: 475-20,425,8,475,20,export
+PC9_QBatch2,7,FI: Ex: 425-8 Em: 475-20,425,8,475,20,export
+PC9_QBatch3,7,FI: Ex: 425-8 Em: 475-20,425,8,475,20,export

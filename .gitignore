@@ -1,0 +1,36 @@
+# Raw data, on Zenodo.
+data/experimental_data_raw/
+data/computational_data_raw/
+
+# data/ has one README, data/README.md. None below it.
+data/*/**/README.md
+
+# The best checkpoint so far of a running ml/training/train.py, renamed to model.pt when the
+# run ends.
+ml/results/**/*.pt.partial
+
+# Site-specific deployment: the image build and the university cluster manifests, not published.
+webapp/deploy/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Sync clients
+.owncloudsync.log
+*.owncloudsync.log.*
+*~sync-conflict*

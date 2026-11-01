@@ -1,0 +1,241 @@
+quencher_name,n_atoms,group,cpu / h,cpu_per_atom / h
+Q1,20,adiabatic DFT,63.72,3.186
+Q2,16,adiabatic DFT,11.34,0.7089
+Q3,20,adiabatic DFT,41.94,2.097
+Q4,15,adiabatic DFT,33.08,2.205
+Q5,16,adiabatic DFT,37.52,2.345
+Q6,17,adiabatic DFT,23.93,1.408
+Q7,17,adiabatic DFT,27.65,1.627
+Q8,38,adiabatic DFT,349.6,9.2
+Q9,22,adiabatic DFT,70.22,3.192
+Q10,24,adiabatic DFT,189.2,7.882
+Q11,30,adiabatic DFT,183.3,6.109
+Q12,18,adiabatic DFT,22.18,1.232
+Q13,13,adiabatic DFT,18.41,1.416
+Q14,24,adiabatic DFT,39.27,1.636
+Q15,17,adiabatic DFT,18.22,1.072
+Q16,15,adiabatic DFT,24.26,1.617
+Q17,30,adiabatic DFT,255.0,8.5
+Q18,25,adiabatic DFT,73.32,2.933
+Q19,42,adiabatic DFT,558.4,13.3
+Q20,18,adiabatic DFT,25.18,1.399
+Q21,23,adiabatic DFT,56.1,2.439
+Q22,46,adiabatic DFT,502.0,10.91
+Q23,35,adiabatic DFT,130.4,3.727
+Q24,35,adiabatic DFT,182.4,5.212
+Q25,15,adiabatic DFT,51.39,3.426
+Q26,15,adiabatic DFT,36.41,2.427
+Q27,9,adiabatic DFT,13.02,1.446
+Q28,20,adiabatic DFT,47.27,2.364
+Q29,25,adiabatic DFT,81.43,3.257
+Q30,26,adiabatic DFT,56.68,2.18
+Q31,24,adiabatic DFT,109.5,4.562
+Q32,26,adiabatic DFT,100.9,3.883
+Q33,25,adiabatic DFT,68.63,2.745
+Q34,26,adiabatic DFT,73.33,2.821
+Q35,26,adiabatic DFT,97.13,3.736
+Q36,18,adiabatic DFT,70.16,3.898
+Q37,16,adiabatic DFT,48.68,3.043
+Q38,10,adiabatic DFT,2.171,0.2171
+Q39,21,adiabatic DFT,68.2,3.248
+Q40,18,adiabatic DFT,25.61,1.423
+Q41,19,adiabatic DFT,20.49,1.078
+Q42,21,adiabatic DFT,50.66,2.413
+Q43,17,adiabatic DFT,29.86,1.757
+Q44,16,adiabatic DFT,27.89,1.743
+Q45,18,adiabatic DFT,112.8,6.265
+Q46,22,adiabatic DFT,59.11,2.687
+Q47,23,adiabatic DFT,126.0,5.48
+Q48,15,adiabatic DFT,16.65,1.11
+Q1,20,four-point DFT,73.1,3.655
+Q2,16,four-point DFT,17.02,1.064
+Q3,20,four-point DFT,47.82,2.391
+Q4,15,four-point DFT,37.48,2.499
+Q5,16,four-point DFT,42.86,2.678
+Q6,17,four-point DFT,27.93,1.643
+Q7,17,four-point DFT,30.5,1.794
+Q8,38,four-point DFT,382.6,10.07
+Q9,22,four-point DFT,80.17,3.644
+Q10,24,four-point DFT,199.2,8.3
+Q11,30,four-point DFT,202.0,6.733
+Q12,18,four-point DFT,29.55,1.642
+Q13,13,four-point DFT,20.87,1.606
+Q14,24,four-point DFT,49.78,2.074
+Q15,17,four-point DFT,20.28,1.193
+Q16,15,four-point DFT,26.55,1.77
+Q17,30,four-point DFT,278.1,9.268
+Q18,25,four-point DFT,79.88,3.195
+Q19,42,four-point DFT,617.6,14.7
+Q20,18,four-point DFT,28.11,1.561
+Q21,23,four-point DFT,62.61,2.722
+Q22,46,four-point DFT,564.3,12.27
+Q23,35,four-point DFT,155.2,4.435
+Q24,35,four-point DFT,198.6,5.673
+Q25,15,four-point DFT,56.22,3.748
+Q26,15,four-point DFT,41.87,2.791
+Q27,9,four-point DFT,14.92,1.658
+Q28,20,four-point DFT,50.69,2.535
+Q29,25,four-point DFT,91.52,3.661
+Q30,26,four-point DFT,63.29,2.434
+Q31,24,four-point DFT,119.8,4.992
+Q32,26,four-point DFT,113.4,4.363
+Q33,25,four-point DFT,78.72,3.149
+Q34,26,four-point DFT,85.25,3.279
+Q35,26,four-point DFT,110.0,4.231
+Q36,18,four-point DFT,74.63,4.146
+Q37,16,four-point DFT,55.88,3.492
+Q38,10,four-point DFT,3.066,0.3066
+Q39,21,four-point DFT,73.77,3.513
+Q40,18,four-point DFT,30.21,1.678
+Q41,19,four-point DFT,26.71,1.406
+Q42,21,four-point DFT,56.75,2.703
+Q43,17,four-point DFT,35.64,2.096
+Q44,16,four-point DFT,31.6,1.975
+Q45,18,four-point DFT,121.9,6.771
+Q46,22,four-point DFT,65.15,2.962
+Q47,23,four-point DFT,134.5,5.848
+Q48,15,four-point DFT,18.51,1.234
+Q1,20,DvTE,6275.0,313.7
+Q2,16,DvTE,3213.0,200.8
+Q3,20,DvTE,6708.0,335.4
+Q4,15,DvTE,3961.0,264.1
+Q5,16,DvTE,4434.0,277.1
+Q6,17,DvTE,4753.0,279.6
+Q7,17,DvTE,5272.0,310.1
+Q8,38,DvTE,32590.0,857.8
+Q9,22,DvTE,8824.0,401.1
+Q10,24,DvTE,11510.0,479.6
+Q11,30,DvTE,19000.0,633.2
+Q12,18,DvTE,5112.0,284.0
+Q13,13,DvTE,2586.0,199.0
+Q14,24,DvTE,6031.0,251.3
+Q15,17,DvTE,4179.0,245.8
+Q16,15,DvTE,2976.0,198.4
+Q17,30,DvTE,28240.0,941.3
+Q18,25,DvTE,9522.0,380.9
+Q19,42,DvTE,54340.0,1294.0
+Q20,18,DvTE,6062.0,336.8
+Q21,23,DvTE,7493.0,325.8
+Q22,46,DvTE,68060.0,1480.0
+Q23,35,DvTE,26890.0,768.3
+Q24,35,DvTE,24150.0,690.1
+Q25,15,DvTE,5996.0,399.7
+Q26,15,DvTE,4827.0,321.8
+Q27,9,DvTE,3412.0,379.1
+Q28,20,DvTE,7646.0,382.3
+Q29,25,DvTE,12150.0,486.1
+Q30,26,DvTE,11070.0,425.7
+Q31,24,DvTE,12100.0,504.2
+Q32,26,DvTE,13520.0,520.0
+Q33,25,DvTE,10990.0,439.6
+Q34,26,DvTE,11680.0,449.2
+Q35,26,DvTE,12630.0,485.6
+Q36,18,DvTE,4259.0,236.6
+Q37,16,DvTE,6072.0,379.5
+Q38,10,DvTE,1101.0,110.1
+Q39,21,DvTE,8257.0,393.2
+Q40,18,DvTE,5277.0,293.2
+Q41,19,DvTE,4654.0,245.0
+Q42,21,DvTE,7444.0,354.5
+Q43,17,DvTE,4308.0,253.4
+Q44,16,DvTE,3682.0,230.1
+Q45,18,DvTE,6595.0,366.4
+Q46,22,DvTE,7480.0,340.0
+Q47,23,DvTE,10220.0,444.2
+Q48,15,DvTE,2807.0,187.2
+Q1,20,"ML, per call",1.931e-05,9.657e-07
+Q2,16,"ML, per call",2.474e-05,1.546e-06
+Q3,20,"ML, per call",2.083e-05,1.042e-06
+Q4,15,"ML, per call",2.93e-05,1.953e-06
+Q5,16,"ML, per call",2.474e-05,1.546e-06
+Q6,17,"ML, per call",1.758e-05,1.034e-06
+Q7,17,"ML, per call",2.235e-05,1.315e-06
+Q8,38,"ML, per call",2.713e-05,7.139e-07
+Q9,22,"ML, per call",1.866e-05,8.483e-07
+Q10,24,"ML, per call",2.626e-05,1.094e-06
+Q11,30,"ML, per call",2.105e-05,7.017e-07
+Q12,18,"ML, per call",1.975e-05,1.097e-06
+Q13,13,"ML, per call",1.78e-05,1.369e-06
+Q14,24,"ML, per call",1.606e-05,6.691e-07
+Q15,17,"ML, per call",2.192e-05,1.289e-06
+Q16,15,"ML, per call",2.192e-05,1.461e-06
+Q17,30,"ML, per call",2.127e-05,7.089e-07
+Q18,25,"ML, per call",1.91e-05,7.639e-07
+Q19,42,"ML, per call",2.496e-05,5.942e-07
+Q20,18,"ML, per call",2.062e-05,1.145e-06
+Q21,23,"ML, per call",2.691e-05,1.17e-06
+Q22,46,"ML, per call",2.93e-05,6.369e-07
+Q23,35,"ML, per call",2.517e-05,7.192e-07
+Q24,35,"ML, per call",2.474e-05,7.068e-07
+Q25,15,"ML, per call",2.148e-05,1.432e-06
+Q26,15,"ML, per call",2.3e-05,1.534e-06
+Q27,9,"ML, per call",2.214e-05,2.459e-06
+Q28,20,"ML, per call",2.452e-05,1.226e-06
+Q29,25,"ML, per call",2.127e-05,8.507e-07
+Q30,26,"ML, per call",2.409e-05,9.265e-07
+Q31,24,"ML, per call",3.255e-05,1.356e-06
+Q32,26,"ML, per call",3.277e-05,1.26e-06
+Q33,25,"ML, per call",1.649e-05,6.597e-07
+Q34,26,"ML, per call",2.365e-05,9.098e-07
+Q35,26,"ML, per call",2.062e-05,7.929e-07
+Q36,18,"ML, per call",1.454e-05,8.078e-07
+Q37,16,"ML, per call",2.496e-05,1.56e-06
+Q38,10,"ML, per call",2.3e-05,2.3e-06
+Q39,21,"ML, per call",2.778e-05,1.323e-06
+Q40,18,"ML, per call",2.734e-05,1.519e-06
+Q41,19,"ML, per call",2.365e-05,1.245e-06
+Q42,21,"ML, per call",2.713e-05,1.292e-06
+Q43,17,"ML, per call",2.322e-05,1.366e-06
+Q44,16,"ML, per call",3.06e-05,1.912e-06
+Q45,18,"ML, per call",2.235e-05,1.242e-06
+Q46,22,"ML, per call",2.452e-05,1.115e-06
+Q47,23,"ML, per call",2.344e-05,1.019e-06
+Q48,15,"ML, per call",2.452e-05,1.635e-06
+Q1,20,"ML, batch",3.49e-06,1.745e-07
+Q2,16,"ML, batch",3.49e-06,2.181e-07
+Q3,20,"ML, batch",3.49e-06,1.745e-07
+Q4,15,"ML, batch",3.49e-06,2.327e-07
+Q5,16,"ML, batch",3.49e-06,2.181e-07
+Q6,17,"ML, batch",3.49e-06,2.053e-07
+Q7,17,"ML, batch",3.49e-06,2.053e-07
+Q8,38,"ML, batch",3.49e-06,9.185e-08
+Q9,22,"ML, batch",3.49e-06,1.587e-07
+Q10,24,"ML, batch",3.49e-06,1.454e-07
+Q11,30,"ML, batch",3.49e-06,1.163e-07
+Q12,18,"ML, batch",3.49e-06,1.939e-07
+Q13,13,"ML, batch",3.49e-06,2.685e-07
+Q14,24,"ML, batch",3.49e-06,1.454e-07
+Q15,17,"ML, batch",3.49e-06,2.053e-07
+Q16,15,"ML, batch",3.49e-06,2.327e-07
+Q17,30,"ML, batch",3.49e-06,1.163e-07
+Q18,25,"ML, batch",3.49e-06,1.396e-07
+Q19,42,"ML, batch",3.49e-06,8.31e-08
+Q20,18,"ML, batch",3.49e-06,1.939e-07
+Q21,23,"ML, batch",3.49e-06,1.518e-07
+Q22,46,"ML, batch",3.49e-06,7.588e-08
+Q23,35,"ML, batch",3.49e-06,9.972e-08
+Q24,35,"ML, batch",3.49e-06,9.972e-08
+Q25,15,"ML, batch",3.49e-06,2.327e-07
+Q26,15,"ML, batch",3.49e-06,2.327e-07
+Q27,9,"ML, batch",3.49e-06,3.878e-07
+Q28,20,"ML, batch",3.49e-06,1.745e-07
+Q29,25,"ML, batch",3.49e-06,1.396e-07
+Q30,26,"ML, batch",3.49e-06,1.342e-07
+Q31,24,"ML, batch",3.49e-06,1.454e-07
+Q32,26,"ML, batch",3.49e-06,1.342e-07
+Q33,25,"ML, batch",3.49e-06,1.396e-07
+Q34,26,"ML, batch",3.49e-06,1.342e-07
+Q35,26,"ML, batch",3.49e-06,1.342e-07
+Q36,18,"ML, batch",3.49e-06,1.939e-07
+Q37,16,"ML, batch",3.49e-06,2.181e-07
+Q38,10,"ML, batch",3.49e-06,3.49e-07
+Q39,21,"ML, batch",3.49e-06,1.662e-07
+Q40,18,"ML, batch",3.49e-06,1.939e-07
+Q41,19,"ML, batch",3.49e-06,1.837e-07
+Q42,21,"ML, batch",3.49e-06,1.662e-07
+Q43,17,"ML, batch",3.49e-06,2.053e-07
+Q44,16,"ML, batch",3.49e-06,2.181e-07
+Q45,18,"ML, batch",3.49e-06,1.939e-07
+Q46,22,"ML, batch",3.49e-06,1.587e-07
+Q47,23,"ML, batch",3.49e-06,1.518e-07
+Q48,15,"ML, batch",3.49e-06,2.327e-07

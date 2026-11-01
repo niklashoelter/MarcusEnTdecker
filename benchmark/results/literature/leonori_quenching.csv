@@ -1,0 +1,8 @@
+model,estimate,catalyst,quencher,k_q,method,barrier_exp_eyring,barrier_ml,ddG_exp,ddG_ml,ddG_EnT_ml
+deployed,mean,N23,(E)-1,12000000.0,steady-state emission Stern-Volmer,7.8,9.91,,,
+deployed,mean,N24,(E)-1,167000000.0,transient-absorption lifetime Stern-Volmer,6.24,9.67,,,
+deployed,mean,N25,(E)-1,490000000.0,transient-absorption lifetime Stern-Volmer,5.6,9.91,,,
+deployed,mean,N34,27,23000000.0,transient-absorption lifetime Stern-Volmer,7.41,12.34,,,
+deployed,mean,N36,(E)-1,150000000.0,transient-absorption lifetime Stern-Volmer,6.3,8.97,,,
+deployed,mean,N24,(Z)-1,22000000.0,transient-absorption lifetime Stern-Volmer,7.44,10.64,,,
+deployed,mean,N24,(E)-1 minus (Z)-1,,ratio of the two constants,,,-1.2,-0.97,1.0

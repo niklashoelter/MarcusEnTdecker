@@ -1,0 +1,5 @@
+# Published PDFs are source material, not repository content: copyrighted and large.
+# The extracted CSVs beside them are what the repository carries.
+pdf/
+*/pdf/
+*.pdf
